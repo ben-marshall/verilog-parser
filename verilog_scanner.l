@@ -18,40 +18,36 @@ typedef VL::VerilogParser::token token;
 
 %}
 
+%option yylineno
 %option debug 
 %option nodefault 
 %option yyclass="VerilogScanner" 
 %option noyywrap 
 %option c++
 
-CHAR                .
-DIGIT               [0-9]
-NUMBER              {DIGIT}+
+%x BLOCK_COMMENT
+%x LINE_COMMENT
+
 NEWLINE             \n
+TAB                 \t
+SPACE               " "
 
 COMMENT_LINE        "//"
-COMMENT_BLOCK_BEGIN "/*"
-COMMENT_BLOCK_END   "*/"
-
-IDENTIFIER          [a-zA-Z0-9_]+
-
-DEFINE              "`define"
+COMMENT_BEGIN       "/*"
+COMMENT_END         "*/"
 
 %%
-{COMMENT_LINE} {
-    return token::COMMENT_LINE;
-}
-{COMMENT_BLOCK_BEGIN}  {
-    return token::COMMENT_BLOCK_BEGIN;
-}
-{COMMENT_BLOCK_END}  {
-    return token::COMMENT_BLOCK_END;
-}
 
+<INITIAL>{COMMENT_BEGIN}     {BEGIN(BLOCK_COMMENT);}
+<BLOCK_COMMENT>{COMMENT_END} {BEGIN(INITIAL); return token::COMMENT_BLOCK;}
+<BLOCK_COMMENT>[^*\n]+       {}
+<BLOCK_COMMENT>"*"           {}
+<BLOCK_COMMENT>\n            {yylineno++;}
 
-{NEWLINE}   { 
-    return( token::NEWLINE );   
-}
+<INITIAL>{COMMENT_LINE}      {BEGIN(LINE_COMMENT);}
+<LINE_COMMENT>.*{NEWLINE}    {BEGIN(INITIAL);return token::COMMENT_LINE;}
 
-{CHAR}      {return token::CHAR;}
- %%
+{NEWLINE} {return token::WS;}
+{SPACE}   {return token::WS;}
+{TAB}     {return token::WS;}
+%%

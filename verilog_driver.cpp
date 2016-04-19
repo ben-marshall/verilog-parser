@@ -12,9 +12,16 @@ VL::VerilogDriver::~VerilogDriver(){
    parser = NULL;
 }
 
-void VL::VerilogDriver::add_oneline_comment()
+void VL::VerilogDriver::add_block_comment(const char * m)
 {
-    std::cout<<"Found single line comment\n";
+    std::cout<<this->scanner->lineno()<<" ";
+    std::cout<<"Found block comment: " << m<<"\n";
+}
+
+void VL::VerilogDriver::add_oneline_comment(const char * m)
+{
+    std::cout<<this->scanner->lineno()<<" ";
+    std::cout<<"Found single line comment: " << m<<"\n";
 }
 
 void  VL::VerilogDriver::parse( const char *filename )

@@ -12,6 +12,8 @@
    }
 }
 
+%define parse.error verbose
+
 %lex-param   { VerilogScanner  &scanner  }
 %parse-param { VerilogScanner  &scanner  }
 
@@ -40,37 +42,37 @@
 }
 
 %token END    0     "end of file"
-%token NEWLINE
 %token UNKNOWN
-%token CHAR
 %token IDENTIFIER
+%token WS
 
 %token DEFINE
 
 %token COMMENT_LINE
-%token COMMENT_BLOCK_BEGIN
-%token COMMENT_BLOCK_END
-
-
-/* destructor rule for <sval> objects */
-%destructor { if ($$)  { delete ($$); ($$) = NULL; } } <sval>
+%token COMMENT_BLOCK
 
 
 %%
-file            : COMMENT_LINE comment_content NEWLINE {driver.add_oneline_comment();}
-                | COMMENT_BLOCK_BEGIN comment_content COMMENT_BLOCK_END
+file            : statements END
+                |
+                ;
+                
+statements      : statement
+                | statement statements
+                ;
 
-comment_content : string;
-
-string          : CHAR string
-                | CHAR
-                | ;
+statement       : WS
+                | COMMENT_LINE {driver.add_oneline_comment(this->scanner.YYText());}
+                | COMMENT_BLOCK{driver.add_block_comment  (this->scanner.YYText());}
+                ;
 %%
 
 
 void VL::VerilogParser::error( const std::string &err_message )
 {
-   std::cerr << "Error: " << err_message << "\n"; 
+    std::cerr << "Line " << this->scanner.lineno() << ": ";
+    std::cerr << "Parser Error: " << err_message << "\n"; 
+    std::cerr << "\t" << this -> scanner.YYText()<<"\n";
 }
 
 

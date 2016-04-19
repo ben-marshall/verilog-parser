@@ -16,7 +16,8 @@ public:
 
    void parse( const char *filename );
 
-   void add_oneline_comment();
+   void add_oneline_comment(const char * m);
+   void add_block_comment  (const char * m);
 
 private:
    
