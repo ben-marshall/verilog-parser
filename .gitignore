@@ -1,0 +1,6 @@
+*.tab.cc
+*.tab.hh
+stack.hh
+*.yy.cc
+*.yy.c
+a.out
