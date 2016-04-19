@@ -25,8 +25,9 @@ typedef VL::VerilogParser::token token;
 %option noyywrap 
 %option c++
 
-%x BLOCK_COMMENT
-%x LINE_COMMENT
+%x IN_BLOCK_COMMENT
+%x IN_LINE_COMMENT
+%x IN_DEFINE
 
 NEWLINE             \n
 TAB                 \t
@@ -36,16 +37,27 @@ COMMENT_LINE        "//"
 COMMENT_BEGIN       "/*"
 COMMENT_END         "*/"
 
+IDENTIFIER          [a-zA-Z0-9_]+
+VALUE               .+
+
+DEFINE              "`define"
+
 %%
 
-<INITIAL>{COMMENT_BEGIN}     {BEGIN(BLOCK_COMMENT);}
-<BLOCK_COMMENT>{COMMENT_END} {BEGIN(INITIAL); return token::COMMENT_BLOCK;}
-<BLOCK_COMMENT>[^*\n]+       {}
-<BLOCK_COMMENT>"*"           {}
-<BLOCK_COMMENT>\n            {yylineno++;}
+<INITIAL>{DEFINE}        {BEGIN(IN_DEFINE);return token::DEFINE;}
+<IN_DEFINE>[^*\n]+       {}
+<IN_DEFINE>"*"           {}
+<IN_DEFINE>\\\n          {}
+<IN_DEFINE>\n            {BEGIN(INITIAL);return token::END_DEFINE;}
 
-<INITIAL>{COMMENT_LINE}      {BEGIN(LINE_COMMENT);}
-<LINE_COMMENT>.*{NEWLINE}    {BEGIN(INITIAL);return token::COMMENT_LINE;}
+<INITIAL>{COMMENT_BEGIN}        {BEGIN(IN_BLOCK_COMMENT);}
+<IN_BLOCK_COMMENT>{COMMENT_END} {BEGIN(INITIAL); return token::COMMENT_BLOCK;}
+<IN_BLOCK_COMMENT>[^*\n]+       {}
+<IN_BLOCK_COMMENT>"*"           {}
+<IN_BLOCK_COMMENT>\n            {}
+
+<INITIAL>{COMMENT_LINE}         {BEGIN(IN_LINE_COMMENT);}
+<IN_LINE_COMMENT>.*{NEWLINE}    {BEGIN(INITIAL);return token::COMMENT_LINE;}
 
 {NEWLINE} {return token::WS;}
 {SPACE}   {return token::WS;}

@@ -44,9 +44,11 @@
 %token END    0     "end of file"
 %token UNKNOWN
 %token IDENTIFIER
+%token VALUE
 %token WS
 
 %token DEFINE
+%token END_DEFINE
 
 %token COMMENT_LINE
 %token COMMENT_BLOCK
@@ -64,6 +66,7 @@ statements      : statement
 statement       : WS
                 | COMMENT_LINE {driver.add_oneline_comment(this->scanner.YYText());}
                 | COMMENT_BLOCK{driver.add_block_comment  (this->scanner.YYText());}
+                | DEFINE END_DEFINE {driver.add_preproc_define(this->scanner.YYText());}
                 ;
 %%
 

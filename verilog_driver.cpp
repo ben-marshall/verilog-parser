@@ -12,6 +12,12 @@ VL::VerilogDriver::~VerilogDriver(){
    parser = NULL;
 }
 
+void VL::VerilogDriver::add_preproc_define(const char * m)
+{
+    std::cout<<this->scanner->lineno()<<" ";
+    std::cout<<"Found preprocessor define: " << m;
+}
+
 void VL::VerilogDriver::add_block_comment(const char * m)
 {
     std::cout<<this->scanner->lineno()<<" ";
