@@ -16,9 +16,5 @@ int main(const int argc, const char ** argv)
     VL::VerilogDriver driver;
 
     driver.parse(argv[1]);
-
-    std::cout << "Results:\n";
-    driver.print(std::cout);
-
     return 0;
 }

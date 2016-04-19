@@ -24,31 +24,34 @@ typedef VL::VerilogParser::token token;
 %option noyywrap 
 %option c++
 
-DIGIT       [0-9]
-NUMBER      {DIGIT}+
-CHAR_LOWER  [a-z]
-CHAR_UPPER  [A-Z]
-IDENTIFIER  [a-zA-Z0-9]+
+CHAR                .
+DIGIT               [0-9]
+NUMBER              {DIGIT}+
+NEWLINE             \n
+
+COMMENT_LINE        "//"
+COMMENT_BLOCK_BEGIN "/*"
+COMMENT_BLOCK_END   "*/"
+
+IDENTIFIER          [a-zA-Z0-9_]+
+
+DEFINE              "`define"
 
 %%
-{CHAR_LOWER} { 
-    return( token::LOWER );     
+{COMMENT_LINE} {
+    return token::COMMENT_LINE;
+}
+{COMMENT_BLOCK_BEGIN}  {
+    return token::COMMENT_BLOCK_BEGIN;
+}
+{COMMENT_BLOCK_END}  {
+    return token::COMMENT_BLOCK_END;
 }
 
-{CHAR_UPPER}  { 
-    return( token::UPPER );     
-}
 
-{IDENTIFIER} { 
-    yylval->sval = STR_TOKEN( yytext );  
-    return( token::WORD );      
-}
-
-\n          { 
+{NEWLINE}   { 
     return( token::NEWLINE );   
 }
 
-.           { 
-    return( token::CHAR );      
-}
-                                                                                                                                                                              %%
+{CHAR}      {return token::CHAR;}
+ %%

@@ -12,8 +12,12 @@ VL::VerilogDriver::~VerilogDriver(){
    parser = NULL;
 }
 
-void 
-VL::VerilogDriver::parse( const char *filename )
+void VL::VerilogDriver::add_oneline_comment()
+{
+    std::cout<<"Found single line comment\n";
+}
+
+void  VL::VerilogDriver::parse( const char *filename )
 {
    assert( filename != NULL);
    std::ifstream in_file( filename );
@@ -48,52 +52,4 @@ VL::VerilogDriver::parse( const char *filename )
    {
       std::cerr << "Parse failed!!\n";
    }
-}
-
-void 
-VL::VerilogDriver::add_upper()
-{ 
-   uppercase++; 
-   chars++; 
-   words++; 
-}
-
-void 
-VL::VerilogDriver::add_lower()
-{ 
-   lowercase++; 
-   chars++; 
-   words++; 
-}
-
-void 
-VL::VerilogDriver::add_word( const std::string &word )
-{
-   words++; 
-   chars += word.length();
-}
-
-void 
-VL::VerilogDriver::add_newline()
-{ 
-   lines++; 
-   chars++; 
-}
-
-void 
-VL::VerilogDriver::add_char()
-{ 
-   chars++; 
-}
-
-
-std::ostream& 
-VL::VerilogDriver::print( std::ostream &stream )
-{
-   stream << "Uppercase: " << uppercase << "\n";
-   stream << "Lowercase: " << lowercase << "\n";
-   stream << "Lines: " << lines << "\n";
-   stream << "Words: " << words << "\n";
-   stream << "Characters: " << chars << "\n";
-   return(stream);
 }

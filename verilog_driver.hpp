@@ -9,32 +9,17 @@ namespace VL{
 
 class VerilogDriver{
 public:
-   VerilogDriver() : chars(0),
-                     words(0),
-                     lines(0),
-                     uppercase(0),
-                     lowercase(0),
-                     parser( NULL    ),
+   VerilogDriver() : parser( NULL    ),
                      scanner( NULL    ){};
 
    virtual ~VerilogDriver();
 
    void parse( const char *filename );
-  
 
-   void add_upper();
-   void add_lower();
-   void add_word( const std::string &word );
-   void add_newline();
-   void add_char();
+   void add_oneline_comment();
 
-   std::ostream& print(std::ostream &stream);
 private:
-   int chars;
-   int words;
-   int lines;
-   int uppercase;
-   int lowercase;
+   
    VL::VerilogParser *parser;
    VL::VerilogScanner *scanner;
 };

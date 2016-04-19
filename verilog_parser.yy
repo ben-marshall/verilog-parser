@@ -39,12 +39,17 @@
    int         ival;
 }
 
-%token            END    0     "end of file"
-%token            UPPER
-%token            LOWER
-%token   <sval>   WORD
-%token            NEWLINE
-%token            CHAR
+%token END    0     "end of file"
+%token NEWLINE
+%token UNKNOWN
+%token CHAR
+%token IDENTIFIER
+
+%token DEFINE
+
+%token COMMENT_LINE
+%token COMMENT_BLOCK_BEGIN
+%token COMMENT_BLOCK_END
 
 
 /* destructor rule for <sval> objects */
@@ -52,28 +57,18 @@
 
 
 %%
+file            : COMMENT_LINE comment_content NEWLINE {driver.add_oneline_comment();}
+                | COMMENT_BLOCK_BEGIN comment_content COMMENT_BLOCK_END
 
-list_option : END 
-            | list END;
+comment_content : string;
 
-list
-  : item
-  | list item
-  ;
-
-item
-  : UPPER   { driver.add_upper(); }
-  | LOWER   { driver.add_lower(); }
-  | WORD    { driver.add_word( *$1 ); }
-  | NEWLINE { driver.add_newline(); }
-  | CHAR    { driver.add_char(); }
-  ;
-
+string          : CHAR string
+                | CHAR
+                | ;
 %%
 
 
-void 
-VL::VerilogParser::error( const std::string &err_message )
+void VL::VerilogParser::error( const std::string &err_message )
 {
    std::cerr << "Error: " << err_message << "\n"; 
 }
