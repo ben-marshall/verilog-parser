@@ -24,16 +24,22 @@ typedef VL::VerilogParser::token token;
 %option noyywrap 
 %option c++
 
+DIGIT       [0-9]
+NUMBER      {DIGIT}+
+CHAR_LOWER  [a-z]
+CHAR_UPPER  [A-Z]
+IDENTIFIER  [a-zA-Z0-9]+
+
 %%
-[a-z]       { 
+{CHAR_LOWER} { 
     return( token::LOWER );     
 }
 
-[A-Z]       { 
+{CHAR_UPPER}  { 
     return( token::UPPER );     
 }
 
-[a-zA-Z]+   { 
+{IDENTIFIER} { 
     yylval->sval = STR_TOKEN( yytext );  
     return( token::WORD );      
 }

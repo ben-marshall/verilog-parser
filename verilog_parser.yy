@@ -36,6 +36,7 @@
 /* token types */
 %union {
    std::string *sval;
+   int         ival;
 }
 
 %token            END    0     "end of file"
@@ -52,7 +53,8 @@
 
 %%
 
-list_option : END | list END;
+list_option : END 
+            | list END;
 
 list
   : item
