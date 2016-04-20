@@ -153,9 +153,8 @@ WOR                 "wor"
 XNOR                "xnor"
 XOR                 "xor"
 
-SIMPLE_IDENTIFIER           [a-zA-Z_][a-zA-Z0-9_\$]*
-SYSTEM_FUNCTION_IDENTIFIER  [a-zA-Z0-9_\$][a-zA-Z0-9_\$]*
-SYSTEM_TASK_IDENTIFIER      [a-zA-Z0-9_\$][a-zA-Z0-9_\$]*
+SIMPLE_IDENTIFIER           ([a-zA-Z_][a-zA-Z0-9_\$]*)
+SYSTEM_IDENTIFIER           (\$[a-zA-Z0-9_\$][a-zA-Z0-9_\$]*)
 
 HEX_DIGIT                   [0-9a-fA-F]
 OCTAL_DIGIT                 [0-7]
@@ -184,19 +183,15 @@ SPACE               " "
 
 %%
 
-{SIMPLE_IDENTIFIER}          {return token::SIMPLE_IDENTIFIER         ;}
-{SYSTEM_FUNCTION_IDENTIFIER} {return token::SYSTEM_FUNCTION_IDENTIFIER;}
-{SYSTEM_TASK_IDENTIFIER}     {return token::SYSTEM_TASK_IDENTIFIER    ;}
-
-{HEX_DIGIT}                  {return token::HEX_DIGIT                 ;}
+{EXP}                        {return token::EXP                       ;}
 {OCTAL_DIGIT}                {return token::OCTAL_DIGIT               ;}
 {DECIMAL_DIGIT}              {return token::DECIMAL_DIGIT             ;}
+{HEX_DIGIT}                  {return token::HEX_DIGIT                 ;}
 
 {HEX_BASE}                   {return token::HEX_BASE                  ;}
 {OCTAL_BASE}                 {return token::OCTAL_BASE                ;}
 {DECIMAL_BASE}               {return token::DECIMAL_BASE              ;}
 {BINARY_BASE}                {return token::BINARY_BASE               ;}
-{EXP}                        {return token::EXP                       ;}
 
 {OPEN_BRACKET}               {return token::OPEN_BRACKET              ;}
 {CLOSE_BRACKET}              {return token::CLOSE_BRACKET             ;}
@@ -335,5 +330,8 @@ SPACE               " "
 {WOR}                  {return token::KW_WOR                ;} 
 {XNOR}                 {return token::KW_XNOR               ;} 
 {XOR}                  {return token::KW_XOR                ;} 
+
+{SIMPLE_IDENTIFIER}    {return token::SIMPLE_IDENTIFIER         ;}
+{SYSTEM_IDENTIFIER}    {return token::SYSTEM_FUNCTION_IDENTIFIER;}
 
 %%
