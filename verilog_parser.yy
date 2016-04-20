@@ -164,6 +164,24 @@
 %token KW_WOR
 %token KW_XNOR
 %token KW_XOR
+%token SIMPLE_IDENTIFIER         
+%token SYSTEM_FUNCTION_IDENTIFIER
+%token SYSTEM_TASK_IDENTIFIER    
+%token HEX_DIGIT                 
+%token OCTAL_DIGIT               
+%token DECIMAL_DIGIT             
+%token HEX_BASE                  
+%token OCTAL_BASE                
+%token DECIMAL_BASE              
+%token BINARY_BASE               
+%token EXP                       
+%token OPEN_BRACKET              
+%token CLOSE_BRACKET             
+%token OPEN_SQ_BRACKET           
+%token CLOSE_SQ_BRACKET          
+%token STAR                      
+%token X_DIGIT
+%token Z_DIGIT
 
 %token END    0     "end of file"
 %token UNKNOWN
