@@ -216,19 +216,86 @@
 
 
 %%
-file            : statements END
-                |
-                ;
-                
-statements      : statement
-                | statement statements
+
+/* Anex A.1.1 Library source text */
+
+lib_text         : lib_texts
+
+lib_texts        : 
+                 | lib_descriptions
+                 | lib_texts lib_descriptions
+                 ;
+
+lib_descriptions : lib_declaration
+                 | include_statement
+                 | cfg_declaration
+                 ;
+
+lib_declaration  : KW_LIBRARY lib_identifier file_path_specs inc_dirs ';'
+
+inc_dirs         : 
+                 | KW_INCDIR file_path_specs
+                 ;
+
+file_path_specs  : file_path_spec
+                 | file_path_specs file_path_spec
+
+file_path_spec   : file_path
+
+include_statement: KW_INCLUDE file_path_spec ';'
+                 ;
+
+/* Anex A.1.2 Configuration source text */
+
+cfg_declaration  : KW_CONFIG config_identifier ';' design_statement
+                   cfg_rule_statements KW_ENDCONFIG
+                 ;
+
+design_statement : KW_DESIGN lib_cell_identifiers ';'
+
+lib_cell_identifiers : lib_cell_identifiers lib_identifier '.' cell_identifier
+                     | lib_cell_identifiers cell_identifier
+                     |
+                     ;
+
+cfg_rule_statements  : default_clause liblist_clause
+                     | inst_clause liblist_clause
+                     | inst_clause use_clause
+                     | cell_clause liblist_clause
+                     | cell_clause use_clause
+                     ;
+
+default_clause  : KW_DEFAULT
                 ;
 
-statement       : WS
-                | COMMENT_LINE {driver.add_oneline_comment(this->scanner.YYText());}
-                | COMMENT_BLOCK{driver.add_block_comment  (this->scanner.YYText());}
-                | DEFINE END_DEFINE {driver.add_preproc_define(this->scanner.YYText());}
+inst_clause     : KW_INSTANCE inst_name
                 ;
+
+inst_name       : topmodule_identifier '.' instance_identifier
+                : inst_name '.' instance_identifier
+                : top_module_identifier
+                ;
+
+cell_clause     : KW_CELL cell_identifier
+                | KW_CELL lib_identifier '.' cell_identifier
+                ;
+
+liblist_clause  : KW_LIBLIST liblist_clauses
+                ;
+
+liblist_clauses : lib_identifier
+                | liblist_clauses lib_identifier
+                | 
+                ;
+
+use_clause      : KW_USE cell_identifier
+                | KW_USE lib_identifier '.' cell_identifier
+                | KW_USE cell_identifier ':' KW_CONFIG
+                | KW_USE lib_identifier '.' cell_identifier ':' KW_CONFIG
+                ;
+
+
+
 %%
 
 

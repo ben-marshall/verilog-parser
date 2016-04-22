@@ -72,7 +72,7 @@ HIGHZ0              "highz0"
 HIGHZ1              "highz1"
 IF                  "if"
 IFNONE              "ifnone"
-INCDIR              "incdir"
+INCDIR              "-incdir"
 INCLUDE             "include"
 INITIAL             "initial"
 INOUT               "inout"
@@ -244,9 +244,9 @@ SPACE               " "
 {X_DIGIT}                    {return token::X_DIGIT                   ;}
 {Z_DIGIT}                    {return token::Z_DIGIT                   ;}
 
-{NEWLINE}                    {return token::WS                        ;}
-{SPACE}                      {return token::WS                        ;}
-{TAB}                        {return token::WS                        ;}
+{NEWLINE}                    {/*return token::WS */                       ;}
+{SPACE}                      {/*return token::WS */                       ;}
+{TAB}                        {/*return token::WS */                       ;}
 
 
 {ALWAYS}               {return token::KW_ALWAYS             ;} 
