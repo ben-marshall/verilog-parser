@@ -294,7 +294,7 @@ use_clause      : KW_USE cell_identifier
                 | KW_USE lib_identifier '.' cell_identifier ':' KW_CONFIG
                 ;
 
-
+/* A.1.3 Module and primitive source text */
 
 %%
 
