@@ -41,6 +41,25 @@
    int         ival;
 }
 
+%token COMMENT
+
+%token CD_CELLDEFINE               
+%token CD_DEFAULT_NETTYPE          
+%token CD_DEFINE                   
+%token CD_ELSE                     
+%token CD_ELSIF                    
+%token CD_ENDCELLDEFINE            
+%token CD_ENDIF                    
+%token CD_IFDEF                    
+%token CD_IFNDEF                   
+%token CD_INCLUDE                  
+%token CD_LINE                     
+%token CD_NOUNCONNECTED_DRIVE      
+%token CD_RESETALL                 
+%token CD_TIMESCALE                
+%token CD_UNCONNECTED_DRIVE        
+%token CD_UNDEF                    
+
 %token KW_ALWAYS
 %token KW_AND
 %token KW_ASSIGN

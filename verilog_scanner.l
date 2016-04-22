@@ -174,6 +174,27 @@ STAR                        "*"
 
 /* TODO Operators */
 
+COMMENT_LINE                "//"
+COMMENT_BEGIN               "/*"
+COMMENT_END                 "*/"
+
+CD_CELLDEFINE               "‘celldefine"
+CD_DEFAULT_NETTYPE          "‘default_nettype"
+CD_DEFINE                   "‘define"
+CD_ELSE                     "‘else"
+CD_ELSIF                    "‘elsif"
+CD_ENDCELLDEFINE            "‘endcelldefine"
+CD_ENDIF                    "‘endif"
+CD_IFDEF                    "‘ifdef"
+CD_IFNDEF                   "‘ifndef"
+CD_INCLUDE                  "‘include"
+CD_LINE                     "‘line"
+CD_NOUNCONNECTED_DRIVE      "‘nounconnected_drive"
+CD_RESETALL                 "‘resetall"
+CD_TIMESCALE                "‘timescale"
+CD_UNCONNECTED_DRIVE        "‘unconnected_drive"
+CD_UNDEF                    "‘undef"
+
 X_DIGIT                     [xX]
 Z_DIGIT                     [zZ?]
 
@@ -182,6 +203,27 @@ TAB                 \t
 SPACE               " "
 
 %%
+
+{COMMENT_LINE}               {return token::COMMENT                   ;}
+{COMMENT_BEGIN}              {return token::COMMENT                   ;}
+{COMMENT_END}                {return token::COMMENT                   ;}
+
+{CD_CELLDEFINE}              {return token::CD_CELLDEFINE             ;}
+{CD_DEFAULT_NETTYPE}         {return token::CD_DEFAULT_NETTYPE        ;}
+{CD_DEFINE}                  {return token::CD_DEFINE                 ;}
+{CD_ELSE}                    {return token::CD_ELSE                   ;}
+{CD_ELSIF}                   {return token::CD_ELSIF                  ;}
+{CD_ENDCELLDEFINE}           {return token::CD_ENDCELLDEFINE          ;}
+{CD_ENDIF}                   {return token::CD_ENDIF                  ;}
+{CD_IFDEF}                   {return token::CD_IFDEF                  ;}
+{CD_IFNDEF}                  {return token::CD_IFNDEF                 ;}
+{CD_INCLUDE}                 {return token::CD_INCLUDE                ;}
+{CD_LINE}                    {return token::CD_LINE                   ;}
+{CD_NOUNCONNECTED_DRIVE}     {return token::CD_NOUNCONNECTED_DRIVE    ;}
+{CD_RESETALL}                {return token::CD_RESETALL               ;}
+{CD_TIMESCALE}               {return token::CD_TIMESCALE              ;}
+{CD_UNCONNECTED_DRIVE}       {return token::CD_UNCONNECTED_DRIVE      ;}
+{CD_UNDEF}                   {return token::CD_UNDEF                  ;}
 
 {EXP}                        {return token::EXP                       ;}
 {OCTAL_DIGIT}                {return token::OCTAL_DIGIT               ;}
