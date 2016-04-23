@@ -363,6 +363,10 @@ port_declaration : attribute_instances inout_declaration
                  | attribute_instances output_declaration
                  ;
 
+attribute_instances_o : attribute_instances
+                      |
+                      ;
+
 attribute_instances : attribute_instances attribute_instance
                     | attribute_instance
                     ;
@@ -649,6 +653,48 @@ range                   : '[' msb_constant_expression ':'
                            lsb_constant_expression ']' ;
 
 /* A.2.6 Function Declarations */
+
+automatic_o         : KW_AUTOMATIC | ;
+
+function_declaration : KW_FUNCTION automatic_o signed_o range_or_type
+                       function_identifer ';' function_item_declarations
+                       function_statement KW_ENDFUNCTION
+                     | KW_FUNCTION automatic_o signed_o range_or_type
+                       function_identifer '(' function_port_list ')' ';' 
+                       block_item_declarations
+                       function_statement KW_ENDFUNCTION
+                     ;
+
+block_item_declarations    : block_item_declaration
+                           | block_item_declarations 
+                             block_item_declaration
+                           |
+                           ;
+
+function_item_declarations : function_item_declaration
+                           | function_item_declarations 
+                             function_item_declaration
+                           |
+                           ;
+
+function_item_declaration  : block_item_declaration 
+                           | tf_input_declaration ';'
+                           ;
+
+function_port_list         : attribute_instances_o tf_input_declaration
+                             tf_input_declarations;
+
+tf_input_declarations      : 
+                           | ',' attribute_instances_o tf_input_declaration
+                             tf_input_declarations
+                           ;
+
+range_or_type              : range
+                           | KW_INTEGER
+                           | KW_REAL
+                           | KW_REALTIME
+                           | KW_TIME
+                           ;
 
 /* A.2.7 Task Declarations */
 
