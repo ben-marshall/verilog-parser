@@ -1002,11 +1002,117 @@ generate_block : KW_BEGIN generate_items KW_END
 
 /* A.5.1 UDP Declaration */
 
+udp_declaration : attribute_instances_o KW_PRIMITIVE udp_identifier
+                  '(' udp_port_list ')' ';'
+                  udp_port_declarations udp_body KW_ENDPRIMITIVE
+                | attribute_instances_o KW_PRIMITIVE udp_identifier
+                  '(' udp_declaration_port_list ')' ';'
+                  udp_body KW_ENDPRIMITIVE
+                ;
+
+udp_port_declarations : udp_port_declaration
+                      | udp_port_declarations udp_port_declaration
+                      ;
+
 /* A.5.2 UDP Ports */
+
+udp_port_list : output_port_identifier ',' input_port_identifiers;
+
+input_port_identifiers : input_port_identifier
+                       | input_port_identifiers ',' input_port_identifier
+                       ;
+
+udp_declaration_port_list : udp_output_declaration ',' udp_input_declarations;
+
+udp_input_declarations  : udp_input_declaration
+                        | udp_input_declarations udp_input_declaration
+                        ;
+
+udp_port_declaration : udp_output_declaration ';'
+                     | udp_input_declaration ';'
+                     | udp_reg_declaration ';'
+                     ;
+
+udp_output_declaration : attribute_instances_o KW_OUTPUT port_identifier
+                       | attribute_instances_o KW_OUTPUT KW_REG port_identifier
+                       | attribute_instances_o KW_OUTPUT KW_REG port_identifier
+                         '=' constant_expression
+                       ;
+
+udp_input_declaration : attribute_instances_o KW_INPUT list_of_port_identifiers
+                      ;
+
+udp_reg_declaration : attribute_instances_o KW_REG variable_identifier
+                    ;
 
 /* A.5.3 UDP body */
 
+udp_body            : combinational_body 
+                    | sequential_body
+                    ;
+
+combinational_body  : KW_TABLE combinational_entrys KW_ENDTABLE;
+
+combinational_entrys : combinational_entry
+                     | combinational_entrys combinational_entry
+                     ;
+
+combinational_entry : level_input_list ':' output_symbol ';' ;
+
+sequential_body : udp_initial_statement KW_TABLE sequential_entrys KW_ENDTABLE
+                | KW_TABLE sequential_entrys KW_ENDTABLE
+                ;
+
+sequential_entrys     : sequential_entry
+                      | sequential_entrys sequential_entry
+                      ;
+
+udp_initial_statement : KW_INITIAL output_port_identifier '=' init_val ';';
+
+init_val              : '1’b0' | '1’b1' | '1’bx' | '1’bX' | '1’B0' 
+                      | '1’B1' | '1’Bx' | '1’BX' | '1'    | '0'
+                      ;
+
+sequential_entry      : seq_input_list ':' current_state ':' next_state ';';
+seq_input_list        : level_input_list | edge_input_list;
+
+level_input_list      : level_symbols;
+
+level_symbols_o       : level_symbols | ;
+level_symbols         : level_symbol
+                      | level_symbols level_symbol
+                      ;
+
+edge_input_list       :  level_symbols_o edge_indicator level_symbol_o;
+
+edge_indicator        : '(' level_symbol level_symbol ')' 
+                      | edge_symbol
+                      ;
+
+current_state         : level_symbol;
+
+next_state            : output_symbol | '-'
+                      ;
+
+output_symbol : '0' | '1' | 'x' | 'X';
+
+level_symbol :'0'|'1'|'x'|'X'|'?'|'b'|'B';
+
+edge_symbol :'r'|'R'|'f'|'F'|'p'|'P'|'n'|'N'|'*';
+
 /* A.5.4 UDP instantiation */
+
+udp_instantiation : udp_identifier drive_strength_o delay2_o udp_instances ';'
+                  ;
+
+udp_instances : udp_instance
+              | udp_instances ',' udp_instance
+              ;
+
+udp_instance : name_of_udp_instance '(' output_terminal ',' input_terminals ')'
+             | '(' output_terminal ',' input_terminals ')'
+             ;
+name_of_udp_instance : udp_instance_identifier range_o ';' ;
 
 /* A.6.1 Continuous assignment statements */
 
