@@ -949,6 +949,57 @@ named_port_connection : attribute_instances '.' port_identifier '('
 
 /* A.4.2 Generated instantiation */
 
+generated_instantiation : KW_GENERATE generate_items KW_ENDGENERATE ;
+
+generate_items : generate_item
+               | generate_items generate_item
+               |
+               ;
+
+generate_item_or_null: generate_item | ;
+
+generate_item : generate_conditional_statement
+              | generate_case_statement
+              | generate_loop_statement
+              | generate_block
+              | module_or_generate_item
+              ;
+
+generate_conditional_statement : KW_IF '(' constant_expression ')'
+                                 generate_item_or_null KW_ELSE
+                                 generate_item_or_null
+                               | KW_IF '(' constant_expression ')'
+                                 generate_item_or_null
+                               ;
+
+generate_case_statement : KW_CASE '(' constant_expression ')'
+                          genvar_case_items KW_ENDCASE
+                        ;
+
+genvar_case_items : genvar_case_item
+                  | genvar_case_items genvar_case_item
+                  |
+                  ;
+
+genvar_case_item : constant_expressions ':' generate_item_or_null
+                 | KW_DEFAULT ':' generate_item_or_null
+                 | KW_DEFAULT     generate_item_or_null
+                 ;
+
+constant_expressions : constant_expression
+                     | constant_expressions ',' constant_expression
+                     ;
+
+generate_loop_statement : KW_FOR '(' genvar_assignment ';' constant_expression
+                          ';' genvar_assignment ')' KW_BEGIN ';'
+                          generate_block_identifier generate_items KW_END
+
+genvar_assignment : genvar_identifier '=' constant_expression;
+
+generate_block : KW_BEGIN generate_items KW_END
+               | KW_BEGIN ':' generate_block_identifier generate_items KW_END
+               ;
+
 /* A.5.1 UDP Declaration */
 
 /* A.5.2 UDP Ports */
