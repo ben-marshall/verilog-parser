@@ -561,6 +561,171 @@ delay_value         : unsigned_number
 
 /* A.2.3 Declaration Lists */
 
+dimensions_o        : dimensions
+                    |
+                    ;
+
+list_of_event_identifiers : event_identifier dimensions_o
+                          | list_of_event_identifiers ',' event_identifier 
+                            dimensions_o
+                          ;
+
+list_of_genvar_identifiers: genvar_identifier
+                          : list_of_genvar_identifiers ',' genvar_identifier
+                          ;
+
+list_of_net_decl_assignments : net_decl_assignment
+                             | list_of_net_decl_assignments ',' 
+                               net_decl_assignment
+                             ;
+
+list_of_net_identifiers      : net_identifier dimensions_o
+                             | list_of_net_identifiers ',' net_identifier
+                               dimensions_o
+                             ;
+
+list_of_param_assignments    : param_assignment
+                             | list_of_param_assignments ',' param_assignment
+                             ;
+
+list_of_port_identifiers     : port_identifier
+                             | list_of_port_identifiers ',' port_identifier
+                             ;
+
+list_of_real_identifiers     : real_type
+                             | list_of_real_identifiers ',' real_type
+                             ;
+
+list_of_specparam_assignments: specparam_assignment
+                             | list_of_specparam_assignments ',' 
+                               specparam_assignment
+                             ;
+
+list_of_variable_identifiers : variable_type
+                             | list_of_variable_identifiers ',' variable_type
+                             ;
+
+eq_const_exp_o               : '=' constant_expression
+                             |
+                             ;
+
+list_of_variable_port_identifiers : port_identifier eq_const_exp_o
+                                  | list_of_variable_port_identifiers ',' 
+                                    port_identifier eq_const_exp_o
+                                  ;
+
+/* A.2.4 Declaration Assignments */
+
+net_decl_assignment     : net_identifier '=' expression ;
+
+param_assignment        : parameter_identifier '=' constant_expression ;
+
+specparam_assignment    : specparam_identifier '=' 
+                          constant_mintypmax_expression
+                        | pulse_control_specparam
+                        ;
+
+error_limit_value_o     : ',' error_limit_value
+                        |
+                        ;
+
+pulse_control_specparam : KW_PATHPULSE '=' '(' reject_limit_value 
+                          error_limit_value_o ')' ';'
+                        | KW_PATHPULSE specify_input_terminal_descriptor '$'
+                          specify_output_terminal_descriptor '=' '(' 
+                          reject_limit_value error_limit_value_o ')' ';'
+                        ;
+
+error_limit_value       : limit_value ;
+reject_limit_value      : limit_value ;
+limit_value             : constant_mintypmax_expression ;
+
+/* A.2.5 Declaration ranges */
+
+dimension               : '[' dimension_constant_expression ':' 
+                           dimension_constant_expression ']' ;
+
+range                   : '[' msb_constant_expression ':' 
+                           lsb_constant_expression ']' ;
+
+/* A.2.6 Function Declarations */
+
+/* A.2.7 Task Declarations */
+
+/* A.2.8 Block item declarations */
+
+/* A.3.1 primitive instantiation and instances */
+
+/* A.3.2 primitve strengths */
+
+/* A.3.3 primitive terminals */
+
+/* A.3.4 primitive gate and switch types */
+
+/* A.4.1 module instantiation */
+
+/* A.4.2 Generated instantiation */
+
+/* A.5.1 UDP Declaration */
+
+/* A.5.2 UDP Ports */
+
+/* A.5.3 UDP body */
+
+/* A.5.4 UDP instantiation */
+
+/* A.6.1 Continuous assignment statements */
+
+/* A.6.2 Procedural blocks and assignments */
+
+/* A.6.3 Parallel and sequential blocks */
+
+/* A.6.4 Statements */
+
+/* A.6.5 Timing control statements */
+
+/* A.6.6 Conditional Statemnets */
+
+/* A.6.7 Case Statements */
+
+/* A.6.8 looping statements */
+
+/* A.6.9 task enable statements */
+
+/* A.7.1 specify block declaration */
+
+/* A.7.2 specify path declarations */
+
+/* A.7.3 specify block terminals */
+
+/* A.7.4 specify path delays */
+
+/* A.7.5.1 System timing check commands */
+
+/* A.7.5.2 System timing check command arguments */
+
+/* A.7.5.3 System timing check evet definitions */
+
+/* A.8.1 Concatenations */
+
+/* A.8.2 Function calls */
+
+/* A.8.3 Expression */
+
+/* A.8.4 Primaries */
+
+/* A.8.5 Expression left-side values */
+
+/* A.8.6 Operators */
+
+/* A.8.7 Numbers */
+
+/* A.8.8 Strings */
+
+/* A.9.1 Attributes */
+
+/* A.9.2 Comments */
+
 /* A.9.3 Identifiers */
 
 cell_identifier         : identifier
