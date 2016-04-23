@@ -698,6 +698,43 @@ range_or_type              : range
 
 /* A.2.7 Task Declarations */
 
+task_declaration    : KW_TASK automatic_o task_identifier ';'
+                      task_item_declarations
+                      statement
+                      KW_ENDTASK
+                    | KW_TASK automatic_o task_identifier 
+                      '(' task_port_list ')' ';'
+                      block_item_declarations
+                      statement
+                      KW_ENDTASK
+                    ;
+
+task_item_declaration : block_item_declaration
+                      | attribute_instances tf_input_declaration ';'
+                      | attribute_instances tf_output_declaration ';'
+                      | attribute_instances tf_inout_declaration ';'
+                      ;
+
+task_port_list  : task_port_item
+                | task_port_list ',' task_port_item
+                ;
+
+task_port_item  : attribute_instances tf_input_declaration ';'
+                | attribute_instances tf_output_declaration ';'
+                | attribute_instances tf_inout_declaration ';'
+
+tf_input_declaration : KW_INPUT reg_o signed_o range_o list_of_port_identifiers
+                     | KW_INPUT task_port_type_o list_of_port_identifiers
+                     ;
+
+task_port_type_o : task_port_type | ;
+task_port_type   : KW_TIME
+                 | KW_REAL
+                 | KW_REALTIME
+                 | KW_INTEGER
+                 ;
+
+
 /* A.2.8 Block item declarations */
 
 /* A.3.1 primitive instantiation and instances */
