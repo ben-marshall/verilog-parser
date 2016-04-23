@@ -4,3 +4,6 @@ stack.hh
 *.yy.cc
 *.yy.c
 a.out
+lisa_constants.vh
+test.txt
+*.swp
