@@ -737,6 +737,29 @@ task_port_type   : KW_TIME
 
 /* A.2.8 Block item declarations */
 
+block_item_declaration : attribute_instances block_reg_declaration
+                       | attribute_instances event_declaration
+                       | attribute_instances integer_declaration
+                       | attribute_instances local_parameter_declaration
+                       | attribute_instances parameter_declaration
+                       | attribute_instances real_declaration
+                       | attribute_instances realtime_declaration
+                       | attribute_instances time_declaration
+                       ;
+
+block_reg_declaration : KW_REG signed_o range_o 
+                        list_of_block_variable_identifiers ';'
+                      ;
+
+list_of_block_variable_identifiers : block_variable_type
+                                   | list_of_block_variable_identifiers ',' 
+                                     block_variable_type
+                                   ;
+
+block_variable_type : variable_identifier
+                    | variable_identifier dimensions
+                    ;
+
 /* A.3.1 primitive instantiation and instances */
 
 /* A.3.2 primitve strengths */
