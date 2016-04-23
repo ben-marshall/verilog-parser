@@ -207,6 +207,7 @@
 %token IDENTIFIER
 %token VALUE
 %token WS
+%token ANY
 
 %token DEFINE
 %token END_DEFINE
@@ -272,8 +273,8 @@ inst_clause     : KW_INSTANCE inst_name
                 ;
 
 inst_name       : topmodule_identifier '.' instance_identifier
-                : inst_name '.' instance_identifier
-                : top_module_identifier
+                | inst_name '.' instance_identifier
+                | topmodule_identifier
                 ;
 
 cell_clause     : KW_CELL cell_identifier
@@ -295,6 +296,233 @@ use_clause      : KW_USE cell_identifier
                 ;
 
 /* A.1.3 Module and primitive source text */
+
+source_text     : descriptions
+
+descriptions    : descriptions description
+                | description
+                |
+                ;
+
+description     : module_declaration
+                | udp_declaration
+                ;
+
+module_declaration : attribute_instances module_kw module_identifier
+                     module_parameter_port_list list_of_ports ';' module_item
+                     KW_ENDMODULE
+                   | attribute_instances module_kw module_identifier
+                     module_parameter_port_list list_of_port_declarations ';' 
+                     non_port_module_item KW_ENDMODULE
+                   ;
+
+module_kw       : KW_MACROMODULE
+                | KW_MODULE
+                ;
+
+/* A.1.4 Module parameters and ports */
+
+module_param_list : '#' '(' module_params ')'
+                  ;
+
+module_params     : param_declaration
+                  | module_params ',' param_declaration
+                  ;
+
+list_of_ports   :
+                | '(' ports ')'
+                ;
+
+list_of_port_declarations   : '(' ')'
+                            | '(' port_declarations ')'
+                            ;
+
+port_declarations           : port_declaration
+                            | port_declarations ',' port_declaration
+                            ;
+
+ports           : ports ',' port
+                | port
+                ;
+
+port            : port_expression
+                | '.' port_identifier '(' port_expression ')'
+                ;
+
+port_expression : port_reference
+                | port_expression ',' port_reference
+                ;
+
+port_reference  : port_identifier
+                | port_identifier '[' constant_expression ']'
+                | port_identifier '[' range_expression ']'
+                ;
+
+port_declaration : attribute_instances inout_declaration
+                 | attribute_instances input_declaration
+                 | attribute_instances output_declaration
+                 ;
+
+attribute_instances : attribute_instances attribute_instance
+                    | attribute_instance
+                    ;
+
+/* A.1.5 Module Items */
+
+module_item     : module_or_generate_item
+                | port_declaration ';'
+                | attribute_instances generated_instantiation
+                | attribute_instances local_parameter_declaration
+                | attribute_instances parameter_declaration
+                | attribute_instances specify_block
+                | attribute_instances specparam_declaration
+                ;
+
+module_or_generate_item : attribute_instances module_or_generate_item_declaration
+                        | attribute_instances parameter_override
+                        | attribute_instances continuous_assign
+                        | attribute_instances gate_instantiation
+                        | attribute_instances udp_instantiation
+                        | attribute_instances module_instantiation
+                        | attribute_instances initial_construct
+                        | attribute_instances always_construct
+                        ; 
+
+module_or_generate_item_declaration : net_declaration
+                                    | reg_declaration
+                                    | integer_declaration
+                                    | real_declaration
+                                    | time_declaration
+                                    | realtime_declaration
+                                    | event_declaration
+                                    | genvar_declaration
+                                    | task_declaration
+                                    | function_declaration
+                                    ;
+
+non_port_module_item : attribute_instances generated_instantiation
+                     | attribute_instances local_parameter_declaration
+                     | attribute_instances module_or_generate_item
+                     | attribute_instances parameter_declaration
+                     | attribute_instances specify_block
+                     | attribute_instances specparam_declaration
+                     ;
+
+parameter_override   : KW_DEFPARAM list_of_param_assignments ';'
+                     ;
+
+/* A.2.1.1 Declaration types -> Module Parameter Declarations
+
+local_parameter_declaration : KW_LOCALPARAM signed_o range_o list_of_param_assignments ';'
+                            | KW_LOCALPARAM KW_INTEGER list_of_param_assignments ';'
+                            | KW_LOCALPARAM KW_REAL list_of_param_assignments ';'
+                            | KW_LOCALPARAM KW_REALTIME list_of_param_assignments ';'
+                            | KW_LOCALPARAM KW_TIME list_of_param_assignments ';'
+
+parameter_declaration : KW_PARAMETER signed_o range_o list_of_param_assignments ';'
+                      | KW_PARAMETER KW_INTEGER list_of_param_assignments ';'
+                      | KW_PARAMETER KW_REAL list_of_param_assignments ';'
+                      | KW_PARAMETER KW_REALTIME list_of_param_assignments ';'
+                      | KW_PARAMETER KW_TIME list_of_param_assignments ';'
+
+specparam_declaration : KW_SPECPARAM range_o list_of_specparam_assignments ';'
+
+range_o             : range
+                    |
+                    ;
+
+signed_o            : KW_SIGNED
+                    |
+                    ;
+
+/* A.2.1.2 Declaration Types -> Port Declarations */
+
+inout_declaration : KW_INOUT net_type_o signed_o range_o 
+                    list_of_port_identifiers
+                  ;
+
+input_declaration : KW_INPUT net_type_o signed_o range_o 
+                    list_of_port_identifiers
+                  ;
+
+output_declaration: KW_OUTPUT net_type_o signed_o range_o 
+                    list_of_port_identifiers
+                  | KW_OUTPUT reg_o signed_o range_o list_of_port_identifiers
+                  | KW_OUTPUT KW_REG signed_o range_o 
+                    list_of_variable_port_identifiers
+                  | KW_OUTPUT output_variable_type_o list_of_port_identifiers
+                  | KW_OUTPUT output_variable_type 
+                    list_of_variable_port_identifiers
+                  ;
+
+signed_o            : KW_SIGNED | ;
+reg_o               : KW_REG | ;
+range_o             : range | ;
+net_type_o          : net_type | ;
+
+/* A.2.1.3 Type Declarations */
+
+event_declaration   : KW_EVENT list_of_event_identifiers';' ;
+genvar_declaration  : KW_EVENT list_of_genvar_identifiers';' ;
+integer_declaration : KW_EVENT list_of_variable_identifiers ';' ;
+
+vect_or_scaled_o    : KW_VECTORED
+                    | KW_SCALARED
+                    |
+                    ;
+
+delay3_o            : delay3 | ;
+drive_strength_o    : drive_strength | ;
+charge_strength_o   : charge_strength | ;
+
+net_declaration : net_type signed_o delay3_o list_of_net_identifiers ';'
+                | net_type drive_strength_o signed_o delay3_o 
+                  list_of_net_decl_assignments ';'
+                | net_type vect_or_scaled_o signed_o range delay3_o 
+                  list_of_net_identifiers ';'
+                | net_type drive_strength_o vect_or_scaled_o signed_o range
+                  delay3_o list_of_net_decl_assignments ';'
+                | KW_TRIREG charge_strength_o signed_o delay3_o
+                  list_of_net_identifiers ';'
+                | KW_TRIREG drive_strength_o signed_o delay3_o
+                  list_of_net_decl_assignments ';'
+                | KW_TRIREG charge_strength_o vect_or_scaled_o signed_o
+                  range delay3_o list_of_net_identifiers ';'
+                | KW_TRIREG drive_strength_o vect_or_scaled_o signed_o
+                  range delay3_o list_of_net_decl_assignments
+                ;
+
+real_declaration     : KW_REAL list_of_real_identifiers ';' ;
+realtime_declaration : KW_REALTIME list_of_real_identifiers ';' ;
+reg_declaration      : KW_REG signed_o range_o list_of_variable_identifiers ';'
+                     ;
+
+time_declaration     : KW_TIME list_of_variable_identifiers ';' ;
+
+/* 2.2.1 Net and variable types */
+
+/* 2.2.1 Strengths */
+
+/* 2.2.1 Delays */
+
+/* A.9.3 Identifiers */
+
+cell_identifier         : identifier
+config_identifier       : identifier
+lib_identifier          : identifier
+module_identifier       : identifier
+port_identifier         : identifier
+topmodule_identifier    : identifier
+instance_identifier     : identifier
+
+identifier              : simple_identifier
+                        | escaped_identifier
+                        ;
+
+simple_identifier       : SIMPLE_IDENTIFIER
+                        ;
+
+escaped_identifier      : '\\' ANY WS
 
 %%
 

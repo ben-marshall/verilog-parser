@@ -201,6 +201,7 @@ Z_DIGIT                     [zZ?]
 NEWLINE             \n
 TAB                 \t
 SPACE               " "
+ANY                 [.\n]{-}[' ']
 
 %%
 
@@ -375,5 +376,7 @@ SPACE               " "
 
 {SIMPLE_IDENTIFIER}    {return token::SIMPLE_IDENTIFIER         ;}
 {SYSTEM_IDENTIFIER}    {return token::SYSTEM_FUNCTION_IDENTIFIER;}
+
+{ANY}                  {return token::ANY                   ;}
 
 %%
