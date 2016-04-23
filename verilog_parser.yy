@@ -762,11 +762,131 @@ block_variable_type : variable_identifier
 
 /* A.3.1 primitive instantiation and instances */
 
-/* A.3.2 primitve strengths */
+delay2_o : delay2 | ;
+
+gate_instantiation : cmos_switchtype delay3_o cmos_switch_instances ';'
+                   | enable_gatetype drive_strength_o delay3_o
+                     enable_gate_instances ';'
+                   | mos_switchtype delay3_o mos_switch_instances ';'
+                   | n_input_gatetype drive_strength_o delay2_o
+                     n_input_gate_instances ';'
+                   | n_output_gatetype drive_strength_o delay2_o
+                     n_output_gate_instances ';'
+                   | pass_en_switchtype delay2_o 
+                     pass_enable_switch_instances ';'
+                   | pass_switchtype delay2_o 
+                     pass_switch_instances ';'
+                   | KW_PULLDOWN pulldown_strength_o pull_gate_instances ';'
+                   | KW_PULLUP pullup_strength_o pull_gate_instances ';'
+                   ;
+
+pass_enable_switch_instances : pass_enable_switch_instance
+                             | pass_enable_switch_instances ',' 
+                               pass_enable_switch_instance
+                             ;
+
+pull_gate_instances : pull_gate_instance
+                    | pull_gate_instances ',' 
+                      pull_gate_instance
+                    ;
+
+pass_switch_instances :pass_switch_instance
+                      | pass_switch_instances ',' 
+                        pass_switch_instance
+                      ;
+
+n_output_gate_instances : n_output_gate_instance
+                        | n_output_gate_instances ',' n_output_gate_instance
+                        ;
+
+n_input_gate_instances : n_input_gate_instance
+                       | n_input_gate_instances ',' n_input_gate_instance
+                       ;
+
+mos_switch_instances : mos_switch_instance
+                     | mos_switch_instances ',' mos_switch_instance
+                     ;
+
+cmos_switch_instances : cmos_switch_instance
+                      | cmos_switch_instances ',' cmos_switch_instance
+                      ;
+
+enable_gate_instances : enable_gate_instance
+                      | enable_gate_instances ',' enable_gate_instance 
+                      ;
+
+pass_enable_switch_instances : name_of_gate_instance '(' inout_terminal ','
+                               inout_terminal ',' enable_terminal ')'
+                             ;
+
+pull_gate_instances          : name_of_gate_instance '(' output_terminal ')'
+                             ;
+
+pass_switch_instances        : name_of_gate_instance '(' inout_terminal ','
+                               inout_terminal ')'
+                             ;
+
+n_output_gate_instances      : name_of_gate_instance '(' output_terminals ','
+                               input_terminal ')'
+                             ;
+
+n_input_gate_instances       : name_of_gate_instance '(' output_terminal ','
+                               input_terminals ')'
+                             ;
+
+mos_switch_instances         : name_of_gate_instance '(' output_terminal ','
+                               input_terminal ',' enable_terminal ')'       
+                             ;
+
+cmos_switch_instances        : name_of_gate_instance '(' output_terminal ','
+                               input_terminal ',' ncontrol_terminal ','
+                               pcontrol_terminal ')'
+                             ;
+
+enable_gate_instances        : name_of_gate_instance '(' output_terminal ','
+                               input_terminal ',' enable_terminal ')'
+                             ;
+
+name_of_gate_instance        : gate_instance_identifier range_o;
+
+output_terminals             : output_terminal
+                             | output_terminals ',' output_terminal
+                             ;
+
+input_terminals              : input_terminal
+                             | input_terminals ',' input_terminal
+                             ;
+
+/* A.3.2 primitive strengths */
+
+pulldown_strength           : '(' strength0 ',' strength1 ')'
+                            | '(' strength1 ',' strength0 ')'
+                            | '(' strength1 ')'
+                            ;
+
+pullup_strength             : '(' strength0 ',' strength1 ')'
+                            | '(' strength1 ',' strength0 ')'
+                            | '(' strength1 ')'
+                            ;
 
 /* A.3.3 primitive terminals */
 
+enable_terminal     : expression;
+inout_terminal      : net_lvalue;
+input_terminal      : expression;
+ncontrol_terminal   : expression;
+output_terminal     : net_lvalue;
+pcontrol_terminal   : expression;
+
 /* A.3.4 primitive gate and switch types */
+
+cmos_switchtype     : KW_CMOS | KW_RCMOS;
+enable_gatetype     : KW_BUFIF0 | KW_BUFIF1 | KW_NOTIF0 | KW_NOTIF1;
+mos_switchtype      : KW_NMOS | KW_PMOS | KW_RNMOS | KW_RPMOS;
+n_input_gatetype    : KW_AND | KW_NAND | KW_OR | KW_NOR | KW_XOR | KW_XNOR;
+n_output_gatetype   : KW_BUF | KW_NOT;
+pass_en_switchtype  : KW_TRANIF0 | KW_TRANIF1 | KW_RTRANIF1 | KW_RTRANIF0;
+pass_switchtype     : KW_TRAN | KW_RTRAN;
 
 /* A.4.1 module instantiation */
 
