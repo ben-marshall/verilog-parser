@@ -492,18 +492,74 @@ net_declaration : net_type signed_o delay3_o list_of_net_identifiers ';'
                   range delay3_o list_of_net_decl_assignments
                 ;
 
-real_declaration     : KW_REAL list_of_real_identifiers ';' ;
-realtime_declaration : KW_REALTIME list_of_real_identifiers ';' ;
-reg_declaration      : KW_REG signed_o range_o list_of_variable_identifiers ';'
-                     ;
+real_declaration    : KW_REAL list_of_real_identifiers ';' ;
+realtime_declaration: KW_REALTIME list_of_real_identifiers ';' ;
+reg_declaration     : KW_REG signed_o range_o list_of_variable_identifiers ';'
+                    ;
 
-time_declaration     : KW_TIME list_of_variable_identifiers ';' ;
+time_declaration    : KW_TIME list_of_variable_identifiers ';' ;
 
 /* 2.2.1 Net and variable types */
 
-/* 2.2.1 Strengths */
+net_type            : KW_SUPPLY0 | KW_SUPPLY1 | KW_TRI  | KW_TRIAND | 
+                      KW_TRIOR   | KW_WIRE    | KW_WAND | KW_WOR
+                    ;
 
-/* 2.2.1 Delays */
+output_variable_type: KW_INTEGER
+                    | KW_TIME
+                    ;
+
+real_type           : real_identifier 
+                    | real_identifier '=' constant_expression
+                    | real_identifier_dimension dimensions
+                    ;
+
+dimensions          : dimension
+                    | dimensions dimension
+                    |
+                    ;
+
+variable_type       : variable_identifier 
+                    | variable_identifier '=' constant_expression
+                    | variable_identifier_dimension dimensions
+                    ;
+
+/* A.2.2.2 Strengths */
+
+drive_strength      : '(' strength0 ',' strength1 ')'
+                    | '(' strength1 ',' strength0 ')'
+                    | '(' strength0 ',' KW_HIGHZ1 ')'
+                    | '(' strength1 ',' KW_HIGHZ0 ')'
+                    | '(' KW_HIGHZ0 ',' strength1 ')'
+                    | '(' KW_HIGHZ1 ',' strength0 ')'
+                    ;
+
+strength0           : KW_SUPPLY0 | KW_STRONG0 | KW_PULL0 | KW_WEAK0 ;
+strength1           : KW_SUPPLY1 | KW_STRONG1 | KW_PULL1 | KW_WEAK1 ;
+
+charge_strength     : '(' KW_SMALL ')'
+                    | '(' KW_MEDIUM ')'
+                    | '(' KW_LARGE ')'
+                    ;
+
+/* A.2.2.3 Delays */
+
+delay3              : '#' delay_value
+                    | '#' '(' delay_value ')'
+                    | '#' '(' delay_value ',' delay_value ')'
+                    | '#' '(' delay_value ',' delay_value ',' delay_value ')'
+
+delay2              : '#' delay_value
+                    | '#' '(' delay_value ')'
+                    | '#' '(' delay_value ',' delay_value ')'
+
+delay_value         : unsigned_number
+                    | parameter_identifier
+                    | specparam_identifier
+                    | mintypmax_expression
+                    ;
+
+/* A.2.3 Declaration Lists */
 
 /* A.9.3 Identifiers */
 
