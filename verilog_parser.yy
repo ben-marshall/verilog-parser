@@ -890,6 +890,63 @@ pass_switchtype     : KW_TRAN | KW_RTRAN;
 
 /* A.4.1 module instantiation */
 
+module_instantiation: module_identifier parameter_value_assignment_o
+                      module_instances ';'
+                    ;
+
+parameter_value_assignment_o : parameter_value_assignment | ;
+
+parameter_value_assignment : '#' '(' list_of_parameter_assignments ')'
+                           ;
+
+list_of_parameter_assignments : ordered_parameter_assignments
+                              | named_parameter_assignments
+                              ;
+
+ordered_parameter_assignments : ordered_parameter_assignment
+                              | ordered_parameter_assignments ','
+                                ordered_parameter_assignment
+                              ;
+named_parameter_assignments   : named_parameter_assignment
+                              | named_parameter_assignments ','
+                                named_parameter_assignment
+                              ;
+
+module_instances : module_instances ',' module_instance
+                 | module_instance
+                 ;
+
+ordered_parameter_assignment : expression;
+
+named_parameter_assignment : '.' parameter_identifier '(' expression_o ')';
+
+expression_o : expression | ;
+
+module_instance : name_of_instance '(' list_of_port_connections_o ')';
+list_of_port_connections_o : list_of_port_connections | ;
+
+name_of_instance : module_instance_identifier range_o;
+
+list_of_port_connections : ordered_port_connections
+                         | named_port_connections
+                         ;
+
+ordered_port_connections : ordered_port_connection
+                         | ordered_port_connections ','
+                           ordered_port_connection
+                         ;
+
+named_port_connections   : named_port_connection
+                         | named_port_connections ','
+                           named_port_connection
+                         ;
+
+ordered_port_connection : attribute_instances expression_o;
+
+named_port_connection : attribute_instances '.' port_identifier '(' 
+                        expression_o ')'
+                      ;
+
 /* A.4.2 Generated instantiation */
 
 /* A.5.1 UDP Declaration */
