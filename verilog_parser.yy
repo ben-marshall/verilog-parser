@@ -1295,11 +1295,90 @@ function_if_else_if_statement : KW_IF '(' expression ')'
 
 /* A.6.7 Case Statements */
 
+case_statement  : KW_CASE '(' expression ')' case_items KW_ENDCASE
+                | KW_CASEZ '(' expression ')' case_items KW_ENDCASE
+                | KW_CASEX '(' expression ')' case_items KW_ENDCASE
+                ;
+
+case_items      : case_item
+                | case_items case_item
+                ;
+
+expressions_o   : expressions | ;
+
+expressions     : expression
+                | expresions expression
+                ;
+
+case_item       : expressions ':' statement_or_null
+                | KW_DEFAULT statement_or_null
+                | KW_DEFAULT ':' statement_or_null
+                ;
+
+function_case_statement : KW_CASE '(' expression ')'  function_case_items 
+                          KW_ENDCASE
+                        | KW_CASEZ '(' expression ')' function_case_items 
+                          KW_ENDCASE
+                        | KW_CASEX '(' expression ')' function_case_items 
+                          KW_ENDCASE
+                        ;
+
+function_case_items     : function_case_item
+                        | function_case_items case_item
+                        ;
+
+function_case_item      : expressions ':' function_statement_or_null
+                        | KW_DEFAULT function_statement_or_null
+                        | KW_DEFAULT ':' function_statement_or_null
+                        ;
+
 /* A.6.8 looping statements */
+
+function_loop_statement : KW_FOREVER function_statement
+                        | KW_REPEAT '(' expression ')' function_statement
+                        | KW_WHILE '(' expression ')' function_statement
+                        | KW_FOR '(' variable_assignment ';' expression
+                          ';' variable_assignment  ')' function_statement
+                        ;
+
+loop_statement          : KW_FOREVER statement
+                        | KW_REPEAT '(' expression ')' statement
+                        | KW_WHILE '(' expression ')' statement
+                        | KW_FOR '(' variable_assignment ';' expression
+                          ';' variable_assignment  ')' statement
+                        ;
+
 
 /* A.6.9 task enable statements */
 
+system_task_enable      : system_task_identifier expressions_o ';' ;
+
+task_enable             : hierarchical_task_identifier expressions_o ';' ;
+
 /* A.7.1 specify block declaration */
+
+specify_block           : KW_SPECIFY specify_items_o KW_ENDSPECIFY;
+
+specify_items_o         : specify_items | ;
+
+specify_items           : specify_item
+                        | specify_items specify_item
+                        ;
+
+specify_item            : specparam_declaration
+                        | pulsestyle_declaration
+                        | showcancelled_declaration
+                        | path_declaration
+                        | system_timing_check
+                        ;
+
+pulsestyle_declaration  : KW_PULSESTYLE_ONEVENT list_of_path_outputs ';'
+                        | KW_PULSESTYLE_ONDETECT list_of_path_outputs ';'
+                        ;
+
+showcancelled_declaration   : KW_SHOWCANCELLED list_of_path_outputs ';'
+                            | KW_NOSHOWCANCELLED list_of_path_outputs ';'
+                            ;
 
 /* A.7.2 specify path declarations */
 
