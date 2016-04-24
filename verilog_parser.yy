@@ -1116,11 +1116,103 @@ name_of_udp_instance : udp_instance_identifier range_o ';' ;
 
 /* A.6.1 Continuous assignment statements */
 
+continuous_assign : KW_ASSIGN drive_strength_o delay3_o 
+                    list_of_net_assignments ';'
+                  ;
+
+list_of_net_assignments : net_assignment
+                        | list_of_net_assignments ',' net_assignment
+                        ;
+
+net_assignment : net_lvalue '=' expression;
+
 /* A.6.2 Procedural blocks and assignments */
+
+initial_construct   : KW_INITIAL statement ;
+always_construct    : KW_ALWAYS statement ;
+
+blocking_assignment : variable_lvalue '=' delay_or_event_control_o expression;
+blocking_assignment : variable_lvalue '<' '=' delay_or_event_control_o 
+                      expression
+                    ;
+
+delay_or_event_control_o : delay_or_event_control | ;
+
+procedural_continuous_assignments : KW_ASSIGN variable_assignment
+                                  | KW_DEASSIGN variable_lvalue
+                                  | KW_FORCE variable_assignment
+                                  | KW_FORCE net_assignment
+                                  | KW_RELEASE variable_lvalue
+                                  | KW_RELEASE net_lvalue
+                                  ;
+
+function_blocking_assignment : variable_lvalue ';' expression
+                             ;
+
+function_statement_or_null : function_statement
+                           | attribute_instances_o ';'
+                           ;
 
 /* A.6.3 Parallel and sequential blocks */
 
+block_item_declarations_o   : block_item_declarations | ;
+block_item_declarations     : block_item_declaration
+                            | block_item_declarations block_item_declaration
+                            ;
+
+function_statements_o   : function_statements | ;
+function_statements     : function_statement
+                        | function_statements function_statement
+                        ;
+
+function_seq_block : KW_BEGIN function_statements_o KW_END
+                   | KW_BEGIN ':' block_identifier block_item_declarations_o
+                     function_statements_o KW_END
+                   ;
+
+variable_assignment : variable_lvalue ';' expression
+                    ;
+
+par_block : KW_FORK statements_o KW_JOIN
+          | KW_FORK ':' block_identifier block_item_declarations_o statements_o
+            KW_JOIN
+          ;
+
+seq_block : KW_BEGIN statements_o KW_END
+          | KW_BEGIN ':' block_identifier block_item_declarations_o 
+            statements_o KW_END
+          ;
+
 /* A.6.4 Statements */
+
+statement : attribute_instances_o blocking_assignment ';'
+          | attribute_instances_o case_statement
+          | attribute_instances_o conditional_statement
+          | attribute_instances_o disable_statement
+          | attribute_instances_o event_trigger
+          | attribute_instances_o loop_statement
+          | attribute_instances_o nonblocking_assignment ';'
+          | attribute_instances_o par_block
+          | attribute_instances_o procedural_continuous_assignments ';'
+          | attribute_instances_o procedural_timing_control_statement
+          | attribute_instances_o seq_block
+          | attribute_instances_o system_task_enable
+          | attribute_instances_o task_enable
+          | attribute_instances_o wait_statement
+          ;
+
+statement_or_null : statement
+                  | attribute_instances_o ';'
+                  ;
+                  
+function_statement : attribute_instances_o function_blocking_assignment ';'
+                   | attribute_instances_o function_case_statement
+                   | attribute_instances_o function_conditional_statement
+                   | attribute_instances_o function_loop_statement
+                   | attribute_instances_o function_seq_block
+                   | attribute_instances_o disable_statement
+                   | attribute_instances_o system_task_enable
+                   ;
 
 /* A.6.5 Timing control statements */
 
