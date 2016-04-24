@@ -1216,7 +1216,82 @@ function_statement : attribute_instances_o function_blocking_assignment ';'
 
 /* A.6.5 Timing control statements */
 
+delay_control : '#' delay_value
+              | '#' '(' mintypmax_expression ')'
+              ;
+
+delay_or_event_control : delay_control
+                       | event_control
+                       | KW_REPEAT '(' expression ')' event_control
+                       ;
+
+disable_statement : KW_DISABLE hierarchical_task_identifier ';'
+                  | disable hierarchical_block_identifier ';'
+                  ;
+
+event_control : '@'  event_identifier
+              | '@'  '(' event_expression ')'
+              | '@' '*'
+              | '@'  '(''*'')'
+              ;
+
+event_trigger : '-' '>' hierarchical_event_identifier ;
+
+event_expression : expression
+                 | hierarchical_identifier
+                 | KW_POSEDGE expression
+                 | KW_NEGEDGE expression
+                 | event_expression KW_OR event_expression
+                 | event_expression ',' event_expression
+
+procedural_timing_control_statement : delay_or_event_control statement_or_null
+
+wait_statement : KW_WAIT '(' expression ')' statement_or_null;
+
 /* A.6.6 Conditional Statemnets */
+
+conditional_statement : KW_IF '(' expression ')' statement_or_null
+                      | KW_IF '(' expression ')' statement_or_null
+                        KW_ELSE statement_or_null
+                      | if_else_if_statement
+                      ;
+
+if_else_if_statement : KW_IF '(' expression ')' statement_or_null
+                       else_if_statements_o
+                     | KW_IF '(' expression ')' statement_or_null
+                       else_if_statements_o
+                       KW_ELSE statement_or_null
+                     ;
+
+else_if_statements_o : else_if_statements | ;
+else_if_statements : KW_ELSE KW_IF '(' expression ')' statement_or_null
+                   | else_if_statements KW_ELSE KW_IF '(' expression ')' 
+                     statement_or_null
+                   ;
+
+function_conditional_statement : KW_IF '(' expression ')' 
+                                 function_statement_or_null
+                               | KW_IF '(' expression ')' 
+                                 function_statement_or_null
+                                 KW_ELSE function_statement_or_null
+                               | function_if_else_if_statement
+                               ;
+
+function_else_if_statements_o : function_else_if_statements | ;
+function_else_if_statements   : KW_ELSE KW_IF '(' expression ')' 
+                                function_statement_or_null 
+                              | function_else_if_statements KW_ELSE KW_IF '('
+                                expression ')' function_statement_or_null
+                              ;
+
+function_if_else_if_statement : KW_IF '(' expression ')' 
+                                function_statement_or_null
+                                function_else_if_statements_o
+                              | KW_IF '(' expression ')' 
+                                function_statement_or_null
+                                function_else_if_statements_o
+                                KW_ELSE function_statement_or_null
+                              ;
 
 /* A.6.7 Case Statements */
 
