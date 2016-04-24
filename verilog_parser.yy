@@ -1382,9 +1382,139 @@ showcancelled_declaration   : KW_SHOWCANCELLED list_of_path_outputs ';'
 
 /* A.7.2 specify path declarations */
 
+path_declaration : simple_path_declaration ';'
+                 | edge_sensitive_path_declaration ';'
+                 | state_dependent_path_declaration ';'
+                 ;
+
+simple_path_declaration : parallel_path_description '=' path_delay_value
+                        | full_path_description '=' path_delay_value
+                        ;
+
+parallel_path_description : '(' specify_input_terminal_descriptor
+                            polarity_operator_o '=' '>'
+                            specify_output_terminal_descriptor ')'
+                          ;
+
+polarity_operator_o : polarity_operator | ;
+
+full_path_description : '(' list_of_path_inputs polarity_operator_o '*'
+                        '>' list_of_path_outputs ')'
+                      ;
+
+list_of_path_inputs   : specify_input_terminal_descriptor
+                      | list_of_path_inputs ',' 
+                        specify_input_terminal_descriptor
+                      ;
+
+list_of_path_outputs  : specify_output_terminal_descriptor
+                      | list_of_path_outputs ',' 
+                        specify_output_terminal_descriptor
+                      ;
+
 /* A.7.3 specify block terminals */
 
+specify_input_terminal_descriptor : input_identifier
+                                  | input_identifier constant_expression_o
+                                  | input_identifier range_expression_o
+                                  ;
+
+specify_output_terminal_descriptor : output_identifier
+                                   | output_identifier constant_expression_o
+                                   | output_identifier range_expression_o
+                                   ;
+
+constant_expression_o : constant_expression | ;
+range_expression_o : range_expression | ;
+
+input_identifier : input_port_identifier
+                 | inout_port_identifier
+                 ;
+
+output_identifier : output_port_identifier 
+                  | inout_port_identifier
+                  ;
+
 /* A.7.4 specify path delays */
+
+path_delay_value : list_of_path_delay_expressions
+                 | '(' list_of_path_delay_expressions ')'
+                 ;
+
+list_of_path_delay_expressions : t_path_delay_expression
+                               | trise_path_delay_expression ','
+                                 tfall_path_delay_expression 
+                               | trise_path_delay_expression ','
+                                 tfall_path_delay_expression ','
+                                 tz_path_delay_expression
+                               | t01_path_delay_expression ','
+                                 t10_path_delay_expression ','
+                                 t0z_path_delay_expression ','
+                                 tz1_path_delay_expression ','
+                                 t1z_path_delay_expression ','
+                                 tz0_path_delay_expression
+                               | t01_path_delay_expression ','
+                                 t10_path_delay_expression ','
+                                 t0z_path_delay_expression ','
+                                 tz1_path_delay_expression ','
+                                 t1z_path_delay_expression ','
+                                 tz0_path_delay_expression
+                                 t0x_path_delay_expression ','
+                                 tx1_path_delay_expression ','
+                                 t1x_path_delay_expression ','
+                                 tx0_path_delay_expression ','
+                                 txz_path_delay_expression ','
+                                 tzx_path_delay_expression
+                               ;
+t_path_delay_expression : path_delay_expression ;
+trise_path_delay_expression : path_delay_expression ;
+tfall_path_delay_expression : path_delay_expression ;
+tz_path_delay_expression : path_delay_expression ;
+t01_path_delay_expression : path_delay_expression ;
+t10_path_delay_expression : path_delay_expression ;
+t0z_path_delay_expression : path_delay_expression ;
+tz1_path_delay_expression : path_delay_expression ;
+t1z_path_delay_expression : path_delay_expression ;
+tz0_path_delay_expression : path_delay_expression ;
+t0x_path_delay_expression : path_delay_expression ;
+tx1_path_delay_expression : path_delay_expression ;
+t1x_path_delay_expression : path_delay_expression ;
+tx0_path_delay_expression : path_delay_expression ;
+txz_path_delay_expression : path_delay_expression ;
+tzx_path_delay_expression : path_delay_expression ;
+path_delay_expression : constant_mintypmax_expression ;
+
+edge_sensitive_path_declaration : parallel_edge_sensitive_path_description '='
+                                  path_delay_value
+                                | full_edge_sensitive_path_description '=' 
+                                  path_delay_value
+                                ;
+
+parallel_edge_sensitive_path_description : '(' edge_identifier_o 
+                                           specify_input_terminal_descriptor 
+                                           '=' '>'
+                                           specify_output_terminal_descriptor 
+                                           polarity_operator_o ':' 
+                                           data_source_expression ')'
+
+full_edge_sensitive_path_description : '(' edge_identifier_o 
+                                       list_of_path_inputs '*' '>'
+                                       list_of_path_outputs polarity_operator_o
+                                       ':' data_source_expression ')'
+                                     ;
+
+data_source_expression : expression ;
+
+edge_identifier : KW_POSEDGE | KW_NEGEDGE;
+
+state_dependent_path_declaration : KW_IF '(' module_path_expression ')' 
+                                   simple_path_declaration
+                                 | KW_IF '(' module_path_expression ')' 
+                                   edge_sensitive_path_declaration
+                                 | KW_IFNONE simple_path_declaration
+                                 ;
+
+polarity_operator : '+' | '-';
 
 /* A.7.5.1 System timing check commands */
 
