@@ -1369,7 +1369,7 @@ specify_item            : specparam_declaration
                         | pulsestyle_declaration
                         | showcancelled_declaration
                         | path_declaration
-                        | system_timing_check
+                        | system_timing_check {printf("%s:%d: System Timing check not supported\n", __FILE__, __LINE__);}
                         ;
 
 pulsestyle_declaration  : KW_PULSESTYLE_ONEVENT list_of_path_outputs ';'
@@ -1514,15 +1514,75 @@ state_dependent_path_declaration : KW_IF '(' module_path_expression ')'
                                  | KW_IFNONE simple_path_declaration
                                  ;
 
+polarity_operator_o : polarity_operator | ;
 polarity_operator : '+' | '-';
 
 /* A.7.5.1 System timing check commands */
+
+system_timing_check : {printf("%s:%d Not Supported\n",__FILE__,__LINE__);};
 
 /* A.7.5.2 System timing check command arguments */
 
 /* A.7.5.3 System timing check evet definitions */
 
 /* A.8.1 Concatenations */
+
+concatenation           : '{' expressions '}' ;
+
+constant_concatenation  : '{' constant_expressions '}' ;
+
+constant_multiple_concatenation : '{' constant_expression
+                                  constant_concatenation '}';
+
+module_path_expressions : module_path_expression
+                        | module_path_expressions ',' module_path_expression
+                        ;
+
+module_path_concatenation : '{' module_path_expressions '}';
+
+module_path_multiple_concatenation : '{' constant_expression 
+                                     module_path_concatenation '}';
+
+multiple_concatenation : '{' constant_expression concatenation '}';
+
+net_concatenation : '{' net_concatenation_values '}';
+
+net_concatenation_values : net_concatenation_value
+                         | net_concatenation_values ','
+                           net_concatenation_value
+                         ;
+
+braced_expression_o : '[' expression ']' | ;
+
+net_concatenation_value : hierarchical_net_identifier
+                        | hierarchical_net_identifier '[' expression ']' 
+                          braced_expression_o
+                        | hierarchical_net_identifier '[' expression ']' 
+                          braced_expression_o '[' range_expression ']'
+                        | hierarchical_net_identifier '[' range_expression ']'
+                        | net_concatenation
+                        ;
+
+variable_concatenation : '{' variable_concatenation_values '}';
+
+variable_concatenation_values : variable_concatenation_value
+                         | variable_concatenation_values ','
+                           variable_concatenation_value
+                         ;
+
+braced_expression_o : '[' expression ']' | ;
+
+variable_concatenation_value : hierarchical_variable_identifier
+                             | hierarchical_variable_identifier 
+                               '[' expression ']' 
+                               braced_expression_o
+                             | hierarchical_variable_identifier 
+                               '[' expression ']' 
+                               braced_expression_o '[' range_expression ']'
+                             | hierarchical_variable_identifier 
+                               '[' range_expression ']'
+                             | variable_concatenation
+                             ;
 
 /* A.8.2 Function calls */
 
