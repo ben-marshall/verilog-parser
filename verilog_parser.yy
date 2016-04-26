@@ -1721,7 +1721,47 @@ primary : number
 
 /* A.8.5 Expression left-side values */
 
+
+braced_constant_expressions : '[' constant_expression ']'
+                            | braced_constant_expressions 
+                              '[' constant_expression ']'
+                            ;
+
+net_lvalue : hierarchical_net_identifier
+           | hierarchical_net_identifier braced_constant_expressions
+           | hierarchical_net_identifier braced_constant_expressions
+             '[' constant_range_expression ']'
+           | hierarchical_net_identifier '[' constant_range_expression ']'
+           | net_concatenation
+           ;
+
+variable_lvalue : hierarchical_variable_identifier
+                | hierarchical_variable_identifier '[' expression ']' 
+                  braced_expression_o
+                | hierarchical_variable_identifier '[' expression ']' 
+                  braced_expression_o '[' range_expression ']'
+                | hierarchical_variable_identifier '[' range_expression ']'
+                | variable_concatenation
+                ;
+
 /* A.8.6 Operators */
+
+unary_operator : '+'  | '-'  | '!' | '~' | '&' | '~&' | '|' | '~|' | '^' 
+               | '~^' | '^~'
+               ;
+
+binary_operator : '+'  | '-'  | '*'  | '/' | '%' | '==' | '!=' | '===' | '!==' 
+                | '&&' | '||' | '**' | '<' | '<=' | '>' | '>=' | '&' | '|' 
+                | '^' | '^~' | '~^' | '>>' | '<<' | '>>>' | '<<<'
+                ;
+
+unary_module_path_operator : '!'  | '~' | '&' | '~&' | '|' | '~|' | '^' 
+                           | '~^' | '^~'
+                           ;
+
+binary_module_path_operator : '==' | '!=' | '&&' | '||' | '&' | '|' | '^' 
+                            | '^~' | '~^'
+                            ;
 
 /* A.8.7 Numbers */
 
