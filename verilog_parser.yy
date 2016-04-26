@@ -1586,6 +1586,22 @@ variable_concatenation_value : hierarchical_variable_identifier
 
 /* A.8.2 Function calls */
 
+constant_function_call : function_identifer attribute_instances_o
+                         '(' constant_expressions ')'
+                       ;
+
+function_call : hierarchical_function_identifer attribute_instances_o
+                '(' expressions ')'
+              ;
+
+genvar_function_call : genvar_function_identifier attribute_instances_o
+                       '(' constant_expressions ')'
+                     ;
+
+system_function_call : system_function_identifier
+                     | system_function_identifier '(' expressions ')'
+                     ;
+
 /* A.8.3 Expression */
 
 /* A.8.4 Primaries */
