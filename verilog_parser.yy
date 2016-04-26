@@ -1604,6 +1604,85 @@ system_function_call : system_function_identifier
 
 /* A.8.3 Expression */
 
+base_expression : expression ;
+
+conditional_expression : expression1 '?' attribute_instances_o expression2 ':'
+                         expression3
+                       ;
+
+constant_base_expression : constant_expression;
+
+constant_expression : constant_primary
+                    | unary_operator attribute_instances_o constant_primary
+                    | constant_expression binary_operator attribute_instances_o
+                      constant_expression
+                    | constant_expression '?' attribute_instances_o 
+                      constant_expression '?' constant_expression
+                    | string
+                    ;
+
+constant_mintypmax_expression : constant_expression
+                              | constant_expression ':' constant_expression 
+                                ':' constant_expression
+                              ;
+
+constant_range_expression : constant_expression
+                          | msb_constant_expression ':' lsb_constant_expression
+                          | constant_base_expression '+' ':' 
+                            width_constant_expression
+                          | constant_base_expression '-' ':' 
+                            width_constant_expression
+                          ;
+
+dimension_constant_expression : constant_expression;
+
+expression1 : expression;
+
+expression2 : expression;
+
+expression3 : expression;
+
+expression  : primary
+            | unary_operator attribute_instances_o primary
+            | expression binary_operator attribute_instances_o expression
+            | conditional_expression
+            | string
+            ;
+
+lsb_constant_expression : constant_expression;
+
+mintypmax_expression : expression
+                     | expression ':' expression ':' expression
+                     ;
+
+module_path_conditional_expression : module_path_expression '?' 
+                                     attribute_instances_o 
+                                     module_path_expression ':' 
+                                     module_path_expression;
+
+module_path_expression : module_path_primary
+                       | unary_module_path_operator attribute_instances_o 
+                         module_path_primary
+                       | module_path_expression binary_module_path_operator 
+                         attribute_instances_o module_path_expression
+                       | module_path_conditional_expression
+                       ;
+
+module_path_mintypmax_expression : module_path_expression
+                                 | module_path_expression ':' 
+                                   module_path_expression ':' 
+                                   module_path_expression;
+
+msb_constant_expression : constant_expression;
+
+range_expression : expression
+                 | msb_constant_expression ':' lsb_constant_expression
+                 | base_expression '+' ':' width_constant_expression
+                 | base_expression '-' ':' width_constant_expression
+                 ;
+
+width_constant_expression : constant_expression;
+
 /* A.8.4 Primaries */
 
 /* A.8.5 Expression left-side values */
