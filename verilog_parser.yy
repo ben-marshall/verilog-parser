@@ -1685,6 +1685,40 @@ width_constant_expression : constant_expression;
 
 /* A.8.4 Primaries */
 
+constant_primary : constant_concatenation
+                 | constant_function_call
+                 | '(' constant_mintypmax_expression ')'
+                 | constant_multiple_concatenation
+                 | genvar_identifier
+                 | number
+                 | parameter_identifier
+                 | specparam_identifier
+                 ;
+
+module_path_primary : number
+                    | identifier
+                    | module_path_concatenation
+                    | module_path_multiple_concatenation
+                    | function_call
+                    | system_function_call
+                    | constant_function_call
+                    | '(' module_path_mintypmax_expression ')'
+                    ;
+
+primary : number
+        | hierarchical_identifier
+        | hierarchical_identifier '[' expression ']' braced_expression_o
+        | hierarchical_identifier '[' expression ']' braced_expression_o 
+          '[' range_expression ']'
+        | hierarchical_identifier '[' range_expression ']'
+        | concatenation
+        | multiple_concatenation
+        | function_call
+        | system_function_call
+        | constant_function_call
+        | '(' mintypmax_expression ')'
+        ;
+
 /* A.8.5 Expression left-side values */
 
 /* A.8.6 Operators */
