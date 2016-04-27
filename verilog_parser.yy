@@ -41,7 +41,9 @@
    int         ival;
 }
 
-%token COMMENT
+%token COMMENT_LINE
+%token COMMENT_BEGIN
+%token COMMENT_END
 
 %token CD_CELLDEFINE               
 %token CD_DEFAULT_NETTYPE          
@@ -1069,8 +1071,16 @@ sequential_entrys     : sequential_entry
 
 udp_initial_statement : KW_INITIAL output_port_identifier '=' init_val ';';
 
-init_val              : '1’b0' | '1’b1' | '1’bx' | '1’bX' | '1’B0' 
-                      | '1’B1' | '1’Bx' | '1’BX' | '1'    | '0'
+init_val              : '1' '\'' 'b' '0' 
+                      | '1' '\'' 'b' '1' 
+                      | '1' '\'' 'b' 'x' 
+                      | '1' '\'' 'b' 'X' 
+                      | '1' '\'' 'B' '0' 
+                      | '1' '\'' 'B' '1' 
+                      | '1' '\'' 'B' 'x' 
+                      | '1' '\'' 'B' 'X' 
+                      | '1'    
+                      | '0'
                       ;
 
 sequential_entry      : seq_input_list ':' current_state ':' next_state ';';
@@ -1746,21 +1756,25 @@ variable_lvalue : hierarchical_variable_identifier
 
 /* A.8.6 Operators */
 
-unary_operator : '+'  | '-'  | '!' | '~' | '&' | '~&' | '|' | '~|' | '^' 
-               | '~^' | '^~'
+unary_operator : '+'  | '-'  | '!' | '~' | '&' | '~''&' | '|' | '~''|' | '^' 
+               | '~''^' | '^''~'
                ;
 
-binary_operator : '+'  | '-'  | '*'  | '/' | '%' | '==' | '!=' | '===' | '!==' 
-                | '&&' | '||' | '**' | '<' | '<=' | '>' | '>=' | '&' | '|' 
-                | '^' | '^~' | '~^' | '>>' | '<<' | '>>>' | '<<<'
+binary_operator : '+'  | '-'  | '*'  | '/' | '%' | '=''=' | '!''=' 
+                | '=''=''=' | '!''=''=' 
+                | '&''&' | '|''|' | '*''*' | '<' | '<''=' | '>' | '>''=' 
+                | '&' | '|' 
+                | '^' | '^''~' | '~''^' | '>''>' | '<''<' | '>''>''>' 
+                | '<''<''<'
                 ;
 
-unary_module_path_operator : '!'  | '~' | '&' | '~&' | '|' | '~|' | '^' 
-                           | '~^' | '^~'
+unary_module_path_operator : '!'  | '~' | '&' | '~''&' | '|' | '~''|' | '^' 
+                           | '~''^' | '^''~'
                            ;
 
-binary_module_path_operator : '==' | '!=' | '&&' | '||' | '&' | '|' | '^' 
-                            | '^~' | '~^'
+binary_module_path_operator : '=''=' | '!''=' | '&''&' | '|''|' | '&' | '|' 
+                            | '^' 
+                            | '^''~' | '~''^'
                             ;
 
 /* A.8.7 Numbers */
@@ -1879,9 +1893,38 @@ z_digit : 'z' | 'Z' | '?';
 
 /* A.8.8 Strings */
 
+string : '"' any_chars_o '"';
+
+any_chars_o : any_chars | ;
+any_chars   : ANY
+            | any_chars ANY
+            ;
+
 /* A.9.1 Attributes */
 
+attr_specs : attr_spec
+           | attr_specs ',' attr_spec
+           ;
+
+attribute_instance : '(' '*' attr_specs '*' ')'
+
+attr_spec : attr_name '=' constant_expression
+          | attr_name
+          ;
+
+attr_name : identifier ;
+
 /* A.9.2 Comments */
+
+comment             : one_line_comment
+                    | block_comment
+                    ;
+
+one_line_comment    : COMMENT_LINE comment_text NEWLINE;
+
+block_comment       : COMMENT_BEGIN comment_text COMMENT_END;
+
+comment_text        : any_chars_o;
 
 /* A.9.3 Identifiers */
 

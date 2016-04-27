@@ -202,12 +202,13 @@ NEWLINE             \n
 TAB                 \t
 SPACE               " "
 ANY                 [.\n]{-}[' ']
+ANY_IN_STR          .
 
 %%
 
-{COMMENT_LINE}               {return token::COMMENT                   ;}
-{COMMENT_BEGIN}              {return token::COMMENT                   ;}
-{COMMENT_END}                {return token::COMMENT                   ;}
+{COMMENT_LINE}               {return token::COMMENT_LINE              ;}
+{COMMENT_BEGIN}              {return token::COMMENT_BEGIN             ;}
+{COMMENT_END}                {return token::COMMENT_END               ;}
 
 {CD_CELLDEFINE}              {return token::CD_CELLDEFINE             ;}
 {CD_DEFAULT_NETTYPE}         {return token::CD_DEFAULT_NETTYPE        ;}
@@ -377,6 +378,7 @@ ANY                 [.\n]{-}[' ']
 {SIMPLE_IDENTIFIER}    {return token::SIMPLE_IDENTIFIER         ;}
 {SYSTEM_IDENTIFIER}    {return token::SYSTEM_FUNCTION_IDENTIFIER;}
 
+{ANY_IN_STR}           {return token::ANY                   ;}
 {ANY}                  {return token::ANY                   ;}
 
 %%
