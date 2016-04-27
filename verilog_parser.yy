@@ -1804,38 +1804,78 @@ sign : '+' | '-';
 
 size : non_zero_unsigned_number;
 
-non_zero_unsigned_number : non_zero_decimal_digit { _ | decimal_digit}
+decimal_digits_o : '_'
+                 | decimal_digit
+                 | decimal_digits_o decimal_digits_o
+                 |
+                 ;
 
-unsigned_number : decimal_digit { _ | decimal_digit }
+binary_digits_o : '_'
+                | binary_digit
+                | binary_digits_o binary_digits_o
+                |
+                ;
 
-binary_value : binary_digit { _ | binary_digit }
+octal_digits_o : '_'
+               | octal_digit
+               | octal_digits_o octal_digits_o
+               |
+               ;
 
-octal_value : octal_digit { _ | octal_digit }
+hex_digits_o : '_'
+             | hex_digit
+             | hex_digits_o hex_digits_o
+             |
+             ;
 
-hex_value : hex_digit { _ | hex_digit }
+non_zero_unsigned_number : non_zero_decimal_digit decimal_digits_o
 
-decimal_base : ’[s|S]d | ’[s|S]D
+unsigned_number : decimal_digit decimal_digits_o
 
-binary_base : ’[s|S]b | ’[s|S]B
+binary_value : binary_digit binary_digits_o
 
-octal_base : ’[s|S]o | ’[s|S]O
+octal_value : octal_digit octal_digits_o
 
-hex_base : ’[s|S]h | ’[s|S]H
+hex_value : hex_digit hex_digits_o
 
-non_zero_decimal_digit ::= 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+decimal_base : '\'' 's' 'd'
+             | '\'' 'S' 'd'
+             | '\'' 's' 'D'
+             | '\'' 'S' 'D'
+             ;
 
-decimal_digit ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+binary_base :  '\'' 's' 'b'
+            |  '\'' 'S' 'b'
+            |  '\'' 's' 'B'
+            |  '\'' 'S' 'B'
+            ;
 
-binary_digit ::= x_digit | z_digit | 0 | 1
+octal_base :  '\'' 's' 'o'
+           |  '\'' 'S' 'o'
+           |  '\'' 's' 'O'
+           |  '\'' 'S' 'O'
+           ;
 
-octal_digit ::= x_digit | z_digit | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
+hex_base :  '\'' 's' 'h'
+         |  '\'' 'S' 'h'
+         |  '\'' 's' 'H'
+         |  '\'' 'S' 'H'
+         ;
 
-hex_digit ::= x_digit | z_digit | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
-| a | b | c | d | e | f | A | B | C | D | E | F
+non_zero_decimal_digit :'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9';
 
-x_digit ::= x | X
+decimal_digit:'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9';
 
-z_digit ::= z | Z | ?
+binary_digit : x_digit | z_digit | '0' | '1';
+
+octal_digit : x_digit | z_digit |'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7';
+
+hex_digit :   x_digit | z_digit |'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'
+|'a'|'b'|'c'|'d'|'e'|'f'|'A'|'B'|'C'|'D'|'E'|'F';
+
+x_digit : 'x' | 'X';
+
+z_digit : 'z' | 'Z' | '?';
 
 /* A.8.8 Strings */
 
