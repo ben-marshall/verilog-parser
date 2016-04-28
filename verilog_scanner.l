@@ -153,6 +153,8 @@ WOR                 "wor"
 XNOR                "xnor"
 XOR                 "xor"
 
+PATHPULSE           "PATHPULSE$"
+
 SIMPLE_IDENTIFIER           ([a-zA-Z_][a-zA-Z0-9_\$]*)
 SYSTEM_IDENTIFIER           (\$[a-zA-Z0-9_\$][a-zA-Z0-9_\$]*)
 
@@ -245,11 +247,6 @@ ANY_IN_STR          .
 
 {X_DIGIT}                    {return token::X_DIGIT                   ;}
 {Z_DIGIT}                    {return token::Z_DIGIT                   ;}
-
-{NEWLINE}                    {/*return token::WS */                       ;}
-{SPACE}                      {/*return token::WS */                       ;}
-{TAB}                        {/*return token::WS */                       ;}
-
 
 {ALWAYS}               {return token::KW_ALWAYS             ;} 
 {AND}                  {return token::KW_AND                ;} 
@@ -374,11 +371,17 @@ ANY_IN_STR          .
 {WOR}                  {return token::KW_WOR                ;} 
 {XNOR}                 {return token::KW_XNOR               ;} 
 {XOR}                  {return token::KW_XOR                ;} 
+{PATHPULSE}            {return token::KW_PATHPULSE          ;}
 
-{SIMPLE_IDENTIFIER}    {return token::SIMPLE_IDENTIFIER         ;}
-{SYSTEM_IDENTIFIER}    {return token::SYSTEM_FUNCTION_IDENTIFIER;}
+{SIMPLE_IDENTIFIER}    {return token::SIMPLE_IDENTIFIER     ;}
+{SYSTEM_IDENTIFIER}    {return token::SYSTEM_IDENTIFIER     ;}
 
 {ANY_IN_STR}           {return token::ANY                   ;}
 {ANY}                  {return token::ANY                   ;}
+
+{NEWLINE}              {return token::NEWLINE               ;}
+{SPACE}                {return token::SPACE                 ;}
+{TAB}                  {return token::TAB                   ;}
+
 
 %%

@@ -186,8 +186,7 @@
 %token KW_XNOR
 %token KW_XOR
 %token SIMPLE_IDENTIFIER         
-%token SYSTEM_FUNCTION_IDENTIFIER
-%token SYSTEM_TASK_IDENTIFIER    
+%token SYSTEM_IDENTIFIER    
 %token HEX_DIGIT                 
 %token OCTAL_DIGIT               
 %token DECIMAL_DIGIT             
@@ -204,12 +203,18 @@
 %token X_DIGIT
 %token Z_DIGIT
 
+%token KW_PATHPULSE
+
 %token END    0     "end of file"
 %token UNKNOWN
 %token IDENTIFIER
 %token VALUE
 %token WS
 %token ANY
+
+%token NEWLINE
+%token SPACE
+%token TAB
 
 %token DEFINE
 %token END_DEFINE
@@ -240,6 +245,8 @@ file_path_specs  : file_path_spec
                  | file_path_specs file_path_spec
 
 file_path_spec   : file_path
+
+file_path        : string;
 
 include_statement: KW_INCLUDE file_path_spec ';'
                  ;
@@ -320,11 +327,11 @@ module_kw       : KW_MACROMODULE
 
 /* A.1.4 Module parameters and ports */
 
-module_param_list : '#' '(' module_params ')'
-                  ;
+module_parameter_port_list  : '#' '(' module_params ')'
+                            ;
 
-module_params     : param_declaration
-                  | module_params ',' param_declaration
+module_params     : parameter_declaration
+                  | module_params ',' parameter_declaration
                   ;
 
 list_of_ports   :
@@ -413,21 +420,24 @@ non_port_module_item : attribute_instances generated_instantiation
 parameter_override   : KW_DEFPARAM list_of_param_assignments ';'
                      ;
 
-/* A.2.1.1 Declaration types -> Module Parameter Declarations
+/* A.2.1.1 Declaration types -> Module Parameter Declarations */
 
 local_parameter_declaration : KW_LOCALPARAM signed_o range_o list_of_param_assignments ';'
                             | KW_LOCALPARAM KW_INTEGER list_of_param_assignments ';'
                             | KW_LOCALPARAM KW_REAL list_of_param_assignments ';'
                             | KW_LOCALPARAM KW_REALTIME list_of_param_assignments ';'
                             | KW_LOCALPARAM KW_TIME list_of_param_assignments ';'
+                            ;
 
 parameter_declaration : KW_PARAMETER signed_o range_o list_of_param_assignments ';'
                       | KW_PARAMETER KW_INTEGER list_of_param_assignments ';'
                       | KW_PARAMETER KW_REAL list_of_param_assignments ';'
                       | KW_PARAMETER KW_REALTIME list_of_param_assignments ';'
                       | KW_PARAMETER KW_TIME list_of_param_assignments ';'
+                      ;
 
 specparam_declaration : KW_SPECPARAM range_o list_of_specparam_assignments ';'
+                      ;
 
 range_o             : range
                     |
@@ -507,13 +517,14 @@ net_type            : KW_SUPPLY0 | KW_SUPPLY1 | KW_TRI  | KW_TRIAND |
                       KW_TRIOR   | KW_WIRE    | KW_WAND | KW_WOR
                     ;
 
+output_variable_type_o : output_variable_type | ;
 output_variable_type: KW_INTEGER
                     | KW_TIME
                     ;
 
 real_type           : real_identifier 
                     | real_identifier '=' constant_expression
-                    | real_identifier_dimension dimensions
+                    | real_identifier dimension dimensions
                     ;
 
 dimensions          : dimension
@@ -523,7 +534,7 @@ dimensions          : dimension
 
 variable_type       : variable_identifier 
                     | variable_identifier '=' constant_expression
-                    | variable_identifier_dimension dimensions
+                    | variable_identifier dimension dimensions
                     ;
 
 /* A.2.2.2 Strengths */
@@ -655,10 +666,10 @@ range                   : '[' msb_constant_expression ':'
 automatic_o         : KW_AUTOMATIC | ;
 
 function_declaration : KW_FUNCTION automatic_o signed_o range_or_type
-                       function_identifer ';' function_item_declarations
+                       function_identifier ';' function_item_declarations
                        function_statement KW_ENDFUNCTION
                      | KW_FUNCTION automatic_o signed_o range_or_type
-                       function_identifer '(' function_port_list ')' ';' 
+                       function_identifier '(' function_port_list ')' ';' 
                        block_item_declarations
                        function_statement KW_ENDFUNCTION
                      ;
@@ -707,6 +718,10 @@ task_declaration    : KW_TASK automatic_o task_identifier ';'
                       KW_ENDTASK
                     ;
 
+task_item_declarations : task_item_declaration
+                       | task_item_declarations task_item_declaration
+                       ;
+
 task_item_declaration : block_item_declaration
                       | attribute_instances tf_input_declaration ';'
                       | attribute_instances tf_output_declaration ';'
@@ -723,6 +738,14 @@ task_port_item  : attribute_instances tf_input_declaration ';'
 
 tf_input_declaration : KW_INPUT reg_o signed_o range_o list_of_port_identifiers
                      | KW_INPUT task_port_type_o list_of_port_identifiers
+                     ;
+
+tf_output_declaration : KW_OUTPUT reg_o signed_o range_o list_of_port_identifiers
+                      | KW_OUTPUT task_port_type_o list_of_port_identifiers
+                      ;
+
+tf_inout_declaration : KW_INOUT reg_o signed_o range_o list_of_port_identifiers
+                     | KW_INOUT task_port_type_o list_of_port_identifiers
                      ;
 
 task_port_type_o : task_port_type | ;
@@ -813,35 +836,35 @@ enable_gate_instances : enable_gate_instance
                       | enable_gate_instances ',' enable_gate_instance 
                       ;
 
-pass_enable_switch_instances : name_of_gate_instance '(' inout_terminal ','
+pass_enable_switch_instance  : name_of_gate_instance '(' inout_terminal ','
                                inout_terminal ',' enable_terminal ')'
                              ;
 
-pull_gate_instances          : name_of_gate_instance '(' output_terminal ')'
+pull_gate_instance           : name_of_gate_instance '(' output_terminal ')'
                              ;
 
-pass_switch_instances        : name_of_gate_instance '(' inout_terminal ','
+pass_switch_instance         : name_of_gate_instance '(' inout_terminal ','
                                inout_terminal ')'
                              ;
 
-n_output_gate_instances      : name_of_gate_instance '(' output_terminals ','
+n_output_gate_instance       : name_of_gate_instance '(' output_terminals ','
                                input_terminal ')'
                              ;
 
-n_input_gate_instances       : name_of_gate_instance '(' output_terminal ','
+n_input_gate_instance        : name_of_gate_instance '(' output_terminal ','
                                input_terminals ')'
                              ;
 
-mos_switch_instances         : name_of_gate_instance '(' output_terminal ','
+mos_switch_instance          : name_of_gate_instance '(' output_terminal ','
                                input_terminal ',' enable_terminal ')'       
                              ;
 
-cmos_switch_instances        : name_of_gate_instance '(' output_terminal ','
+cmos_switch_instance         : name_of_gate_instance '(' output_terminal ','
                                input_terminal ',' ncontrol_terminal ','
                                pcontrol_terminal ')'
                              ;
 
-enable_gate_instances        : name_of_gate_instance '(' output_terminal ','
+enable_gate_instance         : name_of_gate_instance '(' output_terminal ','
                                input_terminal ',' enable_terminal ')'
                              ;
 
@@ -857,11 +880,13 @@ input_terminals              : input_terminal
 
 /* A.3.2 primitive strengths */
 
+pulldown_strength_o : pulldown_strength | ;
 pulldown_strength           : '(' strength0 ',' strength1 ')'
                             | '(' strength1 ',' strength0 ')'
                             | '(' strength1 ')'
                             ;
 
+pullup_strength_o : pullup_strength | ;
 pullup_strength             : '(' strength0 ',' strength1 ')'
                             | '(' strength1 ',' strength0 ')'
                             | '(' strength1 ')'
@@ -1089,7 +1114,7 @@ level_symbols         : level_symbol
                       | level_symbols level_symbol
                       ;
 
-edge_input_list       :  level_symbols_o edge_indicator level_symbol_o;
+edge_input_list       :  level_symbols_o edge_indicator level_symbols_o;
 
 edge_indicator        : '(' level_symbol level_symbol ')' 
                       | edge_symbol
@@ -1138,7 +1163,7 @@ initial_construct   : KW_INITIAL statement ;
 always_construct    : KW_ALWAYS statement ;
 
 blocking_assignment : variable_lvalue '=' delay_or_event_control_o expression;
-blocking_assignment : variable_lvalue '<' '=' delay_or_event_control_o 
+nonblocking_assignment : variable_lvalue '<' '=' delay_or_event_control_o 
                       expression
                     ;
 
@@ -1191,6 +1216,11 @@ seq_block : KW_BEGIN statements_o KW_END
 
 /* A.6.4 Statements */
 
+statements_o : statements | ;
+statements   : statement
+             | statements statement
+             ;
+
 statement : attribute_instances_o blocking_assignment ';'
           | attribute_instances_o case_statement
           | attribute_instances_o conditional_statement
@@ -1232,7 +1262,7 @@ delay_or_event_control : delay_control
                        ;
 
 disable_statement : KW_DISABLE hierarchical_task_identifier ';'
-                  | disable hierarchical_block_identifier ';'
+                  | KW_DISABLE hierarchical_block_identifier ';'
                   ;
 
 event_control : '@'  event_identifier
@@ -1313,7 +1343,7 @@ case_items      : case_item
 expressions_o   : expressions | ;
 
 expressions     : expression
-                | expresions expression
+                | expressions expression
                 ;
 
 case_item       : expressions ':' statement_or_null
@@ -1511,6 +1541,7 @@ full_edge_sensitive_path_description : '(' edge_identifier_o
 
 data_source_expression : expression ;
 
+edge_identifier_o : edge_identifier | ;
 edge_identifier : KW_POSEDGE | KW_NEGEDGE;
 
 state_dependent_path_declaration : KW_IF '(' module_path_expression ')' 
@@ -1592,11 +1623,11 @@ variable_concatenation_value : hierarchical_variable_identifier
 
 /* A.8.2 Function calls */
 
-constant_function_call : function_identifer attribute_instances_o
+constant_function_call : function_identifier attribute_instances_o
                          '(' constant_expressions ')'
                        ;
 
-function_call : hierarchical_function_identifer attribute_instances_o
+function_call : hierarchical_function_identifier attribute_instances_o
                 '(' expressions ')'
               ;
 
@@ -1932,13 +1963,25 @@ block_identifier                : identifier;
 cell_identifier                 : identifier;
 config_identifier               : identifier;
 escaped_arrayed_identifier      : escaped_identifier range_o;
-escaped_hierarchical_identifier : escaped_hierarchical_branch ;
-                                  { .simple_hierarchical_branch | .escaped_hierarchical_branch }
+escaped_hierarchical_identifier : escaped_hierarchical_branch 
+                                  escaped_hierarchical_identifiers
+                                ;
 
-escaped_identifier              : '\' 
-                                  {Any_ASCII_character_except_white_space} 
+escaped_hierarchical_identifiers: '.' simple_hierarchical_identifier
+                                | '.' escaped_hierarchical_identifier
+                                | escaped_hierarchical_identifiers
+                                  '.' simple_hierarchical_identifier
+                                | escaped_hierarchical_identifier '.'
+                                  escaped_hierarchical_identifiers
+                                ;
+
+
+escaped_identifier              : '\''
+                                  anys 
                                   white_space 
                                 ;
+
+anys : anys ANY | ANY;
 
 event_identifier                : identifier;
 function_identifier             : identifier;
@@ -1963,7 +2006,7 @@ identifier                      : simple_identifier
 inout_port_identifier           : identifier;
 input_port_identifier           : identifier;
 instance_identifier             : identifier;
-library_identifier              : identifier;
+lib_identifier                  : identifier;
 memory_identifier               : identifier;
 module_identifier               : identifier;
 module_instance_identifier      : arrayed_identifier;
@@ -1975,16 +2018,17 @@ real_identifier                 : identifier;
 simple_arrayed_identifier       : simple_identifier range_o ;
 
 simple_hierarchical_identifier  : simple_hierarchical_branch 
-                                  [ .escaped_identifier ]
+                                | simple_hierarchical_branch '.' 
+                                  escaped_identifier
                                 ;
 
-simple_identifier               : [ a-zA-Z_ ] { [ a-zA-Z0-9_$ ] }
+simple_identifier               : SIMPLE_IDENTIFIER
                                 ;
 
-specparam_identifier            : identifier
+specparam_identifier            : identifier;
 
-system_function_identifier      : $[ a-zA-Z0-9_$ ]{ [ a-zA-Z0-9_$ ] }
-system_task_identifier          : $[ a-zA-Z0-9_$ ]{ [ a-zA-Z0-9_$ ] }
+system_function_identifier      : SYSTEM_IDENTIFIER;
+system_task_identifier          : SYSTEM_IDENTIFIER;
 
 task_identifier                 : identifier;
 terminal_identifier             : identifier;
@@ -1993,6 +2037,35 @@ topmodule_identifier            : identifier;
 udp_identifier                  : identifier;
 udp_instance_identifier         : arrayed_identifier;
 variable_identifier             : identifier;
+
+/* A.9.4 Identifier Branches */
+
+unsigned_number_o : unsigned_number | ;
+
+simple_hierarchical_branch : simple_identifier unsigned_number_o
+                             simple_hierarchical_branch_sub_o
+                             ;
+
+escaped_hierarchical_branch : escaped_identifier unsigned_number_o
+                              escaped_hierarchical_branch_sub_o
+                            ;
+
+simple_hierarchical_branch_sub_o : simple_hierarchical_branch_sub | ;
+
+simple_hierarchical_branch_sub : '.' simple_identifier unsigned_number_o
+                               | simple_hierarchical_branch_sub 
+                                 '.' simple_identifier unsigned_number_o
+                               ;
+
+
+escaped_hierarchical_branch_sub_o : escaped_hierarchical_branch_sub | ;
+
+escaped_hierarchical_branch_sub : '.' escaped_identifier unsigned_number_o
+                                | escaped_hierarchical_branch_sub 
+                                  '.' escaped_identifier unsigned_number_o
+                                ;
+
+white_space : SPACE | TAB | NEWLINE;
 
 %%
 
