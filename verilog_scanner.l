@@ -11,7 +11,7 @@ typedef VL::VerilogParser::token token;
 #define STR_TOKEN( x ) ( new std::string( x ) )
 
 /* define yyterminate as this instead of NULL */
-#define yyterminate() return( token::END )
+#define yyterminate() return token::END;
 
 /* msvc2010 requires that we exclude this header file. */
 #define YY_NO_UNISTD_H
@@ -399,6 +399,4 @@ STR_TERM                    \"
 {TAB}                  {printf("WS: \\t\n"); return token::TAB    ;}
 
 {ANY}                  {return token::ANY                   ;}
-
-
 %%

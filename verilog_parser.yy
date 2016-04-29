@@ -231,7 +231,6 @@ grammar_begin    : lib_text
                  | comment {printf("comment... ");}
                  | grammar_begin grammar_begin
                  | white_space
-                 | END
                  ;
 
 /* Anex A.1.1 Library source text */
