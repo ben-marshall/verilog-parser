@@ -28,6 +28,7 @@ typedef VL::VerilogParser::token token;
 %x IN_BLOCK_COMMENT
 %x IN_LINE_COMMENT
 %x IN_DEFINE
+%x in_str
 
 ALWAYS              "always"
 AND                 "and"
@@ -205,6 +206,7 @@ TAB                 \t
 SPACE               " "
 ANY                 [.\n]{-}[' ']
 ANY_IN_STR          .
+STR_TERM                    \"
 
 %%
 
@@ -376,12 +378,15 @@ ANY_IN_STR          .
 {SIMPLE_IDENTIFIER}    {return token::SIMPLE_IDENTIFIER     ;}
 {SYSTEM_IDENTIFIER}    {return token::SYSTEM_IDENTIFIER     ;}
 
-{ANY_IN_STR}           {return token::ANY                   ;}
-{ANY}                  {return token::ANY                   ;}
+<in_str>{STR_TERM}     {yy_pop_state()                      ;}
+<in_str>{ANY_IN_STR}   {return token::ANY                   ;}
+{STR_TERM}             {BEGIN(in_str)                       ;}
 
-{NEWLINE}              {return token::NEWLINE               ;}
-{SPACE}                {return token::SPACE                 ;}
-{TAB}                  {return token::TAB                   ;}
+{NEWLINE}              {printf("WS: %s\n", yytext); return token::NEWLINE;}
+{SPACE}                {printf("WS: %s\n", yytext); return token::SPACE  ;}
+{TAB}                  {printf("WS: %s\n", yytext); return token::TAB    ;}
+
+{ANY}                  {return token::ANY                   ;}
 
 
 %%

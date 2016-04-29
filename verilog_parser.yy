@@ -219,7 +219,20 @@
 %token DEFINE
 %token END_DEFINE
 
+%start grammar_begin
+
 %%
+
+/* Start variables */
+
+grammar_begin    : lib_text
+                 | cfg_declaration
+                 | source_text
+                 | comment {printf("comment... ");}
+                 | grammar_begin grammar_begin
+                 | white_space
+                 | END
+                 ;
 
 /* Anex A.1.1 Library source text */
 
@@ -306,7 +319,6 @@ source_text     : descriptions
 
 descriptions    : descriptions description
                 | description
-                |
                 ;
 
 description     : module_declaration
@@ -1477,47 +1489,32 @@ path_delay_value : list_of_path_delay_expressions
                  | '(' list_of_path_delay_expressions ')'
                  ;
 
-list_of_path_delay_expressions : t_path_delay_expression
-                               | trise_path_delay_expression ','
-                                 tfall_path_delay_expression 
-                               | trise_path_delay_expression ','
-                                 tfall_path_delay_expression ','
-                                 tz_path_delay_expression
-                               | t01_path_delay_expression ','
-                                 t10_path_delay_expression ','
-                                 t0z_path_delay_expression ','
-                                 tz1_path_delay_expression ','
-                                 t1z_path_delay_expression ','
-                                 tz0_path_delay_expression
-                               | t01_path_delay_expression ','
-                                 t10_path_delay_expression ','
-                                 t0z_path_delay_expression ','
-                                 tz1_path_delay_expression ','
-                                 t1z_path_delay_expression ','
-                                 tz0_path_delay_expression
-                                 t0x_path_delay_expression ','
-                                 tx1_path_delay_expression ','
-                                 t1x_path_delay_expression ','
-                                 tx0_path_delay_expression ','
-                                 txz_path_delay_expression ','
-                                 tzx_path_delay_expression
+list_of_path_delay_expressions : path_delay_expression
+                               | path_delay_expression ','
+                                 path_delay_expression 
+                               | path_delay_expression ','
+                                 path_delay_expression ','
+                                 path_delay_expression
+                               | path_delay_expression ','
+                                 path_delay_expression ','
+                                 path_delay_expression ','
+                                 path_delay_expression ','
+                                 path_delay_expression ','
+                                 path_delay_expression
+                               | path_delay_expression ','
+                                 path_delay_expression ','
+                                 path_delay_expression ','
+                                 path_delay_expression ','
+                                 path_delay_expression ','
+                                 path_delay_expression
+                                 path_delay_expression ','
+                                 path_delay_expression ','
+                                 path_delay_expression ','
+                                 path_delay_expression ','
+                                 path_delay_expression ','
+                                 path_delay_expression
                                ;
-t_path_delay_expression : path_delay_expression ;
-trise_path_delay_expression : path_delay_expression ;
-tfall_path_delay_expression : path_delay_expression ;
-tz_path_delay_expression : path_delay_expression ;
-t01_path_delay_expression : path_delay_expression ;
-t10_path_delay_expression : path_delay_expression ;
-t0z_path_delay_expression : path_delay_expression ;
-tz1_path_delay_expression : path_delay_expression ;
-t1z_path_delay_expression : path_delay_expression ;
-tz0_path_delay_expression : path_delay_expression ;
-t0x_path_delay_expression : path_delay_expression ;
-tx1_path_delay_expression : path_delay_expression ;
-t1x_path_delay_expression : path_delay_expression ;
-tx0_path_delay_expression : path_delay_expression ;
-txz_path_delay_expression : path_delay_expression ;
-tzx_path_delay_expression : path_delay_expression ;
+
 path_delay_expression : constant_mintypmax_expression ;
 
 edge_sensitive_path_declaration : parallel_edge_sensitive_path_description '='
@@ -1943,8 +1940,8 @@ attr_name : identifier ;
 
 /* A.9.2 Comments */
 
-comment             : one_line_comment
-                    | block_comment
+comment             : one_line_comment {printf("OLC\n");}
+                    | block_comment    {printf("MLC\n");}
                     ;
 
 one_line_comment    : COMMENT_LINE comment_text NEWLINE;
