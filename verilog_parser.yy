@@ -212,6 +212,11 @@
 %token WS
 %token ANY
 
+%token HASH
+%token DOT
+%token SEMICOLON
+%token COLON
+
 %token NEWLINE
 %token SPACE
 %token TAB
@@ -227,11 +232,11 @@
 
 grammar_begin    : lib_text
                  | cfg_declaration
-                 | source_text
+                 | source_text {printf("source... ");}
                  | comment {printf("comment... ");}
                  | grammar_begin grammar_begin
-                 | white_space
                  ;
+
 
 /* Anex A.1.1 Library source text */
 
@@ -247,7 +252,7 @@ lib_descriptions : lib_declaration
                  | cfg_declaration
                  ;
 
-lib_declaration  : KW_LIBRARY lib_identifier file_path_specs inc_dirs ';'
+lib_declaration  : KW_LIBRARY lib_identifier file_path_specs inc_dirs SEMICOLON
 
 inc_dirs         : 
                  | KW_INCDIR file_path_specs
@@ -260,16 +265,16 @@ file_path_spec   : file_path
 
 file_path        : string;
 
-include_statement: KW_INCLUDE file_path_spec ';'
+include_statement: KW_INCLUDE file_path_spec SEMICOLON
                  ;
 
 /* Anex A.1.2 Configuration source text */
 
-cfg_declaration  : KW_CONFIG config_identifier ';' design_statement
+cfg_declaration  : KW_CONFIG config_identifier SEMICOLON design_statement
                    cfg_rule_statements KW_ENDCONFIG
                  ;
 
-design_statement : KW_DESIGN lib_cell_identifiers ';'
+design_statement : KW_DESIGN lib_cell_identifiers SEMICOLON
 
 lib_cell_identifiers : lib_cell_identifiers lib_identifier '.' cell_identifier
                      | lib_cell_identifiers cell_identifier
@@ -308,61 +313,67 @@ liblist_clauses : lib_identifier
 
 use_clause      : KW_USE cell_identifier
                 | KW_USE lib_identifier '.' cell_identifier
-                | KW_USE cell_identifier ':' KW_CONFIG
-                | KW_USE lib_identifier '.' cell_identifier ':' KW_CONFIG
+                | KW_USE cell_identifier COLON KW_CONFIG
+                | KW_USE lib_identifier '.' cell_identifier COLON KW_CONFIG
                 ;
 
 /* A.1.3 Module and primitive source text */
 
 source_text     : descriptions
 
-descriptions    : descriptions description
-                | description
+descriptions    : description
+                | descriptions description
                 ;
 
 description     : module_declaration
                 | udp_declaration
                 ;
 
-module_declaration : attribute_instances module_kw module_identifier
-                     module_parameter_port_list list_of_ports ';' module_item
+module_declaration : module_kw module_identifier
+                     module_parameter_port_list list_of_ports SEMICOLON
+                     module_item
                      KW_ENDMODULE
-                   | attribute_instances module_kw module_identifier
-                     module_parameter_port_list list_of_port_declarations ';' 
+                   | attribute_instances_o module_kw module_identifier
+                     module_parameter_port_list list_of_port_declarations 
+                     SEMICOLON
                      non_port_module_item KW_ENDMODULE
                    ;
 
-module_kw       : KW_MACROMODULE
-                | KW_MODULE
+module_kw       : KW_MACROMODULE    {printf("MODULE\n");}
+                | KW_MODULE         {printf("MODULE\n");}
                 ;
 
 /* A.1.4 Module parameters and ports */
 
-module_parameter_port_list  : '#' '(' module_params ')'
+module_parameter_port_list  : 
+                            | '#' OPEN_BRACKET module_params CLOSE_BRACKET
                             ;
 
-module_params     : parameter_declaration
+module_params     : 
+                  | parameter_declaration
                   | module_params ',' parameter_declaration
                   ;
 
 list_of_ports   :
-                | '(' ports ')'
+                | OPEN_BRACKET CLOSE_BRACKET
+                | OPEN_BRACKET ports CLOSE_BRACKET
                 ;
 
-list_of_port_declarations   : '(' ')'
-                            | '(' port_declarations ')'
+list_of_port_declarations   : OPEN_BRACKET CLOSE_BRACKET
+                            | OPEN_BRACKET port_declarations CLOSE_BRACKET
                             ;
 
 port_declarations           : port_declaration
                             | port_declarations ',' port_declaration
                             ;
 
-ports           : ports ',' port
+ports           : 
+                | ports ',' port
                 | port
                 ;
 
 port            : port_expression
-                | '.' port_identifier '(' port_expression ')'
+                | '.' port_identifier OPEN_BRACKET port_expression CLOSE_BRACKET
                 ;
 
 port_expression : port_reference
@@ -370,8 +381,8 @@ port_expression : port_reference
                 ;
 
 port_reference  : port_identifier
-                | port_identifier '[' constant_expression ']'
-                | port_identifier '[' range_expression ']'
+                | port_identifier OPEN_SQ_BRACKET constant_expression CLOSE_SQ_BRACKET
+                | port_identifier OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
                 ;
 
 port_declaration : attribute_instances inout_declaration
@@ -380,17 +391,18 @@ port_declaration : attribute_instances inout_declaration
                  ;
 
 attribute_instances_o : attribute_instances
-                      |
                       ;
 
-attribute_instances : attribute_instances attribute_instance
+attribute_instances : 
                     | attribute_instance
+                    | attribute_instances attribute_instance
                     ;
 
 /* A.1.5 Module Items */
 
-module_item     : module_or_generate_item
-                | port_declaration ';'
+module_item     : 
+                | module_or_generate_item
+                | port_declaration SEMICOLON
                 | attribute_instances generated_instantiation
                 | attribute_instances local_parameter_declaration
                 | attribute_instances parameter_declaration
@@ -420,7 +432,8 @@ module_or_generate_item_declaration : net_declaration
                                     | function_declaration
                                     ;
 
-non_port_module_item : attribute_instances generated_instantiation
+non_port_module_item : 
+                     | attribute_instances generated_instantiation
                      | attribute_instances local_parameter_declaration
                      | attribute_instances module_or_generate_item
                      | attribute_instances parameter_declaration
@@ -428,26 +441,26 @@ non_port_module_item : attribute_instances generated_instantiation
                      | attribute_instances specparam_declaration
                      ;
 
-parameter_override   : KW_DEFPARAM list_of_param_assignments ';'
+parameter_override   : KW_DEFPARAM list_of_param_assignments SEMICOLON
                      ;
 
 /* A.2.1.1 Declaration types -> Module Parameter Declarations */
 
-local_parameter_declaration : KW_LOCALPARAM signed_o range_o list_of_param_assignments ';'
-                            | KW_LOCALPARAM KW_INTEGER list_of_param_assignments ';'
-                            | KW_LOCALPARAM KW_REAL list_of_param_assignments ';'
-                            | KW_LOCALPARAM KW_REALTIME list_of_param_assignments ';'
-                            | KW_LOCALPARAM KW_TIME list_of_param_assignments ';'
+local_parameter_declaration : KW_LOCALPARAM signed_o range_o list_of_param_assignments SEMICOLON
+                            | KW_LOCALPARAM KW_INTEGER list_of_param_assignments SEMICOLON
+                            | KW_LOCALPARAM KW_REAL list_of_param_assignments SEMICOLON
+                            | KW_LOCALPARAM KW_REALTIME list_of_param_assignments SEMICOLON
+                            | KW_LOCALPARAM KW_TIME list_of_param_assignments SEMICOLON
                             ;
 
-parameter_declaration : KW_PARAMETER signed_o range_o list_of_param_assignments ';'
-                      | KW_PARAMETER KW_INTEGER list_of_param_assignments ';'
-                      | KW_PARAMETER KW_REAL list_of_param_assignments ';'
-                      | KW_PARAMETER KW_REALTIME list_of_param_assignments ';'
-                      | KW_PARAMETER KW_TIME list_of_param_assignments ';'
+parameter_declaration : KW_PARAMETER signed_o range_o list_of_param_assignments SEMICOLON
+                      | KW_PARAMETER KW_INTEGER list_of_param_assignments SEMICOLON
+                      | KW_PARAMETER KW_REAL list_of_param_assignments SEMICOLON
+                      | KW_PARAMETER KW_REALTIME list_of_param_assignments SEMICOLON
+                      | KW_PARAMETER KW_TIME list_of_param_assignments SEMICOLON
                       ;
 
-specparam_declaration : KW_SPECPARAM range_o list_of_specparam_assignments ';'
+specparam_declaration : KW_SPECPARAM range_o list_of_specparam_assignments SEMICOLON
                       ;
 
 range_o             : range
@@ -485,9 +498,9 @@ net_type_o          : net_type | ;
 
 /* A.2.1.3 Type Declarations */
 
-event_declaration   : KW_EVENT list_of_event_identifiers';' ;
-genvar_declaration  : KW_EVENT list_of_genvar_identifiers';' ;
-integer_declaration : KW_EVENT list_of_variable_identifiers ';' ;
+event_declaration   : KW_EVENT list_of_event_identifiers SEMICOLON ;
+genvar_declaration  : KW_EVENT list_of_genvar_identifiers SEMICOLON ;
+integer_declaration : KW_EVENT list_of_variable_identifiers SEMICOLON ;
 
 vect_or_scaled_o    : KW_VECTORED
                     | KW_SCALARED
@@ -498,29 +511,29 @@ delay3_o            : delay3 | ;
 drive_strength_o    : drive_strength | ;
 charge_strength_o   : charge_strength | ;
 
-net_declaration : net_type signed_o delay3_o list_of_net_identifiers ';'
+net_declaration : net_type signed_o delay3_o list_of_net_identifiers SEMICOLON
                 | net_type drive_strength_o signed_o delay3_o 
-                  list_of_net_decl_assignments ';'
+                  list_of_net_decl_assignments SEMICOLON
                 | net_type vect_or_scaled_o signed_o range delay3_o 
-                  list_of_net_identifiers ';'
+                  list_of_net_identifiers SEMICOLON
                 | net_type drive_strength_o vect_or_scaled_o signed_o range
-                  delay3_o list_of_net_decl_assignments ';'
+                  delay3_o list_of_net_decl_assignments SEMICOLON
                 | KW_TRIREG charge_strength_o signed_o delay3_o
-                  list_of_net_identifiers ';'
+                  list_of_net_identifiers SEMICOLON
                 | KW_TRIREG drive_strength_o signed_o delay3_o
-                  list_of_net_decl_assignments ';'
+                  list_of_net_decl_assignments SEMICOLON
                 | KW_TRIREG charge_strength_o vect_or_scaled_o signed_o
-                  range delay3_o list_of_net_identifiers ';'
+                  range delay3_o list_of_net_identifiers SEMICOLON
                 | KW_TRIREG drive_strength_o vect_or_scaled_o signed_o
                   range delay3_o list_of_net_decl_assignments
                 ;
 
-real_declaration    : KW_REAL list_of_real_identifiers ';' ;
-realtime_declaration: KW_REALTIME list_of_real_identifiers ';' ;
-reg_declaration     : KW_REG signed_o range_o list_of_variable_identifiers ';'
+real_declaration    : KW_REAL list_of_real_identifiers SEMICOLON ;
+realtime_declaration: KW_REALTIME list_of_real_identifiers SEMICOLON ;
+reg_declaration     : KW_REG signed_o range_o list_of_variable_identifiers SEMICOLON
                     ;
 
-time_declaration    : KW_TIME list_of_variable_identifiers ';' ;
+time_declaration    : KW_TIME list_of_variable_identifiers SEMICOLON ;
 
 /* 2.2.1 Net and variable types */
 
@@ -550,32 +563,32 @@ variable_type       : variable_identifier
 
 /* A.2.2.2 Strengths */
 
-drive_strength      : '(' strength0 ',' strength1 ')'
-                    | '(' strength1 ',' strength0 ')'
-                    | '(' strength0 ',' KW_HIGHZ1 ')'
-                    | '(' strength1 ',' KW_HIGHZ0 ')'
-                    | '(' KW_HIGHZ0 ',' strength1 ')'
-                    | '(' KW_HIGHZ1 ',' strength0 ')'
+drive_strength      : OPEN_BRACKET strength0 ',' strength1 CLOSE_BRACKET
+                    | OPEN_BRACKET strength1 ',' strength0 CLOSE_BRACKET
+                    | OPEN_BRACKET strength0 ',' KW_HIGHZ1 CLOSE_BRACKET
+                    | OPEN_BRACKET strength1 ',' KW_HIGHZ0 CLOSE_BRACKET
+                    | OPEN_BRACKET KW_HIGHZ0 ',' strength1 CLOSE_BRACKET
+                    | OPEN_BRACKET KW_HIGHZ1 ',' strength0 CLOSE_BRACKET
                     ;
 
 strength0           : KW_SUPPLY0 | KW_STRONG0 | KW_PULL0 | KW_WEAK0 ;
 strength1           : KW_SUPPLY1 | KW_STRONG1 | KW_PULL1 | KW_WEAK1 ;
 
-charge_strength     : '(' KW_SMALL ')'
-                    | '(' KW_MEDIUM ')'
-                    | '(' KW_LARGE ')'
+charge_strength     : OPEN_BRACKET KW_SMALL CLOSE_BRACKET
+                    | OPEN_BRACKET KW_MEDIUM CLOSE_BRACKET
+                    | OPEN_BRACKET KW_LARGE CLOSE_BRACKET
                     ;
 
 /* A.2.2.3 Delays */
 
 delay3              : '#' delay_value
-                    | '#' '(' delay_value ')'
-                    | '#' '(' delay_value ',' delay_value ')'
-                    | '#' '(' delay_value ',' delay_value ',' delay_value ')'
+                    | '#' OPEN_BRACKET delay_value CLOSE_BRACKET
+                    | '#' OPEN_BRACKET delay_value ',' delay_value CLOSE_BRACKET
+                    | '#' OPEN_BRACKET delay_value ',' delay_value ',' delay_value CLOSE_BRACKET
 
 delay2              : '#' delay_value
-                    | '#' '(' delay_value ')'
-                    | '#' '(' delay_value ',' delay_value ')'
+                    | '#' OPEN_BRACKET delay_value CLOSE_BRACKET
+                    | '#' OPEN_BRACKET delay_value ',' delay_value CLOSE_BRACKET
 
 delay_value         : unsigned_number
                     | parameter_identifier
@@ -653,11 +666,11 @@ error_limit_value_o     : ',' error_limit_value
                         |
                         ;
 
-pulse_control_specparam : KW_PATHPULSE '=' '(' reject_limit_value 
-                          error_limit_value_o ')' ';'
+pulse_control_specparam : KW_PATHPULSE '=' OPEN_BRACKET reject_limit_value 
+                          error_limit_value_o CLOSE_BRACKET SEMICOLON
                         | KW_PATHPULSE specify_input_terminal_descriptor '$'
-                          specify_output_terminal_descriptor '=' '(' 
-                          reject_limit_value error_limit_value_o ')' ';'
+                          specify_output_terminal_descriptor '=' OPEN_BRACKET 
+                          reject_limit_value error_limit_value_o CLOSE_BRACKET SEMICOLON
                         ;
 
 error_limit_value       : limit_value ;
@@ -666,21 +679,21 @@ limit_value             : constant_mintypmax_expression ;
 
 /* A.2.5 Declaration ranges */
 
-dimension               : '[' dimension_constant_expression ':' 
-                           dimension_constant_expression ']' ;
+dimension               : OPEN_SQ_BRACKET dimension_constant_expression COLON 
+                           dimension_constant_expression CLOSE_SQ_BRACKET ;
 
-range                   : '[' msb_constant_expression ':' 
-                           lsb_constant_expression ']' ;
+range                   : OPEN_SQ_BRACKET msb_constant_expression COLON 
+                           lsb_constant_expression CLOSE_SQ_BRACKET ;
 
 /* A.2.6 Function Declarations */
 
 automatic_o         : KW_AUTOMATIC | ;
 
 function_declaration : KW_FUNCTION automatic_o signed_o range_or_type
-                       function_identifier ';' function_item_declarations
+                       function_identifier SEMICOLON function_item_declarations
                        function_statement KW_ENDFUNCTION
                      | KW_FUNCTION automatic_o signed_o range_or_type
-                       function_identifier '(' function_port_list ')' ';' 
+                       function_identifier OPEN_BRACKET function_port_list CLOSE_BRACKET SEMICOLON 
                        block_item_declarations
                        function_statement KW_ENDFUNCTION
                      ;
@@ -698,7 +711,7 @@ function_item_declarations : function_item_declaration
                            ;
 
 function_item_declaration  : block_item_declaration 
-                           | tf_input_declaration ';'
+                           | tf_input_declaration SEMICOLON
                            ;
 
 function_port_list         : attribute_instances_o tf_input_declaration
@@ -718,12 +731,12 @@ range_or_type              : range
 
 /* A.2.7 Task Declarations */
 
-task_declaration    : KW_TASK automatic_o task_identifier ';'
+task_declaration    : KW_TASK automatic_o task_identifier SEMICOLON
                       task_item_declarations
                       statement
                       KW_ENDTASK
                     | KW_TASK automatic_o task_identifier 
-                      '(' task_port_list ')' ';'
+                      OPEN_BRACKET task_port_list CLOSE_BRACKET SEMICOLON
                       block_item_declarations
                       statement
                       KW_ENDTASK
@@ -734,18 +747,18 @@ task_item_declarations : task_item_declaration
                        ;
 
 task_item_declaration : block_item_declaration
-                      | attribute_instances tf_input_declaration ';'
-                      | attribute_instances tf_output_declaration ';'
-                      | attribute_instances tf_inout_declaration ';'
+                      | attribute_instances tf_input_declaration SEMICOLON
+                      | attribute_instances tf_output_declaration SEMICOLON
+                      | attribute_instances tf_inout_declaration SEMICOLON
                       ;
 
 task_port_list  : task_port_item
                 | task_port_list ',' task_port_item
                 ;
 
-task_port_item  : attribute_instances tf_input_declaration ';'
-                | attribute_instances tf_output_declaration ';'
-                | attribute_instances tf_inout_declaration ';'
+task_port_item  : attribute_instances tf_input_declaration SEMICOLON
+                | attribute_instances tf_output_declaration SEMICOLON
+                | attribute_instances tf_inout_declaration SEMICOLON
 
 tf_input_declaration : KW_INPUT reg_o signed_o range_o list_of_port_identifiers
                      | KW_INPUT task_port_type_o list_of_port_identifiers
@@ -780,7 +793,7 @@ block_item_declaration : attribute_instances block_reg_declaration
                        ;
 
 block_reg_declaration : KW_REG signed_o range_o 
-                        list_of_block_variable_identifiers ';'
+                        list_of_block_variable_identifiers SEMICOLON
                       ;
 
 list_of_block_variable_identifiers : block_variable_type
@@ -796,20 +809,20 @@ block_variable_type : variable_identifier
 
 delay2_o : delay2 | ;
 
-gate_instantiation : cmos_switchtype delay3_o cmos_switch_instances ';'
+gate_instantiation : cmos_switchtype delay3_o cmos_switch_instances SEMICOLON
                    | enable_gatetype drive_strength_o delay3_o
-                     enable_gate_instances ';'
-                   | mos_switchtype delay3_o mos_switch_instances ';'
+                     enable_gate_instances SEMICOLON
+                   | mos_switchtype delay3_o mos_switch_instances SEMICOLON
                    | n_input_gatetype drive_strength_o delay2_o
-                     n_input_gate_instances ';'
+                     n_input_gate_instances SEMICOLON
                    | n_output_gatetype drive_strength_o delay2_o
-                     n_output_gate_instances ';'
+                     n_output_gate_instances SEMICOLON
                    | pass_en_switchtype delay2_o 
-                     pass_enable_switch_instances ';'
+                     pass_enable_switch_instances SEMICOLON
                    | pass_switchtype delay2_o 
-                     pass_switch_instances ';'
-                   | KW_PULLDOWN pulldown_strength_o pull_gate_instances ';'
-                   | KW_PULLUP pullup_strength_o pull_gate_instances ';'
+                     pass_switch_instances SEMICOLON
+                   | KW_PULLDOWN pulldown_strength_o pull_gate_instances SEMICOLON
+                   | KW_PULLUP pullup_strength_o pull_gate_instances SEMICOLON
                    ;
 
 pass_enable_switch_instances : pass_enable_switch_instance
@@ -847,36 +860,36 @@ enable_gate_instances : enable_gate_instance
                       | enable_gate_instances ',' enable_gate_instance 
                       ;
 
-pass_enable_switch_instance  : name_of_gate_instance '(' inout_terminal ','
-                               inout_terminal ',' enable_terminal ')'
+pass_enable_switch_instance  : name_of_gate_instance OPEN_BRACKET inout_terminal ','
+                               inout_terminal ',' enable_terminal CLOSE_BRACKET
                              ;
 
-pull_gate_instance           : name_of_gate_instance '(' output_terminal ')'
+pull_gate_instance           : name_of_gate_instance OPEN_BRACKET output_terminal CLOSE_BRACKET
                              ;
 
-pass_switch_instance         : name_of_gate_instance '(' inout_terminal ','
-                               inout_terminal ')'
+pass_switch_instance         : name_of_gate_instance OPEN_BRACKET inout_terminal ','
+                               inout_terminal CLOSE_BRACKET
                              ;
 
-n_output_gate_instance       : name_of_gate_instance '(' output_terminals ','
-                               input_terminal ')'
+n_output_gate_instance       : name_of_gate_instance OPEN_BRACKET output_terminals ','
+                               input_terminal CLOSE_BRACKET
                              ;
 
-n_input_gate_instance        : name_of_gate_instance '(' output_terminal ','
-                               input_terminals ')'
+n_input_gate_instance        : name_of_gate_instance OPEN_BRACKET output_terminal ','
+                               input_terminals CLOSE_BRACKET
                              ;
 
-mos_switch_instance          : name_of_gate_instance '(' output_terminal ','
-                               input_terminal ',' enable_terminal ')'       
+mos_switch_instance          : name_of_gate_instance OPEN_BRACKET output_terminal ','
+                               input_terminal ',' enable_terminal CLOSE_BRACKET       
                              ;
 
-cmos_switch_instance         : name_of_gate_instance '(' output_terminal ','
+cmos_switch_instance         : name_of_gate_instance OPEN_BRACKET output_terminal ','
                                input_terminal ',' ncontrol_terminal ','
-                               pcontrol_terminal ')'
+                               pcontrol_terminal CLOSE_BRACKET
                              ;
 
-enable_gate_instance         : name_of_gate_instance '(' output_terminal ','
-                               input_terminal ',' enable_terminal ')'
+enable_gate_instance         : name_of_gate_instance OPEN_BRACKET output_terminal ','
+                               input_terminal ',' enable_terminal CLOSE_BRACKET
                              ;
 
 name_of_gate_instance        : gate_instance_identifier range_o;
@@ -892,15 +905,15 @@ input_terminals              : input_terminal
 /* A.3.2 primitive strengths */
 
 pulldown_strength_o : pulldown_strength | ;
-pulldown_strength           : '(' strength0 ',' strength1 ')'
-                            | '(' strength1 ',' strength0 ')'
-                            | '(' strength1 ')'
+pulldown_strength           : OPEN_BRACKET strength0 ',' strength1 CLOSE_BRACKET
+                            | OPEN_BRACKET strength1 ',' strength0 CLOSE_BRACKET
+                            | OPEN_BRACKET strength1 CLOSE_BRACKET
                             ;
 
 pullup_strength_o : pullup_strength | ;
-pullup_strength             : '(' strength0 ',' strength1 ')'
-                            | '(' strength1 ',' strength0 ')'
-                            | '(' strength1 ')'
+pullup_strength             : OPEN_BRACKET strength0 ',' strength1 CLOSE_BRACKET
+                            | OPEN_BRACKET strength1 ',' strength0 CLOSE_BRACKET
+                            | OPEN_BRACKET strength1 CLOSE_BRACKET
                             ;
 
 /* A.3.3 primitive terminals */
@@ -925,12 +938,12 @@ pass_switchtype     : KW_TRAN | KW_RTRAN;
 /* A.4.1 module instantiation */
 
 module_instantiation: module_identifier parameter_value_assignment_o
-                      module_instances ';'
+                      module_instances SEMICOLON
                     ;
 
 parameter_value_assignment_o : parameter_value_assignment | ;
 
-parameter_value_assignment : '#' '(' list_of_parameter_assignments ')'
+parameter_value_assignment : '#' OPEN_BRACKET list_of_parameter_assignments CLOSE_BRACKET
                            ;
 
 list_of_parameter_assignments : ordered_parameter_assignments
@@ -952,11 +965,11 @@ module_instances : module_instances ',' module_instance
 
 ordered_parameter_assignment : expression;
 
-named_parameter_assignment : '.' parameter_identifier '(' expression_o ')';
+named_parameter_assignment : '.' parameter_identifier OPEN_BRACKET expression_o CLOSE_BRACKET;
 
 expression_o : expression | ;
 
-module_instance : name_of_instance '(' list_of_port_connections_o ')';
+module_instance : name_of_instance OPEN_BRACKET list_of_port_connections_o CLOSE_BRACKET;
 list_of_port_connections_o : list_of_port_connections | ;
 
 name_of_instance : module_instance_identifier range_o;
@@ -977,8 +990,8 @@ named_port_connections   : named_port_connection
 
 ordered_port_connection : attribute_instances expression_o;
 
-named_port_connection : attribute_instances '.' port_identifier '(' 
-                        expression_o ')'
+named_port_connection : attribute_instances '.' port_identifier OPEN_BRACKET 
+                        expression_o CLOSE_BRACKET
                       ;
 
 /* A.4.2 Generated instantiation */
@@ -999,14 +1012,14 @@ generate_item : generate_conditional_statement
               | module_or_generate_item
               ;
 
-generate_conditional_statement : KW_IF '(' constant_expression ')'
+generate_conditional_statement : KW_IF OPEN_BRACKET constant_expression CLOSE_BRACKET
                                  generate_item_or_null KW_ELSE
                                  generate_item_or_null
-                               | KW_IF '(' constant_expression ')'
+                               | KW_IF OPEN_BRACKET constant_expression CLOSE_BRACKET
                                  generate_item_or_null
                                ;
 
-generate_case_statement : KW_CASE '(' constant_expression ')'
+generate_case_statement : KW_CASE OPEN_BRACKET constant_expression CLOSE_BRACKET
                           genvar_case_items KW_ENDCASE
                         ;
 
@@ -1015,8 +1028,8 @@ genvar_case_items : genvar_case_item
                   |
                   ;
 
-genvar_case_item : constant_expressions ':' generate_item_or_null
-                 | KW_DEFAULT ':' generate_item_or_null
+genvar_case_item : constant_expressions COLON generate_item_or_null
+                 | KW_DEFAULT COLON generate_item_or_null
                  | KW_DEFAULT     generate_item_or_null
                  ;
 
@@ -1024,23 +1037,23 @@ constant_expressions : constant_expression
                      | constant_expressions ',' constant_expression
                      ;
 
-generate_loop_statement : KW_FOR '(' genvar_assignment ';' constant_expression
-                          ';' genvar_assignment ')' KW_BEGIN ';'
+generate_loop_statement : KW_FOR OPEN_BRACKET genvar_assignment SEMICOLON constant_expression
+                          SEMICOLON genvar_assignment CLOSE_BRACKET KW_BEGIN SEMICOLON
                           generate_block_identifier generate_items KW_END
 
 genvar_assignment : genvar_identifier '=' constant_expression;
 
 generate_block : KW_BEGIN generate_items KW_END
-               | KW_BEGIN ':' generate_block_identifier generate_items KW_END
+               | KW_BEGIN COLON generate_block_identifier generate_items KW_END
                ;
 
 /* A.5.1 UDP Declaration */
 
 udp_declaration : attribute_instances_o KW_PRIMITIVE udp_identifier
-                  '(' udp_port_list ')' ';'
+                  OPEN_BRACKET udp_port_list CLOSE_BRACKET SEMICOLON
                   udp_port_declarations udp_body KW_ENDPRIMITIVE
                 | attribute_instances_o KW_PRIMITIVE udp_identifier
-                  '(' udp_declaration_port_list ')' ';'
+                  OPEN_BRACKET udp_declaration_port_list CLOSE_BRACKET SEMICOLON
                   udp_body KW_ENDPRIMITIVE
                 ;
 
@@ -1062,9 +1075,9 @@ udp_input_declarations  : udp_input_declaration
                         | udp_input_declarations udp_input_declaration
                         ;
 
-udp_port_declaration : udp_output_declaration ';'
-                     | udp_input_declaration ';'
-                     | udp_reg_declaration ';'
+udp_port_declaration : udp_output_declaration SEMICOLON
+                     | udp_input_declaration SEMICOLON
+                     | udp_reg_declaration SEMICOLON
                      ;
 
 udp_output_declaration : attribute_instances_o KW_OUTPUT port_identifier
@@ -1091,7 +1104,7 @@ combinational_entrys : combinational_entry
                      | combinational_entrys combinational_entry
                      ;
 
-combinational_entry : level_input_list ':' output_symbol ';' ;
+combinational_entry : level_input_list COLON output_symbol SEMICOLON ;
 
 sequential_body : udp_initial_statement KW_TABLE sequential_entrys KW_ENDTABLE
                 | KW_TABLE sequential_entrys KW_ENDTABLE
@@ -1101,7 +1114,7 @@ sequential_entrys     : sequential_entry
                       | sequential_entrys sequential_entry
                       ;
 
-udp_initial_statement : KW_INITIAL output_port_identifier '=' init_val ';';
+udp_initial_statement : KW_INITIAL output_port_identifier '=' init_val SEMICOLON;
 
 init_val              : '1' '\'' 'b' '0' 
                       | '1' '\'' 'b' '1' 
@@ -1115,7 +1128,7 @@ init_val              : '1' '\'' 'b' '0'
                       | '0'
                       ;
 
-sequential_entry      : seq_input_list ':' current_state ':' next_state ';';
+sequential_entry      : seq_input_list COLON current_state COLON next_state SEMICOLON;
 seq_input_list        : level_input_list | edge_input_list;
 
 level_input_list      : level_symbols;
@@ -1127,7 +1140,7 @@ level_symbols         : level_symbol
 
 edge_input_list       :  level_symbols_o edge_indicator level_symbols_o;
 
-edge_indicator        : '(' level_symbol level_symbol ')' 
+edge_indicator        : OPEN_BRACKET level_symbol level_symbol CLOSE_BRACKET 
                       | edge_symbol
                       ;
 
@@ -1144,22 +1157,22 @@ edge_symbol :'r'|'R'|'f'|'F'|'p'|'P'|'n'|'N'|'*';
 
 /* A.5.4 UDP instantiation */
 
-udp_instantiation : udp_identifier drive_strength_o delay2_o udp_instances ';'
+udp_instantiation : udp_identifier drive_strength_o delay2_o udp_instances SEMICOLON
                   ;
 
 udp_instances : udp_instance
               | udp_instances ',' udp_instance
               ;
 
-udp_instance : name_of_udp_instance '(' output_terminal ',' input_terminals ')'
-             | '(' output_terminal ',' input_terminals ')'
+udp_instance : name_of_udp_instance OPEN_BRACKET output_terminal ',' input_terminals CLOSE_BRACKET
+             | OPEN_BRACKET output_terminal ',' input_terminals CLOSE_BRACKET
              ;
-name_of_udp_instance : udp_instance_identifier range_o ';' ;
+name_of_udp_instance : udp_instance_identifier range_o SEMICOLON ;
 
 /* A.6.1 Continuous assignment statements */
 
 continuous_assign : KW_ASSIGN drive_strength_o delay3_o 
-                    list_of_net_assignments ';'
+                    list_of_net_assignments SEMICOLON
                   ;
 
 list_of_net_assignments : net_assignment
@@ -1188,11 +1201,11 @@ procedural_continuous_assignments : KW_ASSIGN variable_assignment
                                   | KW_RELEASE net_lvalue
                                   ;
 
-function_blocking_assignment : variable_lvalue ';' expression
+function_blocking_assignment : variable_lvalue SEMICOLON expression
                              ;
 
 function_statement_or_null : function_statement
-                           | attribute_instances_o ';'
+                           | attribute_instances_o SEMICOLON
                            ;
 
 /* A.6.3 Parallel and sequential blocks */
@@ -1208,20 +1221,20 @@ function_statements     : function_statement
                         ;
 
 function_seq_block : KW_BEGIN function_statements_o KW_END
-                   | KW_BEGIN ':' block_identifier block_item_declarations_o
+                   | KW_BEGIN COLON block_identifier block_item_declarations_o
                      function_statements_o KW_END
                    ;
 
-variable_assignment : variable_lvalue ';' expression
+variable_assignment : variable_lvalue SEMICOLON expression
                     ;
 
 par_block : KW_FORK statements_o KW_JOIN
-          | KW_FORK ':' block_identifier block_item_declarations_o statements_o
+          | KW_FORK COLON block_identifier block_item_declarations_o statements_o
             KW_JOIN
           ;
 
 seq_block : KW_BEGIN statements_o KW_END
-          | KW_BEGIN ':' block_identifier block_item_declarations_o 
+          | KW_BEGIN COLON block_identifier block_item_declarations_o 
             statements_o KW_END
           ;
 
@@ -1232,15 +1245,15 @@ statements   : statement
              | statements statement
              ;
 
-statement : attribute_instances_o blocking_assignment ';'
+statement : attribute_instances_o blocking_assignment SEMICOLON
           | attribute_instances_o case_statement
           | attribute_instances_o conditional_statement
           | attribute_instances_o disable_statement
           | attribute_instances_o event_trigger
           | attribute_instances_o loop_statement
-          | attribute_instances_o nonblocking_assignment ';'
+          | attribute_instances_o nonblocking_assignment SEMICOLON
           | attribute_instances_o par_block
-          | attribute_instances_o procedural_continuous_assignments ';'
+          | attribute_instances_o procedural_continuous_assignments SEMICOLON
           | attribute_instances_o procedural_timing_control_statement
           | attribute_instances_o seq_block
           | attribute_instances_o system_task_enable
@@ -1249,10 +1262,10 @@ statement : attribute_instances_o blocking_assignment ';'
           ;
 
 statement_or_null : statement
-                  | attribute_instances_o ';'
+                  | attribute_instances_o SEMICOLON
                   ;
                   
-function_statement : attribute_instances_o function_blocking_assignment ';'
+function_statement : attribute_instances_o function_blocking_assignment SEMICOLON
                    | attribute_instances_o function_case_statement
                    | attribute_instances_o function_conditional_statement
                    | attribute_instances_o function_loop_statement
@@ -1264,22 +1277,22 @@ function_statement : attribute_instances_o function_blocking_assignment ';'
 /* A.6.5 Timing control statements */
 
 delay_control : '#' delay_value
-              | '#' '(' mintypmax_expression ')'
+              | '#' OPEN_BRACKET mintypmax_expression CLOSE_BRACKET
               ;
 
 delay_or_event_control : delay_control
                        | event_control
-                       | KW_REPEAT '(' expression ')' event_control
+                       | KW_REPEAT OPEN_BRACKET expression CLOSE_BRACKET event_control
                        ;
 
-disable_statement : KW_DISABLE hierarchical_task_identifier ';'
-                  | KW_DISABLE hierarchical_block_identifier ';'
+disable_statement : KW_DISABLE hierarchical_task_identifier SEMICOLON
+                  | KW_DISABLE hierarchical_block_identifier SEMICOLON
                   ;
 
 event_control : '@'  event_identifier
-              | '@'  '(' event_expression ')'
+              | '@'  OPEN_BRACKET event_expression CLOSE_BRACKET
               | '@' '*'
-              | '@'  '(''*'')'
+              | '@'  OPEN_BRACKET'*'CLOSE_BRACKET
               ;
 
 event_trigger : '-' '>' hierarchical_event_identifier ;
@@ -1293,48 +1306,48 @@ event_expression : expression
 
 procedural_timing_control_statement : delay_or_event_control statement_or_null
 
-wait_statement : KW_WAIT '(' expression ')' statement_or_null;
+wait_statement : KW_WAIT OPEN_BRACKET expression CLOSE_BRACKET statement_or_null;
 
 /* A.6.6 Conditional Statemnets */
 
-conditional_statement : KW_IF '(' expression ')' statement_or_null
-                      | KW_IF '(' expression ')' statement_or_null
+conditional_statement : KW_IF OPEN_BRACKET expression CLOSE_BRACKET statement_or_null
+                      | KW_IF OPEN_BRACKET expression CLOSE_BRACKET statement_or_null
                         KW_ELSE statement_or_null
                       | if_else_if_statement
                       ;
 
-if_else_if_statement : KW_IF '(' expression ')' statement_or_null
+if_else_if_statement : KW_IF OPEN_BRACKET expression CLOSE_BRACKET statement_or_null
                        else_if_statements_o
-                     | KW_IF '(' expression ')' statement_or_null
+                     | KW_IF OPEN_BRACKET expression CLOSE_BRACKET statement_or_null
                        else_if_statements_o
                        KW_ELSE statement_or_null
                      ;
 
 else_if_statements_o : else_if_statements | ;
-else_if_statements : KW_ELSE KW_IF '(' expression ')' statement_or_null
-                   | else_if_statements KW_ELSE KW_IF '(' expression ')' 
+else_if_statements : KW_ELSE KW_IF OPEN_BRACKET expression CLOSE_BRACKET statement_or_null
+                   | else_if_statements KW_ELSE KW_IF OPEN_BRACKET expression CLOSE_BRACKET 
                      statement_or_null
                    ;
 
-function_conditional_statement : KW_IF '(' expression ')' 
+function_conditional_statement : KW_IF OPEN_BRACKET expression CLOSE_BRACKET 
                                  function_statement_or_null
-                               | KW_IF '(' expression ')' 
+                               | KW_IF OPEN_BRACKET expression CLOSE_BRACKET 
                                  function_statement_or_null
                                  KW_ELSE function_statement_or_null
                                | function_if_else_if_statement
                                ;
 
 function_else_if_statements_o : function_else_if_statements | ;
-function_else_if_statements   : KW_ELSE KW_IF '(' expression ')' 
+function_else_if_statements   : KW_ELSE KW_IF OPEN_BRACKET expression CLOSE_BRACKET 
                                 function_statement_or_null 
-                              | function_else_if_statements KW_ELSE KW_IF '('
-                                expression ')' function_statement_or_null
+                              | function_else_if_statements KW_ELSE KW_IF OPEN_BRACKET
+                                expression CLOSE_BRACKET function_statement_or_null
                               ;
 
-function_if_else_if_statement : KW_IF '(' expression ')' 
+function_if_else_if_statement : KW_IF OPEN_BRACKET expression CLOSE_BRACKET 
                                 function_statement_or_null
                                 function_else_if_statements_o
-                              | KW_IF '(' expression ')' 
+                              | KW_IF OPEN_BRACKET expression CLOSE_BRACKET 
                                 function_statement_or_null
                                 function_else_if_statements_o
                                 KW_ELSE function_statement_or_null
@@ -1342,9 +1355,9 @@ function_if_else_if_statement : KW_IF '(' expression ')'
 
 /* A.6.7 Case Statements */
 
-case_statement  : KW_CASE '(' expression ')' case_items KW_ENDCASE
-                | KW_CASEZ '(' expression ')' case_items KW_ENDCASE
-                | KW_CASEX '(' expression ')' case_items KW_ENDCASE
+case_statement  : KW_CASE OPEN_BRACKET expression CLOSE_BRACKET case_items KW_ENDCASE
+                | KW_CASEZ OPEN_BRACKET expression CLOSE_BRACKET case_items KW_ENDCASE
+                | KW_CASEX OPEN_BRACKET expression CLOSE_BRACKET case_items KW_ENDCASE
                 ;
 
 case_items      : case_item
@@ -1357,16 +1370,16 @@ expressions     : expression
                 | expressions expression
                 ;
 
-case_item       : expressions ':' statement_or_null
+case_item       : expressions COLON statement_or_null
                 | KW_DEFAULT statement_or_null
-                | KW_DEFAULT ':' statement_or_null
+                | KW_DEFAULT COLON statement_or_null
                 ;
 
-function_case_statement : KW_CASE '(' expression ')'  function_case_items 
+function_case_statement : KW_CASE OPEN_BRACKET expression CLOSE_BRACKET  function_case_items 
                           KW_ENDCASE
-                        | KW_CASEZ '(' expression ')' function_case_items 
+                        | KW_CASEZ OPEN_BRACKET expression CLOSE_BRACKET function_case_items 
                           KW_ENDCASE
-                        | KW_CASEX '(' expression ')' function_case_items 
+                        | KW_CASEX OPEN_BRACKET expression CLOSE_BRACKET function_case_items 
                           KW_ENDCASE
                         ;
 
@@ -1374,33 +1387,33 @@ function_case_items     : function_case_item
                         | function_case_items case_item
                         ;
 
-function_case_item      : expressions ':' function_statement_or_null
+function_case_item      : expressions COLON function_statement_or_null
                         | KW_DEFAULT function_statement_or_null
-                        | KW_DEFAULT ':' function_statement_or_null
+                        | KW_DEFAULT COLON function_statement_or_null
                         ;
 
 /* A.6.8 looping statements */
 
 function_loop_statement : KW_FOREVER function_statement
-                        | KW_REPEAT '(' expression ')' function_statement
-                        | KW_WHILE '(' expression ')' function_statement
-                        | KW_FOR '(' variable_assignment ';' expression
-                          ';' variable_assignment  ')' function_statement
+                        | KW_REPEAT OPEN_BRACKET expression CLOSE_BRACKET function_statement
+                        | KW_WHILE OPEN_BRACKET expression CLOSE_BRACKET function_statement
+                        | KW_FOR OPEN_BRACKET variable_assignment SEMICOLON expression
+                          SEMICOLON variable_assignment  CLOSE_BRACKET function_statement
                         ;
 
 loop_statement          : KW_FOREVER statement
-                        | KW_REPEAT '(' expression ')' statement
-                        | KW_WHILE '(' expression ')' statement
-                        | KW_FOR '(' variable_assignment ';' expression
-                          ';' variable_assignment  ')' statement
+                        | KW_REPEAT OPEN_BRACKET expression CLOSE_BRACKET statement
+                        | KW_WHILE OPEN_BRACKET expression CLOSE_BRACKET statement
+                        | KW_FOR OPEN_BRACKET variable_assignment SEMICOLON expression
+                          SEMICOLON variable_assignment  CLOSE_BRACKET statement
                         ;
 
 
 /* A.6.9 task enable statements */
 
-system_task_enable      : system_task_identifier expressions_o ';' ;
+system_task_enable      : system_task_identifier expressions_o SEMICOLON ;
 
-task_enable             : hierarchical_task_identifier expressions_o ';' ;
+task_enable             : hierarchical_task_identifier expressions_o SEMICOLON ;
 
 /* A.7.1 specify block declaration */
 
@@ -1419,34 +1432,34 @@ specify_item            : specparam_declaration
                         | system_timing_check {printf("%s:%d: System Timing check not supported\n", __FILE__, __LINE__);}
                         ;
 
-pulsestyle_declaration  : KW_PULSESTYLE_ONEVENT list_of_path_outputs ';'
-                        | KW_PULSESTYLE_ONDETECT list_of_path_outputs ';'
+pulsestyle_declaration  : KW_PULSESTYLE_ONEVENT list_of_path_outputs SEMICOLON
+                        | KW_PULSESTYLE_ONDETECT list_of_path_outputs SEMICOLON
                         ;
 
-showcancelled_declaration   : KW_SHOWCANCELLED list_of_path_outputs ';'
-                            | KW_NOSHOWCANCELLED list_of_path_outputs ';'
+showcancelled_declaration   : KW_SHOWCANCELLED list_of_path_outputs SEMICOLON
+                            | KW_NOSHOWCANCELLED list_of_path_outputs SEMICOLON
                             ;
 
 /* A.7.2 specify path declarations */
 
-path_declaration : simple_path_declaration ';'
-                 | edge_sensitive_path_declaration ';'
-                 | state_dependent_path_declaration ';'
+path_declaration : simple_path_declaration SEMICOLON
+                 | edge_sensitive_path_declaration SEMICOLON
+                 | state_dependent_path_declaration SEMICOLON
                  ;
 
 simple_path_declaration : parallel_path_description '=' path_delay_value
                         | full_path_description '=' path_delay_value
                         ;
 
-parallel_path_description : '(' specify_input_terminal_descriptor
+parallel_path_description : OPEN_BRACKET specify_input_terminal_descriptor
                             polarity_operator_o '=' '>'
-                            specify_output_terminal_descriptor ')'
+                            specify_output_terminal_descriptor CLOSE_BRACKET
                           ;
 
 polarity_operator_o : polarity_operator | ;
 
-full_path_description : '(' list_of_path_inputs polarity_operator_o '*'
-                        '>' list_of_path_outputs ')'
+full_path_description : OPEN_BRACKET list_of_path_inputs polarity_operator_o '*'
+                        '>' list_of_path_outputs CLOSE_BRACKET
                       ;
 
 list_of_path_inputs   : specify_input_terminal_descriptor
@@ -1485,7 +1498,7 @@ output_identifier : output_port_identifier
 /* A.7.4 specify path delays */
 
 path_delay_value : list_of_path_delay_expressions
-                 | '(' list_of_path_delay_expressions ')'
+                 | OPEN_BRACKET list_of_path_delay_expressions CLOSE_BRACKET
                  ;
 
 list_of_path_delay_expressions : path_delay_expression
@@ -1522,17 +1535,17 @@ edge_sensitive_path_declaration : parallel_edge_sensitive_path_description '='
                                   path_delay_value
                                 ;
 
-parallel_edge_sensitive_path_description : '(' edge_identifier_o 
+parallel_edge_sensitive_path_description : OPEN_BRACKET edge_identifier_o 
                                            specify_input_terminal_descriptor 
                                            '=' '>'
                                            specify_output_terminal_descriptor 
-                                           polarity_operator_o ':' 
-                                           data_source_expression ')'
+                                           polarity_operator_o COLON 
+                                           data_source_expression CLOSE_BRACKET
 
-full_edge_sensitive_path_description : '(' edge_identifier_o 
+full_edge_sensitive_path_description : OPEN_BRACKET edge_identifier_o 
                                        list_of_path_inputs '*' '>'
                                        list_of_path_outputs polarity_operator_o
-                                       ':' data_source_expression ')'
+                                       COLON data_source_expression CLOSE_BRACKET
                                      ;
 
 data_source_expression : expression ;
@@ -1540,9 +1553,9 @@ data_source_expression : expression ;
 edge_identifier_o : edge_identifier | ;
 edge_identifier : KW_POSEDGE | KW_NEGEDGE;
 
-state_dependent_path_declaration : KW_IF '(' module_path_expression ')' 
+state_dependent_path_declaration : KW_IF OPEN_BRACKET module_path_expression CLOSE_BRACKET 
                                    simple_path_declaration
-                                 | KW_IF '(' module_path_expression ')' 
+                                 | KW_IF OPEN_BRACKET module_path_expression CLOSE_BRACKET 
                                    edge_sensitive_path_declaration
                                  | KW_IFNONE simple_path_declaration
                                  ;
@@ -1585,14 +1598,14 @@ net_concatenation_values : net_concatenation_value
                            net_concatenation_value
                          ;
 
-braced_expression_o : '[' expression ']' | ;
+braced_expression_o : OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET | ;
 
 net_concatenation_value : hierarchical_net_identifier
-                        | hierarchical_net_identifier '[' expression ']' 
+                        | hierarchical_net_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET 
                           braced_expression_o
-                        | hierarchical_net_identifier '[' expression ']' 
-                          braced_expression_o '[' range_expression ']'
-                        | hierarchical_net_identifier '[' range_expression ']'
+                        | hierarchical_net_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET 
+                          braced_expression_o OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
+                        | hierarchical_net_identifier OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
                         | net_concatenation
                         ;
 
@@ -1603,43 +1616,43 @@ variable_concatenation_values : variable_concatenation_value
                            variable_concatenation_value
                          ;
 
-braced_expression_o : '[' expression ']' | ;
+braced_expression_o : OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET | ;
 
 variable_concatenation_value : hierarchical_variable_identifier
                              | hierarchical_variable_identifier 
-                               '[' expression ']' 
+                               OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET 
                                braced_expression_o
                              | hierarchical_variable_identifier 
-                               '[' expression ']' 
-                               braced_expression_o '[' range_expression ']'
+                               OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET 
+                               braced_expression_o OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
                              | hierarchical_variable_identifier 
-                               '[' range_expression ']'
+                               OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
                              | variable_concatenation
                              ;
 
 /* A.8.2 Function calls */
 
 constant_function_call : function_identifier attribute_instances_o
-                         '(' constant_expressions ')'
+                         OPEN_BRACKET constant_expressions CLOSE_BRACKET
                        ;
 
 function_call : hierarchical_function_identifier attribute_instances_o
-                '(' expressions ')'
+                OPEN_BRACKET expressions CLOSE_BRACKET
               ;
 
 genvar_function_call : genvar_function_identifier attribute_instances_o
-                       '(' constant_expressions ')'
+                       OPEN_BRACKET constant_expressions CLOSE_BRACKET
                      ;
 
 system_function_call : system_function_identifier
-                     | system_function_identifier '(' expressions ')'
+                     | system_function_identifier OPEN_BRACKET expressions CLOSE_BRACKET
                      ;
 
 /* A.8.3 Expression */
 
 base_expression : expression ;
 
-conditional_expression : expression1 '?' attribute_instances_o expression2 ':'
+conditional_expression : expression1 '?' attribute_instances_o expression2 COLON
                          expression3
                        ;
 
@@ -1655,15 +1668,15 @@ constant_expression : constant_primary
                     ;
 
 constant_mintypmax_expression : constant_expression
-                              | constant_expression ':' constant_expression 
-                                ':' constant_expression
+                              | constant_expression COLON constant_expression 
+                                COLON constant_expression
                               ;
 
 constant_range_expression : constant_expression
-                          | msb_constant_expression ':' lsb_constant_expression
-                          | constant_base_expression '+' ':' 
+                          | msb_constant_expression COLON lsb_constant_expression
+                          | constant_base_expression '+' COLON 
                             width_constant_expression
-                          | constant_base_expression '-' ':' 
+                          | constant_base_expression '-' COLON 
                             width_constant_expression
                           ;
 
@@ -1685,12 +1698,12 @@ expression  : primary
 lsb_constant_expression : constant_expression;
 
 mintypmax_expression : expression
-                     | expression ':' expression ':' expression
+                     | expression COLON expression COLON expression
                      ;
 
 module_path_conditional_expression : module_path_expression '?' 
                                      attribute_instances_o 
-                                     module_path_expression ':' 
+                                     module_path_expression COLON 
                                      module_path_expression;
 
 module_path_expression : module_path_primary
@@ -1702,16 +1715,16 @@ module_path_expression : module_path_primary
                        ;
 
 module_path_mintypmax_expression : module_path_expression
-                                 | module_path_expression ':' 
-                                   module_path_expression ':' 
+                                 | module_path_expression COLON 
+                                   module_path_expression COLON 
                                    module_path_expression;
 
 msb_constant_expression : constant_expression;
 
 range_expression : expression
-                 | msb_constant_expression ':' lsb_constant_expression
-                 | base_expression '+' ':' width_constant_expression
-                 | base_expression '-' ':' width_constant_expression
+                 | msb_constant_expression COLON lsb_constant_expression
+                 | base_expression '+' COLON width_constant_expression
+                 | base_expression '-' COLON width_constant_expression
                  ;
 
 width_constant_expression : constant_expression;
@@ -1720,7 +1733,7 @@ width_constant_expression : constant_expression;
 
 constant_primary : constant_concatenation
                  | constant_function_call
-                 | '(' constant_mintypmax_expression ')'
+                 | OPEN_BRACKET constant_mintypmax_expression CLOSE_BRACKET
                  | constant_multiple_concatenation
                  | genvar_identifier
                  | number
@@ -1735,45 +1748,45 @@ module_path_primary : number
                     | function_call
                     | system_function_call
                     | constant_function_call
-                    | '(' module_path_mintypmax_expression ')'
+                    | OPEN_BRACKET module_path_mintypmax_expression CLOSE_BRACKET
                     ;
 
 primary : number
         | hierarchical_identifier
-        | hierarchical_identifier '[' expression ']' braced_expression_o
-        | hierarchical_identifier '[' expression ']' braced_expression_o 
-          '[' range_expression ']'
-        | hierarchical_identifier '[' range_expression ']'
+        | hierarchical_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET braced_expression_o
+        | hierarchical_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET braced_expression_o 
+          OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
+        | hierarchical_identifier OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
         | concatenation
         | multiple_concatenation
         | function_call
         | system_function_call
         | constant_function_call
-        | '(' mintypmax_expression ')'
+        | OPEN_BRACKET mintypmax_expression CLOSE_BRACKET
         ;
 
 /* A.8.5 Expression left-side values */
 
 
-braced_constant_expressions : '[' constant_expression ']'
+braced_constant_expressions : OPEN_SQ_BRACKET constant_expression CLOSE_SQ_BRACKET
                             | braced_constant_expressions 
-                              '[' constant_expression ']'
+                              OPEN_SQ_BRACKET constant_expression CLOSE_SQ_BRACKET
                             ;
 
 net_lvalue : hierarchical_net_identifier
            | hierarchical_net_identifier braced_constant_expressions
            | hierarchical_net_identifier braced_constant_expressions
-             '[' constant_range_expression ']'
-           | hierarchical_net_identifier '[' constant_range_expression ']'
+             OPEN_SQ_BRACKET constant_range_expression CLOSE_SQ_BRACKET
+           | hierarchical_net_identifier OPEN_SQ_BRACKET constant_range_expression CLOSE_SQ_BRACKET
            | net_concatenation
            ;
 
 variable_lvalue : hierarchical_variable_identifier
-                | hierarchical_variable_identifier '[' expression ']' 
+                | hierarchical_variable_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET 
                   braced_expression_o
-                | hierarchical_variable_identifier '[' expression ']' 
-                  braced_expression_o '[' range_expression ']'
-                | hierarchical_variable_identifier '[' range_expression ']'
+                | hierarchical_variable_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET 
+                  braced_expression_o OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
+                | hierarchical_variable_identifier OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
                 | variable_concatenation
                 ;
 
@@ -1929,7 +1942,8 @@ attr_specs : attr_spec
            | attr_specs ',' attr_spec
            ;
 
-attribute_instance : '(' '*' attr_specs '*' ')'
+
+attribute_instance : OPEN_BRACKET '*' attr_specs '*' CLOSE_BRACKET
 
 attr_spec : attr_name '=' constant_expression
           | attr_name
@@ -2004,7 +2018,7 @@ input_port_identifier           : identifier;
 instance_identifier             : identifier;
 lib_identifier                  : identifier;
 memory_identifier               : identifier;
-module_identifier               : identifier;
+module_identifier               : identifier {printf("Module ID\n");};
 module_instance_identifier      : arrayed_identifier;
 net_identifier                  : identifier;
 output_port_identifier          : identifier;

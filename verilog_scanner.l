@@ -177,6 +177,10 @@ CLOSE_BRACKET               ")"
 OPEN_SQ_BRACKET             "["
 CLOSE_SQ_BRACKET            "]"
 STAR                        "*"
+HASH                        "#"
+DOT                         "."
+SEMICOLON                   ";"
+COLON                       ":"
 
 /* TODO Operators */
 
@@ -258,6 +262,10 @@ STR_TERM                    \"
 {OPEN_SQ_BRACKET}            {return token::OPEN_SQ_BRACKET           ;}
 {CLOSE_SQ_BRACKET}           {return token::CLOSE_SQ_BRACKET          ;}
 {STAR}                       {return token::STAR                      ;}
+{HASH}                       {return token::HASH     ;}
+{DOT}                        {return token::DOT      ;}
+{SEMICOLON}                  {return token::SEMICOLON;}
+{COLON}                      {return token::COLON    ;}
 
 {X_DIGIT}                    {return token::X_DIGIT                   ;}
 {Z_DIGIT}                    {return token::Z_DIGIT                   ;}
@@ -390,13 +398,13 @@ STR_TERM                    \"
 {SIMPLE_IDENTIFIER}    {return token::SIMPLE_IDENTIFIER     ;}
 {SYSTEM_IDENTIFIER}    {return token::SYSTEM_IDENTIFIER     ;}
 
-<in_str>{STR_TERM}     {yy_pop_state()                      ;}
+<in_str>{STR_TERM}     {BEGIN(INITIAL)                      ;}
 <in_str>{ANY_IN_STR}   {return token::ANY                   ;}
 {STR_TERM}             {BEGIN(in_str)                       ;}
 
-{NEWLINE}              {printf("WS: \\n\n"); return token::NEWLINE;}
-{SPACE}                {printf("WS: ' '\n"); return token::SPACE  ;}
-{TAB}                  {printf("WS: \\t\n"); return token::TAB    ;}
+{NEWLINE}              
+{SPACE}                
+{TAB}                  
 
 {ANY}                  {return token::ANY                   ;}
 %%
