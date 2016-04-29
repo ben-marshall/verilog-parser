@@ -9,3 +9,5 @@ Standandard.
   and not a hex digit / number base. Can be done by entering new state when a
   net type is encountered (during a declaration) then returning to the initial
   state when we see a semicolon, ending the declaration.
+- Use the following search term on Google to get a load of example tests:
+  `"endmodule" site:http://www.asic-world.com/code/verilog_tutorial/`
