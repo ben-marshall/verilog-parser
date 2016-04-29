@@ -1919,8 +1919,8 @@ z_digit : 'z' | 'Z' | '?';
 
 string : '"' any_chars_o '"';
 
-any_chars_o : any_chars | ;
-any_chars   : ANY
+any_chars_o : any_chars | SPACE | TAB;
+any_chars   : ANY 
             | any_chars ANY
             ;
 

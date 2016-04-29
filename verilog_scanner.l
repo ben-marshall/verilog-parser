@@ -28,7 +28,10 @@ typedef VL::VerilogParser::token token;
 %x IN_BLOCK_COMMENT
 %x IN_LINE_COMMENT
 %x IN_DEFINE
+
 %x in_str
+%x in_comment
+%x in_blk_comment
 
 ALWAYS              "always"
 AND                 "and"
@@ -210,9 +213,18 @@ STR_TERM                    \"
 
 %%
 
-{COMMENT_LINE}               {return token::COMMENT_LINE              ;}
-{COMMENT_BEGIN}              {return token::COMMENT_BEGIN             ;}
-{COMMENT_END}                {return token::COMMENT_END               ;}
+{COMMENT_LINE}               {BEGIN(in_comment);return token::COMMENT_LINE;}
+{COMMENT_BEGIN}              {
+    BEGIN(in_blk_comment);
+    return token::COMMENT_BEGIN;
+}
+
+<in_comment>.                {return token::ANY;                      ;}
+<in_comment>\n               {BEGIN(INITIAL); return token::NEWLINE   ;}
+
+<in_blk_comment>.            {return token::ANY;                      ;}
+<in_blk_comment>\n           {return token::ANY;                      ;}
+<in_blk_comment>{COMMENT_END} {BEGIN(INITIAL); return token::COMMENT_END ;}
 
 {CD_CELLDEFINE}              {return token::CD_CELLDEFINE             ;}
 {CD_DEFAULT_NETTYPE}         {return token::CD_DEFAULT_NETTYPE        ;}
@@ -382,9 +394,9 @@ STR_TERM                    \"
 <in_str>{ANY_IN_STR}   {return token::ANY                   ;}
 {STR_TERM}             {BEGIN(in_str)                       ;}
 
-{NEWLINE}              {printf("WS: %s\n", yytext); return token::NEWLINE;}
-{SPACE}                {printf("WS: %s\n", yytext); return token::SPACE  ;}
-{TAB}                  {printf("WS: %s\n", yytext); return token::TAB    ;}
+{NEWLINE}              {printf("WS: \\n\n"); return token::NEWLINE;}
+{SPACE}                {printf("WS: ' '\n"); return token::SPACE  ;}
+{TAB}                  {printf("WS: \\t\n"); return token::TAB    ;}
 
 {ANY}                  {return token::ANY                   ;}
 
