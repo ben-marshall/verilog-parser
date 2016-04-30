@@ -166,6 +166,7 @@ SYSTEM_IDENTIFIER           (\$[a-zA-Z0-9_\$][a-zA-Z0-9_\$]*)
 
 HEX_DIGIT                   [0-9a-fA-F]
 OCTAL_DIGIT                 [0-7]
+BINARY_DIGIT                [0-1]
 DECIMAL_DIGIT               [0-9]
 
 HEX_BASE                    [[sS][hH]]

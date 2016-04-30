@@ -188,6 +188,7 @@
 %token SIMPLE_IDENTIFIER         
 %token SYSTEM_IDENTIFIER    
 %token HEX_DIGIT                 
+%token BINARY_DIGIT              
 %token OCTAL_DIGIT               
 %token DECIMAL_DIGIT             
 %token HEX_BASE                  
@@ -1920,7 +1921,7 @@ hex_base :  '\'' s_o 'h'
          |  '\'' s_o 'H'
          ;
 
-non_zero_decimal_digit : NON_ZERO_DECIMAL_DIGIT;
+non_zero_decimal_digit : DECIMAL_DIGIT;
 
 decimal_digit: DECIMAL_DIGIT;
 
