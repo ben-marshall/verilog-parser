@@ -20,7 +20,14 @@ int main(const int argc, const char ** argv)
     VL::VerilogDriver driver;
     
     cout << "Starting parse" << endl; fflush(stdout);
-    driver.parse(argv[1]);
+    bool result = driver.parse(argv[1]);
     cout << "Finished parse" << endl;
-    return 0;
+
+    if(result){
+        cout << "Parsing Successful.\n";
+        return 0;
+    } else {
+        cout << "Parsing Failed.\n";
+        return 1;
+    }
 }

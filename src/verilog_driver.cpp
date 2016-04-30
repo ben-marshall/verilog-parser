@@ -12,25 +12,7 @@ VL::VerilogDriver::~VerilogDriver(){
    parser = NULL;
 }
 
-void VL::VerilogDriver::add_preproc_define(const char * m)
-{
-    std::cout<<this->scanner->lineno()<<" ";
-    std::cout<<"Found preprocessor define: " << m;
-}
-
-void VL::VerilogDriver::add_block_comment(const char * m)
-{
-    std::cout<<this->scanner->lineno()<<" ";
-    std::cout<<"Found block comment: " << m<<"\n";
-}
-
-void VL::VerilogDriver::add_oneline_comment(const char * m)
-{
-    std::cout<<this->scanner->lineno()<<" ";
-    std::cout<<"Found single line comment: " << m<<"\n";
-}
-
-void  VL::VerilogDriver::parse( const char *filename )
+bool VL::VerilogDriver::parse( const char *filename )
 {
    assert( filename != NULL);
    std::ifstream in_file( filename );
@@ -63,6 +45,7 @@ void  VL::VerilogDriver::parse( const char *filename )
    const int accept( 0 );
    if( parser->parse() != accept )
    {
-      std::cerr << "Parse failed!!\n";
+       return false;
    }
+   return true;
 }

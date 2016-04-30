@@ -14,11 +14,7 @@ public:
 
    virtual ~VerilogDriver();
 
-   void parse( const char *filename );
-
-   void add_oneline_comment(const char * m);
-   void add_block_comment  (const char * m);
-   void add_preproc_define (const char * m);
+   bool parse( const char *filename );
 
 private:
    
