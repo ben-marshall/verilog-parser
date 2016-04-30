@@ -37,8 +37,8 @@
 
 /* token types */
 %union {
-   std::string *sval;
-   int         ival;
+   char * sval;
+   int    ival;
 }
 
 %token COMMENT_LINE
@@ -211,7 +211,7 @@
 %token VALUE
 %token WS
 %token ANY
-
+%token EQ
 %token HASH
 %token DOT
 %token SEMICOLON
@@ -223,6 +223,10 @@
 
 %token DEFINE
 %token END_DEFINE
+
+%type <sval> identifier
+%type <sval> simple_identifier
+%type <sval> escaped_identifier
 
 %start grammar_begin
 
@@ -331,12 +335,12 @@ description     : module_declaration
 
 module_declaration : module_kw module_identifier
                      module_parameter_port_list list_of_ports SEMICOLON
-                     module_item
+                     module_items
                      KW_ENDMODULE
                    | attribute_instances_o module_kw module_identifier
                      module_parameter_port_list list_of_port_declarations 
                      SEMICOLON
-                     non_port_module_item KW_ENDMODULE
+                     non_port_module_items KW_ENDMODULE
                    ;
 
 module_kw       : KW_MACROMODULE    {printf("MODULE\n");}
@@ -400,6 +404,10 @@ attribute_instances :
 
 /* A.1.5 Module Items */
 
+module_items    : module_item
+                | module_items module_item
+                ;
+
 module_item     : 
                 | module_or_generate_item
                 | port_declaration SEMICOLON
@@ -431,6 +439,10 @@ module_or_generate_item_declaration : net_declaration
                                     | task_declaration
                                     | function_declaration
                                     ;
+
+non_port_module_items: non_port_module_item
+                     | non_port_module_items non_port_module_item
+                     ;
 
 non_port_module_item : 
                      | attribute_instances generated_instantiation
@@ -547,7 +559,7 @@ output_variable_type: KW_INTEGER
                     ;
 
 real_type           : real_identifier 
-                    | real_identifier '=' constant_expression
+                    | real_identifier EQ constant_expression
                     | real_identifier dimension dimensions
                     ;
 
@@ -557,7 +569,7 @@ dimensions          : dimension
                     ;
 
 variable_type       : variable_identifier 
-                    | variable_identifier '=' constant_expression
+                    | variable_identifier EQ constant_expression
                     | variable_identifier dimension dimensions
                     ;
 
@@ -642,7 +654,7 @@ list_of_variable_identifiers : variable_type
                              | list_of_variable_identifiers ',' variable_type
                              ;
 
-eq_const_exp_o               : '=' constant_expression
+eq_const_exp_o               : EQ constant_expression
                              |
                              ;
 
@@ -653,11 +665,11 @@ list_of_variable_port_identifiers : port_identifier eq_const_exp_o
 
 /* A.2.4 Declaration Assignments */
 
-net_decl_assignment     : net_identifier '=' expression ;
+net_decl_assignment     : net_identifier EQ expression ;
 
-param_assignment        : parameter_identifier '=' constant_expression ;
+param_assignment        : parameter_identifier EQ constant_expression ;
 
-specparam_assignment    : specparam_identifier '=' 
+specparam_assignment    : specparam_identifier EQ 
                           constant_mintypmax_expression
                         | pulse_control_specparam
                         ;
@@ -666,10 +678,10 @@ error_limit_value_o     : ',' error_limit_value
                         |
                         ;
 
-pulse_control_specparam : KW_PATHPULSE '=' OPEN_BRACKET reject_limit_value 
+pulse_control_specparam : KW_PATHPULSE EQ OPEN_BRACKET reject_limit_value 
                           error_limit_value_o CLOSE_BRACKET SEMICOLON
                         | KW_PATHPULSE specify_input_terminal_descriptor '$'
-                          specify_output_terminal_descriptor '=' OPEN_BRACKET 
+                          specify_output_terminal_descriptor EQ OPEN_BRACKET 
                           reject_limit_value error_limit_value_o CLOSE_BRACKET SEMICOLON
                         ;
 
@@ -1041,7 +1053,7 @@ generate_loop_statement : KW_FOR OPEN_BRACKET genvar_assignment SEMICOLON consta
                           SEMICOLON genvar_assignment CLOSE_BRACKET KW_BEGIN SEMICOLON
                           generate_block_identifier generate_items KW_END
 
-genvar_assignment : genvar_identifier '=' constant_expression;
+genvar_assignment : genvar_identifier EQ constant_expression;
 
 generate_block : KW_BEGIN generate_items KW_END
                | KW_BEGIN COLON generate_block_identifier generate_items KW_END
@@ -1083,7 +1095,7 @@ udp_port_declaration : udp_output_declaration SEMICOLON
 udp_output_declaration : attribute_instances_o KW_OUTPUT port_identifier
                        | attribute_instances_o KW_OUTPUT KW_REG port_identifier
                        | attribute_instances_o KW_OUTPUT KW_REG port_identifier
-                         '=' constant_expression
+                         EQ constant_expression
                        ;
 
 udp_input_declaration : attribute_instances_o KW_INPUT list_of_port_identifiers
@@ -1114,7 +1126,7 @@ sequential_entrys     : sequential_entry
                       | sequential_entrys sequential_entry
                       ;
 
-udp_initial_statement : KW_INITIAL output_port_identifier '=' init_val SEMICOLON;
+udp_initial_statement : KW_INITIAL output_port_identifier EQ init_val SEMICOLON;
 
 init_val              : '1' '\'' 'b' '0' 
                       | '1' '\'' 'b' '1' 
@@ -1179,15 +1191,15 @@ list_of_net_assignments : net_assignment
                         | list_of_net_assignments ',' net_assignment
                         ;
 
-net_assignment : net_lvalue '=' expression;
+net_assignment : net_lvalue EQ expression;
 
 /* A.6.2 Procedural blocks and assignments */
 
 initial_construct   : KW_INITIAL statement ;
 always_construct    : KW_ALWAYS statement ;
 
-blocking_assignment : variable_lvalue '=' delay_or_event_control_o expression;
-nonblocking_assignment : variable_lvalue '<' '=' delay_or_event_control_o 
+blocking_assignment : variable_lvalue EQ delay_or_event_control_o expression;
+nonblocking_assignment : variable_lvalue '<' EQ delay_or_event_control_o 
                       expression
                     ;
 
@@ -1447,12 +1459,12 @@ path_declaration : simple_path_declaration SEMICOLON
                  | state_dependent_path_declaration SEMICOLON
                  ;
 
-simple_path_declaration : parallel_path_description '=' path_delay_value
-                        | full_path_description '=' path_delay_value
+simple_path_declaration : parallel_path_description EQ path_delay_value
+                        | full_path_description EQ path_delay_value
                         ;
 
 parallel_path_description : OPEN_BRACKET specify_input_terminal_descriptor
-                            polarity_operator_o '=' '>'
+                            polarity_operator_o EQ '>'
                             specify_output_terminal_descriptor CLOSE_BRACKET
                           ;
 
@@ -1529,15 +1541,15 @@ list_of_path_delay_expressions : path_delay_expression
 
 path_delay_expression : constant_mintypmax_expression ;
 
-edge_sensitive_path_declaration : parallel_edge_sensitive_path_description '='
+edge_sensitive_path_declaration : parallel_edge_sensitive_path_description EQ
                                   path_delay_value
-                                | full_edge_sensitive_path_description '=' 
+                                | full_edge_sensitive_path_description EQ 
                                   path_delay_value
                                 ;
 
 parallel_edge_sensitive_path_description : OPEN_BRACKET edge_identifier_o 
                                            specify_input_terminal_descriptor 
-                                           '=' '>'
+                                           EQ '>'
                                            specify_output_terminal_descriptor 
                                            polarity_operator_o COLON 
                                            data_source_expression CLOSE_BRACKET
@@ -1796,9 +1808,9 @@ unary_operator : '+'  | '-'  | '!' | '~' | '&' | '~''&' | '|' | '~''|' | '^'
                | '~''^' | '^''~'
                ;
 
-binary_operator : '+'  | '-'  | '*'  | '/' | '%' | '=''=' | '!''=' 
-                | '=''=''=' | '!''=''=' 
-                | '&''&' | '|''|' | '*''*' | '<' | '<''=' | '>' | '>''=' 
+binary_operator : '+'  | '-'  | '*'  | '/' | '%' | EQ EQ | '!'EQ 
+                | EQ EQ EQ | '!'EQ EQ 
+                | '&''&' | '|''|' | '*''*' | '<' | '<'EQ | '>' | '>'EQ 
                 | '&' | '|' 
                 | '^' | '^''~' | '~''^' | '>''>' | '<''<' | '>''>''>' 
                 | '<''<''<'
@@ -1808,7 +1820,7 @@ unary_module_path_operator : '!'  | '~' | '&' | '~''&' | '|' | '~''|' | '^'
                            | '~''^' | '^''~'
                            ;
 
-binary_module_path_operator : '=''=' | '!''=' | '&''&' | '|''|' | '&' | '|' 
+binary_module_path_operator : EQ EQ | '!'EQ | '&''&' | '|''|' | '&' | '|' 
                             | '^' 
                             | '^''~' | '~''^'
                             ;
@@ -1945,7 +1957,7 @@ attr_specs : attr_spec
 
 attribute_instance : OPEN_BRACKET '*' attr_specs '*' CLOSE_BRACKET
 
-attr_spec : attr_name '=' constant_expression
+attr_spec : attr_name EQ constant_expression
           | attr_name
           ;
 
@@ -2009,8 +2021,10 @@ hierarchical_identifier         : simple_hierarchical_identifier
 hierarchical_net_identifier     : hierarchical_identifier;
 hierarchical_variable_identifier: hierarchical_identifier;
 hierarchical_task_identifier    : hierarchical_identifier;
-identifier                      : simple_identifier 
+identifier                      : simple_identifier   
+                                    {printf("SIMPLEID: %s\n", $1);}
                                 | escaped_identifier
+                                    {printf("ESCAPEDID: %s\n", $1);}
                                 ;
 
 inout_port_identifier           : identifier;

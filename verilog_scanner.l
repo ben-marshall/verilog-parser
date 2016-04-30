@@ -32,6 +32,8 @@ typedef VL::VerilogParser::token token;
 %x in_str
 %x in_comment
 %x in_blk_comment
+%x in_declaration
+%x in_rval
 
 ALWAYS              "always"
 AND                 "and"
@@ -181,6 +183,7 @@ HASH                        "#"
 DOT                         "."
 SEMICOLON                   ";"
 COLON                       ":"
+EQ                          "="
 
 /* TODO Operators */
 
@@ -247,15 +250,17 @@ STR_TERM                    \"
 {CD_UNCONNECTED_DRIVE}       {return token::CD_UNCONNECTED_DRIVE      ;}
 {CD_UNDEF}                   {return token::CD_UNDEF                  ;}
 
-{EXP}                        {return token::EXP                       ;}
-{OCTAL_DIGIT}                {return token::OCTAL_DIGIT               ;}
-{DECIMAL_DIGIT}              {return token::DECIMAL_DIGIT             ;}
-{HEX_DIGIT}                  {return token::HEX_DIGIT                 ;}
+{EQ}                         {BEGIN(in_rval); return token::EQ        ;}
 
-{HEX_BASE}                   {return token::HEX_BASE                  ;}
-{OCTAL_BASE}                 {return token::OCTAL_BASE                ;}
-{DECIMAL_BASE}               {return token::DECIMAL_BASE              ;}
-{BINARY_BASE}                {return token::BINARY_BASE               ;}
+<in_rval>{EXP}               {return token::EXP                       ;}
+<in_rval>{OCTAL_DIGIT}       {return token::OCTAL_DIGIT               ;}
+<in_rval>{DECIMAL_DIGIT}     {return token::DECIMAL_DIGIT             ;}
+<in_rval>{HEX_DIGIT}         {return token::HEX_DIGIT                 ;}
+
+<in_rval>{HEX_BASE}          {return token::HEX_BASE                  ;}
+<in_rval>{OCTAL_BASE}        {return token::OCTAL_BASE                ;}
+<in_rval>{DECIMAL_BASE}      {return token::DECIMAL_BASE              ;}
+<in_rval>{BINARY_BASE}       {return token::BINARY_BASE               ;}
 
 {OPEN_BRACKET}               {return token::OPEN_BRACKET              ;}
 {CLOSE_BRACKET}              {return token::CLOSE_BRACKET             ;}
@@ -264,7 +269,7 @@ STR_TERM                    \"
 {STAR}                       {return token::STAR                      ;}
 {HASH}                       {return token::HASH     ;}
 {DOT}                        {return token::DOT      ;}
-{SEMICOLON}                  {return token::SEMICOLON;}
+{SEMICOLON}                  {BEGIN(INITIAL); return token::SEMICOLON;}
 {COLON}                      {return token::COLON    ;}
 
 {X_DIGIT}                    {return token::X_DIGIT                   ;}
@@ -395,8 +400,14 @@ STR_TERM                    \"
 {XOR}                  {return token::KW_XOR                ;} 
 {PATHPULSE}            {return token::KW_PATHPULSE          ;}
 
-{SIMPLE_IDENTIFIER}    {return token::SIMPLE_IDENTIFIER     ;}
-{SYSTEM_IDENTIFIER}    {return token::SYSTEM_IDENTIFIER     ;}
+{SIMPLE_IDENTIFIER}    {
+    yylval->sval = strdup(yytext);
+    return token::SIMPLE_IDENTIFIER;
+}
+{SYSTEM_IDENTIFIER}    {
+    yylval->sval = strdup(yytext);
+    return token::SYSTEM_IDENTIFIER;
+}
 
 <in_str>{STR_TERM}     {BEGIN(INITIAL)                      ;}
 <in_str>{ANY_IN_STR}   {return token::ANY                   ;}
