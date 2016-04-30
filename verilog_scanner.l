@@ -250,8 +250,9 @@ STR_TERM                    \"
 {CD_UNCONNECTED_DRIVE}       {return token::CD_UNCONNECTED_DRIVE      ;}
 {CD_UNDEF}                   {return token::CD_UNDEF                  ;}
 
-{EQ}                         {BEGIN(in_rval); return token::EQ        ;}
+{EQ}                         {BEGIN(in_rval); printf("=\n"); return token::EQ;}
 
+<in_rval>s|S                 {return token::S                         ;}      
 <in_rval>{EXP}               {return token::EXP                       ;}
 <in_rval>{OCTAL_DIGIT}       {return token::OCTAL_DIGIT               ;}
 <in_rval>{DECIMAL_DIGIT}     {return token::DECIMAL_DIGIT             ;}

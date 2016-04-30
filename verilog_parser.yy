@@ -221,6 +221,7 @@
 %token SPACE
 %token TAB
 
+%token S
 %token DEFINE
 %token END_DEFINE
 
@@ -1237,7 +1238,7 @@ function_seq_block : KW_BEGIN function_statements_o KW_END
                      function_statements_o KW_END
                    ;
 
-variable_assignment : variable_lvalue SEMICOLON expression
+variable_assignment : variable_lvalue EQ expression
                     ;
 
 par_block : KW_FORK statements_o KW_JOIN
@@ -1843,7 +1844,8 @@ real_number : unsigned_number '.' unsigned_number
 
 exp : 'e' | 'E';
 
-size_o : size | ;
+size_o : size {printf("Size\n");}
+       | ;
 
 underscores_o : '_'
               | underscores_o '_'
@@ -1900,40 +1902,33 @@ octal_value : octal_digit octal_digits_o
 
 hex_value : hex_digit hex_digits_o
 
-decimal_base : '\'' 's' 'd'
-             | '\'' 'S' 'd'
-             | '\'' 's' 'D'
-             | '\'' 'S' 'D'
+s_o : S {printf("Signed\n");} | {printf("Not Signed\n");};
+
+decimal_base : '\'' s_o 'd'
+             | '\'' s_o 'D'
              ;
 
-binary_base :  '\'' 's' 'b'
-            |  '\'' 'S' 'b'
-            |  '\'' 's' 'B'
-            |  '\'' 'S' 'B'
+binary_base :  '\'' s_o 'b'
+            |  '\'' s_o 'B'
             ;
 
-octal_base :  '\'' 's' 'o'
-           |  '\'' 'S' 'o'
-           |  '\'' 's' 'O'
-           |  '\'' 'S' 'O'
+octal_base :  '\'' s_o 'o'
+           |  '\'' s_o 'O'
            ;
 
-hex_base :  '\'' 's' 'h'
-         |  '\'' 'S' 'h'
-         |  '\'' 's' 'H'
-         |  '\'' 'S' 'H'
+hex_base :  '\'' s_o 'h'
+         |  '\'' s_o 'H'
          ;
 
-non_zero_decimal_digit :'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9';
+non_zero_decimal_digit : NON_ZERO_DECIMAL_DIGIT;
 
-decimal_digit:'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9';
+decimal_digit: DECIMAL_DIGIT;
 
-binary_digit : x_digit | z_digit | '0' | '1';
+binary_digit : x_digit | z_digit | BINARY_DIGIT;
 
-octal_digit : x_digit | z_digit |'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7';
+octal_digit : x_digit | z_digit | OCTAL_DIGIT;
 
-hex_digit :   x_digit | z_digit |'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'
-|'a'|'b'|'c'|'d'|'e'|'f'|'A'|'B'|'C'|'D'|'E'|'F';
+hex_digit :   x_digit | z_digit | HEX_DIGIT;
 
 x_digit : 'x' | 'X';
 
