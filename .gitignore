@@ -1,7 +1,3 @@
-*.tab.cc
-*.tab.hh
-stack.hh
-*.yy.cc
-*.yy.c
 *.swp
 *.vim
+build/
