@@ -283,7 +283,7 @@ cfg_declaration  : KW_CONFIG config_identifier SEMICOLON design_statement
 
 design_statement : KW_DESIGN lib_cell_identifiers SEMICOLON
 
-lib_cell_identifiers : lib_cell_identifiers lib_identifier '.' cell_identifier
+lib_cell_identifiers : lib_cell_identifiers lib_identifier DOT cell_identifier
                      | lib_cell_identifiers cell_identifier
                      |
                      ;
@@ -301,13 +301,13 @@ default_clause  : KW_DEFAULT
 inst_clause     : KW_INSTANCE inst_name
                 ;
 
-inst_name       : topmodule_identifier '.' instance_identifier
-                | inst_name '.' instance_identifier
+inst_name       : topmodule_identifier DOT instance_identifier
+                | inst_name DOT instance_identifier
                 | topmodule_identifier
                 ;
 
 cell_clause     : KW_CELL cell_identifier
-                | KW_CELL lib_identifier '.' cell_identifier
+                | KW_CELL lib_identifier DOT cell_identifier
                 ;
 
 liblist_clause  : KW_LIBLIST liblist_clauses
@@ -319,9 +319,9 @@ liblist_clauses : lib_identifier
                 ;
 
 use_clause      : KW_USE cell_identifier
-                | KW_USE lib_identifier '.' cell_identifier
+                | KW_USE lib_identifier DOT cell_identifier
                 | KW_USE cell_identifier COLON KW_CONFIG
-                | KW_USE lib_identifier '.' cell_identifier COLON KW_CONFIG
+                | KW_USE lib_identifier DOT cell_identifier COLON KW_CONFIG
                 ;
 
 /* A.1.3 Module and primitive source text */
@@ -401,39 +401,30 @@ port_declaration : attribute_instances inout_declaration {printf("INOUT\n");}
                  | attribute_instances output_declaration{printf("OUT\n");}
                  ;
 
-attribute_instances_o : attribute_instances
-                      ;
-
-attribute_instances : 
-                    | attribute_instance
-                    | attribute_instances attribute_instance
-                    ;
-
 /* A.1.5 Module Items */
 
 module_items    : module_item {printf("Module item: ");}
                 | module_items module_item {printf("MODULE ITEMS\n");}
                 ;
 
-module_item     : 
-                | module_or_generate_item
+module_item     : module_or_generate_item
                 | port_declaration SEMICOLON {printf("PORT DECLARATION\n");}
-                | attribute_instances generated_instantiation
-                | attribute_instances local_parameter_declaration
-                | attribute_instances parameter_declaration
-                | attribute_instances specify_block
-                | attribute_instances specparam_declaration
+                | attribute_instances_o generated_instantiation
+                | attribute_instances_o local_parameter_declaration
+                | attribute_instances_o parameter_declaration
+                | attribute_instances_o specify_block
+                | attribute_instances_o specparam_declaration
                 ;
 
 module_or_generate_item : attribute_instances 
                           module_or_generate_item_declaration
-                        | attribute_instances parameter_override
-                        | attribute_instances continuous_assign
-                        | attribute_instances gate_instantiation
-                        | attribute_instances udp_instantiation
-                        | attribute_instances module_instantiation
-                        | attribute_instances initial_construct
-                        | attribute_instances always_construct
+                        | attribute_instances_o parameter_override
+                        | attribute_instances_o continuous_assign
+                        | attribute_instances_o gate_instantiation
+                        | attribute_instances_o udp_instantiation
+                        | attribute_instances_o module_instantiation
+                        | attribute_instances_o initial_construct
+                        | attribute_instances_o always_construct
                         ; 
 
 module_or_generate_item_declaration : net_declaration
@@ -453,12 +444,12 @@ non_port_module_items: non_port_module_item
                      ;
 
 non_port_module_item : 
-                     | attribute_instances generated_instantiation
-                     | attribute_instances local_parameter_declaration
-                     | attribute_instances module_or_generate_item
-                     | attribute_instances parameter_declaration
-                     | attribute_instances specify_block
-                     | attribute_instances specparam_declaration
+                     | attribute_instances_o generated_instantiation
+                     | attribute_instances_o local_parameter_declaration
+                     | attribute_instances_o module_or_generate_item
+                     | attribute_instances_o parameter_declaration
+                     | attribute_instances_o specify_block
+                     | attribute_instances_o specparam_declaration
                      ;
 
 parameter_override   : KW_DEFPARAM list_of_param_assignments SEMICOLON
@@ -984,7 +975,8 @@ module_instantiation: module_identifier parameter_value_assignment_o
 
 parameter_value_assignment_o : parameter_value_assignment | ;
 
-parameter_value_assignment : HASH OPEN_BRACKET list_of_parameter_assignments CLOSE_BRACKET
+parameter_value_assignment : HASH OPEN_BRACKET list_of_parameter_assignments
+                             CLOSE_BRACKET
                            ;
 
 list_of_parameter_assignments : ordered_parameter_assignments
@@ -1029,13 +1021,15 @@ ordered_port_connections : ordered_port_connection {printf("OPC..\n");}
                            ordered_port_connection {printf("OPC-s\n");}
                          ;
 
-named_port_connections   : named_port_connection
+named_port_connections   : named_port_connection {printf("NPC..\n");}
                          | named_port_connections COMMA
-                           named_port_connection
+                           named_port_connection {printf("NPS-s\n");}
                          ;
 
-ordered_port_connection : attribute_instances expression
+ordered_port_connection : expression
                           {printf("OPC\n");}
+                        | attribute_instances_o expression
+                          {printf("OPC ai\n");}
                         ;
 
 named_port_connection : attribute_instances DOT port_identifier OPEN_BRACKET 
@@ -1129,9 +1123,10 @@ udp_port_declaration : udp_output_declaration SEMICOLON
                      ;
 
 udp_output_declaration : attribute_instances_o KW_OUTPUT port_identifier
-                       | attribute_instances_o KW_OUTPUT KW_REG port_identifier
-                       | attribute_instances_o KW_OUTPUT KW_REG port_identifier
-                         EQ constant_expression
+                       | attribute_instances_o KW_OUTPUT KW_REG 
+                         port_identifier
+                       | attribute_instances_o KW_OUTPUT KW_REG 
+                         port_identifier EQ constant_expression
                        ;
 
 udp_input_declaration : attribute_instances_o KW_INPUT list_of_port_identifiers
@@ -1201,7 +1196,7 @@ output_symbol : '0' | '1' | 'x' | 'X';
 
 level_symbol :'0'|'1'|'x'|'X'|'?'|'b'|'B';
 
-edge_symbol :'r'|'R'|'f'|'F'|'p'|'P'|'n'|'N'|'*';
+edge_symbol :'r'|'R'|'f'|'F'|'p'|'P'|'n'|'N'|STAR;
 
 /* A.5.4 UDP instantiation */
 
@@ -1664,8 +1659,6 @@ variable_concatenation_values : variable_concatenation_value
                            variable_concatenation_value
                          ;
 
-braced_expression_o : OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET | ;
-
 variable_concatenation_value : hierarchical_variable_identifier
                              | hierarchical_variable_identifier 
                                OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET 
@@ -1870,10 +1863,10 @@ number : decimal_number
        | real_number
        ;
 
-real_number : unsigned_number '.' unsigned_number
-            | unsigned_number '.' unsigned_number exp unsigned_number
+real_number : unsigned_number DOT unsigned_number
+            | unsigned_number DOT unsigned_number exp unsigned_number
             | unsigned_number exp unsigned_number
-            | unsigned_number '.' unsigned_number exp sign unsigned_number
+            | unsigned_number DOT unsigned_number exp sign unsigned_number
             | unsigned_number exp sign unsigned_number
             ;
 
@@ -1985,7 +1978,16 @@ attr_specs : attr_spec
            ;
 
 
-attribute_instance : OPEN_BRACKET '*' attr_specs '*' CLOSE_BRACKET
+attribute_instances_o : 
+                      | attribute_instances
+                      ;
+
+attribute_instances : 
+                    | attribute_instance
+                    | attribute_instances attribute_instance
+                    ;
+
+attribute_instance : OPEN_BRACKET STAR attr_specs STAR CLOSE_BRACKET
 
 attr_spec : attr_name EQ constant_expression
           | attr_name
@@ -2066,13 +2068,13 @@ module_identifier               : identifier {printf("Module ID\n");};
 module_instance_identifier      : arrayed_identifier;
 net_identifier                  : identifier;
 output_port_identifier          : identifier;
-parameter_identifier            : identifier;
+parameter_identifier            : identifier {printf("Parameter id\n");};
 port_identifier                 : identifier;
 real_identifier                 : identifier;
 simple_arrayed_identifier       : simple_identifier range_o ;
 
 simple_hierarchical_identifier  : simple_hierarchical_branch 
-                                | simple_hierarchical_branch '.' 
+                                | simple_hierarchical_branch DOT
                                   escaped_identifier
                                 ;
 
