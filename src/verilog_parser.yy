@@ -217,6 +217,7 @@
 %token DOT
 %token SEMICOLON
 %token COLON
+%token COMMA
 
 %token NEWLINE
 %token SPACE
@@ -352,12 +353,12 @@ module_kw       : KW_MACROMODULE    {printf("MODULE\n");}
 /* A.1.4 Module parameters and ports */
 
 module_parameter_port_list  : 
-                            | '#' OPEN_BRACKET module_params CLOSE_BRACKET
+                            | HASH OPEN_BRACKET module_params CLOSE_BRACKET
                             ;
 
 module_params     : 
                   | parameter_declaration
-                  | module_params ',' parameter_declaration
+                  | module_params COMMA parameter_declaration
                   ;
 
 list_of_ports   :
@@ -370,25 +371,28 @@ list_of_port_declarations   : OPEN_BRACKET CLOSE_BRACKET
                             ;
 
 port_declarations           : port_declaration
-                            | port_declarations ',' port_declaration
+                            | port_declarations COMMA port_declaration
                             ;
 
 ports           : 
-                | ports ',' port
+                | ports COMMA port
                 | port
                 ;
 
 port            : port_expression
-                | '.' port_identifier OPEN_BRACKET port_expression CLOSE_BRACKET
+                | DOT port_identifier OPEN_BRACKET port_expression
+                CLOSE_BRACKET
                 ;
 
 port_expression : port_reference
-                | port_expression ',' port_reference
+                | port_expression COMMA port_reference
                 ;
 
 port_reference  : port_identifier
-                | port_identifier OPEN_SQ_BRACKET constant_expression CLOSE_SQ_BRACKET
-                | port_identifier OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
+                | port_identifier OPEN_SQ_BRACKET constant_expression
+                  CLOSE_SQ_BRACKET 
+                | port_identifier OPEN_SQ_BRACKET
+                  range_expression CLOSE_SQ_BRACKET
                 ;
 
 port_declaration : attribute_instances inout_declaration
@@ -577,12 +581,12 @@ variable_type       : variable_identifier
 
 /* A.2.2.2 Strengths */
 
-drive_strength      : OPEN_BRACKET strength0 ',' strength1 CLOSE_BRACKET
-                    | OPEN_BRACKET strength1 ',' strength0 CLOSE_BRACKET
-                    | OPEN_BRACKET strength0 ',' KW_HIGHZ1 CLOSE_BRACKET
-                    | OPEN_BRACKET strength1 ',' KW_HIGHZ0 CLOSE_BRACKET
-                    | OPEN_BRACKET KW_HIGHZ0 ',' strength1 CLOSE_BRACKET
-                    | OPEN_BRACKET KW_HIGHZ1 ',' strength0 CLOSE_BRACKET
+drive_strength      : OPEN_BRACKET strength0 COMMA strength1 CLOSE_BRACKET
+                    | OPEN_BRACKET strength1 COMMA strength0 CLOSE_BRACKET
+                    | OPEN_BRACKET strength0 COMMA KW_HIGHZ1 CLOSE_BRACKET
+                    | OPEN_BRACKET strength1 COMMA KW_HIGHZ0 CLOSE_BRACKET
+                    | OPEN_BRACKET KW_HIGHZ0 COMMA strength1 CLOSE_BRACKET
+                    | OPEN_BRACKET KW_HIGHZ1 COMMA strength0 CLOSE_BRACKET
                     ;
 
 strength0           : KW_SUPPLY0 | KW_STRONG0 | KW_PULL0 | KW_WEAK0 ;
@@ -597,12 +601,12 @@ charge_strength     : OPEN_BRACKET KW_SMALL CLOSE_BRACKET
 
 delay3              : '#' delay_value
                     | '#' OPEN_BRACKET delay_value CLOSE_BRACKET
-                    | '#' OPEN_BRACKET delay_value ',' delay_value CLOSE_BRACKET
-                    | '#' OPEN_BRACKET delay_value ',' delay_value ',' delay_value CLOSE_BRACKET
+                    | '#' OPEN_BRACKET delay_value COMMA delay_value CLOSE_BRACKET
+                    | '#' OPEN_BRACKET delay_value COMMA delay_value COMMA delay_value CLOSE_BRACKET
 
 delay2              : '#' delay_value
                     | '#' OPEN_BRACKET delay_value CLOSE_BRACKET
-                    | '#' OPEN_BRACKET delay_value ',' delay_value CLOSE_BRACKET
+                    | '#' OPEN_BRACKET delay_value COMMA delay_value CLOSE_BRACKET
 
 delay_value         : unsigned_number
                     | parameter_identifier
@@ -617,43 +621,43 @@ dimensions_o        : dimensions
                     ;
 
 list_of_event_identifiers : event_identifier dimensions_o
-                          | list_of_event_identifiers ',' event_identifier 
+                          | list_of_event_identifiers COMMA event_identifier 
                             dimensions_o
                           ;
 
 list_of_genvar_identifiers: genvar_identifier
-                          : list_of_genvar_identifiers ',' genvar_identifier
+                          : list_of_genvar_identifiers COMMA genvar_identifier
                           ;
 
 list_of_net_decl_assignments : net_decl_assignment
-                             | list_of_net_decl_assignments ',' 
+                             | list_of_net_decl_assignments COMMA 
                                net_decl_assignment
                              ;
 
 list_of_net_identifiers      : net_identifier dimensions_o
-                             | list_of_net_identifiers ',' net_identifier
+                             | list_of_net_identifiers COMMA net_identifier
                                dimensions_o
                              ;
 
 list_of_param_assignments    : param_assignment
-                             | list_of_param_assignments ',' param_assignment
+                             | list_of_param_assignments COMMA param_assignment
                              ;
 
 list_of_port_identifiers     : port_identifier
-                             | list_of_port_identifiers ',' port_identifier
+                             | list_of_port_identifiers COMMA port_identifier
                              ;
 
 list_of_real_identifiers     : real_type
-                             | list_of_real_identifiers ',' real_type
+                             | list_of_real_identifiers COMMA real_type
                              ;
 
 list_of_specparam_assignments: specparam_assignment
-                             | list_of_specparam_assignments ',' 
+                             | list_of_specparam_assignments COMMA 
                                specparam_assignment
                              ;
 
 list_of_variable_identifiers : variable_type
-                             | list_of_variable_identifiers ',' variable_type
+                             | list_of_variable_identifiers COMMA variable_type
                              ;
 
 eq_const_exp_o               : EQ constant_expression
@@ -661,7 +665,7 @@ eq_const_exp_o               : EQ constant_expression
                              ;
 
 list_of_variable_port_identifiers : port_identifier eq_const_exp_o
-                                  | list_of_variable_port_identifiers ',' 
+                                  | list_of_variable_port_identifiers COMMA 
                                     port_identifier eq_const_exp_o
                                   ;
 
@@ -676,7 +680,7 @@ specparam_assignment    : specparam_identifier EQ
                         | pulse_control_specparam
                         ;
 
-error_limit_value_o     : ',' error_limit_value
+error_limit_value_o     : COMMA error_limit_value
                         |
                         ;
 
@@ -732,7 +736,7 @@ function_port_list         : attribute_instances_o tf_input_declaration
                              tf_input_declarations;
 
 tf_input_declarations      : 
-                           | ',' attribute_instances_o tf_input_declaration
+                           | COMMA attribute_instances_o tf_input_declaration
                              tf_input_declarations
                            ;
 
@@ -767,7 +771,7 @@ task_item_declaration : block_item_declaration
                       ;
 
 task_port_list  : task_port_item
-                | task_port_list ',' task_port_item
+                | task_port_list COMMA task_port_item
                 ;
 
 task_port_item  : attribute_instances tf_input_declaration SEMICOLON
@@ -811,7 +815,7 @@ block_reg_declaration : KW_REG signed_o range_o
                       ;
 
 list_of_block_variable_identifiers : block_variable_type
-                                   | list_of_block_variable_identifiers ',' 
+                                   | list_of_block_variable_identifiers COMMA 
                                      block_variable_type
                                    ;
 
@@ -840,93 +844,93 @@ gate_instantiation : cmos_switchtype delay3_o cmos_switch_instances SEMICOLON
                    ;
 
 pass_enable_switch_instances : pass_enable_switch_instance
-                             | pass_enable_switch_instances ',' 
+                             | pass_enable_switch_instances COMMA 
                                pass_enable_switch_instance
                              ;
 
 pull_gate_instances : pull_gate_instance
-                    | pull_gate_instances ',' 
+                    | pull_gate_instances COMMA 
                       pull_gate_instance
                     ;
 
 pass_switch_instances :pass_switch_instance
-                      | pass_switch_instances ',' 
+                      | pass_switch_instances COMMA 
                         pass_switch_instance
                       ;
 
 n_output_gate_instances : n_output_gate_instance
-                        | n_output_gate_instances ',' n_output_gate_instance
+                        | n_output_gate_instances COMMA n_output_gate_instance
                         ;
 
 n_input_gate_instances : n_input_gate_instance
-                       | n_input_gate_instances ',' n_input_gate_instance
+                       | n_input_gate_instances COMMA n_input_gate_instance
                        ;
 
 mos_switch_instances : mos_switch_instance
-                     | mos_switch_instances ',' mos_switch_instance
+                     | mos_switch_instances COMMA mos_switch_instance
                      ;
 
 cmos_switch_instances : cmos_switch_instance
-                      | cmos_switch_instances ',' cmos_switch_instance
+                      | cmos_switch_instances COMMA cmos_switch_instance
                       ;
 
 enable_gate_instances : enable_gate_instance
-                      | enable_gate_instances ',' enable_gate_instance 
+                      | enable_gate_instances COMMA enable_gate_instance 
                       ;
 
-pass_enable_switch_instance  : name_of_gate_instance OPEN_BRACKET inout_terminal ','
-                               inout_terminal ',' enable_terminal CLOSE_BRACKET
+pass_enable_switch_instance  : name_of_gate_instance OPEN_BRACKET inout_terminal COMMA
+                               inout_terminal COMMA enable_terminal CLOSE_BRACKET
                              ;
 
 pull_gate_instance           : name_of_gate_instance OPEN_BRACKET output_terminal CLOSE_BRACKET
                              ;
 
-pass_switch_instance         : name_of_gate_instance OPEN_BRACKET inout_terminal ','
+pass_switch_instance         : name_of_gate_instance OPEN_BRACKET inout_terminal COMMA
                                inout_terminal CLOSE_BRACKET
                              ;
 
-n_output_gate_instance       : name_of_gate_instance OPEN_BRACKET output_terminals ','
+n_output_gate_instance       : name_of_gate_instance OPEN_BRACKET output_terminals COMMA
                                input_terminal CLOSE_BRACKET
                              ;
 
-n_input_gate_instance        : name_of_gate_instance OPEN_BRACKET output_terminal ','
+n_input_gate_instance        : name_of_gate_instance OPEN_BRACKET output_terminal COMMA
                                input_terminals CLOSE_BRACKET
                              ;
 
-mos_switch_instance          : name_of_gate_instance OPEN_BRACKET output_terminal ','
-                               input_terminal ',' enable_terminal CLOSE_BRACKET       
+mos_switch_instance          : name_of_gate_instance OPEN_BRACKET output_terminal COMMA
+                               input_terminal COMMA enable_terminal CLOSE_BRACKET       
                              ;
 
-cmos_switch_instance         : name_of_gate_instance OPEN_BRACKET output_terminal ','
-                               input_terminal ',' ncontrol_terminal ','
+cmos_switch_instance         : name_of_gate_instance OPEN_BRACKET output_terminal COMMA
+                               input_terminal COMMA ncontrol_terminal COMMA
                                pcontrol_terminal CLOSE_BRACKET
                              ;
 
-enable_gate_instance         : name_of_gate_instance OPEN_BRACKET output_terminal ','
-                               input_terminal ',' enable_terminal CLOSE_BRACKET
+enable_gate_instance         : name_of_gate_instance OPEN_BRACKET output_terminal COMMA
+                               input_terminal COMMA enable_terminal CLOSE_BRACKET
                              ;
 
 name_of_gate_instance        : gate_instance_identifier range_o;
 
 output_terminals             : output_terminal
-                             | output_terminals ',' output_terminal
+                             | output_terminals COMMA output_terminal
                              ;
 
 input_terminals              : input_terminal
-                             | input_terminals ',' input_terminal
+                             | input_terminals COMMA input_terminal
                              ;
 
 /* A.3.2 primitive strengths */
 
 pulldown_strength_o : pulldown_strength | ;
-pulldown_strength           : OPEN_BRACKET strength0 ',' strength1 CLOSE_BRACKET
-                            | OPEN_BRACKET strength1 ',' strength0 CLOSE_BRACKET
+pulldown_strength           : OPEN_BRACKET strength0 COMMA strength1 CLOSE_BRACKET
+                            | OPEN_BRACKET strength1 COMMA strength0 CLOSE_BRACKET
                             | OPEN_BRACKET strength1 CLOSE_BRACKET
                             ;
 
 pullup_strength_o : pullup_strength | ;
-pullup_strength             : OPEN_BRACKET strength0 ',' strength1 CLOSE_BRACKET
-                            | OPEN_BRACKET strength1 ',' strength0 CLOSE_BRACKET
+pullup_strength             : OPEN_BRACKET strength0 COMMA strength1 CLOSE_BRACKET
+                            | OPEN_BRACKET strength1 COMMA strength0 CLOSE_BRACKET
                             | OPEN_BRACKET strength1 CLOSE_BRACKET
                             ;
 
@@ -965,15 +969,15 @@ list_of_parameter_assignments : ordered_parameter_assignments
                               ;
 
 ordered_parameter_assignments : ordered_parameter_assignment
-                              | ordered_parameter_assignments ','
+                              | ordered_parameter_assignments COMMA
                                 ordered_parameter_assignment
                               ;
 named_parameter_assignments   : named_parameter_assignment
-                              | named_parameter_assignments ','
+                              | named_parameter_assignments COMMA
                                 named_parameter_assignment
                               ;
 
-module_instances : module_instances ',' module_instance
+module_instances : module_instances COMMA module_instance
                  | module_instance
                  ;
 
@@ -993,12 +997,12 @@ list_of_port_connections : ordered_port_connections
                          ;
 
 ordered_port_connections : ordered_port_connection
-                         | ordered_port_connections ','
+                         | ordered_port_connections COMMA
                            ordered_port_connection
                          ;
 
 named_port_connections   : named_port_connection
-                         | named_port_connections ','
+                         | named_port_connections COMMA
                            named_port_connection
                          ;
 
@@ -1048,7 +1052,7 @@ genvar_case_item : constant_expressions COLON generate_item_or_null
                  ;
 
 constant_expressions : constant_expression
-                     | constant_expressions ',' constant_expression
+                     | constant_expressions COMMA constant_expression
                      ;
 
 generate_loop_statement : KW_FOR OPEN_BRACKET genvar_assignment SEMICOLON constant_expression
@@ -1077,13 +1081,13 @@ udp_port_declarations : udp_port_declaration
 
 /* A.5.2 UDP Ports */
 
-udp_port_list : output_port_identifier ',' input_port_identifiers;
+udp_port_list : output_port_identifier COMMA input_port_identifiers;
 
 input_port_identifiers : input_port_identifier
-                       | input_port_identifiers ',' input_port_identifier
+                       | input_port_identifiers COMMA input_port_identifier
                        ;
 
-udp_declaration_port_list : udp_output_declaration ',' udp_input_declarations;
+udp_declaration_port_list : udp_output_declaration COMMA udp_input_declarations;
 
 udp_input_declarations  : udp_input_declaration
                         | udp_input_declarations udp_input_declaration
@@ -1175,11 +1179,11 @@ udp_instantiation : udp_identifier drive_strength_o delay2_o udp_instances SEMIC
                   ;
 
 udp_instances : udp_instance
-              | udp_instances ',' udp_instance
+              | udp_instances COMMA udp_instance
               ;
 
-udp_instance : name_of_udp_instance OPEN_BRACKET output_terminal ',' input_terminals CLOSE_BRACKET
-             | OPEN_BRACKET output_terminal ',' input_terminals CLOSE_BRACKET
+udp_instance : name_of_udp_instance OPEN_BRACKET output_terminal COMMA input_terminals CLOSE_BRACKET
+             | OPEN_BRACKET output_terminal COMMA input_terminals CLOSE_BRACKET
              ;
 name_of_udp_instance : udp_instance_identifier range_o SEMICOLON ;
 
@@ -1190,7 +1194,7 @@ continuous_assign : KW_ASSIGN drive_strength_o delay3_o
                   ;
 
 list_of_net_assignments : net_assignment
-                        | list_of_net_assignments ',' net_assignment
+                        | list_of_net_assignments COMMA net_assignment
                         ;
 
 net_assignment : net_lvalue EQ expression;
@@ -1316,7 +1320,7 @@ event_expression : expression
                  | KW_POSEDGE expression
                  | KW_NEGEDGE expression
                  | event_expression KW_OR event_expression
-                 | event_expression ',' event_expression
+                 | event_expression COMMA event_expression
 
 procedural_timing_control_statement : delay_or_event_control statement_or_null
 
@@ -1477,12 +1481,12 @@ full_path_description : OPEN_BRACKET list_of_path_inputs polarity_operator_o '*'
                       ;
 
 list_of_path_inputs   : specify_input_terminal_descriptor
-                      | list_of_path_inputs ',' 
+                      | list_of_path_inputs COMMA 
                         specify_input_terminal_descriptor
                       ;
 
 list_of_path_outputs  : specify_output_terminal_descriptor
-                      | list_of_path_outputs ',' 
+                      | list_of_path_outputs COMMA 
                         specify_output_terminal_descriptor
                       ;
 
@@ -1516,28 +1520,28 @@ path_delay_value : list_of_path_delay_expressions
                  ;
 
 list_of_path_delay_expressions : path_delay_expression
-                               | path_delay_expression ','
+                               | path_delay_expression COMMA
                                  path_delay_expression 
-                               | path_delay_expression ','
-                                 path_delay_expression ','
+                               | path_delay_expression COMMA
+                                 path_delay_expression COMMA
                                  path_delay_expression
-                               | path_delay_expression ','
-                                 path_delay_expression ','
-                                 path_delay_expression ','
-                                 path_delay_expression ','
-                                 path_delay_expression ','
+                               | path_delay_expression COMMA
+                                 path_delay_expression COMMA
+                                 path_delay_expression COMMA
+                                 path_delay_expression COMMA
+                                 path_delay_expression COMMA
                                  path_delay_expression
-                               | path_delay_expression ','
-                                 path_delay_expression ','
-                                 path_delay_expression ','
-                                 path_delay_expression ','
-                                 path_delay_expression ','
+                               | path_delay_expression COMMA
+                                 path_delay_expression COMMA
+                                 path_delay_expression COMMA
+                                 path_delay_expression COMMA
+                                 path_delay_expression COMMA
                                  path_delay_expression
-                                 path_delay_expression ','
-                                 path_delay_expression ','
-                                 path_delay_expression ','
-                                 path_delay_expression ','
-                                 path_delay_expression ','
+                                 path_delay_expression COMMA
+                                 path_delay_expression COMMA
+                                 path_delay_expression COMMA
+                                 path_delay_expression COMMA
+                                 path_delay_expression COMMA
                                  path_delay_expression
                                ;
 
@@ -1595,7 +1599,7 @@ constant_multiple_concatenation : '{' constant_expression
                                   constant_concatenation '}';
 
 module_path_expressions : module_path_expression
-                        | module_path_expressions ',' module_path_expression
+                        | module_path_expressions COMMA module_path_expression
                         ;
 
 module_path_concatenation : '{' module_path_expressions '}';
@@ -1608,7 +1612,7 @@ multiple_concatenation : '{' constant_expression concatenation '}';
 net_concatenation : '{' net_concatenation_values '}';
 
 net_concatenation_values : net_concatenation_value
-                         | net_concatenation_values ','
+                         | net_concatenation_values COMMA
                            net_concatenation_value
                          ;
 
@@ -1626,7 +1630,7 @@ net_concatenation_value : hierarchical_net_identifier
 variable_concatenation : '{' variable_concatenation_values '}';
 
 variable_concatenation_values : variable_concatenation_value
-                         | variable_concatenation_values ','
+                         | variable_concatenation_values COMMA
                            variable_concatenation_value
                          ;
 
@@ -1947,7 +1951,7 @@ any_chars   : ANY
 /* A.9.1 Attributes */
 
 attr_specs : attr_spec
-           | attr_specs ',' attr_spec
+           | attr_specs COMMA attr_spec
            ;
 
 
