@@ -407,6 +407,7 @@ token::EQ;}
 
 {SIMPLE_IDENTIFIER}    {
     yylval->sval = strdup(yytext);
+    printf("lex: simple id\n");
     return token::SIMPLE_IDENTIFIER;
 }
 {SYSTEM_IDENTIFIER}    {

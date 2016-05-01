@@ -972,7 +972,7 @@ module_instantiation: module_identifier parameter_value_assignment_o
 
 parameter_value_assignment_o : parameter_value_assignment | ;
 
-parameter_value_assignment : '#' OPEN_BRACKET list_of_parameter_assignments CLOSE_BRACKET
+parameter_value_assignment : HASH OPEN_BRACKET list_of_parameter_assignments CLOSE_BRACKET
                            ;
 
 list_of_parameter_assignments : ordered_parameter_assignments
@@ -988,8 +988,8 @@ named_parameter_assignments   : named_parameter_assignment
                                 named_parameter_assignment
                               ;
 
-module_instances : module_instances COMMA module_instance
-                 | module_instance
+module_instances : module_instance {printf("MODULE INSTANCE\n");}
+                 | module_instances COMMA module_instance
                  ;
 
 ordered_parameter_assignment : expression;
@@ -998,10 +998,13 @@ named_parameter_assignment : '.' parameter_identifier OPEN_BRACKET expression_o 
 
 expression_o : expression | ;
 
-module_instance : name_of_instance OPEN_BRACKET list_of_port_connections_o CLOSE_BRACKET;
-list_of_port_connections_o : list_of_port_connections | ;
+module_instance : name_of_instance OPEN_BRACKET 
+                  list_of_port_connections CLOSE_BRACKET
+                | name_of_instance OPEN_BRACKET CLOSE_BRACKET
+                ;
 
-name_of_instance : module_instance_identifier range_o;
+name_of_instance : module_instance_identifier range_o 
+                    {printf("Module Instance\n");};
 
 list_of_port_connections : ordered_port_connections
                          | named_port_connections
@@ -1009,7 +1012,7 @@ list_of_port_connections : ordered_port_connections
 
 ordered_port_connections : ordered_port_connection
                          | ordered_port_connections COMMA
-                           ordered_port_connection
+                           ordered_port_connection {printf("OPC-s\n");}
                          ;
 
 named_port_connections   : named_port_connection
@@ -1017,7 +1020,7 @@ named_port_connections   : named_port_connection
                            named_port_connection
                          ;
 
-ordered_port_connection : attribute_instances expression_o;
+ordered_port_connection : attribute_instances expression_o {printf("OPC\n");};
 
 named_port_connection : attribute_instances '.' port_identifier OPEN_BRACKET 
                         expression_o CLOSE_BRACKET
@@ -2033,7 +2036,6 @@ hierarchical_net_identifier     : hierarchical_identifier;
 hierarchical_variable_identifier: hierarchical_identifier;
 hierarchical_task_identifier    : hierarchical_identifier;
 identifier                      : simple_identifier   
-                                    {printf("SIMPLEID: %s\n", $1);}
                                 | escaped_identifier
                                     {printf("ESCAPEDID: %s\n", $1);}
                                 ;
@@ -2058,6 +2060,7 @@ simple_hierarchical_identifier  : simple_hierarchical_branch
                                 ;
 
 simple_identifier               : SIMPLE_IDENTIFIER
+                                    {printf("SIMPLEID: %s\n", $1);}
                                 ;
 
 specparam_identifier            : identifier;
