@@ -1892,19 +1892,19 @@ decimal_digits_o : '_'
 
 binary_digits_o : '_'
                 | binary_digit
-                | binary_digits_o binary_digits
+                | binary_digits_o binary_digit
                 |
                 ;
 
 octal_digits_o : '_'
                | octal_digit
-               | octal_digits_o octal_digits
+               | octal_digits_o octal_digit
                |
                ;
 
 hex_digits_o : '_'
              | hex_digit
-             | hex_digits_o hex_digits
+             | hex_digits_o hex_digit
              |
              ;
 
