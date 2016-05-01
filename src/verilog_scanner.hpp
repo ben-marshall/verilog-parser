@@ -26,6 +26,7 @@ namespace VL
             int yylex(VL::VerilogParser::semantic_type *lval)
             {
                 yylval = lval;
+                printf("\t\tLEX: '%s'\n", yytext);
                 return( yylex() ); 
             }
 

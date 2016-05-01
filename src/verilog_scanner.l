@@ -422,5 +422,12 @@ token::EQ;}
 {SPACE}                
 {TAB}                  
 
+{DECIMAL_DIGIT}     {return token::DECIMAL_DIGIT             ;}
+
+{HEX_BASE}          {return token::HEX_BASE                  ;}
+{OCTAL_BASE}        {return token::OCTAL_BASE                ;}
+{DECIMAL_BASE}      {return token::DECIMAL_BASE              ;}
+{BINARY_BASE}       {return token::BINARY_BASE               ;}
+
 {ANY}                  {return token::ANY                   ;}
 %%

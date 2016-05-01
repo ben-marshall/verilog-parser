@@ -363,7 +363,8 @@ module_params     :
 
 list_of_ports   :
                 | OPEN_BRACKET CLOSE_BRACKET
-                | OPEN_BRACKET ports CLOSE_BRACKET
+                | OPEN_BRACKET ports CLOSE_BRACKET 
+                  {printf("LIST OF PORTS\n");}
                 ;
 
 list_of_port_declarations   : OPEN_BRACKET CLOSE_BRACKET
@@ -395,9 +396,9 @@ port_reference  : port_identifier
                   range_expression CLOSE_SQ_BRACKET
                 ;
 
-port_declaration : attribute_instances inout_declaration
-                 | attribute_instances input_declaration
-                 | attribute_instances output_declaration
+port_declaration : attribute_instances inout_declaration {printf("INOUT\n");}
+                 | attribute_instances input_declaration{printf("INPUT\n");}
+                 | attribute_instances output_declaration{printf("OUT\n");}
                  ;
 
 attribute_instances_o : attribute_instances
@@ -410,13 +411,13 @@ attribute_instances :
 
 /* A.1.5 Module Items */
 
-module_items    : module_item
-                | module_items module_item
+module_items    : module_item {printf("Module item: ");}
+                | module_items module_item {printf("MODULE ITEMS\n");}
                 ;
 
 module_item     : 
                 | module_or_generate_item
-                | port_declaration SEMICOLON
+                | port_declaration SEMICOLON {printf("PORT DECLARATION\n");}
                 | attribute_instances generated_instantiation
                 | attribute_instances local_parameter_declaration
                 | attribute_instances parameter_declaration
@@ -471,11 +472,16 @@ local_parameter_declaration : KW_LOCALPARAM signed_o range_o list_of_param_assig
                             | KW_LOCALPARAM KW_TIME list_of_param_assignments SEMICOLON
                             ;
 
-parameter_declaration : KW_PARAMETER signed_o range_o list_of_param_assignments SEMICOLON
-                      | KW_PARAMETER KW_INTEGER list_of_param_assignments SEMICOLON
-                      | KW_PARAMETER KW_REAL list_of_param_assignments SEMICOLON
-                      | KW_PARAMETER KW_REALTIME list_of_param_assignments SEMICOLON
-                      | KW_PARAMETER KW_TIME list_of_param_assignments SEMICOLON
+parameter_declaration : KW_PARAMETER signed_o range_o
+                        list_of_param_assignments SEMICOLON
+                      | KW_PARAMETER KW_INTEGER list_of_param_assignments
+                        SEMICOLON
+                      | KW_PARAMETER KW_REAL list_of_param_assignments
+                        SEMICOLON
+                      | KW_PARAMETER KW_REALTIME list_of_param_assignments
+                        SEMICOLON
+                      | KW_PARAMETER KW_TIME list_of_param_assignments
+                        SEMICOLON
                       ;
 
 specparam_declaration : KW_SPECPARAM range_o list_of_specparam_assignments SEMICOLON
@@ -496,15 +502,19 @@ inout_declaration : KW_INOUT net_type_o signed_o range_o
                   ;
 
 input_declaration : KW_INPUT net_type_o signed_o range_o 
-                    list_of_port_identifiers
+                    list_of_port_identifiers {printf("INPUT PORT\n");}
                   ;
 
 output_declaration: KW_OUTPUT net_type_o signed_o range_o 
                     list_of_port_identifiers
+
                   | KW_OUTPUT reg_o signed_o range_o list_of_port_identifiers
+
                   | KW_OUTPUT KW_REG signed_o range_o 
                     list_of_variable_port_identifiers
+
                   | KW_OUTPUT output_variable_type_o list_of_port_identifiers
+
                   | KW_OUTPUT output_variable_type 
                     list_of_variable_port_identifiers
                   ;
@@ -701,7 +711,8 @@ dimension               : OPEN_SQ_BRACKET dimension_constant_expression COLON
                            dimension_constant_expression CLOSE_SQ_BRACKET ;
 
 range                   : OPEN_SQ_BRACKET msb_constant_expression COLON 
-                           lsb_constant_expression CLOSE_SQ_BRACKET ;
+                           lsb_constant_expression CLOSE_SQ_BRACKET 
+                           {printf("RANGE\n");};
 
 /* A.2.6 Function Declarations */
 
@@ -1737,7 +1748,7 @@ module_path_mintypmax_expression : module_path_expression
                                    module_path_expression COLON 
                                    module_path_expression;
 
-msb_constant_expression : constant_expression;
+msb_constant_expression : constant_expression {printf("CONSTANT_EXP\n");};
 
 range_expression : expression
                  | msb_constant_expression COLON lsb_constant_expression
@@ -1875,25 +1886,25 @@ size : non_zero_unsigned_number;
 
 decimal_digits_o : '_'
                  | decimal_digit
-                 | decimal_digits_o decimal_digits_o
+                 | decimal_digits_o decimal_digit
                  |
                  ;
 
 binary_digits_o : '_'
                 | binary_digit
-                | binary_digits_o binary_digits_o
+                | binary_digits_o binary_digits
                 |
                 ;
 
 octal_digits_o : '_'
                | octal_digit
-               | octal_digits_o octal_digits_o
+               | octal_digits_o octal_digits
                |
                ;
 
 hex_digits_o : '_'
              | hex_digit
-             | hex_digits_o hex_digits_o
+             | hex_digits_o hex_digits
              |
              ;
 
