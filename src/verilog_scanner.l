@@ -419,7 +419,7 @@ token::EQ;}
 <in_str>{ANY_IN_STR}   {return token::ANY                   ;}
 {STR_TERM}             {BEGIN(in_str)                       ;}
 
-{NEWLINE}              
+{NEWLINE}              {printf("\n");}
 {SPACE}                
 {TAB}                  
 

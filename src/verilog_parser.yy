@@ -425,7 +425,8 @@ module_item     :
                 | attribute_instances specparam_declaration
                 ;
 
-module_or_generate_item : attribute_instances module_or_generate_item_declaration
+module_or_generate_item : attribute_instances 
+                          module_or_generate_item_declaration
                         | attribute_instances parameter_override
                         | attribute_instances continuous_assign
                         | attribute_instances gate_instantiation
@@ -465,11 +466,16 @@ parameter_override   : KW_DEFPARAM list_of_param_assignments SEMICOLON
 
 /* A.2.1.1 Declaration types -> Module Parameter Declarations */
 
-local_parameter_declaration : KW_LOCALPARAM signed_o range_o list_of_param_assignments SEMICOLON
-                            | KW_LOCALPARAM KW_INTEGER list_of_param_assignments SEMICOLON
-                            | KW_LOCALPARAM KW_REAL list_of_param_assignments SEMICOLON
-                            | KW_LOCALPARAM KW_REALTIME list_of_param_assignments SEMICOLON
-                            | KW_LOCALPARAM KW_TIME list_of_param_assignments SEMICOLON
+local_parameter_declaration : KW_LOCALPARAM signed_o range_o 
+                              list_of_param_assignments SEMICOLON
+                            | KW_LOCALPARAM KW_INTEGER 
+                              list_of_param_assignments SEMICOLON
+                            | KW_LOCALPARAM KW_REAL 
+                              list_of_param_assignments SEMICOLON
+                            | KW_LOCALPARAM KW_REALTIME 
+                              list_of_param_assignments SEMICOLON
+                            | KW_LOCALPARAM KW_TIME list_of_param_assignments
+                              SEMICOLON
                             ;
 
 parameter_declaration : KW_PARAMETER signed_o range_o
@@ -484,7 +490,8 @@ parameter_declaration : KW_PARAMETER signed_o range_o
                         SEMICOLON
                       ;
 
-specparam_declaration : KW_SPECPARAM range_o list_of_specparam_assignments SEMICOLON
+specparam_declaration : KW_SPECPARAM range_o list_of_specparam_assignments 
+                        SEMICOLON
                       ;
 
 range_o             : range
@@ -609,14 +616,19 @@ charge_strength     : OPEN_BRACKET KW_SMALL CLOSE_BRACKET
 
 /* A.2.2.3 Delays */
 
-delay3              : '#' delay_value
-                    | '#' OPEN_BRACKET delay_value CLOSE_BRACKET
-                    | '#' OPEN_BRACKET delay_value COMMA delay_value CLOSE_BRACKET
-                    | '#' OPEN_BRACKET delay_value COMMA delay_value COMMA delay_value CLOSE_BRACKET
+delay3              : HASH delay_value
+                    | HASH OPEN_BRACKET delay_value CLOSE_BRACKET
+                    | HASH OPEN_BRACKET delay_value COMMA delay_value 
+                      CLOSE_BRACKET
+                    | HASH OPEN_BRACKET delay_value COMMA delay_value COMMA 
+                      delay_value CLOSE_BRACKET
+                    ;
 
-delay2              : '#' delay_value
-                    | '#' OPEN_BRACKET delay_value CLOSE_BRACKET
-                    | '#' OPEN_BRACKET delay_value COMMA delay_value CLOSE_BRACKET
+delay2              : HASH delay_value
+                    | HASH OPEN_BRACKET delay_value CLOSE_BRACKET
+                    | HASH OPEN_BRACKET delay_value COMMA delay_value 
+                      CLOSE_BRACKET
+                    ;
 
 delay_value         : unsigned_number
                     | parameter_identifier
@@ -994,7 +1006,9 @@ module_instances : module_instance {printf("MODULE INSTANCE\n");}
 
 ordered_parameter_assignment : expression;
 
-named_parameter_assignment : '.' parameter_identifier OPEN_BRACKET expression_o CLOSE_BRACKET;
+named_parameter_assignment : DOT parameter_identifier OPEN_BRACKET 
+                             expression_o CLOSE_BRACKET 
+                             {printf("NAMED ASIGNMENT\n");};
 
 expression_o : expression | ;
 
@@ -1010,7 +1024,7 @@ list_of_port_connections : ordered_port_connections
                          | named_port_connections
                          ;
 
-ordered_port_connections : ordered_port_connection
+ordered_port_connections : ordered_port_connection {printf("OPC..\n");}
                          | ordered_port_connections COMMA
                            ordered_port_connection {printf("OPC-s\n");}
                          ;
@@ -1020,9 +1034,11 @@ named_port_connections   : named_port_connection
                            named_port_connection
                          ;
 
-ordered_port_connection : attribute_instances expression_o {printf("OPC\n");};
+ordered_port_connection : attribute_instances expression
+                          {printf("OPC\n");}
+                        ;
 
-named_port_connection : attribute_instances '.' port_identifier OPEN_BRACKET 
+named_port_connection : attribute_instances DOT port_identifier OPEN_BRACKET 
                         expression_o CLOSE_BRACKET
                       ;
 
@@ -1682,33 +1698,29 @@ system_function_call : system_function_identifier
 
 /* A.8.3 Expression */
 
-base_expression : expression ;
-
-conditional_expression : expression1 '?' attribute_instances_o expression2 COLON
-                         expression3
+conditional_expression : expression1 '?' attribute_instances_o expression2 
+                         COLON expression3
                        ;
-
-constant_base_expression : constant_expression;
 
 constant_expression : constant_primary
                     | unary_operator attribute_instances_o constant_primary
-                    | constant_expression binary_operator attribute_instances_o
-                      constant_expression
+                    | constant_expression binary_operator 
+                      attribute_instances_o constant_expression
                     | constant_expression '?' attribute_instances_o 
                       constant_expression '?' constant_expression
                     | string
                     ;
 
 constant_mintypmax_expression : constant_expression
-                              | constant_expression COLON constant_expression 
+                              | constant_expression COLON constant_expression
                                 COLON constant_expression
                               ;
 
 constant_range_expression : constant_expression
                           | msb_constant_expression COLON lsb_constant_expression
-                          | constant_base_expression '+' COLON 
+                          | constant_expression '+' COLON 
                             width_constant_expression
-                          | constant_base_expression '-' COLON 
+                          | constant_expression '-' COLON 
                             width_constant_expression
                           ;
 
@@ -1755,8 +1767,8 @@ msb_constant_expression : constant_expression {printf("CONSTANT_EXP\n");};
 
 range_expression : expression
                  | msb_constant_expression COLON lsb_constant_expression
-                 | base_expression '+' COLON width_constant_expression
-                 | base_expression '-' COLON width_constant_expression
+                 | expression '+' COLON width_constant_expression
+                 | expression '-' COLON width_constant_expression
                  ;
 
 width_constant_expression : constant_expression;
@@ -1780,15 +1792,19 @@ module_path_primary : number
                     | function_call
                     | system_function_call
                     | constant_function_call
-                    | OPEN_BRACKET module_path_mintypmax_expression CLOSE_BRACKET
+                    | OPEN_BRACKET module_path_mintypmax_expression 
+                      CLOSE_BRACKET
                     ;
 
 primary : number
         | hierarchical_identifier
-        | hierarchical_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET braced_expression_o
-        | hierarchical_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET braced_expression_o 
+        | hierarchical_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET
+          braced_expression_o
+        | hierarchical_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET
+          braced_expression_o 
           OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
-        | hierarchical_identifier OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
+        | hierarchical_identifier OPEN_SQ_BRACKET range_expression
+          CLOSE_SQ_BRACKET
         | concatenation
         | multiple_concatenation
         | function_call
@@ -2003,11 +2019,11 @@ escaped_hierarchical_identifier : escaped_hierarchical_branch
                                   escaped_hierarchical_identifiers
                                 ;
 
-escaped_hierarchical_identifiers: '.' simple_hierarchical_identifier
-                                | '.' escaped_hierarchical_identifier
+escaped_hierarchical_identifiers: DOT simple_hierarchical_identifier
+                                | DOT escaped_hierarchical_identifier
                                 | escaped_hierarchical_identifiers
-                                  '.' simple_hierarchical_identifier
-                                | escaped_hierarchical_identifier '.'
+                                  DOT simple_hierarchical_identifier
+                                | escaped_hierarchical_identifier DOT
                                   escaped_hierarchical_identifiers
                                 ;
 
@@ -2035,7 +2051,8 @@ hierarchical_identifier         : simple_hierarchical_identifier
 hierarchical_net_identifier     : hierarchical_identifier;
 hierarchical_variable_identifier: hierarchical_identifier;
 hierarchical_task_identifier    : hierarchical_identifier;
-identifier                      : simple_identifier   
+identifier                      : simple_identifier
+                                    {printf("SIMPLEID: %s\n", $1);}
                                 | escaped_identifier
                                     {printf("ESCAPEDID: %s\n", $1);}
                                 ;
@@ -2059,8 +2076,7 @@ simple_hierarchical_identifier  : simple_hierarchical_branch
                                   escaped_identifier
                                 ;
 
-simple_identifier               : SIMPLE_IDENTIFIER
-                                    {printf("SIMPLEID: %s\n", $1);}
+simple_identifier               : SIMPLE_IDENTIFIER 
                                 ;
 
 specparam_identifier            : identifier;
@@ -2080,28 +2096,16 @@ variable_identifier             : identifier;
 
 unsigned_number_o : unsigned_number | ;
 
-simple_hierarchical_branch : simple_identifier unsigned_number_o
-                             simple_hierarchical_branch_sub_o
-                             ;
+simple_hierarchical_branch : simple_identifier {printf("SHB 1\n");}
+                           | simple_identifier OPEN_SQ_BRACKET
+                             number CLOSE_SQ_BRACKET 
+                             {printf("SHB 2\n");}
+                           ;
 
-escaped_hierarchical_branch : escaped_identifier unsigned_number_o
-                              escaped_hierarchical_branch_sub_o
+escaped_hierarchical_branch : escaped_identifier
+                            | escaped_identifier OPEN_SQ_BRACKET
+                              number CLOSE_SQ_BRACKET
                             ;
-
-simple_hierarchical_branch_sub_o : simple_hierarchical_branch_sub | ;
-
-simple_hierarchical_branch_sub : '.' simple_identifier unsigned_number_o
-                               | simple_hierarchical_branch_sub 
-                                 '.' simple_identifier unsigned_number_o
-                               ;
-
-
-escaped_hierarchical_branch_sub_o : escaped_hierarchical_branch_sub | ;
-
-escaped_hierarchical_branch_sub : '.' escaped_identifier unsigned_number_o
-                                | escaped_hierarchical_branch_sub 
-                                  '.' escaped_identifier unsigned_number_o
-                                ;
 
 white_space : SPACE | TAB | NEWLINE;
 
