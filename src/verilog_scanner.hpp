@@ -26,8 +26,9 @@ namespace VL
             int yylex(VL::VerilogParser::semantic_type *lval)
             {
                 yylval = lval;
-                printf("\t\tLEX: '%s'\n", yytext);
-                return( yylex() ); 
+                int tr =  yylex(); 
+                printf("< %d , %d , '%s' >\n", yylineno, tr, yytext);
+                return tr;
             }
 
 

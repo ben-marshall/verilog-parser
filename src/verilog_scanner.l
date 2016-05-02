@@ -252,8 +252,7 @@ STR_TERM                    \"
 {CD_UNCONNECTED_DRIVE}       {return token::CD_UNCONNECTED_DRIVE      ;}
 {CD_UNDEF}                   {return token::CD_UNDEF                  ;}
 
-{EQ}                         {BEGIN(in_rval); printf("=\n"); return
-token::EQ;}
+{EQ}                         {BEGIN(in_rval); return         token::EQ;}
 
 <in_rval>s|S                 {return token::S                         ;}
 <in_rval>{EXP}               {return token::EXP                       ;}
@@ -407,7 +406,6 @@ token::EQ;}
 
 {SIMPLE_IDENTIFIER}    {
     yylval->sval = strdup(yytext);
-    printf("lex: simple id\n");
     return token::SIMPLE_IDENTIFIER;
 }
 {SYSTEM_IDENTIFIER}    {
@@ -419,7 +417,7 @@ token::EQ;}
 <in_str>{ANY_IN_STR}   {return token::ANY                   ;}
 {STR_TERM}             {BEGIN(in_str)                       ;}
 
-{NEWLINE}              {printf("\n");}
+{NEWLINE}
 {SPACE}                
 {TAB}                  
 

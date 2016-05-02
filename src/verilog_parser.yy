@@ -1,7 +1,8 @@
 %skeleton "lalr1.cc"
 %require  "3.0"
-%debug 
 %defines 
+%define parse.trace
+%verbose
 %define api.namespace {VL}
 %define parser_class_name {VerilogParser}
 
@@ -32,8 +33,8 @@
    static int yylex(VL::VerilogParser::semantic_type *yylval,
                     VL::VerilogScanner  &scanner,
                     VL::VerilogDriver   &driver);
-   
 }
+
 
 /* token types */
 %union {
@@ -340,14 +341,14 @@ module_declaration : module_kw module_identifier
                      module_parameter_port_list list_of_ports SEMICOLON
                      module_items
                      KW_ENDMODULE
-                   | attribute_instances_o module_kw module_identifier
+                   | attribute_instances module_kw module_identifier
                      module_parameter_port_list list_of_port_declarations 
                      SEMICOLON
                      non_port_module_items KW_ENDMODULE
                    ;
 
-module_kw       : KW_MACROMODULE    {printf("MODULE\n");}
-                | KW_MODULE         {printf("MODULE\n");}
+module_kw       : KW_MACROMODULE 
+                | KW_MODULE
                 ;
 
 /* A.1.4 Module parameters and ports */
@@ -364,7 +365,6 @@ module_params     :
 list_of_ports   :
                 | OPEN_BRACKET CLOSE_BRACKET
                 | OPEN_BRACKET ports CLOSE_BRACKET 
-                  {printf("LIST OF PORTS\n");}
                 ;
 
 list_of_port_declarations   : OPEN_BRACKET CLOSE_BRACKET
@@ -396,35 +396,35 @@ port_reference  : port_identifier
                   range_expression CLOSE_SQ_BRACKET
                 ;
 
-port_declaration : attribute_instances inout_declaration {printf("INOUT\n");}
-                 | attribute_instances input_declaration{printf("INPUT\n");}
-                 | attribute_instances output_declaration{printf("OUT\n");}
+port_declaration : inout_declaration
+                 | input_declaration
+                 | output_declaration
                  ;
 
 /* A.1.5 Module Items */
 
-module_items    : module_item {printf("Module item: ");}
-                | module_items module_item {printf("MODULE ITEMS\n");}
+module_items    : module_item
+                | module_items module_item
                 ;
 
 module_item     : module_or_generate_item
-                | port_declaration SEMICOLON {printf("PORT DECLARATION\n");}
-                | attribute_instances_o generated_instantiation
-                | attribute_instances_o local_parameter_declaration
-                | attribute_instances_o parameter_declaration
-                | attribute_instances_o specify_block
-                | attribute_instances_o specparam_declaration
+                | attribute_instances port_declaration SEMICOLON 
+                | attribute_instances generated_instantiation
+                | attribute_instances local_parameter_declaration
+                | attribute_instances parameter_declaration
+                | attribute_instances specify_block
+                | attribute_instances specparam_declaration
                 ;
 
-module_or_generate_item : attribute_instances 
+module_or_generate_item : attribute_instances
                           module_or_generate_item_declaration
-                        | attribute_instances_o parameter_override
-                        | attribute_instances_o continuous_assign
-                        | attribute_instances_o gate_instantiation
-                        | attribute_instances_o udp_instantiation
-                        | attribute_instances_o module_instantiation
-                        | attribute_instances_o initial_construct
-                        | attribute_instances_o always_construct
+                        | attribute_instances parameter_override
+                        | attribute_instances continuous_assign
+                        | attribute_instances gate_instantiation
+                        | attribute_instances udp_instantiation
+                        | attribute_instances module_instantiation
+                        | attribute_instances initial_construct
+                        | attribute_instances always_construct
                         ; 
 
 module_or_generate_item_declaration : net_declaration
@@ -444,12 +444,12 @@ non_port_module_items: non_port_module_item
                      ;
 
 non_port_module_item : 
-                     | attribute_instances_o generated_instantiation
-                     | attribute_instances_o local_parameter_declaration
-                     | attribute_instances_o module_or_generate_item
-                     | attribute_instances_o parameter_declaration
-                     | attribute_instances_o specify_block
-                     | attribute_instances_o specparam_declaration
+                     | attribute_instances generated_instantiation
+                     | attribute_instances local_parameter_declaration
+                     | attribute_instances module_or_generate_item
+                     | attribute_instances parameter_declaration
+                     | attribute_instances specify_block
+                     | attribute_instances specparam_declaration
                      ;
 
 parameter_override   : KW_DEFPARAM list_of_param_assignments SEMICOLON
@@ -500,7 +500,7 @@ inout_declaration : KW_INOUT net_type_o signed_o range_o
                   ;
 
 input_declaration : KW_INPUT net_type_o signed_o range_o 
-                    list_of_port_identifiers {printf("INPUT PORT\n");}
+                    list_of_port_identifiers
                   ;
 
 output_declaration: KW_OUTPUT net_type_o signed_o range_o 
@@ -715,7 +715,7 @@ dimension               : OPEN_SQ_BRACKET dimension_constant_expression COLON
 
 range                   : OPEN_SQ_BRACKET msb_constant_expression COLON 
                            lsb_constant_expression CLOSE_SQ_BRACKET 
-                           {printf("RANGE\n");};
+                        ;
 
 /* A.2.6 Function Declarations */
 
@@ -746,11 +746,11 @@ function_item_declaration  : block_item_declaration
                            | tf_input_declaration SEMICOLON
                            ;
 
-function_port_list         : attribute_instances_o tf_input_declaration
+function_port_list         : attribute_instances tf_input_declaration
                              tf_input_declarations;
 
 tf_input_declarations      : 
-                           | COMMA attribute_instances_o tf_input_declaration
+                           | COMMA attribute_instances tf_input_declaration
                              tf_input_declarations
                            ;
 
@@ -971,6 +971,8 @@ pass_switchtype     : KW_TRAN | KW_RTRAN;
 
 module_instantiation: module_identifier parameter_value_assignment_o
                       module_instances SEMICOLON
+                      {printf("Module '%s' Instanced.\n",
+                      $<sval>1);}
                     ;
 
 parameter_value_assignment_o : parameter_value_assignment | ;
@@ -992,7 +994,7 @@ named_parameter_assignments   : named_parameter_assignment
                                 named_parameter_assignment
                               ;
 
-module_instances : module_instance {printf("MODULE INSTANCE\n");}
+module_instances : module_instance
                  | module_instances COMMA module_instance
                  ;
 
@@ -1000,41 +1002,44 @@ ordered_parameter_assignment : expression;
 
 named_parameter_assignment : DOT parameter_identifier OPEN_BRACKET 
                              expression_o CLOSE_BRACKET 
-                             {printf("NAMED ASIGNMENT\n");};
-
-expression_o : expression | ;
+                           ;
 
 module_instance : name_of_instance OPEN_BRACKET 
                   list_of_port_connections CLOSE_BRACKET
+                  {printf("Module instance name0: '%s'\n",$<sval>1);}
                 | name_of_instance OPEN_BRACKET CLOSE_BRACKET
+                  {printf("Module instance name1 '%s'\n",$<sval>1);}
                 ;
 
 name_of_instance : module_instance_identifier range_o 
-                    {printf("Module Instance\n");};
+                  {printf("Module instance name2: '%s'\n",$<sval>1);}
+                 ;
 
-list_of_port_connections : ordered_port_connections
+list_of_port_connections : ordered_port_connection
                          | named_port_connections
                          ;
 
-ordered_port_connections : ordered_port_connection {printf("OPC..\n");}
+ordered_port_connections : ordered_port_connection
+                           {printf("Ordered port connection 0\n");}
                          | ordered_port_connections COMMA
-                           ordered_port_connection {printf("OPC-s\n");}
+                           ordered_port_connection
+                           {printf("Ordered port connections\n");}
                          ;
 
-named_port_connections   : named_port_connection {printf("NPC..\n");}
+named_port_connections   : named_port_connection 
                          | named_port_connections COMMA
-                           named_port_connection {printf("NPS-s\n");}
+                           named_port_connection
                          ;
 
-ordered_port_connection : expression
-                          {printf("OPC\n");}
-                        | attribute_instances_o expression
-                          {printf("OPC ai\n");}
+ordered_port_connection : expression_o
+                           {printf("Ordered port connection 1\n");}
                         ;
 
-named_port_connection : attribute_instances DOT port_identifier OPEN_BRACKET 
-                        expression_o CLOSE_BRACKET
+named_port_connection : DOT port_identifier
+                        OPEN_BRACKET expression_o CLOSE_BRACKET
                       ;
+
+expression_o : expression {printf("Optional Expression\n");} | ;
 
 /* A.4.2 Generated instantiation */
 
@@ -1091,10 +1096,10 @@ generate_block : KW_BEGIN generate_items KW_END
 
 /* A.5.1 UDP Declaration */
 
-udp_declaration : attribute_instances_o KW_PRIMITIVE udp_identifier
+udp_declaration : attribute_instances KW_PRIMITIVE udp_identifier
                   OPEN_BRACKET udp_port_list CLOSE_BRACKET SEMICOLON
                   udp_port_declarations udp_body KW_ENDPRIMITIVE
-                | attribute_instances_o KW_PRIMITIVE udp_identifier
+                | attribute_instances KW_PRIMITIVE udp_identifier
                   OPEN_BRACKET udp_declaration_port_list CLOSE_BRACKET SEMICOLON
                   udp_body KW_ENDPRIMITIVE
                 ;
@@ -1122,17 +1127,17 @@ udp_port_declaration : udp_output_declaration SEMICOLON
                      | udp_reg_declaration SEMICOLON
                      ;
 
-udp_output_declaration : attribute_instances_o KW_OUTPUT port_identifier
-                       | attribute_instances_o KW_OUTPUT KW_REG 
+udp_output_declaration : attribute_instances KW_OUTPUT port_identifier
+                       | attribute_instances KW_OUTPUT KW_REG 
                          port_identifier
-                       | attribute_instances_o KW_OUTPUT KW_REG 
+                       | attribute_instances KW_OUTPUT KW_REG 
                          port_identifier EQ constant_expression
                        ;
 
-udp_input_declaration : attribute_instances_o KW_INPUT list_of_port_identifiers
+udp_input_declaration : attribute_instances KW_INPUT list_of_port_identifiers
                       ;
 
-udp_reg_declaration : attribute_instances_o KW_REG variable_identifier
+udp_reg_declaration : attribute_instances KW_REG variable_identifier
                     ;
 
 /* A.5.3 UDP body */
@@ -1248,7 +1253,7 @@ function_blocking_assignment : variable_lvalue SEMICOLON expression
                              ;
 
 function_statement_or_null : function_statement
-                           | attribute_instances_o SEMICOLON
+                           | attribute_instances SEMICOLON
                            ;
 
 /* A.6.3 Parallel and sequential blocks */
@@ -1288,33 +1293,33 @@ statements   : statement
              | statements statement
              ;
 
-statement : attribute_instances_o blocking_assignment SEMICOLON
-          | attribute_instances_o case_statement
-          | attribute_instances_o conditional_statement
-          | attribute_instances_o disable_statement
-          | attribute_instances_o event_trigger
-          | attribute_instances_o loop_statement
-          | attribute_instances_o nonblocking_assignment SEMICOLON
-          | attribute_instances_o par_block
-          | attribute_instances_o procedural_continuous_assignments SEMICOLON
-          | attribute_instances_o procedural_timing_control_statement
-          | attribute_instances_o seq_block
-          | attribute_instances_o system_task_enable
-          | attribute_instances_o task_enable
-          | attribute_instances_o wait_statement
+statement : attribute_instances blocking_assignment SEMICOLON
+          | attribute_instances case_statement
+          | attribute_instances conditional_statement
+          | attribute_instances disable_statement
+          | attribute_instances event_trigger
+          | attribute_instances loop_statement
+          | attribute_instances nonblocking_assignment SEMICOLON
+          | attribute_instances par_block
+          | attribute_instances procedural_continuous_assignments SEMICOLON
+          | attribute_instances procedural_timing_control_statement
+          | attribute_instances seq_block
+          | attribute_instances system_task_enable
+          | attribute_instances task_enable
+          | attribute_instances wait_statement
           ;
 
 statement_or_null : statement
-                  | attribute_instances_o SEMICOLON
+                  | attribute_instances SEMICOLON
                   ;
                   
-function_statement : attribute_instances_o function_blocking_assignment SEMICOLON
-                   | attribute_instances_o function_case_statement
-                   | attribute_instances_o function_conditional_statement
-                   | attribute_instances_o function_loop_statement
-                   | attribute_instances_o function_seq_block
-                   | attribute_instances_o disable_statement
-                   | attribute_instances_o system_task_enable
+function_statement : attribute_instances function_blocking_assignment SEMICOLON
+                   | attribute_instances function_case_statement
+                   | attribute_instances function_conditional_statement
+                   | attribute_instances function_loop_statement
+                   | attribute_instances function_seq_block
+                   | attribute_instances disable_statement
+                   | attribute_instances system_task_enable
                    ;
 
 /* A.6.5 Timing control statements */
@@ -1501,8 +1506,8 @@ parallel_path_description : OPEN_BRACKET specify_input_terminal_descriptor
 
 polarity_operator_o : polarity_operator | ;
 
-full_path_description : OPEN_BRACKET list_of_path_inputs polarity_operator_o '*'
-                        '>' list_of_path_outputs CLOSE_BRACKET
+full_path_description : OPEN_BRACKET list_of_path_inputs polarity_operator_o 
+                        '*' '>' list_of_path_outputs CLOSE_BRACKET
                       ;
 
 list_of_path_inputs   : specify_input_terminal_descriptor
@@ -1673,15 +1678,15 @@ variable_concatenation_value : hierarchical_variable_identifier
 
 /* A.8.2 Function calls */
 
-constant_function_call : function_identifier attribute_instances_o
+constant_function_call : function_identifier attribute_instances
                          OPEN_BRACKET constant_expressions CLOSE_BRACKET
                        ;
 
-function_call : hierarchical_function_identifier attribute_instances_o
+function_call : hierarchical_function_identifier attribute_instances
                 OPEN_BRACKET expressions CLOSE_BRACKET
               ;
 
-genvar_function_call : genvar_function_identifier attribute_instances_o
+genvar_function_call : genvar_function_identifier attribute_instances
                        OPEN_BRACKET constant_expressions CLOSE_BRACKET
                      ;
 
@@ -1691,15 +1696,15 @@ system_function_call : system_function_identifier
 
 /* A.8.3 Expression */
 
-conditional_expression : expression1 '?' attribute_instances_o expression2 
+conditional_expression : expression1 '?' attribute_instances expression2 
                          COLON expression3
                        ;
 
 constant_expression : constant_primary
-                    | unary_operator attribute_instances_o constant_primary
+                    | unary_operator attribute_instances constant_primary
                     | constant_expression binary_operator 
-                      attribute_instances_o constant_expression
-                    | constant_expression '?' attribute_instances_o 
+                      attribute_instances constant_expression
+                    | constant_expression '?' attribute_instances 
                       constant_expression '?' constant_expression
                     | string
                     ;
@@ -1725,9 +1730,9 @@ expression2 : expression;
 
 expression3 : expression;
 
-expression  : primary
-            | unary_operator attribute_instances_o primary
-            | expression binary_operator attribute_instances_o expression
+expression  : primary {printf("Expression Primary\n");}
+            | unary_operator attribute_instances primary
+            | expression binary_operator attribute_instances expression
             | conditional_expression
             | string
             ;
@@ -1739,15 +1744,15 @@ mintypmax_expression : expression
                      ;
 
 module_path_conditional_expression : module_path_expression '?' 
-                                     attribute_instances_o 
+                                     attribute_instances 
                                      module_path_expression COLON 
                                      module_path_expression;
 
 module_path_expression : module_path_primary
-                       | unary_module_path_operator attribute_instances_o 
+                       | unary_module_path_operator attribute_instances 
                          module_path_primary
                        | module_path_expression binary_module_path_operator 
-                         attribute_instances_o module_path_expression
+                         attribute_instances module_path_expression
                        | module_path_conditional_expression
                        ;
 
@@ -1756,7 +1761,7 @@ module_path_mintypmax_expression : module_path_expression
                                    module_path_expression COLON 
                                    module_path_expression;
 
-msb_constant_expression : constant_expression {printf("CONSTANT_EXP\n");};
+msb_constant_expression : constant_expression;
 
 range_expression : expression
                  | msb_constant_expression COLON lsb_constant_expression
@@ -1791,13 +1796,17 @@ module_path_primary : number
 
 primary : number
         | hierarchical_identifier
+          {printf("Hierarchical Identifier | primary: %s\n", $<sval>1);}
         | hierarchical_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET
           braced_expression_o
+          {printf("Hierarchical Identifier [e] | primary\n");}
         | hierarchical_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET
           braced_expression_o 
           OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
+          {printf("Hierarchical Identifier [r] | primary\n");}
         | hierarchical_identifier OPEN_SQ_BRACKET range_expression
           CLOSE_SQ_BRACKET
+          {printf("Hierarchical Identifier [r] | primary\n");}
         | concatenation
         | multiple_concatenation
         | function_call
@@ -1809,25 +1818,32 @@ primary : number
 /* A.8.5 Expression left-side values */
 
 
-braced_constant_expressions : OPEN_SQ_BRACKET constant_expression CLOSE_SQ_BRACKET
+braced_constant_expressions : OPEN_SQ_BRACKET constant_expression 
+                              CLOSE_SQ_BRACKET
                             | braced_constant_expressions 
-                              OPEN_SQ_BRACKET constant_expression CLOSE_SQ_BRACKET
+                              OPEN_SQ_BRACKET constant_expression 
+                              CLOSE_SQ_BRACKET
                             ;
 
 net_lvalue : hierarchical_net_identifier
            | hierarchical_net_identifier braced_constant_expressions
            | hierarchical_net_identifier braced_constant_expressions
              OPEN_SQ_BRACKET constant_range_expression CLOSE_SQ_BRACKET
-           | hierarchical_net_identifier OPEN_SQ_BRACKET constant_range_expression CLOSE_SQ_BRACKET
+           | hierarchical_net_identifier OPEN_SQ_BRACKET 
+             constant_range_expression CLOSE_SQ_BRACKET
            | net_concatenation
            ;
 
 variable_lvalue : hierarchical_variable_identifier
-                | hierarchical_variable_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET 
+                | hierarchical_variable_identifier OPEN_SQ_BRACKET 
+                  expression CLOSE_SQ_BRACKET 
                   braced_expression_o
-                | hierarchical_variable_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET 
-                  braced_expression_o OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
-                | hierarchical_variable_identifier OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
+                | hierarchical_variable_identifier OPEN_SQ_BRACKET 
+                  expression CLOSE_SQ_BRACKET 
+                  braced_expression_o OPEN_SQ_BRACKET range_expression 
+                  CLOSE_SQ_BRACKET
+                | hierarchical_variable_identifier OPEN_SQ_BRACKET 
+                  range_expression CLOSE_SQ_BRACKET
                 | variable_concatenation
                 ;
 
@@ -1977,11 +1993,6 @@ attr_specs : attr_spec
            | attr_specs COMMA attr_spec
            ;
 
-
-attribute_instances_o : 
-                      | attribute_instances
-                      ;
-
 attribute_instances : 
                     | attribute_instance
                     | attribute_instances attribute_instance
@@ -1997,8 +2008,8 @@ attr_name : identifier ;
 
 /* A.9.2 Comments */
 
-comment             : one_line_comment {printf("OLC\n");}
-                    | block_comment    {printf("MLC\n");}
+comment             : one_line_comment
+                    | block_comment   
                     ;
 
 one_line_comment    : COMMENT_LINE comment_text NEWLINE;
@@ -2053,10 +2064,9 @@ hierarchical_identifier         : simple_hierarchical_identifier
 hierarchical_net_identifier     : hierarchical_identifier;
 hierarchical_variable_identifier: hierarchical_identifier;
 hierarchical_task_identifier    : hierarchical_identifier;
-identifier                      : simple_identifier
-                                    {printf("SIMPLEID: %s\n", $1);}
+identifier                      : simple_identifier 
+                                  {printf("ID: '%s'\n", $<sval>1);}
                                 | escaped_identifier
-                                    {printf("ESCAPEDID: %s\n", $1);}
                                 ;
 
 inout_port_identifier           : identifier;
@@ -2064,11 +2074,11 @@ input_port_identifier           : identifier;
 instance_identifier             : identifier;
 lib_identifier                  : identifier;
 memory_identifier               : identifier;
-module_identifier               : identifier {printf("Module ID\n");};
+module_identifier               : identifier;
 module_instance_identifier      : arrayed_identifier;
 net_identifier                  : identifier;
 output_port_identifier          : identifier;
-parameter_identifier            : identifier {printf("Parameter id\n");};
+parameter_identifier            : identifier;
 port_identifier                 : identifier;
 real_identifier                 : identifier;
 simple_arrayed_identifier       : simple_identifier range_o ;
@@ -2096,17 +2106,16 @@ variable_identifier             : identifier;
 
 /* A.9.4 Identifier Branches */
 
-unsigned_number_o : unsigned_number | ;
-
-simple_hierarchical_branch : simple_identifier {printf("SHB 1\n");}
+simple_hierarchical_branch : simple_identifier
+                             {printf("Simple hierarchical branch\n");}
                            | simple_identifier OPEN_SQ_BRACKET
-                             number CLOSE_SQ_BRACKET 
-                             {printf("SHB 2\n");}
+                             unsigned_number CLOSE_SQ_BRACKET 
+                             {printf("Simple hierarchical branch []\n");}
                            ;
 
 escaped_hierarchical_branch : escaped_identifier
                             | escaped_identifier OPEN_SQ_BRACKET
-                              number CLOSE_SQ_BRACKET
+                              unsigned_number CLOSE_SQ_BRACKET
                             ;
 
 white_space : SPACE | TAB | NEWLINE;
