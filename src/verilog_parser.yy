@@ -425,6 +425,7 @@ module_items    : module_item
                 ;
 
 module_item     : module_or_generate_item
+                | comment
                 | attribute_instances port_declaration SEMICOLON 
                 | attribute_instances generated_instantiation
                 | attribute_instances local_parameter_declaration
@@ -435,13 +436,13 @@ module_item     : module_or_generate_item
 
 module_or_generate_item : attribute_instances
                           module_or_generate_item_declaration
+                        | attribute_instances {printf("try gate\n");} gate_instantiation
                         | attribute_instances parameter_override
                         | attribute_instances continuous_assign
-                        | attribute_instances gate_instantiation
                         | attribute_instances udp_instantiation
-                        | attribute_instances module_instantiation
                         | attribute_instances initial_construct
                         | attribute_instances always_construct
+                        | attribute_instances module_instantiation
                         ; 
 
 module_or_generate_item_declaration : net_declaration
@@ -551,7 +552,6 @@ vect_or_scaled_o    : KW_VECTORED
                     ;
 
 delay3_o            : delay3 | ;
-drive_strength_o    : drive_strength | ;
 charge_strength_o   : charge_strength | ;
 
 net_declaration : net_type signed_o delay3_o list_of_net_identifiers SEMICOLON
@@ -606,6 +606,10 @@ variable_type       : variable_identifier
 
 /* A.2.2.2 Strengths */
 
+delay2_o : 
+         | delay2
+         ;
+
 drive_strength      : OPEN_BRACKET strength0 COMMA strength1 CLOSE_BRACKET
                     | OPEN_BRACKET strength1 COMMA strength0 CLOSE_BRACKET
                     | OPEN_BRACKET strength0 COMMA KW_HIGHZ1 CLOSE_BRACKET
@@ -613,6 +617,11 @@ drive_strength      : OPEN_BRACKET strength0 COMMA strength1 CLOSE_BRACKET
                     | OPEN_BRACKET KW_HIGHZ0 COMMA strength1 CLOSE_BRACKET
                     | OPEN_BRACKET KW_HIGHZ1 COMMA strength0 CLOSE_BRACKET
                     ;
+
+drive_strength_o    : 
+                    | drive_strength
+                    ;
+
 
 strength0           : KW_SUPPLY0 | KW_STRONG0 | KW_PULL0 | KW_WEAK0 ;
 strength1           : KW_SUPPLY1 | KW_STRONG1 | KW_PULL1 | KW_WEAK1 ;
@@ -856,15 +865,13 @@ block_variable_type : variable_identifier
 
 /* A.3.1 primitive instantiation and instances */
 
-delay2_o : delay2 | ;
-
 gate_instantiation : cmos_switchtype delay3_o cmos_switch_instances SEMICOLON
-                   | enable_gatetype drive_strength_o delay3_o
+                   | enable_gatetype 
                      enable_gate_instances SEMICOLON
                    | mos_switchtype delay3_o mos_switch_instances SEMICOLON
-                   | n_input_gatetype drive_strength_o delay2_o
+                   | n_input_gatetype 
                      n_input_gate_instances SEMICOLON
-                   | n_output_gatetype drive_strength_o delay2_o
+                   | n_output_gatetype 
                      n_output_gate_instances SEMICOLON
                    | pass_en_switchtype delay2_o 
                      pass_enable_switch_instances SEMICOLON
@@ -909,18 +916,23 @@ enable_gate_instances : enable_gate_instance
                       | enable_gate_instances COMMA enable_gate_instance 
                       ;
 
-pass_enable_switch_instance  : name_of_gate_instance OPEN_BRACKET inout_terminal COMMA
-                               inout_terminal COMMA enable_terminal CLOSE_BRACKET
+pass_enable_switch_instance  : name_of_gate_instance OPEN_BRACKET 
+                               inout_terminal COMMA
+                               inout_terminal COMMA enable_terminal 
+                               CLOSE_BRACKET
                              ;
 
-pull_gate_instance           : name_of_gate_instance OPEN_BRACKET output_terminal CLOSE_BRACKET
+pull_gate_instance           : name_of_gate_instance OPEN_BRACKET 
+                               output_terminal CLOSE_BRACKET
                              ;
 
-pass_switch_instance         : name_of_gate_instance OPEN_BRACKET inout_terminal COMMA
+pass_switch_instance         : name_of_gate_instance OPEN_BRACKET 
+                               inout_terminal COMMA
                                inout_terminal CLOSE_BRACKET
                              ;
 
-n_output_gate_instance       : name_of_gate_instance OPEN_BRACKET output_terminals COMMA
+n_output_gate_instance       : name_of_gate_instance OPEN_BRACKET 
+                               output_terminals COMMA
                                input_terminal CLOSE_BRACKET
                              ;
 
@@ -941,7 +953,9 @@ enable_gate_instance         : name_of_gate_instance OPEN_BRACKET output_termina
                                input_terminal COMMA enable_terminal CLOSE_BRACKET
                              ;
 
-name_of_gate_instance        : gate_instance_identifier range_o;
+name_of_gate_instance        : 
+                             | gate_instance_identifier range_o
+                             ;
 
 output_terminals             : output_terminal
                              | output_terminals COMMA output_terminal
@@ -971,7 +985,7 @@ enable_terminal     : expression;
 inout_terminal      : net_lvalue;
 input_terminal      : expression;
 ncontrol_terminal   : expression;
-output_terminal     : net_lvalue;
+output_terminal     : net_lvalue {printf("output_terminal\n");};
 pcontrol_terminal   : expression;
 
 /* A.3.4 primitive gate and switch types */
@@ -1835,7 +1849,7 @@ braced_constant_expressions : OPEN_SQ_BRACKET constant_expression
                               CLOSE_SQ_BRACKET
                             ;
 
-net_lvalue : hierarchical_net_identifier
+net_lvalue : hierarchical_net_identifier {printf("netl\n");}
            | hierarchical_net_identifier braced_constant_expressions
            | hierarchical_net_identifier braced_constant_expressions
              OPEN_SQ_BRACKET constant_range_expression CLOSE_SQ_BRACKET
@@ -2111,9 +2125,7 @@ hierarchical_block_identifier   : hierarchical_identifier;
 hierarchical_event_identifier   : hierarchical_identifier;
 hierarchical_function_identifier: hierarchical_identifier;
 hierarchical_identifier         : simple_hierarchical_identifier 
-            {printf("hierarchical_identifier: %d\n", __LINE__);} 
                                 | escaped_hierarchical_identifier
-            {printf("hierarchical_identifier: %d\n", __LINE__);} 
                                 ;
 
 hierarchical_net_identifier     : hierarchical_identifier;

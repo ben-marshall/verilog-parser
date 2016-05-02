@@ -291,9 +291,6 @@ STR_TERM                    \"
 {COLON}                      {return token::COLON    ;}
 {COMMA}                      {return token::COMMA;}
 
-{X_DIGIT}                    {return token::X_DIGIT                   ;}
-{Z_DIGIT}                    {return token::Z_DIGIT                   ;}
-
 {ALWAYS}               {return token::KW_ALWAYS             ;} 
 {AND}                  {return token::KW_AND                ;} 
 {ASSIGN}               {return token::KW_ASSIGN             ;} 
@@ -444,6 +441,10 @@ STR_TERM                    \"
     yylval->sval = strdup(yytext);
     return token::SYSTEM_IDENTIFIER;
 }
+
+{X_DIGIT}                    {return token::X_DIGIT                   ;}
+{Z_DIGIT}                    {return token::Z_DIGIT                   ;}
+
 
 <in_str>{STR_TERM}     {BEGIN(INITIAL)                      ;}
 <in_str>{ANY_IN_STR}   {return token::ANY                   ;}
