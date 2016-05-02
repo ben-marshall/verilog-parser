@@ -276,7 +276,6 @@ STR_TERM                    \"
 {EQ}                         {return token::EQ;}
 
 {DECIMAL_DIGIT} {
-                            printf("LEX: decimal digit\n");
                             return token::DECIMAL_DIGIT;
                             }
 

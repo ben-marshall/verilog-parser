@@ -238,6 +238,8 @@
 %token OP_B_XNOR_1
 %token OP_B_XNOR_2
 
+%left OP_B_XOR
+
 %token NEWLINE
 %token SPACE
 %token TAB
@@ -871,10 +873,16 @@ block_variable_type : variable_identifier
 gate_instantiation : cmos_switchtype delay3_o cmos_switch_instances SEMICOLON
                    | enable_gatetype 
                      enable_gate_instances SEMICOLON
+                   | enable_gatetype delay3
+                     enable_gate_instances SEMICOLON
                    | mos_switchtype delay3_o mos_switch_instances SEMICOLON
                    | n_input_gatetype 
                      n_input_gate_instances SEMICOLON
+                   | n_input_gatetype delay2
+                     n_input_gate_instances SEMICOLON
                    | n_output_gatetype 
+                     n_output_gate_instances SEMICOLON
+                   | n_output_gatetype delay2
                      n_output_gate_instances SEMICOLON
                    | pass_en_switchtype delay2_o 
                      pass_enable_switch_instances SEMICOLON
@@ -1256,7 +1264,8 @@ list_of_net_assignments : net_assignment
                         | list_of_net_assignments COMMA net_assignment
                         ;
 
-net_assignment : net_lvalue EQ expression;
+net_assignment : net_lvalue EQ {printf("continuous net assign\n");} 
+                 expression;
 
 /* A.6.2 Procedural blocks and assignments */
 
@@ -1770,10 +1779,10 @@ expression2 : expression;
 
 expression3 : expression;
 
-expression  : primary 
-            | string {printf("EXP String: '%s'\n", $<sval>1);}
-            | unary_operator
-              attribute_instances primary
+expression  : primary
+            | string 
+            | unary_operator attribute_instances primary
+            | expression binary_operator expression
             | expression binary_operator attribute_instances expression
             | conditional_expression
             ;
@@ -1916,7 +1925,7 @@ binary_operator : OP_PLUS
                 | OP_GT EQ           
                 | OP_B_AND
                 | OP_B_OR 
-                | OP_B_XOR
+                | OP_B_XOR {printf("Binary op xor\n");}
                 | OP_B_XNOR_1
                 | OP_B_XNOR_2
                 | OP_GT OP_GT  
@@ -2165,8 +2174,7 @@ simple_hierarchical_identifier  : simple_hierarchical_branch
                                   escaped_identifier
                                 ;
 
-simple_identifier               : SIMPLE_IDENTIFIER {printf("Simple ID %s\n",$<sval>1);};
-
+simple_identifier               : SIMPLE_IDENTIFIER 
                                 ;
 
 specparam_identifier            : identifier;
