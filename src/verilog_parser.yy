@@ -1268,9 +1268,9 @@ blocking_assignment : variable_lvalue EQ expression
                       expression
                     ;
 
-nonblocking_assignment : variable_lvalue '<' EQ delay_or_event_control
+nonblocking_assignment : variable_lvalue OP_LT EQ delay_or_event_control
                          expression
-                       | variable_lvalue '<' EQ 
+                       | variable_lvalue OP_LT EQ 
                          expression
                        ;
 
