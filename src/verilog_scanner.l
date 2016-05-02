@@ -187,7 +187,22 @@ COLON                       ":"
 EQ                          "="
 COMMA                       ","
 
-/* TODO Operators */
+QM                          "?"
+LT                          "<"
+GT                          ">"
+PLUS                        "+"  
+MINUS                       "-"  
+DIV                         "/"  
+MOD                         "%"
+L_NOT                       "!" 
+B_NOT                       "~" 
+B_AND                       "&" 
+B_NAND                      "~&" 
+B_OR                        "|" 
+B_NOR                       "~|" 
+B_XOR                       "^"               
+B_XNOR_1                    "~^" 
+B_XNOR_2                    "^~"
 
 COMMENT_LINE                "//"
 COMMENT_BEGIN               "/*"
@@ -403,6 +418,23 @@ STR_TERM                    \"
 {XNOR}                 {return token::KW_XNOR               ;} 
 {XOR}                  {return token::KW_XOR                ;} 
 {PATHPULSE}            {return token::KW_PATHPULSE          ;}
+
+{QM}                   {return token::QM                    ;}
+{LT}                   {return token::OP_LT                 ;}
+{GT}                   {return token::OP_GT                 ;}
+{PLUS}                 {return token::OP_PLUS               ;}
+{MINUS}                {return token::OP_MINUS              ;}
+{DIV}                  {return token::OP_DIV                ;}
+{MOD}                  {return token::OP_MOD                ;}
+{L_NOT}                {return token::OP_L_NOT              ;}
+{B_NOT}                {return token::OP_B_NOT              ;}
+{B_AND}                {return token::OP_B_AND              ;}
+{B_NAND}               {return token::OP_B_NAND             ;}
+{B_OR}                 {return token::OP_B_OR               ;}
+{B_NOR}                {return token::OP_B_NOR              ;}
+{B_XOR}                {return token::OP_B_XOR              ;}
+{B_XNOR_1}             {return token::OP_B_XNOR_1           ;}
+{B_XNOR_2}             {return token::OP_B_XNOR_2           ;}
 
 {SIMPLE_IDENTIFIER}    {
     yylval->sval = strdup(yytext);

@@ -220,6 +220,23 @@
 %token COLON
 %token COMMA
 
+%token QM
+%token OP_LT
+%token OP_GT
+%token OP_PLUS    
+%token OP_MINUS   
+%token OP_DIV     
+%token OP_MOD
+%token OP_L_NOT   
+%token OP_B_NOT   
+%token OP_B_AND   
+%token OP_B_NAND  
+%token OP_B_OR    
+%token OP_B_NOR   
+%token OP_B_XOR   
+%token OP_B_XNOR_1
+%token OP_B_XNOR_2
+
 %token NEWLINE
 %token SPACE
 %token TAB
@@ -971,8 +988,6 @@ pass_switchtype     : KW_TRAN | KW_RTRAN;
 
 module_instantiation: module_identifier parameter_value_assignment_o
                       module_instances SEMICOLON
-                      {printf("Module '%s' Instanced.\n",
-                      $<sval>1);}
                     ;
 
 parameter_value_assignment_o : parameter_value_assignment | ;
@@ -1005,25 +1020,22 @@ named_parameter_assignment : DOT parameter_identifier OPEN_BRACKET
                            ;
 
 module_instance : name_of_instance OPEN_BRACKET 
-                  list_of_port_connections CLOSE_BRACKET
-                  {printf("Module instance name0: '%s'\n",$<sval>1);}
-                | name_of_instance OPEN_BRACKET CLOSE_BRACKET
-                  {printf("Module instance name1 '%s'\n",$<sval>1);}
+                  list_of_port_connections 
+                  CLOSE_BRACKET
                 ;
 
 name_of_instance : module_instance_identifier range_o 
-                  {printf("Module instance name2: '%s'\n",$<sval>1);}
                  ;
 
-list_of_port_connections : ordered_port_connection
+list_of_port_connections :
+                         | ordered_port_connections
                          | named_port_connections
                          ;
 
 ordered_port_connections : ordered_port_connection
-                           {printf("Ordered port connection 0\n");}
-                         | ordered_port_connections COMMA
+                         | ordered_port_connections
+                           COMMA
                            ordered_port_connection
-                           {printf("Ordered port connections\n");}
                          ;
 
 named_port_connections   : named_port_connection 
@@ -1031,15 +1043,15 @@ named_port_connections   : named_port_connection
                            named_port_connection
                          ;
 
-ordered_port_connection : expression_o
-                           {printf("Ordered port connection 1\n");}
+ordered_port_connection : attribute_instances 
+                          expression_o
                         ;
 
 named_port_connection : DOT port_identifier
                         OPEN_BRACKET expression_o CLOSE_BRACKET
                       ;
 
-expression_o : expression {printf("Optional Expression\n");} | ;
+expression_o : expression  | ;
 
 /* A.4.2 Generated instantiation */
 
@@ -1324,8 +1336,8 @@ function_statement : attribute_instances function_blocking_assignment SEMICOLON
 
 /* A.6.5 Timing control statements */
 
-delay_control : '#' delay_value
-              | '#' OPEN_BRACKET mintypmax_expression CLOSE_BRACKET
+delay_control : HASH delay_value
+              | HASH OPEN_BRACKET mintypmax_expression CLOSE_BRACKET
               ;
 
 delay_or_event_control : delay_control
@@ -1418,6 +1430,9 @@ expressions     : expression
                 | expressions expression
                 ;
 
+expressions_csv : expression
+                | expressions_csv COMMA expression
+
 case_item       : expressions COLON statement_or_null
                 | KW_DEFAULT statement_or_null
                 | KW_DEFAULT COLON statement_or_null
@@ -1500,14 +1515,14 @@ simple_path_declaration : parallel_path_description EQ path_delay_value
                         ;
 
 parallel_path_description : OPEN_BRACKET specify_input_terminal_descriptor
-                            polarity_operator_o EQ '>'
+                            polarity_operator_o EQ OP_GT
                             specify_output_terminal_descriptor CLOSE_BRACKET
                           ;
 
 polarity_operator_o : polarity_operator | ;
 
 full_path_description : OPEN_BRACKET list_of_path_inputs polarity_operator_o 
-                        '*' '>' list_of_path_outputs CLOSE_BRACKET
+                        STAR OP_GT list_of_path_outputs CLOSE_BRACKET
                       ;
 
 list_of_path_inputs   : specify_input_terminal_descriptor
@@ -1585,13 +1600,13 @@ edge_sensitive_path_declaration : parallel_edge_sensitive_path_description EQ
 
 parallel_edge_sensitive_path_description : OPEN_BRACKET edge_identifier_o 
                                            specify_input_terminal_descriptor 
-                                           EQ '>'
+                                           EQ OP_GT
                                            specify_output_terminal_descriptor 
                                            polarity_operator_o COLON 
                                            data_source_expression CLOSE_BRACKET
 
 full_edge_sensitive_path_description : OPEN_BRACKET edge_identifier_o 
-                                       list_of_path_inputs '*' '>'
+                                       list_of_path_inputs STAR OP_GT
                                        list_of_path_outputs polarity_operator_o
                                        COLON data_source_expression CLOSE_BRACKET
                                      ;
@@ -1609,7 +1624,7 @@ state_dependent_path_declaration : KW_IF OPEN_BRACKET module_path_expression CLO
                                  ;
 
 polarity_operator_o : polarity_operator | ;
-polarity_operator : '+' | '-';
+polarity_operator : OP_PLUS | OP_MINUS ;
 
 /* A.7.5.1 System timing check commands */
 
@@ -1682,21 +1697,19 @@ constant_function_call : function_identifier attribute_instances
                          OPEN_BRACKET constant_expressions CLOSE_BRACKET
                        ;
 
-function_call : hierarchical_function_identifier attribute_instances
-                OPEN_BRACKET expressions CLOSE_BRACKET
+function_call : hierarchical_function_identifier
+                attribute_instances
+                OPEN_BRACKET expressions_csv CLOSE_BRACKET
               ;
 
-genvar_function_call : genvar_function_identifier attribute_instances
-                       OPEN_BRACKET constant_expressions CLOSE_BRACKET
-                     ;
-
 system_function_call : system_function_identifier
-                     | system_function_identifier OPEN_BRACKET expressions CLOSE_BRACKET
+                     | system_function_identifier OPEN_BRACKET 
+                      expressions_csv CLOSE_BRACKET
                      ;
 
 /* A.8.3 Expression */
 
-conditional_expression : expression1 '?' attribute_instances expression2 
+conditional_expression : expression1 QM attribute_instances expression2 
                          COLON expression3
                        ;
 
@@ -1704,8 +1717,8 @@ constant_expression : constant_primary
                     | unary_operator attribute_instances constant_primary
                     | constant_expression binary_operator 
                       attribute_instances constant_expression
-                    | constant_expression '?' attribute_instances 
-                      constant_expression '?' constant_expression
+                    | constant_expression QM attribute_instances 
+                      constant_expression QM constant_expression
                     | string
                     ;
 
@@ -1715,10 +1728,11 @@ constant_mintypmax_expression : constant_expression
                               ;
 
 constant_range_expression : constant_expression
-                          | msb_constant_expression COLON lsb_constant_expression
-                          | constant_expression '+' COLON 
+                          | msb_constant_expression COLON 
+                            lsb_constant_expression
+                          | constant_expression OP_PLUS COLON 
                             width_constant_expression
-                          | constant_expression '-' COLON 
+                          | constant_expression OP_MINUS COLON 
                             width_constant_expression
                           ;
 
@@ -1730,8 +1744,9 @@ expression2 : expression;
 
 expression3 : expression;
 
-expression  : primary {printf("Expression Primary\n");}
-            | unary_operator attribute_instances primary
+expression  : primary 
+            | unary_operator
+              attribute_instances primary
             | expression binary_operator attribute_instances expression
             | conditional_expression
             | string
@@ -1743,7 +1758,7 @@ mintypmax_expression : expression
                      | expression COLON expression COLON expression
                      ;
 
-module_path_conditional_expression : module_path_expression '?' 
+module_path_conditional_expression : module_path_expression QM
                                      attribute_instances 
                                      module_path_expression COLON 
                                      module_path_expression;
@@ -1765,8 +1780,8 @@ msb_constant_expression : constant_expression;
 
 range_expression : expression
                  | msb_constant_expression COLON lsb_constant_expression
-                 | expression '+' COLON width_constant_expression
-                 | expression '-' COLON width_constant_expression
+                 | expression OP_PLUS COLON width_constant_expression
+                 | expression OP_MINUS COLON width_constant_expression
                  ;
 
 width_constant_expression : constant_expression;
@@ -1796,22 +1811,17 @@ module_path_primary : number
 
 primary : number
         | hierarchical_identifier
-          {printf("Hierarchical Identifier | primary: %s\n", $<sval>1);}
         | hierarchical_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET
           braced_expression_o
-          {printf("Hierarchical Identifier [e] | primary\n");}
         | hierarchical_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET
           braced_expression_o 
           OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
-          {printf("Hierarchical Identifier [r] | primary\n");}
         | hierarchical_identifier OPEN_SQ_BRACKET range_expression
           CLOSE_SQ_BRACKET
-          {printf("Hierarchical Identifier [r] | primary\n");}
         | concatenation
         | multiple_concatenation
         | function_call
         | system_function_call
-        | constant_function_call
         | OPEN_BRACKET mintypmax_expression CLOSE_BRACKET
         ;
 
@@ -1849,25 +1859,66 @@ variable_lvalue : hierarchical_variable_identifier
 
 /* A.8.6 Operators */
 
-unary_operator : '+'  | '-'  | '!' | '~' | '&' | '~''&' | '|' | '~''|' | '^' 
-               | '~''^' | '^''~'
+unary_operator : OP_PLUS    
+               | OP_MINUS   
+               | OP_L_NOT   
+               | OP_B_NOT   
+               | OP_B_AND   
+               | OP_B_NAND  
+               | OP_B_OR    
+               | OP_B_NOR   
+               | OP_B_XOR   
+               | OP_B_XNOR_1
+               | OP_B_XNOR_2
                ;
 
-binary_operator : '+'  | '-'  | '*'  | '/' | '%' | EQ EQ | '!'EQ 
-                | EQ EQ EQ | '!'EQ EQ 
-                | '&''&' | '|''|' | '*''*' | '<' | '<'EQ | '>' | '>'EQ 
-                | '&' | '|' 
-                | '^' | '^''~' | '~''^' | '>''>' | '<''<' | '>''>''>' 
-                | '<''<''<'
+binary_operator : OP_PLUS
+                | OP_MINUS
+                | STAR 
+                | OP_DIV
+                | OP_MOD
+                | EQ EQ 
+                | OP_L_NOT EQ                 
+                | EQ EQ EQ 
+                | OP_L_NOT EQ EQ 
+                | OP_B_AND OP_B_AND 
+                | OP_B_OR OP_B_OR
+                | STAR STAR 
+                | OP_LT
+                | OP_LT EQ
+                | OP_GT
+                | OP_GT EQ           
+                | OP_B_AND
+                | OP_B_OR 
+                | OP_B_XOR
+                | OP_B_XNOR_1
+                | OP_B_XNOR_2
+                | OP_GT OP_GT  
+                | OP_LT OP_LT  
+                | OP_LT OP_LT OP_LT
+                | OP_GT OP_GT OP_GT
                 ;
 
-unary_module_path_operator : '!'  | '~' | '&' | '~''&' | '|' | '~''|' | '^' 
-                           | '~''^' | '^''~'
-                           ;
+unary_module_path_operator  : OP_L_NOT
+                            | OP_B_NOT
+                            | OP_B_AND
+                            | OP_B_NAND
+                            | OP_B_OR
+                            | OP_B_NOR
+                            | OP_B_XOR                         
+                            | OP_B_XNOR_1
+                            | OP_B_XNOR_2
+                            ;
 
-binary_module_path_operator : EQ EQ | '!'EQ | '&''&' | '|''|' | '&' | '|' 
-                            | '^' 
-                            | '^''~' | '~''^'
+binary_module_path_operator : EQ EQ 
+                            | OP_L_NOT EQ 
+                            | OP_B_AND OP_B_AND
+                            | OP_B_OR OP_B_OR
+                            | OP_B_AND
+                            | OP_B_OR                      
+                            | OP_B_XOR                     
+                            | OP_B_XNOR_1
+                            | OP_B_XNOR_2
                             ;
 
 /* A.8.7 Numbers */
@@ -1888,7 +1939,7 @@ real_number : unsigned_number DOT unsigned_number
 
 exp : 'e' | 'E';
 
-size_o : size {printf("Size\n");}
+size_o : size 
        | ;
 
 underscores_o : '_'
@@ -1908,7 +1959,7 @@ octal_number : size_o octal_base octal_value ;
 
 hex_number : size_o hex_base hex_value;
 
-sign : '+' | '-';
+sign : OP_PLUS | OP_MINUS;
 
 size : non_zero_unsigned_number;
 
@@ -1974,9 +2025,9 @@ octal_digit : x_digit | z_digit | OCTAL_DIGIT;
 
 hex_digit :   x_digit | z_digit | HEX_DIGIT;
 
-x_digit : 'x' | 'X';
+x_digit : X_DIGIT;
 
-z_digit : 'z' | 'Z' | '?';
+z_digit : Z_DIGIT;
 
 /* A.8.8 Strings */
 
@@ -1989,22 +2040,25 @@ any_chars   : ANY
 
 /* A.9.1 Attributes */
 
-attr_specs : attr_spec
-           | attr_specs COMMA attr_spec
-           ;
-
 attribute_instances : 
                     | attribute_instance
                     | attribute_instances attribute_instance
                     ;
 
-attribute_instance : OPEN_BRACKET STAR attr_specs STAR CLOSE_BRACKET
+attribute_instance : OPEN_BRACKET STAR attr_spec
+                     attr_specs STAR CLOSE_BRACKET
+                   ;
+
+attr_specs : 
+           | attr_spec
+           | attr_specs COMMA attr_spec
+           ;
 
 attr_spec : attr_name EQ constant_expression
           | attr_name
           ;
 
-attr_name : identifier ;
+attr_name : identifier {printf("Attribute Name\n");};
 
 /* A.9.2 Comments */
 
@@ -2052,20 +2106,20 @@ event_identifier                : identifier;
 function_identifier             : identifier;
 gate_instance_identifier        : arrayed_identifier;
 generate_block_identifier       : identifier;
-genvar_function_identifier      : identifier; /* Hierarchy disallowed */
 genvar_identifier               : identifier;
 hierarchical_block_identifier   : hierarchical_identifier;
 hierarchical_event_identifier   : hierarchical_identifier;
 hierarchical_function_identifier: hierarchical_identifier;
 hierarchical_identifier         : simple_hierarchical_identifier 
+            {printf("hierarchical_identifier: %d\n", __LINE__);} 
                                 | escaped_hierarchical_identifier
+            {printf("hierarchical_identifier: %d\n", __LINE__);} 
                                 ;
 
 hierarchical_net_identifier     : hierarchical_identifier;
 hierarchical_variable_identifier: hierarchical_identifier;
 hierarchical_task_identifier    : hierarchical_identifier;
 identifier                      : simple_identifier 
-                                  {printf("ID: '%s'\n", $<sval>1);}
                                 | escaped_identifier
                                 ;
 
@@ -2097,8 +2151,6 @@ system_function_identifier      : SYSTEM_IDENTIFIER;
 system_task_identifier          : SYSTEM_IDENTIFIER;
 
 task_identifier                 : identifier;
-terminal_identifier             : identifier;
-text_macro_identifier           : simple_identifier;
 topmodule_identifier            : identifier;
 udp_identifier                  : identifier;
 udp_instance_identifier         : arrayed_identifier;
@@ -2107,10 +2159,8 @@ variable_identifier             : identifier;
 /* A.9.4 Identifier Branches */
 
 simple_hierarchical_branch : simple_identifier
-                             {printf("Simple hierarchical branch\n");}
                            | simple_identifier OPEN_SQ_BRACKET
                              unsigned_number CLOSE_SQ_BRACKET 
-                             {printf("Simple hierarchical branch []\n");}
                            ;
 
 escaped_hierarchical_branch : escaped_identifier
