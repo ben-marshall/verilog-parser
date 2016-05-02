@@ -219,6 +219,7 @@
 %token SEMICOLON
 %token COLON
 %token COMMA
+%token AT
 
 %token QM
 %token OP_LT
@@ -1262,12 +1263,17 @@ net_assignment : net_lvalue EQ expression;
 initial_construct   : KW_INITIAL statement ;
 always_construct    : KW_ALWAYS statement ;
 
-blocking_assignment : variable_lvalue EQ delay_or_event_control_o expression;
-nonblocking_assignment : variable_lvalue '<' EQ delay_or_event_control_o 
+blocking_assignment : variable_lvalue EQ expression
+                    | variable_lvalue EQ delay_or_event_control 
                       expression
                     ;
 
-delay_or_event_control_o : delay_or_event_control | ;
+nonblocking_assignment : variable_lvalue '<' EQ delay_or_event_control
+                         expression
+                       | variable_lvalue '<' EQ 
+                         expression
+                       ;
+
 
 procedural_continuous_assignments : KW_ASSIGN variable_assignment
                                   | KW_DEASSIGN variable_lvalue
@@ -1301,7 +1307,7 @@ function_seq_block : KW_BEGIN function_statements_o KW_END
                      function_statements_o KW_END
                    ;
 
-variable_assignment : variable_lvalue EQ expression
+variable_assignment : variable_lvalue {printf("VAR ASSIGN\n");} EQ expression
                     ;
 
 par_block : KW_FORK statements_o KW_JOIN
@@ -1358,20 +1364,21 @@ delay_control : HASH delay_value
 
 delay_or_event_control : delay_control
                        | event_control
-                       | KW_REPEAT OPEN_BRACKET expression CLOSE_BRACKET event_control
+                       | KW_REPEAT OPEN_BRACKET expression CLOSE_BRACKET 
+                         event_control
                        ;
 
 disable_statement : KW_DISABLE hierarchical_task_identifier SEMICOLON
                   | KW_DISABLE hierarchical_block_identifier SEMICOLON
                   ;
 
-event_control : '@'  event_identifier
-              | '@'  OPEN_BRACKET event_expression CLOSE_BRACKET
-              | '@' '*'
-              | '@'  OPEN_BRACKET'*'CLOSE_BRACKET
+event_control : AT event_identifier
+              | AT OPEN_BRACKET event_expression CLOSE_BRACKET
+              | AT STAR
+              | AT OPEN_BRACKET STAR CLOSE_BRACKET
               ;
 
-event_trigger : '-' '>' hierarchical_event_identifier ;
+event_trigger : OP_MINUS OP_GT hierarchical_event_identifier ;
 
 event_expression : expression
                  | hierarchical_identifier
@@ -2018,21 +2025,13 @@ hex_value : hex_digit hex_digits_o
 
 s_o : S {printf("Signed\n");} | {printf("Not Signed\n");};
 
-decimal_base : '\'' s_o 'd'
-             | '\'' s_o 'D'
-             ;
+decimal_base : DECIMAL_BASE;
 
-binary_base :  '\'' s_o 'b'
-            |  '\'' s_o 'B'
-            ;
+binary_base : BINARY_BASE;
 
-octal_base :  '\'' s_o 'o'
-           |  '\'' s_o 'O'
-           ;
+octal_base : OCTAL_BASE
 
-hex_base :  '\'' s_o 'h'
-         |  '\'' s_o 'H'
-         ;
+hex_base : HEX_BASE;
 
 non_zero_decimal_digit : DECIMAL_DIGIT;
 

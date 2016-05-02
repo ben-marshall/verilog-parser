@@ -33,7 +33,12 @@ typedef VL::VerilogParser::token token;
 %x in_comment
 %x in_blk_comment
 %x in_declaration
+
 %x in_rval
+%x in_rval_h
+%x in_rval_o
+%x in_rval_d
+%x in_rval_b
 
 ALWAYS              "always"
 AND                 "and"
@@ -165,14 +170,14 @@ SIMPLE_IDENTIFIER           ([a-zA-Z_][a-zA-Z0-9_\$]*)
 SYSTEM_IDENTIFIER           (\$[a-zA-Z0-9_\$][a-zA-Z0-9_\$]*)
 
 HEX_DIGIT                   [0-9a-fA-F]
-OCTAL_DIGIT                 [0-7]
-BINARY_DIGIT                [0-1]
-DECIMAL_DIGIT               [0-9]
+OCTAL_DIGIT                 "0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"
+BINARY_DIGIT                "0"|"1"
+DECIMAL_DIGIT               "0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9"
 
-HEX_BASE                    [[sS][hH]]
-OCTAL_BASE                  [[sS][oO]]
-DECIMAL_BASE                [[sS][dD]]
-BINARY_BASE                 [[sS][bB]]
+HEX_BASE                    [[sS][hH]]|[hH]
+OCTAL_BASE                  [[sS][oO]]|[oO]
+DECIMAL_BASE                [[sS][dD]]|[dD]
+BINARY_BASE                 [[sS][bB]]|[bB]
 EXP                         [eE]
 
 OPEN_BRACKET                "("
@@ -186,6 +191,7 @@ SEMICOLON                   ";"
 COLON                       ":"
 EQ                          "="
 COMMA                       ","
+AT                          "@"
 
 QM                          "?"
 LT                          "<"
@@ -267,18 +273,23 @@ STR_TERM                    \"
 {CD_UNCONNECTED_DRIVE}       {return token::CD_UNCONNECTED_DRIVE      ;}
 {CD_UNDEF}                   {return token::CD_UNDEF                  ;}
 
-{EQ}                         {BEGIN(in_rval); return         token::EQ;}
+{EQ}                         {printf("in_rval\n");
+                                return token::EQ;}
+
+{DECIMAL_DIGIT} {
+                            printf("LEX: decimal digit\n");
+                            return token::DECIMAL_DIGIT;
+                            }
+
+<in_rval>{HEX_BASE}          {BEGIN(in_rval_h);return token::HEX_BASE ;}
+<in_rval>{OCTAL_BASE}        {BEGIN(in_rval_o);return token::OCTAL_BASE;}
+<in_rval>{DECIMAL_BASE}      {BEGIN(in_rval_d);return token::DECIMAL_BASE;}
+<in_rval>{BINARY_BASE}       {BEGIN(in_rval_b);return token::BINARY_BASE;}
 
 <in_rval>s|S                 {return token::S                         ;}
 <in_rval>{EXP}               {return token::EXP                       ;}
-<in_rval>{OCTAL_DIGIT}       {return token::OCTAL_DIGIT               ;}
-<in_rval>{DECIMAL_DIGIT}     {return token::DECIMAL_DIGIT             ;}
-<in_rval>{HEX_DIGIT}         {return token::HEX_DIGIT                 ;}
-
-<in_rval>{HEX_BASE}          {return token::HEX_BASE                  ;}
-<in_rval>{OCTAL_BASE}        {return token::OCTAL_BASE                ;}
-<in_rval>{DECIMAL_BASE}      {return token::DECIMAL_BASE              ;}
-<in_rval>{BINARY_BASE}       {return token::BINARY_BASE               ;}
+<in_rval_o>{OCTAL_DIGIT}       {return token::OCTAL_DIGIT               ;}
+<in_rval_h>{HEX_DIGIT}         {return token::HEX_DIGIT                 ;}
 
 {OPEN_BRACKET}               {return token::OPEN_BRACKET              ;}
 {CLOSE_BRACKET}              {return token::CLOSE_BRACKET             ;}
@@ -290,6 +301,7 @@ STR_TERM                    \"
 {SEMICOLON}                  {BEGIN(INITIAL); return token::SEMICOLON;}
 {COLON}                      {return token::COLON    ;}
 {COMMA}                      {return token::COMMA;}
+{AT}                         {return token::AT;}
 
 {ALWAYS}               {return token::KW_ALWAYS             ;} 
 {AND}                  {return token::KW_AND                ;} 
@@ -453,8 +465,6 @@ STR_TERM                    \"
 {NEWLINE}
 {SPACE}                
 {TAB}                  
-
-{DECIMAL_DIGIT}     {return token::DECIMAL_DIGIT             ;}
 
 {HEX_BASE}          {return token::HEX_BASE                  ;}
 {OCTAL_BASE}        {return token::OCTAL_BASE                ;}
