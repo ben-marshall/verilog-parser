@@ -27,7 +27,7 @@ namespace VL
             {
                 yylval = lval;
                 int tr =  yylex(); 
-                printf("< %d , %d , '%s' >\n", yylineno, tr, yytext);
+                //printf("< %d , %d , '%s' >\n", yylineno, tr, yytext);
                 return tr;
             }
 

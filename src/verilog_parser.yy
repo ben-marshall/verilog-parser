@@ -241,6 +241,8 @@
 %token SPACE
 %token TAB
 
+%token STR_TERM
+
 %token S
 %token DEFINE
 %token END_DEFINE
@@ -1488,7 +1490,9 @@ loop_statement          : KW_FOREVER statement
 
 /* A.6.9 task enable statements */
 
-system_task_enable      : system_task_identifier expressions_o SEMICOLON ;
+system_task_enable      : system_task_identifier expressions_o SEMICOLON
+                        | system_function_call SEMICOLON
+                        ;
 
 task_enable             : hierarchical_task_identifier expressions_o SEMICOLON ;
 
@@ -1716,8 +1720,9 @@ function_call : hierarchical_function_identifier
                 OPEN_BRACKET expressions_csv CLOSE_BRACKET
               ;
 
-system_function_call : system_function_identifier
-                     | system_function_identifier OPEN_BRACKET 
+system_function_call : system_function_identifier {printf("SFC\n");}
+                     | system_function_identifier
+                       OPEN_BRACKET {printf("Expressions...\n");}
                       expressions_csv CLOSE_BRACKET
                      ;
 
@@ -1759,11 +1764,11 @@ expression2 : expression;
 expression3 : expression;
 
 expression  : primary 
+            | string {printf("EXP String: '%s'\n", $<sval>1);}
             | unary_operator
               attribute_instances primary
             | expression binary_operator attribute_instances expression
             | conditional_expression
-            | string
             ;
 
 lsb_constant_expression : constant_expression;
@@ -2045,9 +2050,12 @@ z_digit : Z_DIGIT;
 
 /* A.8.8 Strings */
 
-string : '"' any_chars_o '"';
+string : STR_TERM any_chars_o STR_TERM
+        {printf("String: '%s'\n", $<sval>2);}
+       ;
 
-any_chars_o : any_chars | SPACE | TAB;
+
+any_chars_o : any_chars |;
 any_chars   : ANY 
             | any_chars ANY
             ;
@@ -2154,13 +2162,14 @@ simple_hierarchical_identifier  : simple_hierarchical_branch
                                   escaped_identifier
                                 ;
 
-simple_identifier               : SIMPLE_IDENTIFIER 
+simple_identifier               : SIMPLE_IDENTIFIER {printf("Simple ID %s\n",$<sval>1);};
+
                                 ;
 
 specparam_identifier            : identifier;
 
-system_function_identifier      : SYSTEM_IDENTIFIER;
-system_task_identifier          : SYSTEM_IDENTIFIER;
+system_function_identifier      : SYSTEM_IDENTIFIER{printf("System ID %s\n",$<sval>1);};
+system_task_identifier          : SYSTEM_IDENTIFIER{printf("System ID %s\n",$<sval>1);};
 
 task_identifier                 : identifier;
 topmodule_identifier            : identifier;

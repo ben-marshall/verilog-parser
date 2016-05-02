@@ -433,22 +433,22 @@ STR_TERM                    \"
 {B_XNOR_1}             {return token::OP_B_XNOR_1           ;}
 {B_XNOR_2}             {return token::OP_B_XNOR_2           ;}
 
-{SIMPLE_IDENTIFIER}    {
-    yylval->sval = strdup(yytext);
-    return token::SIMPLE_IDENTIFIER;
-}
 {SYSTEM_IDENTIFIER}    {
     yylval->sval = strdup(yytext);
     return token::SYSTEM_IDENTIFIER;
+}
+{SIMPLE_IDENTIFIER}    {
+    yylval->sval = strdup(yytext);
+    return token::SIMPLE_IDENTIFIER;
 }
 
 {X_DIGIT}                    {return token::X_DIGIT                   ;}
 {Z_DIGIT}                    {return token::Z_DIGIT                   ;}
 
 
-<in_str>{STR_TERM}     {BEGIN(INITIAL)                      ;}
+<in_str>{STR_TERM}     {BEGIN(INITIAL);return token::STR_TERM;}
 <in_str>{ANY_IN_STR}   {return token::ANY                   ;}
-{STR_TERM}             {BEGIN(in_str)                       ;}
+{STR_TERM}             {BEGIN(in_str);return token::STR_TERM;}
 
 {NEWLINE}
 {SPACE}                
