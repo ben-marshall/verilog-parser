@@ -396,8 +396,8 @@ port_declarations           : port_declaration
                             ;
 
 ports           : 
-                | ports COMMA port
-                | port
+                | ports COMMA comment_o port
+                | port comment_o
                 ;
 
 port            : port_expression
@@ -405,8 +405,8 @@ port            : port_expression
                 CLOSE_BRACKET
                 ;
 
-port_expression : port_reference
-                | port_expression COMMA port_reference
+port_expression : port_reference 
+                | port_expression COMMA comment_o port_reference
                 ;
 
 port_reference  : port_identifier
@@ -2082,6 +2082,10 @@ attr_spec : attr_name EQ constant_expression
 attr_name : identifier {printf("Attribute Name\n");};
 
 /* A.9.2 Comments */
+
+comment_o           :
+                    | comment
+                    ;
 
 comment             : one_line_comment
                     | block_comment   

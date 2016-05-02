@@ -273,8 +273,7 @@ STR_TERM                    \"
 {CD_UNCONNECTED_DRIVE}       {return token::CD_UNCONNECTED_DRIVE      ;}
 {CD_UNDEF}                   {return token::CD_UNDEF                  ;}
 
-{EQ}                         {printf("in_rval\n");
-                                return token::EQ;}
+{EQ}                         {return token::EQ;}
 
 {DECIMAL_DIGIT} {
                             printf("LEX: decimal digit\n");
