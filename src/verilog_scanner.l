@@ -25,6 +25,21 @@ typedef VL::VerilogParser::token token;
 %option noyywrap 
 %option c++
 
+/* Single character tokens */
+
+NEWLINE             "\n"
+SPACE               " "
+TAB                 "\t"
+
+HASH                "#"
+DOT                 "."
+EXP                 "e"|"E"
+UNDERSCORE          "_"
+SIGN                "+"|"-"
+X                   "x"|"X"
+Z                   "z"|"Z"
+
+/* Keyword Token deffinitions. */
 ALWAYS              "always"
 AND                 "and"
 ASSIGN              "assign"
@@ -149,7 +164,43 @@ WOR                 "wor"
 XNOR                "xnor"
 XOR                 "xor"
 
+/* Tokens related to numbers */
+
+DIGIT_DECIMAL       [0-9]
+DIGIT_DECMIAL_NZ    [1-9]
+DIGIT_BINARY        [0-1]
+DIGIT_OCTAL         [0-7]
+DIGIT_HEX           [0-9a-fA-F]
+
+BASE_DECIMAL        '[sS]?[dD]
+BASE_BINARY         '[sS]?[bB]
+BASE_OCTAL          '[sS]?[oO]
+BASE_HEX            '[sS]?[hH]
+
+SIZE                {DIGIT_DECMIAL_NZ}+
+
+UNSIGNED_NUM        {DIGIT_DECIMAL}({UNDERSCORE}|{DIGIT_DECIMAL})*
+NUM_REAL_EXP        {UNSIGNED_NUM}({DOT}{UNSIGNED_NUM})?{EXP}({SIGN})?{UNSIGNED_NUM}
+NUM_REAL            {UNSIGNED_NUM}{DOT}{UNSIGNED_NUM}|{NUM_REAL_EXP}
+
+BIN_VALUE           {DIGIT_BINARY}({UNDERSCORE}|{DIGIT_BINARY})*
+OCT_VALUE           {DIGIT_OCTAL}({UNDERSCORE}|{DIGIT_OCTAL})*
+HEX_VALUE           {DIGIT_HEX}({UNDERSCORE}|{DIGIT_HEX})*
+
+NUM_DECIMAL         {UNSIGNED_NUM}|{SIZE}?{BASE_DECIMAL}{UNSIGNED_NUM}
+NUM_BINARY          {SIZE}?{BASE_BINARY}{BIN_VALUE}
+NUM_OCTAL           {SIZE}?{BASE_OCTAL}{OCT_VALUE}
+NUM_HEX             {SIZE}?{BASE_HEX}{HEX_VALUE}
+
+NUMBER              {NUM_DECIMAL}|{NUM_BINARY}|{NUM_HEX}|{NUM_OCTAL}|{NUM_REAL}
+
 %%
+
+{NEWLINE}                   {return token::NEWLINE;}
+{SPACE}                     {return token::SPACE;}
+{TAB}                       {return token::TAB;}
+
+{NUMBER}                    {return token::NUMBER;}
 
 {ALWAYS}               {return token::KW_ALWAYS             ;} 
 {AND}                  {return token::KW_AND                ;} 

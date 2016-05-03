@@ -43,6 +43,11 @@
 }
 
 %token END
+%token NEWLINE
+%token SPACE
+%token TAB
+
+%token NUMBER
 
 %token KW_ALWAYS
 %token KW_AND
