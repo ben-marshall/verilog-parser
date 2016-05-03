@@ -441,7 +441,7 @@ module_item     : module_or_generate_item
 
 module_or_generate_item : attribute_instances
                           module_or_generate_item_declaration
-                        | attribute_instances {printf("try gate\n");} gate_instantiation
+                        | attribute_instances gate_instantiation
                         | attribute_instances parameter_override
                         | attribute_instances continuous_assign
                         | attribute_instances udp_instantiation
@@ -996,7 +996,7 @@ enable_terminal     : expression;
 inout_terminal      : net_lvalue;
 input_terminal      : expression;
 ncontrol_terminal   : expression;
-output_terminal     : net_lvalue {printf("output_terminal\n");};
+output_terminal     : net_lvalue;
 pcontrol_terminal   : expression;
 
 /* A.3.4 primitive gate and switch types */
@@ -1264,7 +1264,7 @@ list_of_net_assignments : net_assignment
                         | list_of_net_assignments COMMA net_assignment
                         ;
 
-net_assignment : net_lvalue EQ {printf("continuous net assign\n");} 
+net_assignment : net_lvalue EQ 
                  expression;
 
 /* A.6.2 Procedural blocks and assignments */
@@ -1273,8 +1273,7 @@ initial_construct   : KW_INITIAL statement ;
 always_construct    : KW_ALWAYS statement ;
 
 blocking_assignment : variable_lvalue EQ expression
-                    | variable_lvalue EQ delay_or_event_control 
-                      expression
+                    | delay_or_event_control variable_lvalue EQ expression
                     ;
 
 nonblocking_assignment : variable_lvalue OP_LT EQ delay_or_event_control
@@ -1367,7 +1366,7 @@ function_statement : attribute_instances function_blocking_assignment SEMICOLON
 
 /* A.6.5 Timing control statements */
 
-delay_control : HASH delay_value
+delay_control : HASH delay_value {printf("Delay control...\n");} 
               | HASH OPEN_BRACKET mintypmax_expression CLOSE_BRACKET
               ;
 
@@ -1974,25 +1973,31 @@ real_number : unsigned_number DOT unsigned_number
 
 exp : 'e' | 'E';
 
-size_o : size 
-       | ;
-
 underscores_o : '_'
               | underscores_o '_'
               |
               ;
 
 decimal_number : unsigned_number
-               | size_o decimal_base unsigned_number
-               | size_o decimal_base x_digit underscores_o
-               | size_o decimal_base z_digit underscores_o
+               | decimal_base unsigned_number
+               | decimal_base x_digit underscores_o
+               | decimal_base z_digit underscores_o
+               | size decimal_base unsigned_number
+               | size decimal_base x_digit underscores_o
+               | size decimal_base z_digit underscores_o
                ;
 
-binary_number : size_o binary_base binary_value ;
+binary_number : size binary_base binary_value 
+              |      binary_base binary_value 
+              ;
 
-octal_number : size_o octal_base octal_value ;
+octal_number : size octal_base octal_value
+             |      octal_base octal_value 
+             ;
 
-hex_number : size_o hex_base hex_value;
+hex_number : size hex_base hex_value
+           |      hex_base hex_value
+           ;
 
 sign : OP_PLUS | OP_MINUS;
 
@@ -2022,9 +2027,9 @@ hex_digits_o : '_'
              |
              ;
 
-non_zero_unsigned_number : non_zero_decimal_digit decimal_digits_o
-
 unsigned_number : decimal_digit decimal_digits_o
+
+non_zero_unsigned_number : non_zero_decimal_digit decimal_digits_o
 
 binary_value : binary_digit binary_digits_o
 
@@ -2042,9 +2047,9 @@ octal_base : OCTAL_BASE
 
 hex_base : HEX_BASE;
 
-non_zero_decimal_digit : DECIMAL_DIGIT;
-
 decimal_digit: DECIMAL_DIGIT;
+
+non_zero_decimal_digit : DECIMAL_DIGIT;
 
 binary_digit : x_digit | z_digit | BINARY_DIGIT;
 

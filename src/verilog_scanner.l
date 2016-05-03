@@ -275,9 +275,7 @@ STR_TERM                    \"
 
 {EQ}                         {return token::EQ;}
 
-{DECIMAL_DIGIT} {
-                            return token::DECIMAL_DIGIT;
-                            }
+{DECIMAL_DIGIT}             {return token::DECIMAL_DIGIT;}
 
 <in_rval>{HEX_BASE}          {BEGIN(in_rval_h);return token::HEX_BASE ;}
 <in_rval>{OCTAL_BASE}        {BEGIN(in_rval_o);return token::OCTAL_BASE;}
@@ -463,11 +461,6 @@ STR_TERM                    \"
 {NEWLINE}
 {SPACE}                
 {TAB}                  
-
-{HEX_BASE}          {return token::HEX_BASE                  ;}
-{OCTAL_BASE}        {return token::OCTAL_BASE                ;}
-{DECIMAL_BASE}      {return token::DECIMAL_BASE              ;}
-{BINARY_BASE}       {return token::BINARY_BASE               ;}
 
 {ANY}                  {return token::ANY                   ;}
 %%
