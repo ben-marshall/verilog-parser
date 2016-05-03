@@ -492,7 +492,7 @@ local_parameter_declaration : KW_LOCALPARAM signed_o range_o
                               SEMICOLON
                             ;
 
-parameter_declaration : KW_PARAMETER signed_o range_o
+parameter_declaration : KW_PARAMETER 
                         list_of_param_assignments SEMICOLON
                       | KW_PARAMETER KW_INTEGER list_of_param_assignments
                         SEMICOLON
