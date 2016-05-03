@@ -274,6 +274,5 @@ XOR                 "xor"
 {WOR}                  {return token::KW_WOR                ;} 
 {XNOR}                 {return token::KW_XNOR               ;} 
 {XOR}                  {return token::KW_XOR                ;} 
-\n
 
 %%
