@@ -48,6 +48,7 @@
 %token TAB
 
 %token NUMBER
+%token UNSIGNED_NUMBER
 
 %token KW_ALWAYS
 %token KW_AND
