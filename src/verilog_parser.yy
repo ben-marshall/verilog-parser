@@ -252,8 +252,107 @@
 
 /* Start variables */
 
-grammar_begin    : 
+grammar_begin : 
+              ;
+
+
+/* A.1.1 Library Source Text */
+
+library_text : library_descriptions_s
+             ;
+
+library_descriptions_s :
+                       | library_descriptions
+                       | library_descriptions_s library_descriptions
+
+library_descriptions : library_declaration
+                     | include_statement
+                     | config_declaration
+                     ;
+
+library_declaration : KW_LIBRARY library_identifier 
+                      file_path_spec_s
+                      SEMICOLON
+                    | KW_LIBRARY library_identifier 
+                      file_path_spec_s
+                      KW_INCDIR file_path_spec_s
+                      SEMICOLON
+                    ;
+
+file_path_spec_s : file_path_spec
+                 | file_path_spec_p file_path_spec
                  ;
+
+file_path_spec : file_path
+               ;
+
+include_statement : KW_INCLUDE file_path_spec SEMICOLON
+                  ;
+   
+/* A.1.2 Configuration Source Text */
+
+config_declaration : KW_CONFIG config_identifier SEMICOLON
+                     design_statement
+                     config_rule_statement_os
+                     KW_ENDCONFIG
+                   ;
+
+design_statement : design lib_cell_identifier_os SEMICOLON
+                 ;
+
+lib_cell_identifier_os :
+                       | cell_identifier
+                       | library_identifier DOT cell_identifier
+                       | lib_cell_identifier_os cell_identifier
+                       | lib_cell_identifier_os library_identifier DOT 
+                         cell_identifier
+                       ;
+
+config_rule_statement_os :
+                         | config_rule_statement
+                         | config_rule_statement_os config_rule_statement
+                         ;
+
+config_rule_statement : default_clause liblist_clause
+                      | inst_clause liblist_clause
+                      | inst_clause use_clause
+                      | cell_clause liblist_clause
+                      | cell_clause use_clause
+                      ;
+
+default_clause  : KW_DEFAULT
+                ;
+
+inst_clause : KW_INSTANCE inst_name
+            ;
+
+inst_name   : topmodule_identifier instance_identifier_os
+            ;
+
+instance_identifier_os  :
+                        | DOT instance_identifier
+                        | instance_identifier_os DOT instance_identifier
+                        ;
+
+cell_clause : KW_CELL cell_identifier
+            | KW_CELL library_identifier DOT cell_identifier
+            ;
+
+liblist_clause  : KW_LIBLIST library_identifier_os
+                ;
+
+library_identifier_os : 
+                      | library_identifier
+                      | library_identifier_os library_identifier
+                      ;
+
+use_clause : KW_USE library_identifier DOT cell_identifier COLON KW_CONFIG
+           | KW_USE library_identifier DOT cell_identifier
+           | KW_USE cell_identifier COLON KW_CONFIG
+           | KW_USE cell_identifier
+           ;
+
+/* A.1.3 Module and primitive source text. */
 
 %%
 
