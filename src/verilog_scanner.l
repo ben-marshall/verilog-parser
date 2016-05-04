@@ -25,19 +25,23 @@ typedef VL::VerilogParser::token token;
 %option noyywrap 
 %option c++
 
-/* Single character tokens */
-
-NEWLINE             "\n"
-SPACE               " "
-TAB                 "\t"
-
-HASH                "#"
-DOT                 "."
-EXP                 "e"|"E"
-UNDERSCORE          "_"
-SIGN                "+"|"-"
-X                   "x"|"X"
-Z                   "z"|"Z"
+/* Pre-processor definitions */
+CD_CELLDEFINE          "`celldefine"
+CD_DEFAULT_NETTYPE     "`default_nettype"
+CD_DEFINE              "`define"
+CD_ELSE                "`else"
+CD_ELSIF               "`elsif"
+CD_ENDCELLDEFINE       "`endcelldefine"
+CD_ENDIF               "`endif"
+CD_IFDEF               "`ifdef"
+CD_IFNDEF              "`ifndef"
+CD_INCLUDE             "`include"
+CD_LINE                "`line"
+CD_NOUNCONNECTED_DRIVE "`nounconnected_drive"
+CD_RESETALL            "`resetall"
+CD_TIMESCALE           "`timescale"
+CD_UNCONNECTED_DRIVE   "`unconnected_drive"
+CD_UNDEF               "`undef"
 
 /* Keyword Token deffinitions. */
 ALWAYS              "always"
@@ -164,16 +168,43 @@ WOR                 "wor"
 XNOR                "xnor"
 XOR                 "xor"
 
+/* Single character tokens */
+
+NEWLINE             "\n"|"\r\n"
+SPACE               " "
+TAB                 "\t"
+
+AT                  "@"
+COMMA               ","
+HASH                "#"
+DOT                 "."
+EQ                  "="
+COLON               ":"
+SEMICOLON           ";"
+OPEN_BRACKET        "\("
+CLOSE_BRACKET       "\)"
+OPEN_SQ_BRACKET     "\["
+CLOSE_SQ_BRACKET    "\]"
+OPEN_SQ_BRACE       "{"
+CLOSE_SQ_BRACE      "}"
+
+
 /* Tokens related to numbers */
+
+EXP                 "e"|"E"
+UNDERSCORE          "_"
+SIGN                {PLUS}|{MINUS}
+X                   "x"|"X"
+Z                   "z"|"Z"
 
 DIGIT_DECIMAL       [0-9]
 DIGIT_DECMIAL_NZ    [1-9]
-DIGIT_BINARY        [0-1]
+DIGIT_BINARY        [0-1]|{X}|{Z}
 DIGIT_OCTAL         [0-7]
 DIGIT_HEX           [0-9a-fA-F]
 
 BASE_DECIMAL        '[sS]?[dD]
-BASE_BINARY         '[sS]?[bB]
+BASE_BINARY         '[s|S]?[b|B]
 BASE_OCTAL          '[sS]?[oO]
 BASE_HEX            '[sS]?[hH]
 
@@ -187,20 +218,136 @@ BIN_VALUE           {DIGIT_BINARY}({UNDERSCORE}|{DIGIT_BINARY})*
 OCT_VALUE           {DIGIT_OCTAL}({UNDERSCORE}|{DIGIT_OCTAL})*
 HEX_VALUE           {DIGIT_HEX}({UNDERSCORE}|{DIGIT_HEX})*
 
-NUM_DECIMAL         {UNSIGNED_NUM}|{SIZE}?{BASE_DECIMAL}{UNSIGNED_NUM}
 NUM_BINARY          {SIZE}?{BASE_BINARY}{BIN_VALUE}
 NUM_OCTAL           {SIZE}?{BASE_OCTAL}{OCT_VALUE}
 NUM_HEX             {SIZE}?{BASE_HEX}{HEX_VALUE}
+NUM_DECIMAL         {SIZE}?{BASE_DECIMAL}{UNSIGNED_NUM}
 
-NUMBER              {NUM_DECIMAL}|{NUM_BINARY}|{NUM_HEX}|{NUM_OCTAL}|{NUM_REAL}
+NUMBER              {NUM_BINARY}|{NUM_HEX}|{NUM_OCTAL}|{NUM_REAL}|{NUM_DECIMAL}
+
+/* Identifiers */
+
+SYSTEM_ID           \$[a-zA-Z0-9_\$]+
+SIMPLE_ID           [a-zA-Z_][a-zA-Z0-9_$]*
+DEFINE_ID           `{SIMPLE_ID}
+
+/* Attributes */
+
+ATTRIBUTE_START     \(\*
+ATTRIBUTE_END       \*\)
+
+/* Comments */
+COMMENT_LINE        "//".*\n
+COMMENT_BLOCK       "/"\*[.\n]*\*"/"
+
+/* Strings */
+
+STRING              \".*\"
+
+/* Operators */
+
+PLUS                "+"
+MINUS               "-"
+ASL                 "<<<"
+ASR                 ">>>"
+LSL                 "<<"
+LSR                 ">>"
+DIV                 "/"
+POW                 "**"
+MOD                 "%"
+GTE                 ">="
+LTE                 "<="
+GT                  ">"
+LT                  "<"
+L_NEG               "!"
+L_AND               "&&"
+L_OR                "||"
+C_EQ                "==="
+L_EQ                "=="
+C_NEQ               "!=="
+L_NEQ               "!="
+B_NEG               "~"
+B_AND               "&"
+B_OR                "|"
+B_XOR               "^"
+B_EQU               "^~"|"~^"
+B_NAND              "~&"
+B_NOR               "~|"
+TERNARY             "?"
 
 %%
 
-{NEWLINE}                   {return token::NEWLINE;}
-{SPACE}                     {return token::SPACE;}
-{TAB}                       {return token::TAB;}
+{CD_CELLDEFINE}          {return token::CD_CELLDEFINE         ;}
+{CD_DEFAULT_NETTYPE}     {return token::CD_DEFAULT_NETTYPE    ;}
+{CD_DEFINE}              {return token::CD_DEFINE             ;}
+{CD_ELSE}                {return token::CD_ELSE               ;}
+{CD_ELSIF}               {return token::CD_ELSIF              ;}
+{CD_ENDCELLDEFINE}       {return token::CD_ENDCELLDEFINE      ;}
+{CD_ENDIF}               {return token::CD_ENDIF              ;}
+{CD_IFDEF}               {return token::CD_IFDEF              ;}
+{CD_IFNDEF}              {return token::CD_IFNDEF             ;}
+{CD_INCLUDE}             {return token::CD_INCLUDE            ;}
+{CD_LINE}                {return token::CD_LINE               ;}
+{CD_NOUNCONNECTED_DRIVE} {return token::CD_NOUNCONNECTED_DRIVE;}
+{CD_RESETALL}            {return token::CD_RESETALL           ;}
+{CD_TIMESCALE}           {return token::CD_TIMESCALE          ;}
+{CD_UNCONNECTED_DRIVE}   {return token::CD_UNCONNECTED_DRIVE  ;}
+{CD_UNDEF}               {return token::CD_UNDEF              ;}
 
-{NUMBER}                    {return token::NUMBER;}
+{COMMENT_LINE}         {return token::COMMENT_LINE;         }
+{COMMENT_BLOCK}        {return token::COMMENT_BLOCK;        }
+
+{STRING}               {return token::STRING;               }
+
+{NEWLINE}              {return token::NEWLINE;}
+{SPACE}                {return token::SPACE;}
+{TAB}                  {return token::TAB;}
+
+{AT}                   {return token::AT                    ;}
+{COMMA}                {return token::COMMA                 ;}
+{HASH}                 {return token::HASH                  ;}
+{DOT}                  {return token::DOT                   ;}
+{EQ}                   {return token::EQ                    ;}
+{COLON}                {return token::COLON                 ;}
+{SEMICOLON}            {return token::SEMICOLON             ;}
+{OPEN_BRACKET}         {return token::OPEN_BRACKET          ;}
+{CLOSE_BRACKET}        {return token::CLOSE_BRACKET         ;}
+{OPEN_SQ_BRACKET}      {return token::OPEN_SQ_BRACKET       ;}
+{CLOSE_SQ_BRACKET}     {return token::CLOSE_SQ_BRACKET      ;}
+{OPEN_SQ_BRACE}        {return token::OPEN_SQ_BRACE         ;}
+{CLOSE_SQ_BRACE}       {return token::CLOSE_SQ_BRACE        ;}
+
+{PLUS}                 {return token::PLUS                ;}
+{MINUS}                {return token::MINUS               ;}
+{ASL}                  {return token::ASL                 ;}
+{ASR}                  {return token::ASR                 ;}
+{LSL}                  {return token::LSL                 ;}
+{LSR}                  {return token::LSR                 ;}
+{DIV}                  {return token::DIV                 ;}
+{POW}                  {return token::POW                 ;}
+{MOD}                  {return token::MOD                 ;}
+{GTE}                  {return token::GTE                 ;}
+{LTE}                  {return token::LTE                 ;}
+{GT}                   {return token::GT                  ;}
+{LT}                   {return token::LT                  ;}
+{L_NEG}                {return token::L_NEG               ;}
+{L_AND}                {return token::L_AND               ;}
+{L_OR}                 {return token::L_OR                ;}
+{C_EQ}                 {return token::C_EQ                ;}
+{L_EQ}                 {return token::L_EQ                ;}
+{C_NEQ}                {return token::C_NEQ               ;}
+{L_NEQ}                {return token::L_NEQ               ;}
+{B_NEG}                {return token::B_NEG               ;}
+{B_AND}                {return token::B_AND               ;}
+{B_OR}                 {return token::B_OR                ;}
+{B_XOR}                {return token::B_XOR               ;}
+{B_EQU}                {return token::B_EQU               ;}
+{B_NAND}               {return token::B_NAND              ;}
+{B_NOR}                {return token::B_NOR               ;}
+{TERNARY}              {return token::TERNARY             ;}
+
+{NUMBER}               {return token::NUMBER;}
+{UNSIGNED_NUM}         {return token::UNSIGNED_NUMBER;}
 
 {ALWAYS}               {return token::KW_ALWAYS             ;} 
 {AND}                  {return token::KW_AND                ;} 
@@ -325,5 +472,12 @@ NUMBER              {NUM_DECIMAL}|{NUM_BINARY}|{NUM_HEX}|{NUM_OCTAL}|{NUM_REAL}
 {WOR}                  {return token::KW_WOR                ;} 
 {XNOR}                 {return token::KW_XNOR               ;} 
 {XOR}                  {return token::KW_XOR                ;} 
+
+{SYSTEM_ID}            {return token::SYSTEM_ID             ;}
+{SIMPLE_ID}            {return token::SIMPLE_ID             ;}
+{DEFINE_ID}            {return token ::DEFINE_ID            ;}
+
+{ATTRIBUTE_START}      {return token::ATTRIBUTE_START       ;}
+{ATTRIBUTE_END}        {return token::ATTRIBUTE_END         ;}
 
 %%

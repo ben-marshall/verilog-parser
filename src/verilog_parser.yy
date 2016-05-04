@@ -47,8 +47,80 @@
 %token SPACE
 %token TAB
 
+%token AT
+%token COMMA
+%token HASH               
+%token DOT                
+%token EQ
+%token COLON              
+%token SEMICOLON          
+%token OPEN_BRACKET       
+%token CLOSE_BRACKET      
+%token OPEN_SQ_BRACKET    
+%token CLOSE_SQ_BRACKET   
+%token OPEN_SQ_BRACE      
+%token CLOSE_SQ_BRACE     
+
 %token NUMBER
 %token UNSIGNED_NUMBER
+
+%token SYSTEM_ID
+%token SIMPLE_ID
+%token DEFINE_ID
+
+%token ATTRIBUTE_START
+%token ATTRIBUTE_END
+
+%token COMMENT_LINE
+%token COMMENT_BLOCK
+
+%token STRING
+
+%token PLUS
+%token MINUS
+%token ASL     
+%token ASR     
+%token LSL     
+%token LSR     
+%token DIV     
+%token POW     
+%token MOD     
+%token GTE     
+%token LTE     
+%token GT      
+%token LT      
+%token L_NEG   
+%token L_AND   
+%token L_OR    
+%token C_EQ    
+%token L_EQ    
+%token C_NEQ   
+%token L_NEQ   
+%token B_NEG   
+%token B_AND   
+%token B_OR    
+%token B_XOR   
+%token B_EQU   
+%token B_NAND  
+%token B_NOR   
+%token TERNARY 
+
+%token CD_CELLDEFINE
+%token CD_DEFAULT_NETTYPE
+%token CD_DEFINE
+%token CD_ELSE
+%token CD_ELSIF
+%token CD_ENDCELLDEFINE
+%token CD_ENDIF
+%token CD_IFDEF
+%token CD_IFNDEF
+%token CD_INCLUDE
+%token CD_LINE
+%token CD_NOUNCONNECTED_DRIVE
+%token CD_RESETALL
+%token CD_TIMESCALE
+%token CD_UNCONNECTED_DRIVE
+%token CD_UNDEF
 
 %token KW_ALWAYS
 %token KW_AND

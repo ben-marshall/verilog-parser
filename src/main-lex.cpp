@@ -39,5 +39,6 @@ int main(const int argc, const char ** argv)
     }
 
     cout << "Finished scan" << endl;
+    return 0;
 }
 
