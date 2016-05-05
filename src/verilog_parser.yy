@@ -354,6 +354,40 @@ use_clause : KW_USE library_identifier DOT cell_identifier COLON KW_CONFIG
 
 /* A.1.3 Module and primitive source text. */
 
+source_text : description_os
+            ;
+
+description_os : 
+               | description
+               | description_os description
+               ;
+
+description : module_declaration
+            | udp_declaration
+            ;
+
+module_declaration : attribute_instance_os
+                     module_keyword
+                     module_identifier
+                     module_parameter_port_list_o
+                     list_of_ports_o
+                     SEMICOLON
+                     module_item_os
+                     KW_ENDMODULE
+                   | attribute_instance_os
+                     module_keyword
+                     module_identifier
+                     module_parameter_port_list_o
+                     list_of_port_declarations_o
+                     SEMICOLON
+                     non_port_module_item_os
+                     KW_ENDMODULE
+                   ;
+
+module_keyword     : KW_MODULE
+                   | KW_MACROMODULE
+                   ;
+
 %%
 
 
