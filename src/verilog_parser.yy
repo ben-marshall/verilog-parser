@@ -443,6 +443,109 @@ port_declaration  : attribute_instance_os inout_declaration
 
 /* A.1.5 Module Items */
 
+module_item : module_or_generate_item
+            | port_declaration SEMICOLON
+            | attribute_instance_os generated_instantiation
+            | attribute_instance_os local_parameter_declaration
+            | attribute_instance_os parameter_declaration
+            | attribute_instance_os specify_block
+            | attribute_instance_os specparam_declaration
+            ;
+
+module_or_generate_item : attribute_instance_os 
+                          module_or_generate_item_declaration
+                        | attribute_instance_os parameter_override
+                        | attribute_instance_os continuous_assign
+                        | attribute_instance_os gate_instantiation
+                        | attribute_instance_os udp_instantiation
+                        | attribute_instance_os module_instantiation
+                        | attribute_instance_os initial_construct
+                        | attribute_instance_os always_construct
+                        ;
+
+module_or_generate_item_declaration : net_declaration
+                                    | reg_declaration
+                                    | integer_declaration
+                                    | real_declaration
+                                    | time_declaration
+                                    | realtime_declaration
+                                    | event_declaration
+                                    | genvar_declaration
+                                    | task_declaration
+                                    | function_declaration
+                                    ;
+
+non_port_module_item : attribute_instance_os generated_instantiation
+                     | attribute_instance_os local_parameter_declaration
+                     | attribute_instance_os module_or_generate_item
+                     | attribute_instance_os parameter_declaration
+                     | attribute_instance_os specify_block
+                     | attribute_instance_os specparam_declaration
+                     ;
+
+parameter_override  : KW_DEFPARAM list_of_param_assignments SEMICOLON
+                    ;
+
+/* A.2.1.1 Module Parameter Declarations */
+
+signed_o : KW_SIGNED | ;
+range_o  : range     | ;
+
+local_parameter_declaration : KW_LOCALPARAM signed_o range_o
+                              list_of_param_assignments SEMICOLON
+                            | KW_LOCALPARAM KW_INTEGER 
+                              list_of_param_assignments SEMICOLON
+                            | KW_LOCALPARAM KW_REAL list_of_param_assignments
+                              SEMICOLON
+                            | KW_LOCALPARAM KW_REALTIME 
+                              list_of_param_assignments SEMICOLON
+                            | KW_LOCALPARAM KW_TIME list_of_param_assignments
+                              SEMICOLON
+                            ;
+
+parameter_declaration : KW_PARAMETER signed_o range_o 
+                        list_of_param_assignments SEMICOLON
+                      | KW_PARAMETER KW_INTEGER list_of_param_assignments
+                        SEMICOLON
+                      | KW_PARAMETER KW_REAL list_of_param_assignments
+                        SEMICOLON
+                      | KW_PARAMETER KW_REALTIME list_of_param_assignments
+                        SEMICOLON
+                      | KW_PARAMETER KW_TIME list_of_param_assignments
+                        SEMICOLON
+                      ;
+
+specparam_declaration : KW_SPECPARAM range_o list_of_specparam_assignments
+                        SEMICOLON
+                      ;
+
+/* A.2.1.2 Port declarations */
+
+net_type_o  : net_type | ;
+reg_o       : KW_REG   | ;
+
+inout_declaration : KW_INOUT net_type_o signed_o range_o 
+                    list_of_port_identifiers
+                  ;
+
+input_declaration : KW_INPUT net_type_o signed_o range_o 
+                    list_of_port_identifiers
+                  ;
+
+output_declaration: KW_OUTPUT net_type_o signed_o range_o 
+                    list_of_port_identifiers
+
+                  | KW_OUTPUT reg_o signed_o range_o list_of_port_identifiers
+
+                  | KW_OUTPUT KW_REG signed_o range_o 
+                    list_of_variable_port_identifiers
+
+                  | KW_OUTPUT output_variable_type_o list_of_port_identifiers
+
+                  | KW_OUTPUT output_variable_type 
+                    list_of_variable_port_identifiers
+                  ;
+
 %%
 
 
