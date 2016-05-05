@@ -295,14 +295,14 @@ TERNARY             "?"
 {CD_UNCONNECTED_DRIVE}   {return token::CD_UNCONNECTED_DRIVE  ;}
 {CD_UNDEF}               {return token::CD_UNDEF              ;}
 
-{COMMENT_LINE}         {return token::COMMENT_LINE;         }
-{COMMENT_BLOCK}        {return token::COMMENT_BLOCK;        }
+{COMMENT_LINE}         {/*return token::COMMENT_LINE;  IGNORE */}
+{COMMENT_BLOCK}        {/*return token::COMMENT_BLOCK; IGNORE */}
 
-{STRING}               {return token::STRING;               }
+{STRING}               {return token::STRING;                 }
 
-{NEWLINE}              {return token::NEWLINE;}
-{SPACE}                {return token::SPACE;}
-{TAB}                  {return token::TAB;}
+{NEWLINE}              {/*return token::NEWLINE; IGNORE */   }
+{SPACE}                {/*return token::SPACE;   IGNORE */   }
+{TAB}                  {/*return token::TAB;     IGNORE */   }
 
 {AT}                   {return token::AT                    ;}
 {COMMA}                {return token::COMMA                 ;}
