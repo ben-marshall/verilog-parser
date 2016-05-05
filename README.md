@@ -4,10 +4,13 @@
 This repository contains a flex / bison parser for the IEEE 1364-2001 Verilog
 Standandard.
 
+## Bison Grammar
+
+The non-terminal suffix conventions are:
+- `*_s` denotes a sequence. That is, one or more members.
+- `*_o` denotes an optional member. It evaluates to one, or zero members.
+- `*_os` denotes an optional sequence. It evaluates to zero or more members.
+
 **Notes to self:**
-- Need to add some state to the lexer so it knows when to return an identifier
-  and not a hex digit / number base. Can be done by entering new state when a
-  net type is encountered (during a declaration) then returning to the initial
-  state when we see a semicolon, ending the declaration.
 - Use the following search term on Google to get a load of example tests:
   `"endmodule" site:http://www.asic-world.com/code/verilog_tutorial/`
