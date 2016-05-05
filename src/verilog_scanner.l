@@ -246,6 +246,7 @@ STRING              \".*\"
 
 /* Operators */
 
+STAR                "\*"
 PLUS                "+"
 MINUS               "-"
 ASL                 "<<<"
@@ -316,7 +317,7 @@ TERNARY             "?"
 {CLOSE_SQ_BRACKET}     {return token::CLOSE_SQ_BRACKET      ;}
 {OPEN_SQ_BRACE}        {return token::OPEN_SQ_BRACE         ;}
 {CLOSE_SQ_BRACE}       {return token::CLOSE_SQ_BRACE        ;}
-
+{STAR}                 {return token::STAR                  ;}
 {PLUS}                 {return token::PLUS                ;}
 {MINUS}                {return token::MINUS               ;}
 {ASL}                  {return token::ASL                 ;}
@@ -479,5 +480,7 @@ TERNARY             "?"
 
 {ATTRIBUTE_START}      {return token::ATTRIBUTE_START       ;}
 {ATTRIBUTE_END}        {return token::ATTRIBUTE_END         ;}
+
+.                      {return token::ANY                   ;}
 
 %%
