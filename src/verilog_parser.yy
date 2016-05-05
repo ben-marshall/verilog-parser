@@ -388,6 +388,61 @@ module_keyword     : KW_MODULE
                    | KW_MACROMODULE
                    ;
 
+/* A.1.4 Module parameters and ports */
+
+module_parameter_port_list_o : 
+                             | module_parameter_port_list
+                             ;
+
+module_parameter_port_list : HASH OPEN_BRACKET parameter_declaration_s
+                             CLOSE_BRACKET
+                           ;
+
+parameter_declaration_s : parameter_declaration
+                        | parameter_declaration_s COMMA parameter_declaration
+                        ;
+
+list_of_ports_o : 
+                | list_of_ports
+                ;
+
+list_of_ports   : OPEN_BRACKET port_s CLOSE_BRACKET
+                ;
+
+port_s          : port
+                | port_s COMMA port
+
+port : port_expression_o
+     | DOT port_identifier OPEN_BRACKET port_expression_o CLOSE_BRACKET
+     ;
+
+port_expression_o : 
+                  | port_expression
+                  ;
+
+port_expression   : port_reference
+                  | port_reference_so
+                  ;
+
+port_reference_so :
+                  | port_reference
+                  | port_reference_so COMMA port_reference
+                  ;
+
+port_reference    : port_identifier
+                  | port_identifier OPEN_SQ_BRACKET constant_expression
+                    CLOSE_SQ_BRACKET
+                  | port_identifier OPEN_SQ_BRACKET range_expression
+                    CLOSE_SQ_BRACKET
+                  ;
+
+port_declaration  : attribute_instance_os inout_declaration
+                  | attribute_instance_os input_declaration
+                  | attribute_instance_os output_declaration
+                  ;
+
+/* A.1.5 Module Items */
+
 %%
 
 
