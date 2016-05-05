@@ -33,7 +33,7 @@ int main(const int argc, const char ** argv)
     
     int tr = scanner->yylex(yylval);
 
-    while(tr != NULL)
+    while(tr != 0)
     {
         tr = scanner -> yylex(yylval);
     }

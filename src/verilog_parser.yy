@@ -379,18 +379,18 @@ description : module_declaration
 module_declaration : attribute_instances
                      module_keyword
                      module_identifier
-                     module_parameter_port_list_o
-                     list_of_ports_o
+                     module_parameter_port_list
+                     list_of_port_declarations
                      SEMICOLON
-                     module_item_os
+                     non_port_module_item_os
                      KW_ENDMODULE
                    | attribute_instances
                      module_keyword
                      module_identifier
-                     module_parameter_port_list_o
-                     list_of_port_declarations_o
+                     module_parameter_port_list
+                     list_of_ports
                      SEMICOLON
-                     non_port_module_item_os
+                     module_item_os
                      KW_ENDMODULE
                    ;
 
@@ -400,64 +400,52 @@ module_keyword     : KW_MODULE
 
 /* A.1.4 Module parameters and ports */
 
-module_parameter_port_list_o : 
-                             | module_parameter_port_list
-                             ;
-
-module_parameter_port_list : HASH OPEN_BRACKET parameter_declaration_s
-                             CLOSE_BRACKET
-                           ;
-
-parameter_declaration_s : parameter_declaration
-                        | parameter_declaration_s COMMA parameter_declaration
-                        ;
-
-list_of_ports_o : 
-                | list_of_ports
-                ;
-
-list_of_ports   : OPEN_BRACKET port_s CLOSE_BRACKET
-                ;
-
-list_of_port_declarations_o : OPEN_BRACKET CLOSE_BRACKET
-                            | OPEN_BRACKET list_of_port_declarations 
-                              CLOSE_BRACKET
+module_parameter_port_list  : 
+                            | HASH OPEN_BRACKET module_params CLOSE_BRACKET
                             ;
 
-list_of_port_declarations : port_declaration
-                          | list_of_port_declarations COMMA port_declaration
-                          ;
-
-port_s          : port
-                | port_s COMMA port
-
-port : port_expression_o
-     | DOT port_identifier OPEN_BRACKET port_expression_o CLOSE_BRACKET
-     ;
-
-port_expression_o : 
-                  | port_expression
+module_params     : 
+                  | parameter_declaration
+                  | module_params COMMA parameter_declaration
                   ;
 
-port_expression   : port_reference
-                  | port_reference_so
-                  ;
+list_of_ports   :
+                | OPEN_BRACKET ports CLOSE_BRACKET 
+                ;
 
-port_reference_so :
-                  | port_reference
-                  | port_reference_so COMMA port_reference
-                  ;
+list_of_port_declarations   : OPEN_BRACKET CLOSE_BRACKET
+                            | OPEN_BRACKET port_declarations CLOSE_BRACKET
+                            ;
 
-port_reference    : port_identifier
-                  | port_identifier OPEN_SQ_BRACKET constant_expression
-                    CLOSE_SQ_BRACKET
-                  | port_identifier OPEN_SQ_BRACKET range_expression
-                    CLOSE_SQ_BRACKET
-                  ;
+port_declarations           : port_declaration
+                            | port_declarations COMMA {printf("COMMA\n");}
+                            port_declaration
+                            ;
+
+ports           : 
+                | ports COMMA port
+                | port 
+                ;
+
+port            : port_expression
+                | DOT port_identifier OPEN_BRACKET port_expression
+                CLOSE_BRACKET
+                ;
+
+port_expression : port_reference 
+                | port_expression COMMA port_reference
+                ;
+
+port_reference  : port_identifier
+                | port_identifier OPEN_SQ_BRACKET constant_expression
+                  CLOSE_SQ_BRACKET 
+                | port_identifier OPEN_SQ_BRACKET
+                  range_expression CLOSE_SQ_BRACKET
+                ;
 
 port_declaration  : attribute_instances inout_declaration
                   | attribute_instances input_declaration
-                  | attribute_instances output_declaration
+                  | attribute_instances output_declaration{printf("OUT\n");}
                   ;
 
 /* A.1.5 Module Items */
@@ -561,18 +549,12 @@ input_declaration : KW_INPUT net_type_o signed_o range_o
                     list_of_port_identifiers
                   ;
 
-output_declaration: KW_OUTPUT net_type_o signed_o range_o 
-                    list_of_port_identifiers
-
-                  | KW_OUTPUT reg_o signed_o range_o list_of_port_identifiers
-
-                  | KW_OUTPUT KW_REG signed_o range_o 
-                    list_of_variable_port_identifiers
-
-                  | KW_OUTPUT output_variable_type_o list_of_port_identifiers
-
-                  | KW_OUTPUT output_variable_type 
-                    list_of_variable_port_identifiers
+output_declaration: 
+  KW_OUTPUT net_type_o signed_o range_o list_of_port_identifiers
+| KW_OUTPUT reg_o signed_o range_o list_of_port_identifiers
+| KW_OUTPUT output_variable_type_o list_of_port_identifiers
+| KW_OUTPUT output_variable_type list_of_variable_port_identifiers
+| KW_OUTPUT KW_REG signed_o range_o list_of_variable_port_identifiers
                   ;
 
 /* A.2.1.3 Type declarations */
@@ -1387,13 +1369,13 @@ disable_statement : KW_DISABLE hierarchical_task_identifier SEMICOLON
                   | KW_DISABLE hierarchical_block_identifier SEMICOLON
                   ;
 
-event_control : '@'  event_identifier
-              | '@'  OPEN_BRACKET event_expression CLOSE_BRACKET
-              | '@' '*'
-              | '@'  OPEN_BRACKET'*'CLOSE_BRACKET
+event_control : AT  event_identifier
+              | AT  OPEN_BRACKET event_expression CLOSE_BRACKET
+              | AT STAR
+              | AT  OPEN_BRACKET STAR CLOSE_BRACKET
               ;
 
-event_trigger : '-' '>' hierarchical_event_identifier ;
+event_trigger : MINUS GT hierarchical_event_identifier ;
 
 event_expression : expression
                  | hierarchical_identifier
