@@ -33,7 +33,7 @@ int main(const int argc, const char ** argv)
     
     int tr = scanner->yylex(yylval);
 
-    while(tr != VL::VerilogParser::token::END)
+    while(tr != NULL)
     {
         tr = scanner -> yylex(yylval);
     }

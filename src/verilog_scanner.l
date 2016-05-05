@@ -10,9 +10,6 @@ typedef VL::VerilogParser::token token;
 /* define to keep from re-typing the same code over and over */
 #define STR_TOKEN( x ) ( new std::string( x ) )
 
-/* define yyterminate as this instead of NULL */
-#define yyterminate() return token::END;
-
 /* msvc2010 requires that we exclude this header file. */
 #define YY_NO_UNISTD_H
 
@@ -298,8 +295,6 @@ TERNARY             "?"
 {COMMENT_LINE}         {/*return token::COMMENT_LINE;  IGNORE */}
 {COMMENT_BLOCK}        {/*return token::COMMENT_BLOCK; IGNORE */}
 
-{STRING}               {return token::STRING;                 }
-
 {NEWLINE}              {/*return token::NEWLINE; IGNORE */   }
 {SPACE}                {/*return token::SPACE;   IGNORE */   }
 {TAB}                  {/*return token::TAB;     IGNORE */   }
@@ -477,6 +472,8 @@ TERNARY             "?"
 {SYSTEM_ID}            {return token::SYSTEM_ID             ;}
 {SIMPLE_ID}            {return token::SIMPLE_ID             ;}
 {DEFINE_ID}            {return token ::DEFINE_ID            ;}
+
+{STRING}               {return token::STRING;                 }
 
 {ATTRIBUTE_START}      {return token::ATTRIBUTE_START       ;}
 {ATTRIBUTE_END}        {return token::ATTRIBUTE_END         ;}

@@ -260,6 +260,7 @@ grammar_begin : library_text
               | source_text
               | white_space
               | comment
+              | END
               ;
 
 
@@ -1351,6 +1352,7 @@ statement : attribute_instances blocking_assignment SEMICOLON
           | attribute_instances procedural_continuous_assignments SEMICOLON
           | attribute_instances procedural_timing_control_statement
           | attribute_instances seq_block
+          | attribute_instances system_function_call SEMICOLON
           | attribute_instances system_task_enable
           | attribute_instances task_enable
           | attribute_instances wait_statement
@@ -1366,6 +1368,7 @@ function_statement : attribute_instances function_blocking_assignment SEMICOLON
                    | attribute_instances function_loop_statement
                    | attribute_instances function_seq_block
                    | attribute_instances disable_statement
+                   | attribute_instances system_function_call SEMICOLON
                    | attribute_instances system_task_enable
                    ;
 
@@ -1465,8 +1468,9 @@ expressions     : expression
                 | expressions expression
                 ;
 
-expressions_csv : expression
-                | expressions_csv COMMA expression
+expressions_csv : expression {printf("Expression csv");}
+                | expressions_csv COMMA expression 
+                ;
 
 case_item       : expressions COLON statement_or_null
                 | KW_DEFAULT statement_or_null
@@ -1739,6 +1743,7 @@ function_call : hierarchical_function_identifier
 
 system_function_call : system_function_identifier
                      | system_function_identifier OPEN_BRACKET 
+                       {printf("System function args: ");}
                       expressions_csv CLOSE_BRACKET
                      ;
 
@@ -1958,16 +1963,12 @@ unsigned_number : UNSIGNED_NUMBER
                 ;
 
 number : NUMBER
+       | unsigned_number
        ;
 
 /* A.8.8 Strings */
 
-string : '"' any_chars_o '"';
-
-any_chars_o : any_chars | ;
-any_chars   : ANY 
-            | any_chars ANY
-            ;
+string : STRING;
 
 /* A.9.1 Attributes */
 
