@@ -1657,7 +1657,7 @@ system_timing_check : {printf("%s:%d Not Supported\n",__FILE__,__LINE__);};
 
 /* A.8.1 Concatenations */
 
-concatenation           : OPEN_SQ_BRACE expressions CLOSE_SQ_BRACE ;
+concatenation           : OPEN_SQ_BRACE expressions_csv CLOSE_SQ_BRACE ;
 
 constant_concatenation  : OPEN_SQ_BRACE constant_expressions CLOSE_SQ_BRACE ;
 
@@ -1673,7 +1673,7 @@ module_path_concatenation : OPEN_SQ_BRACE module_path_expressions CLOSE_SQ_BRACE
 module_path_multiple_concatenation : OPEN_SQ_BRACE constant_expression 
                                      module_path_concatenation CLOSE_SQ_BRACE;
 
-multiple_concatenation : OPEN_SQ_BRACE constant_expression concatenation CLOSE_SQ_BRACE;
+multiple_concatenation : OPEN_SQ_BRACE constant_expression COMMA concatenation CLOSE_SQ_BRACE;
 
 net_concatenation : OPEN_SQ_BRACE net_concatenation_values CLOSE_SQ_BRACE;
 
@@ -1832,6 +1832,7 @@ module_path_primary : number
                     ;
 
 primary : number
+        | OPEN_BRACKET mintypmax_expression CLOSE_BRACKET
         | hierarchical_identifier
         | hierarchical_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET
           braced_expression_o
@@ -1844,7 +1845,6 @@ primary : number
         | multiple_concatenation
         | function_call
         | system_function_call
-        | OPEN_BRACKET mintypmax_expression CLOSE_BRACKET
         ;
 
 /* A.8.5 Expression left-side values */
