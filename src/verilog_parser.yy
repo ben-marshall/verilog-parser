@@ -1265,7 +1265,7 @@ initial_construct   : KW_INITIAL statement ;
 always_construct    : KW_ALWAYS statement ;
 
 blocking_assignment : variable_lvalue EQ delay_or_event_control_o expression;
-nonblocking_assignment : variable_lvalue '<' EQ delay_or_event_control_o 
+nonblocking_assignment : variable_lvalue LTE delay_or_event_control_o 
                       expression
                     ;
 
