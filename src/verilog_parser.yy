@@ -1657,25 +1657,25 @@ system_timing_check : {printf("%s:%d Not Supported\n",__FILE__,__LINE__);};
 
 /* A.8.1 Concatenations */
 
-concatenation           : '{' expressions '}' ;
+concatenation           : OPEN_SQ_BRACE expressions CLOSE_SQ_BRACE ;
 
-constant_concatenation  : '{' constant_expressions '}' ;
+constant_concatenation  : OPEN_SQ_BRACE constant_expressions CLOSE_SQ_BRACE ;
 
-constant_multiple_concatenation : '{' constant_expression
-                                  constant_concatenation '}';
+constant_multiple_concatenation : OPEN_SQ_BRACE constant_expression
+                                  constant_concatenation CLOSE_SQ_BRACE;
 
 module_path_expressions : module_path_expression
                         | module_path_expressions COMMA module_path_expression
                         ;
 
-module_path_concatenation : '{' module_path_expressions '}';
+module_path_concatenation : OPEN_SQ_BRACE module_path_expressions CLOSE_SQ_BRACE;
 
-module_path_multiple_concatenation : '{' constant_expression 
-                                     module_path_concatenation '}';
+module_path_multiple_concatenation : OPEN_SQ_BRACE constant_expression 
+                                     module_path_concatenation CLOSE_SQ_BRACE;
 
-multiple_concatenation : '{' constant_expression concatenation '}';
+multiple_concatenation : OPEN_SQ_BRACE constant_expression concatenation CLOSE_SQ_BRACE;
 
-net_concatenation : '{' net_concatenation_values '}';
+net_concatenation : OPEN_SQ_BRACE net_concatenation_values CLOSE_SQ_BRACE;
 
 net_concatenation_values : net_concatenation_value
                          | net_concatenation_values COMMA
@@ -1693,7 +1693,7 @@ net_concatenation_value : hierarchical_net_identifier
                         | net_concatenation
                         ;
 
-variable_concatenation : '{' variable_concatenation_values '}';
+variable_concatenation : OPEN_SQ_BRACE variable_concatenation_values CLOSE_SQ_BRACE;
 
 variable_concatenation_values : variable_concatenation_value
                          | variable_concatenation_values COMMA
