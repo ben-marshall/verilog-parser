@@ -228,7 +228,10 @@ SYSTEM_ID           \$[a-zA-Z0-9_\$]+
 SIMPLE_ID           [a-zA-Z_][a-zA-Z0-9_$]*
 MACRO_IDENTIFIER    `{SIMPLE_ID}
 
-MACRO_TEXT          .*(\\\n.*)*\n
+MACRO_TEXT          .*\n
+
+%x in_define
+%x in_define_t
 
 /* Attributes */
 
@@ -281,16 +284,18 @@ TERNARY             "?"
 
 %%
 
+{CD_DEFINE}              {BEGIN(in_define);return token::CD_DEFINE;}
+<in_define>{SIMPLE_ID}   {BEGIN(in_define_t); return token::SIMPLE_ID;}
+<in_define_t>{MACRO_TEXT} {BEGIN(INITIAL);return token::MACRO_TEXT ;}
+
 {COMMENT_LINE}         {/*return token::COMMENT_LINE; IGNORE */}
 {COMMENT_BEGIN}        {BEGIN(in_comment)                     ;}
 
 <in_comment>.|\n       {/* IGNORE                            */}
 <in_comment>{COMMENT_END} {BEGIN(INITIAL);                     }
 
-
 {CD_CELLDEFINE}          {return token::CD_CELLDEFINE         ;}
 {CD_DEFAULT_NETTYPE}     {return token::CD_DEFAULT_NETTYPE    ;}
-{CD_DEFINE}              {return token::CD_DEFINE             ;}
 {CD_ELSE}                {return token::CD_ELSE               ;}
 {CD_ELSIF}               {return token::CD_ELSIF              ;}
 {CD_ENDCELLDEFINE}       {return token::CD_ENDCELLDEFINE      ;}
@@ -304,10 +309,6 @@ TERNARY             "?"
 {CD_TIMESCALE}           {return token::CD_TIMESCALE          ;}
 {CD_UNCONNECTED_DRIVE}   {return token::CD_UNCONNECTED_DRIVE  ;}
 {CD_UNDEF}               {return token::CD_UNDEF              ;}
-
-{NEWLINE}              {/*return token::NEWLINE; IGNORE */   }
-{SPACE}                {/*return token::SPACE;   IGNORE */   }
-{TAB}                  {/*return token::TAB;     IGNORE */   }
 
 {AT}                   {return token::AT                    ;}
 {COMMA}                {return token::COMMA                 ;}
@@ -484,6 +485,10 @@ TERNARY             "?"
 {MACRO_IDENTIFIER}     {return token::MACRO_IDENTIFIER      ;}
 
 {STRING}               {return token::STRING;                 }
+
+<*>{NEWLINE}              {/*return token::NEWLINE; IGNORE */   }
+<*>{SPACE}                {/*return token::SPACE;   IGNORE */   }
+<*>{TAB}                  {/*return token::TAB;     IGNORE */   }
 
 {ATTRIBUTE_START}      {return token::ATTRIBUTE_START       ;}
 {ATTRIBUTE_END}        {return token::ATTRIBUTE_END         ;}

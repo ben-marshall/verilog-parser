@@ -301,11 +301,11 @@ line_directive  : CD_LINE number string unsigned_number
 text_macro_definition : CD_DEFINE text_macro_name macro_text
                       ;
 
-text_macro_name     : simple_identifier list_of_formal_arguments
+text_macro_name     : SIMPLE_ID 
+                    | SIMPLE_ID list_of_formal_arguments
                     ;
 
-list_of_formal_arguments :
-                         | identifier_csv
+list_of_formal_arguments : identifier_csv
                          ; 
 
 macro_text : MACRO_TEXT;   
@@ -445,6 +445,7 @@ description_os :
 
 description : module_declaration
             | udp_declaration
+            | compiler_directive
             ;
 
 module_declaration : attribute_instances
