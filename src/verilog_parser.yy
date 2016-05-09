@@ -1851,12 +1851,12 @@ module_path_primary : number
 
 primary : number
         | OPEN_BRACKET mintypmax_expression CLOSE_BRACKET
-        | hierarchical_identifier
-        | hierarchical_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET
-          braced_expression_o
         | hierarchical_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET
           braced_expression_o 
           OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
+        | hierarchical_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET
+          braced_expression_o
+        | hierarchical_identifier
         | hierarchical_identifier OPEN_SQ_BRACKET range_expression
           CLOSE_SQ_BRACKET
         | concatenation
@@ -2085,14 +2085,30 @@ variable_identifier             : identifier;
 
 /* A.9.4 Identifier Branches */
 
+/* Semantic checking needed to make sure that the "expression"
+in the closed brackets reduces to an "unsigned_number" */
+
 simple_hierarchical_branch : simple_identifier
                            | simple_identifier OPEN_SQ_BRACKET
-                             unsigned_number CLOSE_SQ_BRACKET 
+                             expression CLOSE_SQ_BRACKET 
+                           | simple_hierarchical_branch DOT simple_identifier
+                           | simple_hierarchical_branch DOT 
+                             simple_identifier OPEN_SQ_BRACKET
+                             expression CLOSE_SQ_BRACKET 
                            ;
 
-escaped_hierarchical_branch : escaped_identifier
+
+/* Semantic checking needed to make sure that the "expression"
+in the closed brackets reduces to an "unsigned_number" */
+
+escaped_hierarchical_branch : escaped_hierarchical_branch DOT 
+                              escaped_identifier 
+                            | escaped_hierarchical_branch DOT 
+                              escaped_identifier OPEN_SQ_BRACKET
+                              expression CLOSE_SQ_BRACKET 
+                            | escaped_identifier
                             | escaped_identifier OPEN_SQ_BRACKET
-                              unsigned_number CLOSE_SQ_BRACKET
+                              expression CLOSE_SQ_BRACKET
                             ;
 
 white_space : SPACE | TAB | NEWLINE;
