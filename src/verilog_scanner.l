@@ -235,7 +235,11 @@ ATTRIBUTE_END       \*\)
 
 /* Comments */
 COMMENT_LINE        "//".*\n
-COMMENT_BLOCK       "/"\*[.\n]*\*"/"
+
+COMMENT_BEGIN       "/*"
+COMMENT_END         "*/"
+
+%x in_comment
 
 /* Strings */
 
@@ -275,6 +279,13 @@ TERNARY             "?"
 
 %%
 
+{COMMENT_LINE}         {/*return token::COMMENT_LINE; IGNORE */}
+{COMMENT_BEGIN}        {BEGIN(in_comment)                     ;}
+
+<in_comment>.|\n       {/* IGNORE                            */}
+<in_comment>{COMMENT_END} {BEGIN(INITIAL);                     }
+
+
 {CD_CELLDEFINE}          {return token::CD_CELLDEFINE         ;}
 {CD_DEFAULT_NETTYPE}     {return token::CD_DEFAULT_NETTYPE    ;}
 {CD_DEFINE}              {return token::CD_DEFINE             ;}
@@ -291,9 +302,6 @@ TERNARY             "?"
 {CD_TIMESCALE}           {return token::CD_TIMESCALE          ;}
 {CD_UNCONNECTED_DRIVE}   {return token::CD_UNCONNECTED_DRIVE  ;}
 {CD_UNDEF}               {return token::CD_UNDEF              ;}
-
-{COMMENT_LINE}         {/*return token::COMMENT_LINE;  IGNORE */}
-{COMMENT_BLOCK}        {/*return token::COMMENT_BLOCK; IGNORE */}
 
 {NEWLINE}              {/*return token::NEWLINE; IGNORE */   }
 {SPACE}                {/*return token::SPACE;   IGNORE */   }

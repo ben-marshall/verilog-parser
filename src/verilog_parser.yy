@@ -417,9 +417,33 @@ list_of_port_declarations   : OPEN_BRACKET CLOSE_BRACKET
                             | OPEN_BRACKET port_declarations CLOSE_BRACKET
                             ;
 
-port_declarations           : port_declarations COMMA port_declaration
-                            | port_declaration
-                            ;
+port_declarations : port_declarations COMMA port_dir port_declaration_l
+                  | port_declarations COMMA identifier_csv port_dir
+                    port_declaration_l
+                  | port_dir port_declaration_l
+                  ;
+
+identifier_csv    : 
+                  | identifier
+                  | COMMA identifier identifier_csv
+                  ;
+
+port_dir          : attribute_instances KW_OUTPUT
+                  | attribute_instances KW_INPUT
+                  | attribute_instances KW_INOUT
+                  ;
+
+port_declaration_l: net_type_o signed_o range_o port_identifier
+                  | reg_o signed_o range_o port_identifier
+                  | output_variable_type_o port_identifier
+                  | output_variable_type port_identifier eq_const_exp_o
+                  | KW_REG signed_o range_o port_identifier eq_const_exp_o
+                  ;
+
+port_declaration  : inout_declaration
+                  | input_declaration
+                  | output_declaration
+                  ;
 
 ports           : 
                 | ports COMMA port
@@ -441,11 +465,6 @@ port_reference  : port_identifier
                 | port_identifier OPEN_SQ_BRACKET
                   range_expression CLOSE_SQ_BRACKET
                 ;
-
-port_declaration  : attribute_instances inout_declaration
-                  | attribute_instances input_declaration
-                  | attribute_instances output_declaration
-                  ;
 
 /* A.1.5 Module Items */
 
