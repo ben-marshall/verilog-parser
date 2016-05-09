@@ -1748,12 +1748,18 @@ system_timing_check : {printf("%s:%d Not Supported\n",__FILE__,__LINE__);};
 
 /* A.8.1 Concatenations */
 
+/*
+{{`WIDTH-1{1}}, 1'b1}
+*/
+
 concatenation           : OPEN_SQ_BRACE expressions_csv CLOSE_SQ_BRACE ;
 
 constant_concatenation  : OPEN_SQ_BRACE constant_expressions CLOSE_SQ_BRACE ;
 
 constant_multiple_concatenation : OPEN_SQ_BRACE constant_expression
-                                  constant_concatenation CLOSE_SQ_BRACE;
+                                  constant_concatenation CLOSE_SQ_BRACE
+                                ;
+
 
 module_path_expressions : module_path_expression
                         | module_path_expressions COMMA module_path_expression
@@ -1901,14 +1907,14 @@ width_constant_expression : constant_expression;
 
 /* A.8.4 Primaries */
 
-constant_primary : constant_concatenation
-                 | constant_function_call
+constant_primary : constant_function_call
                  | OPEN_BRACKET constant_mintypmax_expression CLOSE_BRACKET
-                 | constant_multiple_concatenation
-                 | genvar_identifier
                  | number
+                 | genvar_identifier
                  | parameter_identifier
                  | specparam_identifier
+                 | constant_concatenation
+                 | constant_multiple_concatenation
                  ;
 
 module_path_primary : number
