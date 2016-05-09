@@ -417,9 +417,8 @@ list_of_port_declarations   : OPEN_BRACKET CLOSE_BRACKET
                             | OPEN_BRACKET port_declarations CLOSE_BRACKET
                             ;
 
-port_declarations           : port_declaration
-                            | port_declarations COMMA {printf("COMMA\n");}
-                            port_declaration
+port_declarations           : port_declarations COMMA port_declaration
+                            | port_declaration
                             ;
 
 ports           : 
@@ -429,7 +428,7 @@ ports           :
 
 port            : port_expression
                 | DOT port_identifier OPEN_BRACKET port_expression
-                CLOSE_BRACKET
+                  CLOSE_BRACKET
                 ;
 
 port_expression : port_reference 
@@ -445,7 +444,7 @@ port_reference  : port_identifier
 
 port_declaration  : attribute_instances inout_declaration
                   | attribute_instances input_declaration
-                  | attribute_instances output_declaration{printf("OUT\n");}
+                  | attribute_instances output_declaration
                   ;
 
 /* A.1.5 Module Items */
