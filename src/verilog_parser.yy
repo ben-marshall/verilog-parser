@@ -268,16 +268,35 @@ grammar_begin : library_text
 
 /* 19.0 Compiler Directives */
 
+/* 
+These are not properly handled at the moment and are completely
+ignored by the parser.
+*/
+
 default_net_type_cd : CD_DEFAULT_NETTYPE net_type
                     ;
 
 compiler_directive  : CD_CELLDEFINE
                     | CD_ENDCELLDEFINE
                     | CD_RESETALL
+                    | CD_UNCONNECTED_DRIVE
+                    | CD_NOUNCONNECTED_DRIVE
                     | default_net_type_cd
                     | text_macro_definition
                     | undefine_compiler_directive
+                    | conditional_compile_directive
+                    | include_directive
+                    | line_directive
+                    | timescale_directive
                     ;
+
+timescale_directive : CD_TIMESCALE time DIV time;
+
+time: unsigned_number ANY
+    | unsigned_number ANY ANY
+    ;
+
+line_directive  : CD_LINE number string unsigned_number
 
 text_macro_definition : CD_DEFINE text_macro_name macro_text
                       ;
@@ -305,6 +324,15 @@ actual_argument : expression
 undefine_compiler_directive : CD_UNDEF MACRO_IDENTIFIER
                             ;
 
+conditional_compile_directive   : ifdef_directive
+                                | ifndef_directive
+                                | CD_ENDIF
+                                ;
+
+ifdef_directive : CD_IFDEF simple_identifier;
+ifndef_directive: CD_IFNDEF simple_identifier;
+
+include_directive   : CD_INCLUDE string;
 
 /* A.1.1 Library Source Text */
 
