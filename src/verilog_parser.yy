@@ -124,6 +124,9 @@
 %token CD_UNCONNECTED_DRIVE
 %token CD_UNDEF
 
+%token MACRO_TEXT
+%token MACRO_IDENTIFIER
+
 %token KW_ALWAYS
 %token KW_AND
 %token KW_ASSIGN
@@ -263,6 +266,45 @@ grammar_begin : library_text
               | END
               ;
 
+/* 19.0 Compiler Directives */
+
+default_net_type_cd : CD_DEFAULT_NETTYPE net_type
+                    ;
+
+compiler_directive  : CD_CELLDEFINE
+                    | CD_ENDCELLDEFINE
+                    | CD_RESETALL
+                    | default_net_type_cd
+                    | text_macro_definition
+                    | undefine_compiler_directive
+                    ;
+
+text_macro_definition : CD_DEFINE text_macro_name macro_text
+                      ;
+
+text_macro_name     : simple_identifier list_of_formal_arguments
+                    ;
+
+list_of_formal_arguments :
+                         | identifier_csv
+                         ; 
+
+macro_text : MACRO_TEXT;   
+
+text_macro_usage : MACRO_IDENTIFIER list_of_actual_arguments
+                 | MACRO_IDENTIFIER
+                 ;
+
+list_of_actual_arguments : actual_argument
+                         | list_of_actual_arguments COMMA actual_argument
+                         ;
+
+actual_argument : expression
+                ; 
+
+undefine_compiler_directive : CD_UNDEF MACRO_IDENTIFIER
+                            ;
+
 
 /* A.1.1 Library Source Text */
 
@@ -276,6 +318,7 @@ library_descriptions_s :
 library_descriptions : library_declaration
                      | include_statement
                      | config_declaration
+                     | compiler_directive
                      ;
 
 library_declaration : KW_LIBRARY library_identifier 
@@ -496,6 +539,7 @@ module_or_generate_item : attribute_instances
                         | attribute_instances module_instantiation
                         | attribute_instances initial_construct
                         | attribute_instances always_construct
+                        | compiler_directive
                         ;
 
 module_or_generate_item_declaration : net_declaration
@@ -2070,6 +2114,7 @@ simple_hierarchical_identifier  : simple_hierarchical_branch
                                 ;
 
 simple_identifier               : SIMPLE_ID
+                                | text_macro_usage
                                 ;
 
 specparam_identifier            : identifier;

@@ -226,7 +226,9 @@ NUMBER              {NUM_BINARY}|{NUM_HEX}|{NUM_OCTAL}|{NUM_REAL}|{NUM_DECIMAL}
 
 SYSTEM_ID           \$[a-zA-Z0-9_\$]+
 SIMPLE_ID           [a-zA-Z_][a-zA-Z0-9_$]*
-DEFINE_ID           `{SIMPLE_ID}
+MACRO_IDENTIFIER    `{SIMPLE_ID}
+
+MACRO_TEXT          .*(\\\n.*)*\n
 
 /* Attributes */
 
@@ -479,7 +481,7 @@ TERNARY             "?"
 
 {SYSTEM_ID}            {return token::SYSTEM_ID             ;}
 {SIMPLE_ID}            {return token::SIMPLE_ID             ;}
-{DEFINE_ID}            {return token ::DEFINE_ID            ;}
+{MACRO_IDENTIFIER}     {return token::MACRO_IDENTIFIER      ;}
 
 {STRING}               {return token::STRING;                 }
 
