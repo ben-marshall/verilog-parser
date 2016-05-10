@@ -1541,7 +1541,7 @@ expressions     : expression
                 | expressions expression
                 ;
 
-expressions_csv : expression {printf("Expression csv");}
+expressions_csv : expression
                 | expressions_csv COMMA expression 
                 ;
 
@@ -1752,25 +1752,35 @@ system_timing_check : {printf("%s:%d Not Supported\n",__FILE__,__LINE__);};
 {{`WIDTH-1{1}}, 1'b1}
 */
 
-concatenation           : OPEN_SQ_BRACE expressions_csv CLOSE_SQ_BRACE ;
+concatenation          : OPEN_SQ_BRACE expressions_csv CLOSE_SQ_BRACE 
+                       | replication
+                       ;
 
-constant_concatenation  : OPEN_SQ_BRACE constant_expressions CLOSE_SQ_BRACE ;
+replication            : OPEN_SQ_BRACE constant_expression 
+                         OPEN_SQ_BRACE expressions_csv CLOSE_SQ_BRACE
+                         CLOSE_SQ_BRACE
+                       ;
 
-constant_multiple_concatenation : OPEN_SQ_BRACE constant_expression
-                                  constant_concatenation CLOSE_SQ_BRACE
-                                ;
+constant_concatenation : OPEN_SQ_BRACE constant_expressions CLOSE_SQ_BRACE 
+                       | constant_replication
+                       ;
+
+constant_replication   : OPEN_SQ_BRACE constant_expression
+                         OPEN_SQ_BRACE constant_expressions 
+                         CLOSE_SQ_BRACE CLOSE_SQ_BRACE
+                       ;
 
 
 module_path_expressions : module_path_expression
                         | module_path_expressions COMMA module_path_expression
                         ;
 
-module_path_concatenation : OPEN_SQ_BRACE module_path_expressions CLOSE_SQ_BRACE;
+module_path_concatenation : OPEN_SQ_BRACE module_path_expressions 
+                            CLOSE_SQ_BRACE
+                          ;
 
 module_path_multiple_concatenation : OPEN_SQ_BRACE constant_expression 
                                      module_path_concatenation CLOSE_SQ_BRACE;
-
-multiple_concatenation : OPEN_SQ_BRACE constant_expression COMMA concatenation CLOSE_SQ_BRACE;
 
 net_concatenation : OPEN_SQ_BRACE net_concatenation_values CLOSE_SQ_BRACE;
 
@@ -1822,8 +1832,9 @@ function_call : hierarchical_function_identifier
 
 system_function_call : system_function_identifier
                      | system_function_identifier OPEN_BRACKET 
-                       {printf("System function args: ");}
-                      expressions_csv CLOSE_BRACKET
+                       expressions_csv CLOSE_BRACKET
+                     | system_function_identifier OPEN_BRACKET 
+                       CLOSE_BRACKET
                      ;
 
 /* A.8.3 Expression */
@@ -1914,7 +1925,6 @@ constant_primary : constant_function_call
                  | parameter_identifier
                  | specparam_identifier
                  | constant_concatenation
-                 | constant_multiple_concatenation
                  ;
 
 module_path_primary : number
@@ -1939,7 +1949,6 @@ primary : number
         | hierarchical_identifier OPEN_SQ_BRACKET range_expression
           CLOSE_SQ_BRACKET
         | concatenation
-        | multiple_concatenation
         | function_call
         | system_function_call
         ;
