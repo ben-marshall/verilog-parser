@@ -651,8 +651,8 @@ output_declaration:
 /* A.2.1.3 Type declarations */
 
 event_declaration   : KW_EVENT list_of_event_identifiers SEMICOLON ;
-genvar_declaration  : KW_EVENT list_of_genvar_identifiers SEMICOLON ;
-integer_declaration : KW_EVENT list_of_variable_identifiers SEMICOLON ;
+genvar_declaration  : KW_GENVAR list_of_genvar_identifiers SEMICOLON ;
+integer_declaration : KW_INTEGER list_of_variable_identifiers SEMICOLON ;
 
 vect_or_scaled_o    : KW_VECTORED
                     | KW_SCALARED
@@ -1379,7 +1379,6 @@ function_statement_or_null : function_statement
 
 /* A.6.3 Parallel and sequential blocks */
 
-block_item_declarations_o   : block_item_declarations | ;
 block_item_declarations     : block_item_declaration
                             | block_item_declarations block_item_declaration
                             ;
@@ -1390,7 +1389,7 @@ function_statements     : function_statement
                         ;
 
 function_seq_block : KW_BEGIN function_statements_o KW_END
-                   | KW_BEGIN COLON block_identifier block_item_declarations_o
+                   | KW_BEGIN COLON block_identifier block_item_declarations
                      function_statements_o KW_END
                    ;
 
@@ -1398,12 +1397,12 @@ variable_assignment : variable_lvalue EQ expression
                     ;
 
 par_block : KW_FORK statements_o KW_JOIN
-          | KW_FORK COLON block_identifier block_item_declarations_o statements_o
+          | KW_FORK COLON block_identifier block_item_declarations statements_o
             KW_JOIN
           ;
 
 seq_block : KW_BEGIN statements_o KW_END
-          | KW_BEGIN COLON block_identifier block_item_declarations_o 
+          | KW_BEGIN COLON block_identifier block_item_declarations 
             statements_o KW_END
           ;
 
