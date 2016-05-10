@@ -876,14 +876,11 @@ gate_instantiation : cmos_switchtype delay3_o cmos_switch_instances SEMICOLON
                    | enable_gatetype delay3
                      enable_gate_instances SEMICOLON
                    | mos_switchtype delay3_o mos_switch_instances SEMICOLON
-                   | n_input_gatetype 
-                     n_input_gate_instances SEMICOLON
-                   | n_input_gatetype delay2
-                     n_input_gate_instances SEMICOLON
-                   | n_output_gatetype 
-                     n_output_gate_instances SEMICOLON
-                   | n_output_gatetype delay2
-                     n_output_gate_instances SEMICOLON
+                   | n_input_gatetype n_input_gate_instances SEMICOLON
+                   | n_input_gatetype delay2 n_input_gate_instances SEMICOLON
+                   | n_output_gatetype n_output_gate_instances SEMICOLON
+                   | n_output_gatetype delay2 n_output_gate_instances 
+                     SEMICOLON
                    | pass_en_switchtype delay2_o 
                      pass_enable_switch_instances SEMICOLON
                    | pass_switchtype delay2_o 
@@ -902,13 +899,14 @@ pull_gate_instances : pull_gate_instance
                       pull_gate_instance
                     ;
 
-pass_switch_instances :pass_switch_instance
+pass_switch_instances : pass_switch_instance
                       | pass_switch_instances COMMA 
                         pass_switch_instance
                       ;
 
 n_output_gate_instances : n_output_gate_instance
-                        | n_output_gate_instances COMMA n_output_gate_instance
+                        | n_output_gate_instances COMMA
+                          n_output_gate_instance
                         ;
 
 n_input_gate_instances : n_input_gate_instance
