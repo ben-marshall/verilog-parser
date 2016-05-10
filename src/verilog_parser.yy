@@ -1481,23 +1481,24 @@ wait_statement : KW_WAIT OPEN_BRACKET expression CLOSE_BRACKET statement_or_null
 
 /* A.6.6 Conditional Statemnets */
 
-conditional_statement : KW_IF OPEN_BRACKET expression CLOSE_BRACKET statement_or_null
-                      | KW_IF OPEN_BRACKET expression CLOSE_BRACKET statement_or_null
-                        KW_ELSE statement_or_null
-                      | if_else_if_statement
+conditional_statement : if_else_if_statement
+                      | KW_IF OPEN_BRACKET expression CLOSE_BRACKET 
+                        statement_or_null
+                      | KW_IF OPEN_BRACKET expression CLOSE_BRACKET 
+                        statement_or_null KW_ELSE statement_or_null
                       ;
 
-if_else_if_statement : KW_IF OPEN_BRACKET expression CLOSE_BRACKET statement_or_null
-                       else_if_statements_o
-                     | KW_IF OPEN_BRACKET expression CLOSE_BRACKET statement_or_null
-                       else_if_statements_o
+if_else_if_statement : KW_IF OPEN_BRACKET expression CLOSE_BRACKET 
+                       statement_or_null else_if_statements
+                     | KW_IF OPEN_BRACKET expression CLOSE_BRACKET 
+                       statement_or_null else_if_statements
                        KW_ELSE statement_or_null
                      ;
 
-else_if_statements_o : else_if_statements | ;
-else_if_statements : KW_ELSE KW_IF OPEN_BRACKET expression CLOSE_BRACKET statement_or_null
-                   | else_if_statements KW_ELSE KW_IF OPEN_BRACKET expression CLOSE_BRACKET 
+else_if_statements : KW_ELSE KW_IF OPEN_BRACKET expression CLOSE_BRACKET 
                      statement_or_null
+                   | else_if_statements KW_ELSE KW_IF OPEN_BRACKET expression
+                     CLOSE_BRACKET statement_or_null
                    ;
 
 function_conditional_statement : KW_IF OPEN_BRACKET expression CLOSE_BRACKET 
@@ -1508,19 +1509,19 @@ function_conditional_statement : KW_IF OPEN_BRACKET expression CLOSE_BRACKET
                                | function_if_else_if_statement
                                ;
 
-function_else_if_statements_o : function_else_if_statements | ;
-function_else_if_statements   : KW_ELSE KW_IF OPEN_BRACKET expression CLOSE_BRACKET 
-                                function_statement_or_null 
-                              | function_else_if_statements KW_ELSE KW_IF OPEN_BRACKET
-                                expression CLOSE_BRACKET function_statement_or_null
+function_else_if_statements   : KW_ELSE KW_IF OPEN_BRACKET expression 
+                                CLOSE_BRACKET function_statement_or_null 
+                              | function_else_if_statements KW_ELSE KW_IF 
+                                OPEN_BRACKET expression CLOSE_BRACKET 
+                                function_statement_or_null
                               ;
 
 function_if_else_if_statement : KW_IF OPEN_BRACKET expression CLOSE_BRACKET 
                                 function_statement_or_null
-                                function_else_if_statements_o
+                                function_else_if_statements
                               | KW_IF OPEN_BRACKET expression CLOSE_BRACKET 
                                 function_statement_or_null
-                                function_else_if_statements_o
+                                function_else_if_statements
                                 KW_ELSE function_statement_or_null
                               ;
 
