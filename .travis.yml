@@ -11,7 +11,7 @@ os:
 install:
  - sudo apt-get update -qq
  - wget http://ftp.gnu.org/gnu/bison/bison-3.0.4.tar.xz
- - tar -xvzf bison-3.0.4.tar.gz
+ - tar -xvzf bison-3.0.4.tar.xz
  - cd bison-3.0.4.tar.gz
  - ./configure --prefix=/usr/local/bison
  - sudo make install
