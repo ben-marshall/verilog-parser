@@ -1,4 +1,5 @@
 %skeleton "lalr1.cc"
+%require  "3.0"
 %defines 
 %define parse.trace
 %verbose
