@@ -7,7 +7,7 @@ find_package(FLEX)
 BISON_TARGET(VerilogParser 
              verilog_parser.yy
              ${CMAKE_CURRENT_BINARY_DIR}/verilog_parser.tab.cc
-             COMPILE_FLAGS "-d"
+             COMPILE_FLAGS "-d --graph"
 )
 
 FLEX_TARGET (VerilogScanner

@@ -20,6 +20,7 @@
 
 %lex-param   { VerilogDriver  &driver  }
 %parse-param { VerilogDriver  &driver  }
+%glr-parser
 
 %code{
    #include <iostream>
@@ -715,13 +716,12 @@ variable_type       : variable_identifier
 
 /* A.2.2.2 Strengths */
 
-drive_strength      : OPEN_BRACKET strength0 COMMA strength1 CLOSE_BRACKET
-                    | OPEN_BRACKET strength1 COMMA strength0 CLOSE_BRACKET
-                    | OPEN_BRACKET strength0 COMMA KW_HIGHZ1 CLOSE_BRACKET
-                    | OPEN_BRACKET strength1 COMMA KW_HIGHZ0 CLOSE_BRACKET
-                    | OPEN_BRACKET KW_HIGHZ0 COMMA strength1 CLOSE_BRACKET
-                    | OPEN_BRACKET KW_HIGHZ1 COMMA strength0 CLOSE_BRACKET
-                    |
+drive_strength      : strength0 COMMA strength1 CLOSE_BRACKET
+                    | strength1 COMMA strength0 CLOSE_BRACKET
+                    | strength0 COMMA KW_HIGHZ1 CLOSE_BRACKET
+                    | strength1 COMMA KW_HIGHZ0 CLOSE_BRACKET
+                    | KW_HIGHZ0 COMMA strength1 CLOSE_BRACKET
+                    | KW_HIGHZ1 COMMA strength0 CLOSE_BRACKET
                     ;
 
 strength0           : KW_SUPPLY0 | KW_STRONG0 | KW_PULL0 | KW_WEAK0 ;
@@ -970,33 +970,135 @@ block_variable_type : variable_identifier
 
 delay2_o : delay2 | ;
 
-gate_instantiation : cmos_switchtype cmos_switch_instances SEMICOLON
-                   | enable_gatetype 
-                     enable_gate_instances SEMICOLON
-                   | mos_switchtype mos_switch_instances SEMICOLON
-                   | n_output_gatetype 
-                     n_output_gate_instances SEMICOLON
-                   | n_input_gatetype
-                     n_input_gate_instances SEMICOLON
-                   | pass_en_switchtype
-                     pass_enable_switch_instances SEMICOLON
-                   | pass_switchtype 
-                     pass_switch_instances SEMICOLON
-                   | KW_PULLDOWN pulldown_strength_o pull_gate_instances 
-                     SEMICOLON
-                   | KW_PULLUP pullup_strength_o pull_gate_instances 
-                     SEMICOLON
-                   ;
+gate_instantiation      : cmos_switchtype cmos_switch_instances SEMICOLON
+                        | gate_enable SEMICOLON
+                        | mos_switchtype mos_switch_instances SEMICOLON
+                        | gate_n_output SEMICOLON /* TESTING */
+                        | gate_pass_en_switch SEMICOLON
+                        | gate_n_input SEMICOLON
+                        | pass_switchtype 
+                          pass_switch_instances SEMICOLON
+                        | KW_PULLDOWN pulldown_strength_o pull_gate_instances 
+                          SEMICOLON
+                        | KW_PULLUP pullup_strength_o pull_gate_instances 
+                          SEMICOLON
+                        ;
+
+/* -------------------------------------------------------------------------*/
+
+OB : OPEN_BRACKET;
+CB : CLOSE_BRACKET;
+
+gate_n_output : gatetype_n_output n_output_gate_instances
+              | gatetype_n_output OB drive_strength gate_n_output_a_ds
+              | gatetype_n_output OB output_terminals COMMA input_terminal CB gate_n_output_a_id
+              | gatetype_n_output delay2 n_output_gate_instances 
+              ;
+
+gate_n_output_a_ds  : delay2 n_output_gate_instances
+                    | n_output_gate_instances
+                    ;
+
+gate_n_output_a_id  : 
+                    | COMMA n_output_gate_instances
+                    ;
+
+gatetype_n_output       : KW_BUF
+                        | KW_NOT
+                        ;
 
 n_output_gate_instances : n_output_gate_instance
                         | n_output_gate_instances COMMA 
                           n_output_gate_instance
                         ;
 
+n_output_gate_instance  : name_of_gate_instance OPEN_BRACKET 
+                          output_terminals COMMA
+                          input_terminal CLOSE_BRACKET
+                        ;
+
+/* -------------------------------------------------------------------------*/
+
+gate_enable : enable_gatetype enable_gate_instances
+            | enable_gatetype OB drive_strength gate_n_output_a_ds
+            | enable_gatetype OB output_terminal COMMA input_terminal COMMA 
+              enable_terminal CB gate_n_output_a_id
+            | enable_gatetype delay3 enable_gate_instances
+            ;
+
+enable_gate_instances : enable_gate_instance
+                      | enable_gate_instances COMMA enable_gate_instance 
+                      ;
+
+enable_gate_instance  : name_of_gate_instance OPEN_BRACKET 
+                        output_terminal COMMA
+                        input_terminal COMMA enable_terminal 
+                        CLOSE_BRACKET
+                      ;
+
+enable_gatetype     : KW_BUFIF0 
+                    | KW_BUFIF1 
+                    | KW_NOTIF0 
+                    | KW_NOTIF1 
+                    ;
+
+/* -------------------------------------------------------------------------*/
+
+gate_n_input : gatetype_n_input n_input_gate_instances
+             | gatetype_n_input OB drive_strength gate_n_input_a_ds
+             | gatetype_n_input OB input_terminals COMMA input_terminal CB gate_n_input_a_id
+             | gatetype_n_input delay2 n_input_gate_instances 
+             ;
+
+gate_n_input_a_ds  : delay2 n_input_gate_instances
+                   | n_input_gate_instances
+                   ;
+
+gate_n_input_a_id  : 
+                   | COMMA n_input_gate_instances
+                   ;
+
+n_input_gate_instances : n_input_gate_instance
+                       | n_input_gate_instances COMMA 
+                         n_input_gate_instance
+                       ;
+
+n_input_gate_instance  : name_of_gate_instance OPEN_BRACKET 
+                         output_terminal COMMA
+                         input_terminals CLOSE_BRACKET
+                       ;
+
+gatetype_n_input    : KW_AND  
+                    | KW_NAND  
+                    | KW_OR   
+                    | KW_NOR  
+                    | KW_XOR  
+                    | KW_XNOR 
+                    ;
+
+/* -------------------------------------------------------------------------*/
+
+gate_pass_en_switch : pass_en_switchtype pass_enable_switch_instances
+                    ;
+
 pass_enable_switch_instances : pass_enable_switch_instance
                              | pass_enable_switch_instances COMMA 
                                pass_enable_switch_instance
                              ;
+
+pass_en_switchtype  : KW_TRANIF0  delay2
+                    | KW_TRANIF1  delay2
+                    | KW_RTRANIF1 delay2 
+                    | KW_RTRANIF0 delay2
+                    ;
+
+
+pass_enable_switch_instance  : name_of_gate_instance OPEN_BRACKET inout_terminal COMMA
+                               inout_terminal COMMA enable_terminal CLOSE_BRACKET
+                             ;
+
+
+/* -------------------------------------------------------------------------*/
 
 pull_gate_instances : pull_gate_instance
                     | pull_gate_instances COMMA 
@@ -1020,13 +1122,6 @@ cmos_switch_instances : cmos_switch_instance
                       | cmos_switch_instances COMMA cmos_switch_instance
                       ;
 
-enable_gate_instances : enable_gate_instance
-                      | enable_gate_instances COMMA enable_gate_instance 
-                      ;
-
-pass_enable_switch_instance  : name_of_gate_instance OPEN_BRACKET inout_terminal COMMA
-                               inout_terminal COMMA enable_terminal CLOSE_BRACKET
-                             ;
 
 pull_gate_instance           : name_of_gate_instance OPEN_BRACKET 
                                output_terminal CLOSE_BRACKET
@@ -1037,10 +1132,6 @@ pass_switch_instance         : name_of_gate_instance OPEN_BRACKET
                                inout_terminal CLOSE_BRACKET
                              ;
 
-n_output_gate_instance       : name_of_gate_instance OPEN_BRACKET 
-                               output_terminals COMMA
-                               input_terminal CLOSE_BRACKET
-                             ;
 
 n_input_gate_instance        : name_of_gate_instance OPEN_BRACKET 
                                output_terminal COMMA
@@ -1058,15 +1149,6 @@ cmos_switch_instance         : name_of_gate_instance OPEN_BRACKET
                                input_terminal COMMA ncontrol_terminal COMMA
                                pcontrol_terminal CLOSE_BRACKET
                              ;
-
-enable_gate_instance         : name_of_gate_instance OPEN_BRACKET 
-                               output_terminal COMMA
-                               input_terminal COMMA enable_terminal 
-                               CLOSE_BRACKET
-                             ;
-
-name_of_gate_instance        : 
-                             | gate_instance_identifier range_o;
 
 output_terminals             : output_terminal
                              | output_terminals COMMA output_terminal
@@ -1090,6 +1172,11 @@ pullup_strength             : OPEN_BRACKET strength0 COMMA strength1 CLOSE_BRACK
                             | OPEN_BRACKET strength1 CLOSE_BRACKET
                             ;
 
+
+name_of_gate_instance   : 
+                        | gate_instance_identifier range_o
+                        ;
+
 /* A.3.3 primitive terminals */
 
 enable_terminal     : expression;
@@ -1105,46 +1192,10 @@ cmos_switchtype     : KW_CMOS  delay3
                     | KW_RCMOS delay3
                     ;
 
-enable_gatetype     : KW_BUFIF0 delay3 
-                    | KW_BUFIF1 delay3 
-                    | KW_NOTIF0 delay3 
-                    | KW_NOTIF1 delay3
-                    | KW_BUFIF0 drive_strength delay3 
-                    | KW_BUFIF1 drive_strength delay3 
-                    | KW_NOTIF0 drive_strength delay3 
-                    | KW_NOTIF1 drive_strength delay3
-                    ;
-
 mos_switchtype      : KW_NMOS  delay3
                     | KW_PMOS  delay3
                     | KW_RNMOS delay3 
                     | KW_RPMOS delay3
-                    ;
-
-n_input_gatetype    : KW_AND  delay2
-                    | KW_NAND delay2 
-                    | KW_OR   delay2
-                    | KW_NOR  delay2
-                    | KW_XOR  delay2
-                    | KW_XNOR delay2
-                    | KW_AND  drive_strength delay2
-                    | KW_NAND drive_strength delay2 
-                    | KW_OR   drive_strength delay2
-                    | KW_NOR  drive_strength delay2
-                    | KW_XOR  drive_strength delay2
-                    | KW_XNOR drive_strength delay2
-                    ;
-
-n_output_gatetype   : KW_BUF delay2 
-                    | KW_NOT delay2
-                    | KW_BUF drive_strength delay2 
-                    | KW_NOT drive_strength delay2
-                    ;
-
-pass_en_switchtype  : KW_TRANIF0  delay2
-                    | KW_TRANIF1  delay2
-                    | KW_RTRANIF1 delay2 
-                    | KW_RTRANIF0 delay2
                     ;
 
 pass_switchtype     : KW_TRAN  delay2
