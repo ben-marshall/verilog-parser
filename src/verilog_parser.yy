@@ -1866,9 +1866,11 @@ constant_concatenation : OPEN_SQ_BRACE constant_expressions CLOSE_SQ_BRACE
                        ;
 
 constant_repliction    : OPEN_SQ_BRACE constant_expression
-                         OPEN_SQ_BRACE constant_expressions 
-                         CLOSE_SQ_BRACE CLOSE_SQ_BRACE
-                       ;
+                         constant_concatenation
+                         CLOSE_SQ_BRACE
+                       | OPEN_SQ_BRACE constant_expression COMMA
+                         expressions_csv
+                         CLOSE_SQ_BRACE
 
 
 module_path_expressions : module_path_expression
@@ -1941,13 +1943,11 @@ system_function_call : system_function_identifier
 
 
 constant_expression : constant_primary
-                    | unary_operator attribute_instances constant_primary
-                    | constant_expression binary_operator 
-                      attribute_instances constant_expression
-                    | constant_expression TERNARY attribute_instances 
-                      constant_expression TERNARY constant_expression
-                    | string
-                    ;
+     | unary_operator attribute_instances constant_primary
+     | constant_expression binary_operator attribute_instances constant_expression
+     | constant_expression TERNARY attribute_instances constant_expression COLON constant_expression
+     | string
+     ;
 
 constant_mintypmax_expression : constant_expression
                               | constant_expression COLON constant_expression
@@ -2008,14 +2008,14 @@ width_constant_expression : constant_expression;
 
 /* A.8.4 Primaries */
 
-constant_primary : constant_function_call
+constant_primary : number
+                 | constant_concatenation
+                 | constant_repliction
                  | OPEN_BRACKET constant_mintypmax_expression CLOSE_BRACKET
-                 | number
+                 | constant_function_call
                  | genvar_identifier
                  | parameter_identifier
                  | specparam_identifier
-                 | constant_concatenation
-                 | constant_repliction
                  ;
 
 module_path_primary : number
