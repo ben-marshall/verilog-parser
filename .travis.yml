@@ -11,7 +11,7 @@ os:
 install:
  - sudo apt-get update -qq
  - wget http://mirrors.kernel.org/ubuntu/pool/main/b/bison/bison_3.0.4.dfsg-1_amd64.deb
- - dpkg -i bison_3.0.4.dfsg-1_amd64.deb
+ - sudo dpkg -i bison_3.0.4.dfsg-1_amd64.deb
  - sudo apt-get install -qq cmake flex build-essential
 
 before_script:
