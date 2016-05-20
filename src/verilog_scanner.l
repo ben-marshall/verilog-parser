@@ -486,12 +486,12 @@ TERNARY             "?"
 
 {STRING}               {return token::STRING;                 }
 
+{ATTRIBUTE_START}      {return token::ATTRIBUTE_START       ;}
+{ATTRIBUTE_END}        {return token::ATTRIBUTE_END         ;}
+
 <*>{NEWLINE}              {/*return token::NEWLINE; IGNORE */   }
 <*>{SPACE}                {/*return token::SPACE;   IGNORE */   }
 <*>{TAB}                  {/*return token::TAB;     IGNORE */   }
-
-{ATTRIBUTE_START}      {return token::ATTRIBUTE_START       ;}
-{ATTRIBUTE_END}        {return token::ATTRIBUTE_END         ;}
 
 .                      {return token::ANY                   ;}
 

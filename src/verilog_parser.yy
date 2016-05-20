@@ -264,7 +264,6 @@ grammar_begin : library_text
               | source_text
               | white_space
               | comment
-              | END
               ;
 
 /* 19.0 Compiler Directives */
@@ -330,19 +329,15 @@ conditional_compile_directive   : ifdef_directive
                                 | CD_ENDIF
                                 ;
 
-ifdef_directive : CD_IFDEF simple_identifier;
-ifndef_directive: CD_IFNDEF simple_identifier;
+ifdef_directive : CD_IFDEF SIMPLE_ID;
+ifndef_directive: CD_IFNDEF SIMPLE_ID;
 
 include_directive   : CD_INCLUDE string;
 
 /* A.1.1 Library Source Text */
 
-library_text : library_descriptions_s
-             ;
-
-library_descriptions_s :
-                       | library_descriptions
-                       | library_descriptions_s library_descriptions
+library_text : library_descriptions
+             | library_text library_descriptions
 
 library_descriptions : library_declaration
                      | include_statement
@@ -436,13 +431,9 @@ use_clause : KW_USE library_identifier DOT cell_identifier COLON KW_CONFIG
 
 /* A.1.3 Module and primitive source text. */
 
-source_text : description_os
+source_text : description
+            | source_text description
             ;
-
-description_os : 
-               | description
-               | description_os description
-               ;
 
 description : module_declaration
             | udp_declaration
@@ -1277,7 +1268,6 @@ generated_instantiation : KW_GENERATE generate_items KW_ENDGENERATE ;
 
 generate_items : generate_item
                | generate_items generate_item
-               |
                ;
 
 generate_item_or_null: generate_item | ;
@@ -1305,9 +1295,9 @@ genvar_case_items : genvar_case_item
                   |
                   ;
 
-genvar_case_item : constant_expressions COLON generate_item_or_null
-                 | KW_DEFAULT COLON generate_item_or_null
-                 | KW_DEFAULT     generate_item_or_null
+genvar_case_item : constant_expressions COLON 
+                 | KW_DEFAULT COLON 
+                 | KW_DEFAULT     
                  ;
 
 constant_expressions : constant_expression
@@ -1861,20 +1851,18 @@ system_timing_check : {printf("%s:%d Not Supported\n",__FILE__,__LINE__);};
 {{`WIDTH-1{1}}, 1'b1}
 */
 
-concatenation          : OPEN_SQ_BRACE expressions_csv CLOSE_SQ_BRACE 
-                       | replication
+concatenation          : OPEN_SQ_BRACE expression COMMA expressions_csv CLOSE_SQ_BRACE 
                        ;
 
-replication            : OPEN_SQ_BRACE constant_expression 
-                         OPEN_SQ_BRACE expressions_csv CLOSE_SQ_BRACE
+replication            : OPEN_SQ_BRACE constant_expression
+                         OPEN_SQ_BRACE expression COMMA expressions_csv CLOSE_SQ_BRACE
                          CLOSE_SQ_BRACE
                        ;
 
 constant_concatenation : OPEN_SQ_BRACE constant_expressions CLOSE_SQ_BRACE 
-                       | constant_replication
                        ;
 
-constant_replication   : OPEN_SQ_BRACE constant_expression
+constant_repliction    : OPEN_SQ_BRACE constant_expression
                          OPEN_SQ_BRACE constant_expressions 
                          CLOSE_SQ_BRACE CLOSE_SQ_BRACE
                        ;
@@ -1984,8 +1972,7 @@ expression2 : expression;
 expression3 : expression;
 
 expression  : primary 
-            | unary_operator
-              attribute_instances primary
+            | unary_operator attribute_instances primary
             | expression binary_operator attribute_instances expression
             | conditional_expression
             | string
@@ -2034,6 +2021,7 @@ constant_primary : constant_function_call
                  | parameter_identifier
                  | specparam_identifier
                  | constant_concatenation
+                 | constant_repliction
                  ;
 
 module_path_primary : number
@@ -2048,6 +2036,7 @@ module_path_primary : number
                     ;
 
 primary : number
+        | concatenation
         | OPEN_BRACKET mintypmax_expression CLOSE_BRACKET
         | hierarchical_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET
           braced_expression_o 
@@ -2057,9 +2046,9 @@ primary : number
         | hierarchical_identifier
         | hierarchical_identifier OPEN_SQ_BRACKET range_expression
           CLOSE_SQ_BRACKET
-        | concatenation
         | function_call
         | system_function_call
+        | replication
         ;
 
 /* A.8.5 Expression left-side values */
@@ -2246,6 +2235,7 @@ hierarchical_variable_identifier: hierarchical_identifier;
 hierarchical_task_identifier    : hierarchical_identifier;
 identifier                      : simple_identifier 
                                 | escaped_identifier
+                                | text_macro_usage
                                 ;
 
 inout_port_identifier           : identifier;
@@ -2267,7 +2257,6 @@ simple_hierarchical_identifier  : simple_hierarchical_branch
                                 ;
 
 simple_identifier               : SIMPLE_ID
-                                | text_macro_usage
                                 ;
 
 specparam_identifier            : identifier;
