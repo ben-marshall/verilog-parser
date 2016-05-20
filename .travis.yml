@@ -1,0 +1,30 @@
+language:
+ - cpp
+
+compiler:
+ - gcc
+ - clang
+
+os:
+ - linux
+
+install:
+ - sudo apt-get update -qq
+ - sudo apt-get install -qq cmake bison flex build-essential make get-deps
+
+before_script:
+ - bin/project.sh
+
+script:
+ - cd build
+ - make
+ - make test
+
+after_success:
+ - echo "Success"
+
+after_failure:
+ - echo "Failure"
+
+after_script:
+ - echo "Script Finished."
