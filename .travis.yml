@@ -10,7 +10,7 @@ os:
 
 install:
  - sudo apt-get update -qq
- - sudo apt-get install -qq cmake bison flex build-essential make get-deps
+ - sudo apt-get install -qq cmake bison flex build-essential
 
 before_script:
  - bin/project.sh
