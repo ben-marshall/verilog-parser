@@ -1513,12 +1513,12 @@ statements   : statement
              ;
 
 statement : attribute_instances blocking_assignment SEMICOLON
+          | attribute_instances nonblocking_assignment SEMICOLON
           | attribute_instances case_statement
           | attribute_instances conditional_statement
           | attribute_instances disable_statement
           | attribute_instances event_trigger
           | attribute_instances loop_statement
-          | attribute_instances nonblocking_assignment SEMICOLON
           | attribute_instances par_block
           | attribute_instances procedural_continuous_assignments SEMICOLON
           | attribute_instances procedural_timing_control_statement
@@ -1866,10 +1866,10 @@ constant_concatenation : OPEN_SQ_BRACE constant_expressions CLOSE_SQ_BRACE
                        ;
 
 constant_repliction    : OPEN_SQ_BRACE constant_expression
-                         constant_concatenation
+                         concatenation
                          CLOSE_SQ_BRACE
                        | OPEN_SQ_BRACE constant_expression COMMA
-                         expressions_csv
+                         constant_expressions
                          CLOSE_SQ_BRACE
 
 
@@ -1942,7 +1942,8 @@ system_function_call : system_function_identifier
 /* A.8.3 Expression */
 
 
-constant_expression : constant_primary
+constant_expression : 
+       constant_primary
      | unary_operator attribute_instances constant_primary
      | constant_expression binary_operator attribute_instances constant_expression
      | constant_expression TERNARY attribute_instances constant_expression COLON constant_expression
@@ -2009,8 +2010,8 @@ width_constant_expression : constant_expression;
 /* A.8.4 Primaries */
 
 constant_primary : number
-                 | concatenation
-                 | repliction
+                 | constant_repliction
+                 | constant_concatenation
                  | OPEN_BRACKET constant_mintypmax_expression CLOSE_BRACKET
                  | constant_function_call
                  | genvar_identifier
@@ -2030,8 +2031,8 @@ module_path_primary : number
                     ;
 
 primary : number
-            | concatenation
             | replication
+            | concatenation
         | OPEN_BRACKET mintypmax_expression CLOSE_BRACKET
         | hierarchical_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET
           braced_expression_o 
