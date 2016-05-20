@@ -2009,8 +2009,8 @@ width_constant_expression : constant_expression;
 /* A.8.4 Primaries */
 
 constant_primary : number
-                 | constant_concatenation
-                 | constant_repliction
+                 | concatenation
+                 | repliction
                  | OPEN_BRACKET constant_mintypmax_expression CLOSE_BRACKET
                  | constant_function_call
                  | genvar_identifier
