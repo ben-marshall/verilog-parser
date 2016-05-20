@@ -22,10 +22,9 @@ before_script:
 script:
  - cd build
  - make
- - make test
 
 after_success:
- - echo "Success"
+ - make test
 
 after_failure:
  - echo "Failure"
