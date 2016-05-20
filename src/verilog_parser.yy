@@ -1851,11 +1851,14 @@ system_timing_check : {printf("%s:%d Not Supported\n",__FILE__,__LINE__);};
 {{`WIDTH-1{1}}, 1'b1}
 */
 
-concatenation          : OPEN_SQ_BRACE expression COMMA expressions_csv CLOSE_SQ_BRACE 
+concatenation          : OPEN_SQ_BRACE expressions_csv CLOSE_SQ_BRACE 
                        ;
 
 replication            : OPEN_SQ_BRACE constant_expression
-                         OPEN_SQ_BRACE expression COMMA expressions_csv CLOSE_SQ_BRACE
+                         concatenation
+                         CLOSE_SQ_BRACE
+                       | OPEN_SQ_BRACE constant_expression COMMA
+                         expressions_csv
                          CLOSE_SQ_BRACE
                        ;
 
@@ -1936,9 +1939,6 @@ system_function_call : system_function_identifier
 
 /* A.8.3 Expression */
 
-conditional_expression : expression1 TERNARY attribute_instances expression2 
-                         COLON expression3
-                       ;
 
 constant_expression : constant_primary
                     | unary_operator attribute_instances constant_primary
@@ -1965,16 +1965,10 @@ constant_range_expression : constant_expression
 
 dimension_constant_expression : constant_expression;
 
-expression1 : expression;
-
-expression2 : expression;
-
-expression3 : expression;
-
 expression  : primary 
             | unary_operator attribute_instances primary
             | expression binary_operator attribute_instances expression
-            | conditional_expression
+            | expression TERNARY attribute_instances expression COLON expression
             | string
             ;
 
@@ -2036,7 +2030,8 @@ module_path_primary : number
                     ;
 
 primary : number
-        | concatenation
+            | concatenation
+            | replication
         | OPEN_BRACKET mintypmax_expression CLOSE_BRACKET
         | hierarchical_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET
           braced_expression_o 
@@ -2048,7 +2043,6 @@ primary : number
           CLOSE_SQ_BRACKET
         | function_call
         | system_function_call
-        | replication
         ;
 
 /* A.8.5 Expression left-side values */
