@@ -2268,7 +2268,7 @@ module_identifier               : identifier;
 module_instance_identifier      : arrayed_identifier;
 net_identifier                  : identifier;
 output_port_identifier          : identifier;
-parameter_identifier            : identifier;
+parameter_identifier            : identifier | hierarchical_identifier;
 port_identifier                 : identifier;
 real_identifier                 : identifier;
 simple_arrayed_identifier       : simple_identifier range_o ;
