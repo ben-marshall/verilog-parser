@@ -1990,9 +1990,9 @@ constant_range_expression : constant_expression
 
 dimension_constant_expression : constant_expression;
 
-expression  : primary {printf("PRIMARY %d\n", this->scanner.lineno());}
+expression  : primary 
             | unary_operator attribute_instances primary
-            | expression binary_operator attribute_instances expression {printf("binary operator %s %d\n",$<sval>2, this->scanner.lineno());}
+            | expression binary_operator attribute_instances expression
             | expression TERNARY attribute_instances expression COLON expression
             | string
             ;
