@@ -1003,7 +1003,7 @@ CB : CLOSE_BRACKET;
 
 gate_n_output : gatetype_n_output n_output_gate_instances
               | gatetype_n_output OB drive_strength gate_n_output_a_ds
-              | gatetype_n_output OB output_terminals COMMA input_terminal CB gate_n_output_a_id
+              | gatetype_n_output OB output_terminal COMMA gate_n_output_a_ot 
               | gatetype_n_output delay2 n_output_gate_instances 
               ;
 
@@ -1013,6 +1013,10 @@ gate_n_output_a_ds  : delay2 n_output_gate_instances
 
 gate_n_output_a_id  : 
                     | COMMA n_output_gate_instances
+                    ;
+
+gate_n_output_a_ot  : input_terminal CB gate_n_output_a_id
+                    | output_terminals COMMA input_terminal CB gate_n_output_a_id
                     ;
 
 gatetype_n_output       : KW_BUF
@@ -1162,8 +1166,8 @@ cmos_switch_instance         : name_of_gate_instance OPEN_BRACKET
                                pcontrol_terminal CLOSE_BRACKET
                              ;
 
-output_terminals             : output_terminal
-                             | output_terminals COMMA output_terminal
+output_terminals             : output_terminals COMMA output_terminal {printf("out term 2\n");}
+                             | output_terminal {printf("out term 1\n");}
                              ;
 
 input_terminals              : input_terminal
@@ -1195,7 +1199,7 @@ enable_terminal     : expression;
 inout_terminal      : net_lvalue;
 input_terminal      : expression;
 ncontrol_terminal   : expression;
-output_terminal     : net_lvalue;
+output_terminal     : expression; /* Deliberate bug. should be net_lvalue, implement with semantic checking later. */
 pcontrol_terminal   : expression;
 
 /* A.3.4 primitive gate and switch types */
