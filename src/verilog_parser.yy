@@ -655,9 +655,9 @@ delay3_o            : delay3 | ;
 drive_strength_o    : drive_strength | ;
 charge_strength_o   : charge_strength | ;
 
-net_declaration : net_type signed_o delay3_o list_of_net_identifiers SEMICOLON
-                | net_type drive_strength_o signed_o delay3_o 
+net_declaration : net_type drive_strength_o signed_o delay3_o 
                   list_of_net_decl_assignments SEMICOLON
+                | net_type signed_o delay3_o list_of_net_identifiers SEMICOLON
                 | net_type vect_or_scaled_o signed_o range delay3_o 
                   list_of_net_identifiers SEMICOLON
                 | net_type drive_strength_o vect_or_scaled_o signed_o range
@@ -804,7 +804,9 @@ list_of_variable_port_identifiers : port_identifier eq_const_exp_o
 
 /* A.2.4 Declaration Assignments */
 
-net_decl_assignment     : net_identifier EQ expression ;
+net_decl_assignment     : net_identifier EQ expression  
+                        | net_identifier               
+                        ;
 
 param_assignment        : parameter_identifier EQ constant_expression ;
 
