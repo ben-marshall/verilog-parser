@@ -192,7 +192,7 @@ EXP                 "e"|"E"
 UNDERSCORE          "_"
 SIGN                {PLUS}|{MINUS}
 X                   "x"|"X"
-Z                   "z"|"Z"
+Z                   "z"|"Z"|"?"
 
 DIGIT_DECIMAL       [0-9]
 DIGIT_DECMIAL_NZ    [1-9]
