@@ -2,6 +2,7 @@
 #include <fstream>
 #include <cassert>
 #include <cstdlib>
+#include <string>
 
 #include "verilog_driver.hpp"
 

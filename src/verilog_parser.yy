@@ -26,6 +26,7 @@
    #include <iostream>
    #include <cstdlib>
    #include <fstream>
+   #include <string>
    
    /* include for all driver functions */
    #include "verilog_driver.hpp"
@@ -39,7 +40,7 @@
 
 /* token types */
 %union {
-   char * sval;
+   char*  sval;
    int    ival;
 }
 
@@ -55,6 +56,7 @@
 %token DOT                
 %token EQ
 %token COLON              
+%token IDX_PRT_SEL
 %token SEMICOLON          
 %token OPEN_BRACKET       
 %token CLOSE_BRACKET      
@@ -1977,17 +1979,15 @@ constant_mintypmax_expression : constant_expression
 constant_range_expression : constant_expression
                           | msb_constant_expression COLON 
                             lsb_constant_expression
-                          | constant_expression PLUS COLON 
-                            width_constant_expression
-                          | constant_expression MINUS COLON 
+                          | constant_expression IDX_PRT_SEL
                             width_constant_expression
                           ;
 
 dimension_constant_expression : constant_expression;
 
-expression  : primary 
+expression  : primary {printf("PRIMARY %d\n", this->scanner.lineno());}
             | unary_operator attribute_instances primary
-            | expression binary_operator attribute_instances expression
+            | expression binary_operator attribute_instances expression {printf("binary operator %s %d\n",$<sval>2, this->scanner.lineno());}
             | expression TERNARY attribute_instances expression COLON expression
             | string
             ;
@@ -2018,10 +2018,11 @@ module_path_mintypmax_expression : module_path_expression
 
 msb_constant_expression : constant_expression;
 
-range_expression : expression
-                 | msb_constant_expression COLON lsb_constant_expression
-                 | expression PLUS COLON width_constant_expression
-                 | expression MINUS COLON width_constant_expression
+range_expression : expression r_exp_ae
+                 ;
+
+r_exp_ae         : COLON constant_expression
+                 | IDX_PRT_SEL constant_expression
                  ;
 
 width_constant_expression : constant_expression;
@@ -2059,8 +2060,8 @@ primary : number
         | system_function_call
         ;
 
-post_hier_id : sqb_expressions 
-             | sqb_expressions OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
+post_hier_id : sqb_expressions OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET 
+             | sqb_expressions
              ;
 
 sqb_expressions :                 OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET
@@ -2114,30 +2115,30 @@ unary_operator : PLUS
                | B_EQU
                ;
 
-binary_operator : PLUS
-                | MINUS
-                | STAR 
-                | DIV
-                | MOD
-                | L_EQ
-                | L_NEQ                 
-                | C_EQ 
-                | C_NEQ
-                | L_AND
-                | L_OR
-                | POW
-                | LT
-                | LTE
-                | GT
-                | GTE
-                | B_AND
-                | B_OR 
-                | B_XOR
-                | B_EQU
-                | LSR  
-                | LSL    
-                | ASR
-                | ASL
+binary_operator : PLUS      
+                | MINUS     
+                | STAR      
+                | DIV       
+                | MOD       
+                | L_EQ      
+                | L_NEQ     
+                | C_EQ      
+                | C_NEQ     
+                | L_AND     
+                | L_OR      
+                | POW       
+                | LT        
+                | LTE       
+                | GT        
+                | GTE       
+                | B_AND     
+                | B_OR      
+                | B_XOR     
+                | B_EQU     
+                | LSR       
+                | LSL       
+                | ASR       
+                | ASL       
                 ;
 
 unary_module_path_operator  : L_NEG
@@ -2176,13 +2177,12 @@ string : STRING;
 /* A.9.1 Attributes */
 
 attribute_instances : 
-                    | attribute_instance
-                    | attribute_instances attribute_instance
+                    | list_of_attribute_instances
                     ;
 
-attribute_instance : ATTRIBUTE_START attr_spec
-                     attr_specs ATTRIBUTE_END
-                   ;
+list_of_attribute_instances : ATTRIBUTE_START attr_spec attr_specs ATTRIBUTE_END
+                            | attribute_instances ATTRIBUTE_START attr_spec attr_specs ATTRIBUTE_END
+                            ;
 
 attr_specs : 
            | attr_spec

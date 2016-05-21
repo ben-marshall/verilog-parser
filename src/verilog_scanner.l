@@ -177,6 +177,7 @@ HASH                "#"
 DOT                 "."
 EQ                  "="
 COLON               ":"
+IDX_PRT_SEL         "+:"|"-:"
 SEMICOLON           ";"
 OPEN_BRACKET        "\("
 CLOSE_BRACKET       "\)"
@@ -283,6 +284,9 @@ B_NOR               "~|"
 TERNARY             "?"
 
 %%
+{ATTRIBUTE_START}      {return token::ATTRIBUTE_START       ;}
+{ATTRIBUTE_END}        {return token::ATTRIBUTE_END         ;}
+
 
 {CD_DEFINE}              {BEGIN(in_define);return token::CD_DEFINE;}
 <in_define>{SIMPLE_ID}   {BEGIN(in_define_t); return token::SIMPLE_ID;}
@@ -316,6 +320,7 @@ TERNARY             "?"
 {DOT}                  {return token::DOT                   ;}
 {EQ}                   {return token::EQ                    ;}
 {COLON}                {return token::COLON                 ;}
+{IDX_PRT_SEL}          {return token::IDX_PRT_SEL           ;}
 {SEMICOLON}            {return token::SEMICOLON             ;}
 {OPEN_BRACKET}         {return token::OPEN_BRACKET          ;}
 {CLOSE_BRACKET}        {return token::CLOSE_BRACKET         ;}
@@ -485,9 +490,6 @@ TERNARY             "?"
 {MACRO_IDENTIFIER}     {return token::MACRO_IDENTIFIER      ;}
 
 {STRING}               {return token::STRING;                 }
-
-{ATTRIBUTE_START}      {return token::ATTRIBUTE_START       ;}
-{ATTRIBUTE_END}        {return token::ATTRIBUTE_END         ;}
 
 <*>{NEWLINE}              {/*return token::NEWLINE; IGNORE */   }
 <*>{SPACE}                {/*return token::SPACE;   IGNORE */   }
