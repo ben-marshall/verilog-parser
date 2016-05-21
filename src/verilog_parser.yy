@@ -2050,20 +2050,23 @@ module_path_primary : number
                     ;
 
 primary : number
-            | replication
-            | concatenation
+        | replication
+        | concatenation
         | OPEN_BRACKET mintypmax_expression CLOSE_BRACKET
-        | hierarchical_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET
-          braced_expression_o 
-          OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
-        | hierarchical_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET
-          braced_expression_o
-        | hierarchical_identifier
-        | hierarchical_identifier OPEN_SQ_BRACKET range_expression
-          CLOSE_SQ_BRACKET
+        | hierarchical_identifier post_hier_id
+        | hierarchical_identifier 
         | function_call
         | system_function_call
         ;
+
+post_hier_id : sqb_expressions 
+             | sqb_expressions OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
+             ;
+
+sqb_expressions :                 OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET
+                | sqb_expressions OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET
+                ;
+
 
 /* A.8.5 Expression left-side values */
 
