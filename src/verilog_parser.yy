@@ -1586,6 +1586,7 @@ disable_statement : KW_DISABLE hierarchical_task_identifier SEMICOLON
 event_control : AT  event_identifier
               | AT  OPEN_BRACKET event_expression CLOSE_BRACKET
               | AT STAR
+              | AT  ATTRIBUTE_START CLOSE_BRACKET /* Add attribute_start here since the tokeniser may return it an it still be valid.*/
               | AT  OPEN_BRACKET STAR CLOSE_BRACKET
               ;
 
