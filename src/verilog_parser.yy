@@ -646,35 +646,52 @@ event_declaration   : KW_EVENT list_of_event_identifiers SEMICOLON ;
 genvar_declaration  : KW_GENVAR list_of_genvar_identifiers SEMICOLON ;
 integer_declaration : KW_INTEGER list_of_variable_identifiers SEMICOLON ;
 
-vect_or_scaled_o    : KW_VECTORED
-                    | KW_SCALARED
-                    |
-                    ;
 
 delay3_o            : delay3 | ;
 drive_strength_o    : drive_strength | ;
-charge_strength_o   : charge_strength | ;
 
-net_declaration : net_type drive_strength_o signed_o delay3_o 
-                  list_of_net_decl_assignments SEMICOLON
-                | net_type signed_o delay3_o list_of_net_identifiers SEMICOLON
-                | net_type vect_or_scaled_o signed_o range delay3_o 
-                  list_of_net_identifiers SEMICOLON
-                | net_type drive_strength_o vect_or_scaled_o signed_o range
-                  delay3_o list_of_net_decl_assignments SEMICOLON
-                | KW_TRIREG charge_strength_o signed_o delay3_o
-                  list_of_net_identifiers SEMICOLON
-                | KW_TRIREG drive_strength_o signed_o delay3_o
-                  list_of_net_decl_assignments SEMICOLON
-                | KW_TRIREG charge_strength_o vect_or_scaled_o signed_o
-                  range delay3_o list_of_net_identifiers SEMICOLON
-                | KW_TRIREG drive_strength_o vect_or_scaled_o signed_o
-                  range delay3_o list_of_net_decl_assignments
+net_declaration : net_type                  net_dec_p_ds
+                | net_type  drive_strength  net_dec_p_ds
+                | KW_TRIREG                 net_dec_p_ds
+                | KW_TRIREG drive_strength  net_dec_p_ds
+                | KW_TRIREG charge_strength net_dec_p_ds
                 ;
 
+net_dec_p_ds    : KW_VECTORED                   net_dec_p_vs
+                | KW_SCALARED                   net_dec_p_vs
+                | net_dec_p_vs
+                ;
+
+net_dec_p_vs    : KW_SIGNED                     net_dec_p_si
+                | net_dec_p_si
+                ;
+
+net_dec_p_si    : range                         net_dec_p_range
+                | net_dec_p_range
+                ;
+
+net_dec_p_range : delay3                        net_dec_p_delay
+                | net_dec_p_delay
+                ;
+
+net_dec_p_delay : list_of_net_identifiers       SEMICOLON
+                | list_of_net_decl_assignments  SEMICOLON
+                ;
+
+
 real_declaration    : KW_REAL list_of_real_identifiers SEMICOLON ;
+
 realtime_declaration: KW_REALTIME list_of_real_identifiers SEMICOLON ;
-reg_declaration     : KW_REG signed_o range_o list_of_variable_identifiers SEMICOLON
+
+reg_declaration     : KW_REG KW_SIGNED reg_dec_p_signed
+                    | KW_REG reg_dec_p_signed
+                    ;
+
+reg_dec_p_signed    : range reg_dec_p_range
+                    | reg_dec_p_range
+                    ;
+
+reg_dec_p_range     : list_of_variable_identifiers SEMICOLON
                     ;
 
 time_declaration    : KW_TIME list_of_variable_identifiers SEMICOLON ;
