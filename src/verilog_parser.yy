@@ -1938,6 +1938,7 @@ net_concatenation_cont :
 
 sq_bracket_expressions :
   OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET
+| OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
 | OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET sq_bracket_expressions
 ;
 
@@ -2105,8 +2106,8 @@ module_path_mintypemax_expression :
 
 range_expression :
   expression
-| expression COLON       expression
-| expression IDX_PRT_SEL expression
+| expression COLON       constant_expression
+| expression IDX_PRT_SEL constant_expression %prec IDX_PRT_SEL
 ;
 
 /* A.8.4 Primaries */
@@ -2127,7 +2128,6 @@ primary :
 | hierarchical_identifier sq_bracket_expressions
 | hierarchical_identifier sq_bracket_expressions OPEN_SQ_BRACKET
   range_expression CLOSE_SQ_BRACKET
-| hierarchical_identifier OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
 | concatenation
 | multiple_concatenation
 | function_call
@@ -2243,7 +2243,7 @@ attr_spec : attr_name EQ constant_expression
           | attr_name
           ;
 
-attr_name : identifier {printf("Attribute Name\n");};
+attr_name : identifier;
 
 /* A.9.2 Comments */
 
@@ -2342,28 +2342,29 @@ variable_identifier             : identifier;
 /* Semantic checking needed to make sure that the "expression"
 in the closed brackets reduces to an "unsigned_number" */
 
-simple_hierarchical_branch : SIMPLE_ID 
-                           | SIMPLE_ID OPEN_SQ_BRACKET
-                             expression CLOSE_SQ_BRACKET 
-                           | simple_hierarchical_branch DOT simple_identifier
-                           | simple_hierarchical_branch DOT 
-                             SIMPLE_ID OPEN_SQ_BRACKET
-                             expression CLOSE_SQ_BRACKET 
-                           ;
+simple_hierarchical_branch : 
+  SIMPLE_ID 
+| SIMPLE_ID OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET 
+| SIMPLE_ID OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET 
+| simple_hierarchical_branch DOT simple_identifier
+| simple_hierarchical_branch DOT SIMPLE_ID OPEN_SQ_BRACKET
+expression CLOSE_SQ_BRACKET 
+| simple_hierarchical_branch DOT SIMPLE_ID OPEN_SQ_BRACKET
+range_expression CLOSE_SQ_BRACKET 
+;
 
 
 /* Semantic checking needed to make sure that the "expression"
 in the closed brackets reduces to an "unsigned_number" */
 
-escaped_hierarchical_branch : escaped_hierarchical_branch DOT 
-                              escaped_identifier 
-                            | escaped_hierarchical_branch DOT 
-                              escaped_identifier OPEN_SQ_BRACKET
-                              expression CLOSE_SQ_BRACKET 
-                            | escaped_identifier
-                            | escaped_identifier OPEN_SQ_BRACKET
-                              expression CLOSE_SQ_BRACKET
-                            ;
+escaped_hierarchical_branch :
+  escaped_hierarchical_branch DOT escaped_identifier 
+| escaped_hierarchical_branch DOT escaped_identifier OPEN_SQ_BRACKET 
+  expression CLOSE_SQ_BRACKET 
+| escaped_identifier
+| escaped_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET
+| escaped_identifier OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
+;
 
 white_space : SPACE | TAB | NEWLINE;
 
