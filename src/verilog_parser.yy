@@ -301,6 +301,10 @@ ignored by the parser.
 default_net_type_cd : CD_DEFAULT_NETTYPE net_type
                     ;
 
+compiler_directives : compiler_directive
+                    | compiler_directives compiler_directive
+                    ;
+
 compiler_directive  : CD_CELLDEFINE
                     | CD_ENDCELLDEFINE
                     | CD_RESETALL
@@ -367,7 +371,7 @@ library_text : library_descriptions
 library_descriptions : library_declaration
                      | include_statement
                      | config_declaration
-                     | compiler_directive
+                     | compiler_directives
                      ;
 
 library_declaration : KW_LIBRARY library_identifier 
@@ -462,7 +466,7 @@ source_text : description
 
 description : module_declaration
             | udp_declaration
-            | compiler_directive
+            | compiler_directives
             ;
 
 module_declaration : attribute_instances
@@ -585,7 +589,7 @@ module_or_generate_item : attribute_instances
                         | attribute_instances module_instantiation
                         | attribute_instances initial_construct
                         | attribute_instances always_construct
-                        | compiler_directive
+                        | compiler_directives
                         ;
 
 module_or_generate_item_declaration : net_declaration
@@ -2121,6 +2125,7 @@ constant_primary :
 | number
 | parameter_identifier
 | specparam_identifier
+| text_macro_usage
 ;
 
 primary :
@@ -2135,6 +2140,7 @@ primary :
 | hierarchical_identifier constant_function_call_pid
 | hierarchical_identifier
 | OPEN_BRACKET mintypmax_expression CLOSE_BRACKET
+| text_macro_usage
 ;
 
 module_path_primary :
@@ -2146,6 +2152,7 @@ module_path_primary :
 | system_function_call
 | constant_function_call
 | OPEN_BRACKET module_path_mintypemax_expression CLOSE_BRACKET
+| text_macro_usage
 ;
 
 /* A.8.5 Expression left-side values */
@@ -2324,6 +2331,7 @@ simple_hierarchical_identifier  : simple_hierarchical_branch
                                 ;
 
 simple_identifier               : SIMPLE_ID
+                                | text_macro_usage
                                 ;
 
 specparam_identifier            : identifier;
