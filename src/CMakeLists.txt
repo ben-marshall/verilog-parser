@@ -22,7 +22,7 @@ add_executable(verilog-parser
                verilog_parser.tab.cc 
                verilog_lexer.yy.cc
                verilog_driver.cpp 
-               main.cpp
+               main-parse.cpp
 )
 
 add_executable(verilog-lexer
