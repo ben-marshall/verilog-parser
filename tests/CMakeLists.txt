@@ -9,12 +9,13 @@ foreach(TEST_PATH ${TESTS_SRC})
 
     get_filename_component(TEST_NAME ${TEST_PATH} NAME_WE)
     
-    add_test(NAME parse_${TEST_NAME} 
-             COMMAND verilog-parser ${TEST_PATH})
+    add_test(NAME cpp_parse_${TEST_NAME} 
+             COMMAND verilog-parser-cpp ${TEST_PATH})
     
-    add_test(NAME lex_${TEST_NAME} 
-             COMMAND verilog-lexer ${TEST_PATH})
+    add_test(NAME cpp_lex_${TEST_NAME} 
+             COMMAND verilog-lexer-cpp ${TEST_PATH})
     
-    message("Added test: ${TEST_NAME}")
+    add_test(NAME c_parse_${TEST_NAME} 
+             COMMAND verilog-parser-c ${TEST_PATH})
 
 endforeach(TEST_PATH)

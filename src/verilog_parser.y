@@ -8,6 +8,10 @@
 
 %code{
     #include "stdio.h"
+
+    void yyerror(const char *msg){
+    printf("ERROR: %s\n", msg);
+    }
 }
 
 
