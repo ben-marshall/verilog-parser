@@ -1906,10 +1906,12 @@ constant_concatenation_cont :
 
 multiple_concatenation :
   OPEN_SQ_BRACE constant_expression concatenation CLOSE_SQ_BRACE
+| OPEN_SQ_BRACE constant_expression concatenation_cont
 ;
 
 constant_multiple_concatenation : 
   OPEN_SQ_BRACE constant_expression constant_concatenation CLOSE_SQ_BRACE
+| OPEN_SQ_BRACE constant_expression constant_concatenation_cont
 ;
 
 module_path_concatenation : 
