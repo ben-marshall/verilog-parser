@@ -80,6 +80,8 @@
 
 %token STRING
 
+/* Operators Precedence */
+
 %token STAR
 %token PLUS
 %token MINUS
@@ -109,6 +111,26 @@
 %token B_NAND  
 %token B_NOR   
 %token TERNARY 
+
+/* Operator Precedence */
+
+
+%right  TERNARY                 /* Lowest Precedence */
+%left   L_OR
+%left   L_AND
+%left   B_OR B_NOR
+%left   B_EQU B_XOR
+%left   B_NAND B_AND
+%left   L_EQ C_EQ L_NEQ C_NEQ
+%left   GT LT GTE LTE
+%left   LSL LSR ASR ASL
+%left   PLUS MINUS
+%left   STAR DIV MOD
+%left   POW
+%left   L_NEG B_NEG             /* Highest Precedence. */
+
+
+/* Compiler / Preprocessor tokens */
 
 %token CD_CELLDEFINE
 %token CD_DEFAULT_NETTYPE
