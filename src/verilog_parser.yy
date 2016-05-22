@@ -20,7 +20,6 @@
 
 %lex-param   { VerilogDriver  &driver  }
 %parse-param { VerilogDriver  &driver  }
-%glr-parser
 
 %code{
    #include <iostream>
@@ -112,6 +111,8 @@
 %token B_NOR   
 %token TERNARY 
 
+%token UNARY_OP
+
 /* Operator Precedence */
 
 
@@ -127,7 +128,7 @@
 %left   PLUS MINUS
 %left   STAR DIV MOD
 %left   POW
-%left   L_NEG B_NEG             /* Highest Precedence. */
+%left   L_NEG B_NEG UNARY_OP    /* Highest Precedence. */
 
 
 /* Compiler / Preprocessor tokens */
@@ -873,11 +874,11 @@ limit_value             : constant_mintypmax_expression ;
 
 /* A.2.5 Declaration ranges */
 
-dimension               : OPEN_SQ_BRACKET dimension_constant_expression COLON 
-                           dimension_constant_expression CLOSE_SQ_BRACKET ;
+dimension               : OPEN_SQ_BRACKET constant_expression COLON 
+                           constant_expression CLOSE_SQ_BRACKET ;
 
-range                   : OPEN_SQ_BRACKET msb_constant_expression COLON 
-                           lsb_constant_expression CLOSE_SQ_BRACKET 
+range                   : OPEN_SQ_BRACKET constant_expression COLON 
+                           constant_expression CLOSE_SQ_BRACKET 
                         ;
 
 /* A.2.6 Function Declarations */
@@ -1188,8 +1189,8 @@ cmos_switch_instance         : name_of_gate_instance OPEN_BRACKET
                                pcontrol_terminal CLOSE_BRACKET
                              ;
 
-output_terminals             : output_terminals COMMA output_terminal {printf("out term 2\n");}
-                             | output_terminal {printf("out term 1\n");}
+output_terminals             : output_terminals COMMA output_terminal
+                             | output_terminal
                              ;
 
 input_terminals              : input_terminal
@@ -1346,10 +1347,6 @@ genvar_case_item : constant_expressions COLON
                  | KW_DEFAULT COLON 
                  | KW_DEFAULT     
                  ;
-
-constant_expressions : constant_expression
-                     | constant_expressions COMMA constant_expression
-                     ;
 
 generate_loop_statement : KW_FOR OPEN_BRACKET genvar_assignment SEMICOLON constant_expression
                           SEMICOLON genvar_assignment CLOSE_BRACKET KW_BEGIN SEMICOLON
@@ -1684,13 +1681,6 @@ case_items      : case_item
 
 expressions_o   : expressions | ;
 
-expressions     : expression
-                | expressions expression
-                ;
-
-expressions_csv : expression
-                | expressions_csv COMMA expression 
-                ;
 
 case_item       : expressions COLON statement_or_null
                 | KW_DEFAULT statement_or_null
@@ -1895,238 +1885,248 @@ system_timing_check : {printf("%s:%d Not Supported\n",__FILE__,__LINE__);};
 
 /* A.8.1 Concatenations */
 
-/*
-{{`WIDTH-1{1}}, 1'b1}
-*/
+concatenation : 
+  OPEN_SQ_BRACE expression concatenation_cont
+;
 
-concatenation          : OPEN_SQ_BRACE expressions_csv CLOSE_SQ_BRACE 
-                       ;
-
-replication            : OPEN_SQ_BRACE constant_expression
-                         concatenation
-                         CLOSE_SQ_BRACE
-                       | OPEN_SQ_BRACE constant_expression COMMA
-                         expressions_csv
-                         CLOSE_SQ_BRACE
-                       ;
-
-constant_concatenation : OPEN_SQ_BRACE constant_expressions CLOSE_SQ_BRACE 
-                       ;
-
-constant_repliction    : OPEN_SQ_BRACE constant_expression
-                         concatenation
-                         CLOSE_SQ_BRACE
-                       | OPEN_SQ_BRACE constant_expression COMMA
-                         constant_expressions
-                         CLOSE_SQ_BRACE
+concatenation_cont :
+  CLOSE_SQ_BRACE
+| COMMA expression concatenation_cont
+;
 
 
-module_path_expressions : module_path_expression
-                        | module_path_expressions COMMA module_path_expression
-                        ;
+constant_concatenation : 
+  OPEN_SQ_BRACE expression constant_concatenation_cont
+;
 
-module_path_concatenation : OPEN_SQ_BRACE module_path_expressions 
-                            CLOSE_SQ_BRACE
-                          ;
+constant_concatenation_cont : 
+  CLOSE_SQ_BRACE
+| COMMA expression concatenation_cont
+;
 
-module_path_multiple_concatenation : OPEN_SQ_BRACE constant_expression 
-                                     module_path_concatenation CLOSE_SQ_BRACE;
+multiple_concatenation :
+  OPEN_SQ_BRACE constant_expression concatenation CLOSE_SQ_BRACE
+;
 
-net_concatenation : OPEN_SQ_BRACE net_concatenation_values CLOSE_SQ_BRACE;
+constant_multiple_concatenation : 
+  OPEN_SQ_BRACE constant_expression constant_concatenation CLOSE_SQ_BRACE
+;
 
-net_concatenation_values : net_concatenation_value
-                         | net_concatenation_values COMMA
-                           net_concatenation_value
-                         ;
+module_path_concatenation : 
+  OPEN_SQ_BRACE module_path_expression modpath_concatenation_cont
+;
 
-braced_expression_o : OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET | ;
+modpath_concatenation_cont : 
+  CLOSE_SQ_BRACE
+| COMMA module_path_expression modpath_concatenation_cont
+;
 
-net_concatenation_value : hierarchical_net_identifier
-                        | hierarchical_net_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET 
-                          braced_expression_o
-                        | hierarchical_net_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET 
-                          braced_expression_o OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
-                        | hierarchical_net_identifier OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
-                        | net_concatenation
-                        ;
+module_path_multiple_concatenation : 
+  OPEN_SQ_BRACE constant_expression module_path_concatenation CLOSE_SQ_BRACE
+;
 
-variable_concatenation : OPEN_SQ_BRACE variable_concatenation_values CLOSE_SQ_BRACE;
+net_concatenation :
+  OPEN_SQ_BRACE net_concatenation_value net_concatenation_cont
+;
 
-variable_concatenation_values : variable_concatenation_value
-                         | variable_concatenation_values COMMA
-                           variable_concatenation_value
-                         ;
+net_concatenation_cont :
+  CLOSE_SQ_BRACE
+| COMMA net_concatenation_value net_concatenation_cont
+;
 
-variable_concatenation_value : hierarchical_variable_identifier
-                             | hierarchical_variable_identifier 
-                               OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET 
-                               braced_expression_o
-                             | hierarchical_variable_identifier 
-                               OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET 
-                               braced_expression_o OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
-                             | hierarchical_variable_identifier 
-                               OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
-                             | variable_concatenation
-                             ;
+sq_bracket_expressions :
+  OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET
+| OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET sq_bracket_expressions
+;
+
+net_concatenation_value :
+  hierarchical_net_identifier
+| hierarchical_net_identifier sq_bracket_expressions
+| hierarchical_net_identifier sq_bracket_expressions range_expression
+| hierarchical_net_identifier range_expression
+| net_concatenation
+;
+
+variable_concatenation :
+  OPEN_SQ_BRACE variable_concatenation_value variable_concatenation_cont
+;
+
+variable_concatenation_cont :
+  CLOSE_SQ_BRACE
+| COMMA variable_concatenation_value variable_concatenation_cont
+;
+
+variable_concatenation_value :
+  hierarchical_variable_identifier
+| hierarchical_variable_identifier sq_bracket_expressions
+| hierarchical_variable_identifier sq_bracket_expressions range_expression
+| hierarchical_variable_identifier range_expression
+| variable_concatenation
+;
+
 
 /* A.8.2 Function calls */
 
-constant_function_call : function_identifier attribute_instances
-                         OPEN_BRACKET constant_expressions CLOSE_BRACKET
-                       ;
+constant_expressions :
+  constant_expression
+| constant_expressions COMMA constant_expression
+;
+
+expressions :
+  expression 
+| expressions COMMA expression
+;
+
+constant_function_call :
+  function_identifier attribute_instances OPEN_BRACKET constant_expressions 
+  CLOSE_BRACKET
+;
+
+constant_function_call_pid :
+  attribute_instances OPEN_BRACKET constant_expressions CLOSE_BRACKET
+;
 
 function_call : hierarchical_function_identifier
-                attribute_instances
-                OPEN_BRACKET expressions_csv CLOSE_BRACKET
-              ;
+ attribute_instances OPEN_BRACKET expressions CLOSE_BRACKET
+;
 
-system_function_call : system_function_identifier
-                     | system_function_identifier OPEN_BRACKET 
-                       expressions_csv CLOSE_BRACKET
-                     | system_function_identifier OPEN_BRACKET 
-                       CLOSE_BRACKET
-                     ;
-
-/* A.8.3 Expression */
+system_function_call : 
+  system_function_identifier
+| system_function_identifier OPEN_BRACKET CLOSE_BRACKET
+| system_function_identifier OPEN_BRACKET expressions CLOSE_BRACKET
+;
 
 
-constant_expression : 
-       constant_primary
-     | unary_operator attribute_instances constant_primary
-     | constant_expression binary_operator attribute_instances constant_expression
-     | constant_expression TERNARY attribute_instances constant_expression COLON constant_expression
-     | string
-     ;
+/* A.8.3 Expressions */
 
-constant_mintypmax_expression : constant_expression
-                              | constant_expression COLON constant_expression
-                                COLON constant_expression
-                              ;
+conditional_expression : 
+  expression TERNARY attribute_instances expression COLON expression
+;
 
-constant_range_expression : constant_expression
-                          | msb_constant_expression COLON 
-                            lsb_constant_expression
-                          | constant_expression IDX_PRT_SEL
-                            width_constant_expression
-                          ;
+constant_expression:
+  constant_primary
+| unary_operator constant_primary
+| constant_expression binary_operator attribute_instances constant_expression
+| constant_expression TERNARY attribute_instances constant_expression COLON
+  constant_expression
+| string
+;
 
-dimension_constant_expression : constant_expression;
+constant_mintypmax_expression :
+  constant_expression
+| constant_expression COLON constant_expression COLON constant_expression
+;
 
-expression  : primary 
-            | unary_operator attribute_instances primary
-            | expression binary_operator attribute_instances expression
-            | expression TERNARY attribute_instances expression COLON expression
-            | string
-            ;
+constant_range_expression :
+  constant_expression
+| constant_expression COLON       constant_expression
+| constant_expression IDX_PRT_SEL constant_expression
+;
 
-lsb_constant_expression : constant_expression;
+expression :
+  primary
+| unary_operator attribute_instances primary %prec UNARY_OP
+| expression binary_operator expression
+| conditional_expression
+| string
+;
 
-mintypmax_expression : expression
-                     | expression COLON expression COLON expression
-                     ;
+mintypmax_expression :
+  expression
+| expression COLON expression COLON expression
+;
 
-module_path_conditional_expression : module_path_expression TERNARY
-                                     attribute_instances 
-                                     module_path_expression COLON 
-                                     module_path_expression;
+module_path_conditional_expression :
+  module_path_expression TERNARY attribute_instances module_path_expression
+  COLON module_path_expression
+;
 
-module_path_expression : module_path_primary
-                       | unary_module_path_operator attribute_instances 
-                         module_path_primary
-                       | module_path_expression binary_module_path_operator 
-                         attribute_instances module_path_expression
-                       | module_path_conditional_expression
-                       ;
+module_path_expression :
+  module_path_primary
+| unary_module_path_operator attribute_instances module_path_primary
+| module_path_expression binary_module_path_operator attribute_instances
+  module_path_expression
+| module_path_conditional_expression
+;
 
-module_path_mintypmax_expression : module_path_expression
-                                 | module_path_expression COLON 
-                                   module_path_expression COLON 
-                                   module_path_expression;
+module_path_mintypemax_expression :
+  module_path_expression
+| module_path_expression COLON module_path_expression COLON 
+  module_path_expression
+;
 
-msb_constant_expression : constant_expression;
-
-range_expression : expression r_exp_ae
-                 ;
-
-r_exp_ae         : COLON constant_expression
-                 | IDX_PRT_SEL constant_expression
-                 ;
-
-width_constant_expression : constant_expression;
+range_expression :
+  expression
+| expression COLON       expression
+| expression IDX_PRT_SEL expression
+;
 
 /* A.8.4 Primaries */
 
-constant_primary : number
-                 | constant_repliction
-                 | constant_concatenation
-                 | OPEN_BRACKET constant_mintypmax_expression CLOSE_BRACKET
-                 | constant_function_call
-                 | genvar_identifier
-                 | parameter_identifier
-                 | specparam_identifier
-                 ;
+constant_primary :
+  constant_concatenation
+| constant_function_call
+| OPEN_BRACKET constant_mintypmax_expression CLOSE_BRACKET
+| constant_multiple_concatenation
+| genvar_identifier
+| number
+| parameter_identifier
+| specparam_identifier
+;
 
-module_path_primary : number
-                    | identifier
-                    | module_path_concatenation
-                    | module_path_multiple_concatenation
-                    | function_call
-                    | system_function_call
-                    | constant_function_call
-                    | OPEN_BRACKET module_path_mintypmax_expression 
-                      CLOSE_BRACKET
-                    ;
+primary :
+  number
+| hierarchical_identifier sq_bracket_expressions
+| hierarchical_identifier sq_bracket_expressions OPEN_SQ_BRACKET
+  range_expression CLOSE_SQ_BRACKET
+| hierarchical_identifier OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
+| concatenation
+| multiple_concatenation
+| function_call
+| system_function_call
+| hierarchical_identifier constant_function_call_pid
+| hierarchical_identifier
+| OPEN_BRACKET mintypmax_expression CLOSE_BRACKET
+;
 
-primary : number
-        | replication
-        | concatenation
-        | OPEN_BRACKET mintypmax_expression CLOSE_BRACKET
-        | hierarchical_identifier post_hier_id
-        | hierarchical_identifier 
-        | function_call
-        | system_function_call
-        ;
-
-post_hier_id : sqb_expressions OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET 
-             | sqb_expressions
-             ;
-
-sqb_expressions :                 OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET
-                | sqb_expressions OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET
-                ;
-
+module_path_primary :
+  number
+| identifier
+| module_path_concatenation
+| module_path_multiple_concatenation
+| function_call
+| system_function_call
+| constant_function_call
+| OPEN_BRACKET module_path_mintypemax_expression CLOSE_BRACKET
+;
 
 /* A.8.5 Expression left-side values */
 
+sq_bracket_constant_expressions :
+  OPEN_SQ_BRACKET constant_expression CLOSE_SQ_BRACKET
+| OPEN_SQ_BRACKET constant_expression CLOSE_SQ_BRACKET 
+  sq_bracket_constant_expressions
+;
 
-braced_constant_expressions : OPEN_SQ_BRACKET constant_expression 
-                              CLOSE_SQ_BRACKET
-                            | braced_constant_expressions 
-                              OPEN_SQ_BRACKET constant_expression 
-                              CLOSE_SQ_BRACKET
-                            ;
+net_lvalue :
+  hierarchical_net_identifier
+| hierarchical_net_identifier sq_bracket_constant_expressions
+| hierarchical_net_identifier sq_bracket_constant_expressions 
+  OPEN_SQ_BRACKET constant_range_expression CLOSE_SQ_BRACKET
+| hierarchical_net_identifier OPEN_SQ_BRACKET constant_range_expression 
+  CLOSE_SQ_BRACKET
+| net_concatenation
+;
 
-net_lvalue : hierarchical_net_identifier
-           | hierarchical_net_identifier braced_constant_expressions
-           | hierarchical_net_identifier braced_constant_expressions
-             OPEN_SQ_BRACKET constant_range_expression CLOSE_SQ_BRACKET
-           | hierarchical_net_identifier OPEN_SQ_BRACKET 
-             constant_range_expression CLOSE_SQ_BRACKET
-           | net_concatenation
-           ;
-
-variable_lvalue : hierarchical_variable_identifier
-                | hierarchical_variable_identifier OPEN_SQ_BRACKET 
-                  expression CLOSE_SQ_BRACKET 
-                  braced_expression_o
-                | hierarchical_variable_identifier OPEN_SQ_BRACKET 
-                  expression CLOSE_SQ_BRACKET 
-                  braced_expression_o OPEN_SQ_BRACKET range_expression 
-                  CLOSE_SQ_BRACKET
-                | hierarchical_variable_identifier OPEN_SQ_BRACKET 
-                  range_expression CLOSE_SQ_BRACKET
-                | variable_concatenation
-                ;
+variable_lvalue :
+  hierarchical_variable_identifier
+| hierarchical_variable_identifier sq_bracket_constant_expressions
+| hierarchical_variable_identifier sq_bracket_constant_expressions 
+  OPEN_SQ_BRACKET constant_range_expression CLOSE_SQ_BRACKET
+| hierarchical_variable_identifier OPEN_SQ_BRACKET constant_range_expression 
+  CLOSE_SQ_BRACKET
+| variable_concatenation
+;
 
 /* A.8.6 Operators */
 
@@ -2305,8 +2305,8 @@ simple_identifier               : SIMPLE_ID
 
 specparam_identifier            : identifier;
 
-system_function_identifier      : SYSTEM_ID;
-system_task_identifier          : SYSTEM_ID;
+system_function_identifier      : SYSTEM_ID {printf("System id\n");};
+system_task_identifier          : SYSTEM_ID {printf("System id\n");};
 
 task_identifier                 : identifier;
 topmodule_identifier            : identifier;
@@ -2319,12 +2319,12 @@ variable_identifier             : identifier;
 /* Semantic checking needed to make sure that the "expression"
 in the closed brackets reduces to an "unsigned_number" */
 
-simple_hierarchical_branch : simple_identifier
-                           | simple_identifier OPEN_SQ_BRACKET
+simple_hierarchical_branch : SIMPLE_ID 
+                           | SIMPLE_ID OPEN_SQ_BRACKET
                              expression CLOSE_SQ_BRACKET 
                            | simple_hierarchical_branch DOT simple_identifier
                            | simple_hierarchical_branch DOT 
-                             simple_identifier OPEN_SQ_BRACKET
+                             SIMPLE_ID OPEN_SQ_BRACKET
                              expression CLOSE_SQ_BRACKET 
                            ;
 
