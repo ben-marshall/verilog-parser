@@ -1,26 +1,11 @@
 %{
-/* C++ string header, for string ops below */
-#include <string>
-/* Implementation of yyFlexScanner */ 
-#include "verilog_scanner.hpp"
-
-/* typedef to make the returns for the tokens shorter */
-typedef VL::VerilogParser::token token;
-
-/* define to keep from re-typing the same code over and over */
-#define STR_TOKEN( x ) ( new std::string( x ) )
-
-/* msvc2010 requires that we exclude this header file. */
-#define YY_NO_UNISTD_H
-
+    #include "verilog_parser.tab.h"
 %}
 
 %option yylineno
 %option debug 
 %option nodefault 
-%option yyclass="VerilogScanner" 
 %option noyywrap 
-%option c++
 
 /* Pre-processor definitions */
 CD_CELLDEFINE          "`celldefine"
@@ -284,217 +269,217 @@ B_NOR               "~|"
 TERNARY             "?"
 
 %%
-{ATTRIBUTE_START}      {return token::ATTRIBUTE_START       ;}
-{ATTRIBUTE_END}        {return token::ATTRIBUTE_END         ;}
+{ATTRIBUTE_START}      {return ATTRIBUTE_START       ;}
+{ATTRIBUTE_END}        {return ATTRIBUTE_END         ;}
 
 
-{CD_DEFINE}              {BEGIN(in_define);return token::CD_DEFINE;}
-<in_define>{SIMPLE_ID}   {BEGIN(in_define_t); return token::SIMPLE_ID;}
-<in_define_t>{MACRO_TEXT} {BEGIN(INITIAL);return token::MACRO_TEXT ;}
+{CD_DEFINE}              {BEGIN(in_define);return CD_DEFINE;}
+<in_define>{SIMPLE_ID}   {BEGIN(in_define_t); return SIMPLE_ID;}
+<in_define_t>{MACRO_TEXT} {BEGIN(INITIAL);return MACRO_TEXT ;}
 
-{COMMENT_LINE}         {/*return token::COMMENT_LINE; IGNORE */}
+{COMMENT_LINE}         {/*return COMMENT_LINE; IGNORE */}
 {COMMENT_BEGIN}        {BEGIN(in_comment)                     ;}
 
 <in_comment>.|\n       {/* IGNORE                            */}
 <in_comment>{COMMENT_END} {BEGIN(INITIAL);                     }
 
-{CD_CELLDEFINE}          {return token::CD_CELLDEFINE         ;}
-{CD_DEFAULT_NETTYPE}     {return token::CD_DEFAULT_NETTYPE    ;}
-{CD_ELSE}                {return token::CD_ELSE               ;}
-{CD_ELSIF}               {return token::CD_ELSIF              ;}
-{CD_ENDCELLDEFINE}       {return token::CD_ENDCELLDEFINE      ;}
-{CD_ENDIF}               {return token::CD_ENDIF              ;}
-{CD_IFDEF}               {return token::CD_IFDEF              ;}
-{CD_IFNDEF}              {return token::CD_IFNDEF             ;}
-{CD_INCLUDE}             {return token::CD_INCLUDE            ;}
-{CD_LINE}                {return token::CD_LINE               ;}
-{CD_NOUNCONNECTED_DRIVE} {return token::CD_NOUNCONNECTED_DRIVE;}
-{CD_RESETALL}            {return token::CD_RESETALL           ;}
-{CD_TIMESCALE}           {return token::CD_TIMESCALE          ;}
-{CD_UNCONNECTED_DRIVE}   {return token::CD_UNCONNECTED_DRIVE  ;}
-{CD_UNDEF}               {return token::CD_UNDEF              ;}
+{CD_CELLDEFINE}          {return CD_CELLDEFINE         ;}
+{CD_DEFAULT_NETTYPE}     {return CD_DEFAULT_NETTYPE    ;}
+{CD_ELSE}                {return CD_ELSE               ;}
+{CD_ELSIF}               {return CD_ELSIF              ;}
+{CD_ENDCELLDEFINE}       {return CD_ENDCELLDEFINE      ;}
+{CD_ENDIF}               {return CD_ENDIF              ;}
+{CD_IFDEF}               {return CD_IFDEF              ;}
+{CD_IFNDEF}              {return CD_IFNDEF             ;}
+{CD_INCLUDE}             {return CD_INCLUDE            ;}
+{CD_LINE}                {return CD_LINE               ;}
+{CD_NOUNCONNECTED_DRIVE} {return CD_NOUNCONNECTED_DRIVE;}
+{CD_RESETALL}            {return CD_RESETALL           ;}
+{CD_TIMESCALE}           {return CD_TIMESCALE          ;}
+{CD_UNCONNECTED_DRIVE}   {return CD_UNCONNECTED_DRIVE  ;}
+{CD_UNDEF}               {return CD_UNDEF              ;}
 
-{AT}                   {return token::AT                    ;}
-{COMMA}                {return token::COMMA                 ;}
-{HASH}                 {return token::HASH                  ;}
-{DOT}                  {return token::DOT                   ;}
-{EQ}                   {return token::EQ                    ;}
-{COLON}                {return token::COLON                 ;}
-{IDX_PRT_SEL}          {return token::IDX_PRT_SEL           ;}
-{SEMICOLON}            {return token::SEMICOLON             ;}
-{OPEN_BRACKET}         {return token::OPEN_BRACKET          ;}
-{CLOSE_BRACKET}        {return token::CLOSE_BRACKET         ;}
-{OPEN_SQ_BRACKET}      {return token::OPEN_SQ_BRACKET       ;}
-{CLOSE_SQ_BRACKET}     {return token::CLOSE_SQ_BRACKET      ;}
-{OPEN_SQ_BRACE}        {return token::OPEN_SQ_BRACE         ;}
-{CLOSE_SQ_BRACE}       {return token::CLOSE_SQ_BRACE        ;}
-{STAR}                 {return token::STAR                  ;}
-{PLUS}                 {return token::PLUS                ;}
-{MINUS}                {return token::MINUS               ;}
-{ASL}                  {return token::ASL                 ;}
-{ASR}                  {return token::ASR                 ;}
-{LSL}                  {return token::LSL                 ;}
-{LSR}                  {return token::LSR                 ;}
-{DIV}                  {return token::DIV                 ;}
-{POW}                  {return token::POW                 ;}
-{MOD}                  {return token::MOD                 ;}
-{GTE}                  {return token::GTE                 ;}
-{LTE}                  {return token::LTE                 ;}
-{GT}                   {return token::GT                  ;}
-{LT}                   {return token::LT                  ;}
-{L_NEG}                {return token::L_NEG               ;}
-{L_AND}                {return token::L_AND               ;}
-{L_OR}                 {return token::L_OR                ;}
-{C_EQ}                 {return token::C_EQ                ;}
-{L_EQ}                 {return token::L_EQ                ;}
-{C_NEQ}                {return token::C_NEQ               ;}
-{L_NEQ}                {return token::L_NEQ               ;}
-{B_NEG}                {return token::B_NEG               ;}
-{B_AND}                {return token::B_AND               ;}
-{B_OR}                 {return token::B_OR                ;}
-{B_XOR}                {return token::B_XOR               ;}
-{B_EQU}                {return token::B_EQU               ;}
-{B_NAND}               {return token::B_NAND              ;}
-{B_NOR}                {return token::B_NOR               ;}
-{TERNARY}              {return token::TERNARY             ;}
+{AT}                   {return AT                    ;}
+{COMMA}                {return COMMA                 ;}
+{HASH}                 {return HASH                  ;}
+{DOT}                  {return DOT                   ;}
+{EQ}                   {return EQ                    ;}
+{COLON}                {return COLON                 ;}
+{IDX_PRT_SEL}          {return IDX_PRT_SEL           ;}
+{SEMICOLON}            {return SEMICOLON             ;}
+{OPEN_BRACKET}         {return OPEN_BRACKET          ;}
+{CLOSE_BRACKET}        {return CLOSE_BRACKET         ;}
+{OPEN_SQ_BRACKET}      {return OPEN_SQ_BRACKET       ;}
+{CLOSE_SQ_BRACKET}     {return CLOSE_SQ_BRACKET      ;}
+{OPEN_SQ_BRACE}        {return OPEN_SQ_BRACE         ;}
+{CLOSE_SQ_BRACE}       {return CLOSE_SQ_BRACE        ;}
+{STAR}                 {return STAR                  ;}
+{PLUS}                 {return PLUS                ;}
+{MINUS}                {return MINUS               ;}
+{ASL}                  {return ASL                 ;}
+{ASR}                  {return ASR                 ;}
+{LSL}                  {return LSL                 ;}
+{LSR}                  {return LSR                 ;}
+{DIV}                  {return DIV                 ;}
+{POW}                  {return POW                 ;}
+{MOD}                  {return MOD                 ;}
+{GTE}                  {return GTE                 ;}
+{LTE}                  {return LTE                 ;}
+{GT}                   {return GT                  ;}
+{LT}                   {return LT                  ;}
+{L_NEG}                {return L_NEG               ;}
+{L_AND}                {return L_AND               ;}
+{L_OR}                 {return L_OR                ;}
+{C_EQ}                 {return C_EQ                ;}
+{L_EQ}                 {return L_EQ                ;}
+{C_NEQ}                {return C_NEQ               ;}
+{L_NEQ}                {return L_NEQ               ;}
+{B_NEG}                {return B_NEG               ;}
+{B_AND}                {return B_AND               ;}
+{B_OR}                 {return B_OR                ;}
+{B_XOR}                {return B_XOR               ;}
+{B_EQU}                {return B_EQU               ;}
+{B_NAND}               {return B_NAND              ;}
+{B_NOR}                {return B_NOR               ;}
+{TERNARY}              {return TERNARY             ;}
 
-{NUMBER}               {return token::NUMBER;}
-{UNSIGNED_NUM}         {return token::UNSIGNED_NUMBER;}
+{NUMBER}               {return NUMBER;}
+{UNSIGNED_NUM}         {return UNSIGNED_NUMBER;}
 
-{ALWAYS}               {return token::KW_ALWAYS             ;} 
-{AND}                  {return token::KW_AND                ;} 
-{ASSIGN}               {return token::KW_ASSIGN             ;} 
-{AUTOMATIC}            {return token::KW_AUTOMATIC          ;} 
-{BEGIN}                {return token::KW_BEGIN              ;} 
-{BUF}                  {return token::KW_BUF                ;} 
-{BUFIF0}               {return token::KW_BUFIF0             ;} 
-{BUFIF1}               {return token::KW_BUFIF1             ;} 
-{CASE}                 {return token::KW_CASE               ;} 
-{CASEX}                {return token::KW_CASEX              ;} 
-{CASEZ}                {return token::KW_CASEZ              ;} 
-{CELL}                 {return token::KW_CELL               ;} 
-{CMOS}                 {return token::KW_CMOS               ;} 
-{CONFIG}               {return token::KW_CONFIG             ;} 
-{DEASSIGN}             {return token::KW_DEASSIGN           ;} 
-{DEFAULT}              {return token::KW_DEFAULT            ;} 
-{DEFPARAM}             {return token::KW_DEFPARAM           ;} 
-{DESIGN}               {return token::KW_DESIGN             ;} 
-{DISABLE}              {return token::KW_DISABLE            ;} 
-{EDGE}                 {return token::KW_EDGE               ;} 
-{ELSE}                 {return token::KW_ELSE               ;} 
-{END}                  {return token::KW_END                ;} 
-{ENDCASE}              {return token::KW_ENDCASE            ;} 
-{ENDCONFIG}            {return token::KW_ENDCONFIG          ;} 
-{ENDFUNCTION}          {return token::KW_ENDFUNCTION        ;} 
-{ENDGENERATE}          {return token::KW_ENDGENERATE        ;} 
-{ENDMODULE}            {return token::KW_ENDMODULE          ;} 
-{ENDPRIMITIVE}         {return token::KW_ENDPRIMITIVE       ;} 
-{ENDSPECIFY}           {return token::KW_ENDSPECIFY         ;} 
-{ENDTABLE}             {return token::KW_ENDTABLE           ;} 
-{ENDTASK}              {return token::KW_ENDTASK            ;} 
-{EVENT}                {return token::KW_EVENT              ;} 
-{FOR}                  {return token::KW_FOR                ;} 
-{FORCE}                {return token::KW_FORCE              ;} 
-{FOREVER}              {return token::KW_FOREVER            ;} 
-{FORK}                 {return token::KW_FORK               ;} 
-{FUNCTION}             {return token::KW_FUNCTION           ;} 
-{GENERATE}             {return token::KW_GENERATE           ;} 
-{GENVAR}               {return token::KW_GENVAR             ;} 
-{HIGHZ0}               {return token::KW_HIGHZ0             ;} 
-{HIGHZ1}               {return token::KW_HIGHZ1             ;} 
-{IF}                   {return token::KW_IF                 ;} 
-{IFNONE}               {return token::KW_IFNONE             ;} 
-{INCDIR}               {return token::KW_INCDIR             ;} 
-{INCLUDE}              {return token::KW_INCLUDE            ;} 
-{INITIAL}              {return token::KW_INITIAL            ;} 
-{INOUT}                {return token::KW_INOUT              ;} 
-{INPUT}                {return token::KW_INPUT              ;} 
-{INSTANCE}             {return token::KW_INSTANCE           ;} 
-{INTEGER}              {return token::KW_INTEGER            ;} 
-{JOIN}                 {return token::KW_JOIN               ;} 
-{LARGE}                {return token::KW_LARGE              ;} 
-{LIBLIST}              {return token::KW_LIBLIST            ;} 
-{LIBRARY}              {return token::KW_LIBRARY            ;} 
-{LOCALPARAM}           {return token::KW_LOCALPARAM         ;} 
-{MACROMODULE}          {return token::KW_MACROMODULE        ;} 
-{MEDIUM}               {return token::KW_MEDIUM             ;} 
-{MODULE}               {return token::KW_MODULE             ;} 
-{NAND}                 {return token::KW_NAND               ;} 
-{NEGEDGE}              {return token::KW_NEGEDGE            ;} 
-{NMOS}                 {return token::KW_NMOS               ;} 
-{NOR}                  {return token::KW_NOR                ;} 
-{NOSHOWCANCELLED}      {return token::KW_NOSHOWCANCELLED    ;} 
-{NOT}                  {return token::KW_NOT                ;} 
-{NOTIF0}               {return token::KW_NOTIF0             ;} 
-{NOTIF1}               {return token::KW_NOTIF1             ;} 
-{OR}                   {return token::KW_OR                 ;} 
-{OUTPUT}               {return token::KW_OUTPUT             ;} 
-{PARAMETER}            {return token::KW_PARAMETER          ;} 
-{PMOS}                 {return token::KW_PMOS               ;} 
-{POSEDGE}              {return token::KW_POSEDGE            ;} 
-{PRIMITIVE}            {return token::KW_PRIMITIVE          ;} 
-{PULL0}                {return token::KW_PULL0              ;} 
-{PULL1}                {return token::KW_PULL1              ;} 
-{PULLDOWN}             {return token::KW_PULLDOWN           ;} 
-{PULLUP}               {return token::KW_PULLUP             ;} 
-{PULSESTYLE_ONEVENT}   {return token::KW_PULSESTYLE_ONEVENT ;} 
-{PULSESTYLE_ONDETECT}  {return token::KW_PULSESTYLE_ONDETECT;} 
-{RCMOS}                {return token::KW_RCMOS              ;} 
-{REAL}                 {return token::KW_REAL               ;} 
-{REALTIME}             {return token::KW_REALTIME           ;} 
-{REG}                  {return token::KW_REG                ;} 
-{RELEASE}              {return token::KW_RELEASE            ;} 
-{REPEAT}               {return token::KW_REPEAT             ;} 
-{RNMOS}                {return token::KW_RNMOS              ;} 
-{RPMOS}                {return token::KW_RPMOS              ;} 
-{RTRAN}                {return token::KW_RTRAN              ;} 
-{RTRANIF0}             {return token::KW_RTRANIF0           ;} 
-{RTRANIF1}             {return token::KW_RTRANIF1           ;} 
-{SCALARED}             {return token::KW_SCALARED           ;} 
-{SHOWCANCELLED}        {return token::KW_SHOWCANCELLED      ;} 
-{SIGNED}               {return token::KW_SIGNED             ;} 
-{SMALL}                {return token::KW_SMALL              ;} 
-{SPECIFY}              {return token::KW_SPECIFY            ;} 
-{SPECPARAM}            {return token::KW_SPECPARAM          ;} 
-{STRONG0}              {return token::KW_STRONG0            ;} 
-{STRONG1}              {return token::KW_STRONG1            ;} 
-{SUPPLY0}              {return token::KW_SUPPLY0            ;} 
-{SUPPLY1}              {return token::KW_SUPPLY1            ;} 
-{TABLE}                {return token::KW_TABLE              ;} 
-{TASK}                 {return token::KW_TASK               ;} 
-{TIME}                 {return token::KW_TIME               ;} 
-{TRAN}                 {return token::KW_TRAN               ;} 
-{TRANIF0}              {return token::KW_TRANIF0            ;} 
-{TRANIF1}              {return token::KW_TRANIF1            ;} 
-{TRI}                  {return token::KW_TRI                ;} 
-{TRI0}                 {return token::KW_TRI0               ;} 
-{TRI1}                 {return token::KW_TRI1               ;} 
-{TRIAND}               {return token::KW_TRIAND             ;} 
-{TRIOR}                {return token::KW_TRIOR              ;} 
-{TRIREG}               {return token::KW_TRIREG             ;} 
-{UNSIGNED}             {return token::KW_UNSIGNED           ;} 
-{USE}                  {return token::KW_USE                ;} 
-{VECTORED}             {return token::KW_VECTORED           ;} 
-{WAIT}                 {return token::KW_WAIT               ;} 
-{WAND}                 {return token::KW_WAND               ;} 
-{WEAK0}                {return token::KW_WEAK0              ;} 
-{WEAK1}                {return token::KW_WEAK1              ;} 
-{WHILE}                {return token::KW_WHILE              ;} 
-{WIRE}                 {return token::KW_WIRE               ;} 
-{WOR}                  {return token::KW_WOR                ;} 
-{XNOR}                 {return token::KW_XNOR               ;} 
-{XOR}                  {return token::KW_XOR                ;} 
+{ALWAYS}               {return KW_ALWAYS             ;} 
+{AND}                  {return KW_AND                ;} 
+{ASSIGN}               {return KW_ASSIGN             ;} 
+{AUTOMATIC}            {return KW_AUTOMATIC          ;} 
+{BEGIN}                {return KW_BEGIN              ;} 
+{BUF}                  {return KW_BUF                ;} 
+{BUFIF0}               {return KW_BUFIF0             ;} 
+{BUFIF1}               {return KW_BUFIF1             ;} 
+{CASE}                 {return KW_CASE               ;} 
+{CASEX}                {return KW_CASEX              ;} 
+{CASEZ}                {return KW_CASEZ              ;} 
+{CELL}                 {return KW_CELL               ;} 
+{CMOS}                 {return KW_CMOS               ;} 
+{CONFIG}               {return KW_CONFIG             ;} 
+{DEASSIGN}             {return KW_DEASSIGN           ;} 
+{DEFAULT}              {return KW_DEFAULT            ;} 
+{DEFPARAM}             {return KW_DEFPARAM           ;} 
+{DESIGN}               {return KW_DESIGN             ;} 
+{DISABLE}              {return KW_DISABLE            ;} 
+{EDGE}                 {return KW_EDGE               ;} 
+{ELSE}                 {return KW_ELSE               ;} 
+{END}                  {return KW_END                ;} 
+{ENDCASE}              {return KW_ENDCASE            ;} 
+{ENDCONFIG}            {return KW_ENDCONFIG          ;} 
+{ENDFUNCTION}          {return KW_ENDFUNCTION        ;} 
+{ENDGENERATE}          {return KW_ENDGENERATE        ;} 
+{ENDMODULE}            {return KW_ENDMODULE          ;} 
+{ENDPRIMITIVE}         {return KW_ENDPRIMITIVE       ;} 
+{ENDSPECIFY}           {return KW_ENDSPECIFY         ;} 
+{ENDTABLE}             {return KW_ENDTABLE           ;} 
+{ENDTASK}              {return KW_ENDTASK            ;} 
+{EVENT}                {return KW_EVENT              ;} 
+{FOR}                  {return KW_FOR                ;} 
+{FORCE}                {return KW_FORCE              ;} 
+{FOREVER}              {return KW_FOREVER            ;} 
+{FORK}                 {return KW_FORK               ;} 
+{FUNCTION}             {return KW_FUNCTION           ;} 
+{GENERATE}             {return KW_GENERATE           ;} 
+{GENVAR}               {return KW_GENVAR             ;} 
+{HIGHZ0}               {return KW_HIGHZ0             ;} 
+{HIGHZ1}               {return KW_HIGHZ1             ;} 
+{IF}                   {return KW_IF                 ;} 
+{IFNONE}               {return KW_IFNONE             ;} 
+{INCDIR}               {return KW_INCDIR             ;} 
+{INCLUDE}              {return KW_INCLUDE            ;} 
+{INITIAL}              {return KW_INITIAL            ;} 
+{INOUT}                {return KW_INOUT              ;} 
+{INPUT}                {return KW_INPUT              ;} 
+{INSTANCE}             {return KW_INSTANCE           ;} 
+{INTEGER}              {return KW_INTEGER            ;} 
+{JOIN}                 {return KW_JOIN               ;} 
+{LARGE}                {return KW_LARGE              ;} 
+{LIBLIST}              {return KW_LIBLIST            ;} 
+{LIBRARY}              {return KW_LIBRARY            ;} 
+{LOCALPARAM}           {return KW_LOCALPARAM         ;} 
+{MACROMODULE}          {return KW_MACROMODULE        ;} 
+{MEDIUM}               {return KW_MEDIUM             ;} 
+{MODULE}               {return KW_MODULE             ;} 
+{NAND}                 {return KW_NAND               ;} 
+{NEGEDGE}              {return KW_NEGEDGE            ;} 
+{NMOS}                 {return KW_NMOS               ;} 
+{NOR}                  {return KW_NOR                ;} 
+{NOSHOWCANCELLED}      {return KW_NOSHOWCANCELLED    ;} 
+{NOT}                  {return KW_NOT                ;} 
+{NOTIF0}               {return KW_NOTIF0             ;} 
+{NOTIF1}               {return KW_NOTIF1             ;} 
+{OR}                   {return KW_OR                 ;} 
+{OUTPUT}               {return KW_OUTPUT             ;} 
+{PARAMETER}            {return KW_PARAMETER          ;} 
+{PMOS}                 {return KW_PMOS               ;} 
+{POSEDGE}              {return KW_POSEDGE            ;} 
+{PRIMITIVE}            {return KW_PRIMITIVE          ;} 
+{PULL0}                {return KW_PULL0              ;} 
+{PULL1}                {return KW_PULL1              ;} 
+{PULLDOWN}             {return KW_PULLDOWN           ;} 
+{PULLUP}               {return KW_PULLUP             ;} 
+{PULSESTYLE_ONEVENT}   {return KW_PULSESTYLE_ONEVENT ;} 
+{PULSESTYLE_ONDETECT}  {return KW_PULSESTYLE_ONDETECT;} 
+{RCMOS}                {return KW_RCMOS              ;} 
+{REAL}                 {return KW_REAL               ;} 
+{REALTIME}             {return KW_REALTIME           ;} 
+{REG}                  {return KW_REG                ;} 
+{RELEASE}              {return KW_RELEASE            ;} 
+{REPEAT}               {return KW_REPEAT             ;} 
+{RNMOS}                {return KW_RNMOS              ;} 
+{RPMOS}                {return KW_RPMOS              ;} 
+{RTRAN}                {return KW_RTRAN              ;} 
+{RTRANIF0}             {return KW_RTRANIF0           ;} 
+{RTRANIF1}             {return KW_RTRANIF1           ;} 
+{SCALARED}             {return KW_SCALARED           ;} 
+{SHOWCANCELLED}        {return KW_SHOWCANCELLED      ;} 
+{SIGNED}               {return KW_SIGNED             ;} 
+{SMALL}                {return KW_SMALL              ;} 
+{SPECIFY}              {return KW_SPECIFY            ;} 
+{SPECPARAM}            {return KW_SPECPARAM          ;} 
+{STRONG0}              {return KW_STRONG0            ;} 
+{STRONG1}              {return KW_STRONG1            ;} 
+{SUPPLY0}              {return KW_SUPPLY0            ;} 
+{SUPPLY1}              {return KW_SUPPLY1            ;} 
+{TABLE}                {return KW_TABLE              ;} 
+{TASK}                 {return KW_TASK               ;} 
+{TIME}                 {return KW_TIME               ;} 
+{TRAN}                 {return KW_TRAN               ;} 
+{TRANIF0}              {return KW_TRANIF0            ;} 
+{TRANIF1}              {return KW_TRANIF1            ;} 
+{TRI}                  {return KW_TRI                ;} 
+{TRI0}                 {return KW_TRI0               ;} 
+{TRI1}                 {return KW_TRI1               ;} 
+{TRIAND}               {return KW_TRIAND             ;} 
+{TRIOR}                {return KW_TRIOR              ;} 
+{TRIREG}               {return KW_TRIREG             ;} 
+{UNSIGNED}             {return KW_UNSIGNED           ;} 
+{USE}                  {return KW_USE                ;} 
+{VECTORED}             {return KW_VECTORED           ;} 
+{WAIT}                 {return KW_WAIT               ;} 
+{WAND}                 {return KW_WAND               ;} 
+{WEAK0}                {return KW_WEAK0              ;} 
+{WEAK1}                {return KW_WEAK1              ;} 
+{WHILE}                {return KW_WHILE              ;} 
+{WIRE}                 {return KW_WIRE               ;} 
+{WOR}                  {return KW_WOR                ;} 
+{XNOR}                 {return KW_XNOR               ;} 
+{XOR}                  {return KW_XOR                ;} 
 
-{SYSTEM_ID}            {return token::SYSTEM_ID             ;}
-{SIMPLE_ID}            {return token::SIMPLE_ID             ;}
-{MACRO_IDENTIFIER}     {return token::MACRO_IDENTIFIER      ;}
+{SYSTEM_ID}            {return SYSTEM_ID             ;}
+{SIMPLE_ID}            {return SIMPLE_ID             ;}
+{MACRO_IDENTIFIER}     {return MACRO_IDENTIFIER      ;}
 
-{STRING}               {return token::STRING;                 }
+{STRING}               {return STRING;                 }
 
-<*>{NEWLINE}              {/*return token::NEWLINE; IGNORE */   }
-<*>{SPACE}                {/*return token::SPACE;   IGNORE */   }
-<*>{TAB}                  {/*return token::TAB;     IGNORE */   }
+<*>{NEWLINE}              {/*return NEWLINE; IGNORE */   }
+<*>{SPACE}                {/*return SPACE;   IGNORE */   }
+<*>{TAB}                  {/*return TAB;     IGNORE */   }
 
-.                      {return token::ANY                   ;}
+.                      {return ANY                   ;}
 
 %%
