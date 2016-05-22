@@ -31,3 +31,9 @@ add_executable(verilog-lexer
                verilog_driver.cpp 
                main-lex.cpp
 )
+
+add_library(verilogparser
+            verilog_parser.tab.cc 
+            verilog_lexer.yy.cc
+            verilog_driver.cpp 
+) 
