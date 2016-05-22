@@ -22,8 +22,6 @@ before_script:
 script:
  - cd build
  - make
-
-after_success:
  - make test
 
 after_failure:
