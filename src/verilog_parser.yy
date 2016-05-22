@@ -2005,8 +2005,31 @@ conditional_expression :
 
 constant_expression:
   constant_primary
-| unary_operator constant_primary
-| constant_expression binary_operator attribute_instances constant_expression
+| unary_operator attribute_instances constant_primary
+| constant_expression PLUS  attribute_instances constant_expression
+| constant_expression MINUS attribute_instances constant_expression
+| constant_expression STAR  attribute_instances constant_expression
+| constant_expression DIV   attribute_instances constant_expression
+| constant_expression MOD   attribute_instances constant_expression
+| constant_expression L_EQ  attribute_instances constant_expression
+| constant_expression L_NEQ attribute_instances constant_expression
+| constant_expression C_EQ  attribute_instances constant_expression
+| constant_expression C_NEQ attribute_instances constant_expression
+| constant_expression L_AND attribute_instances constant_expression
+| constant_expression L_OR  attribute_instances constant_expression
+| constant_expression POW   attribute_instances constant_expression
+| constant_expression LT    attribute_instances constant_expression
+| constant_expression LTE   attribute_instances constant_expression
+| constant_expression GT    attribute_instances constant_expression
+| constant_expression GTE   attribute_instances constant_expression
+| constant_expression B_AND attribute_instances constant_expression
+| constant_expression B_OR  attribute_instances constant_expression
+| constant_expression B_XOR attribute_instances constant_expression
+| constant_expression B_EQU attribute_instances constant_expression
+| constant_expression LSR   attribute_instances constant_expression
+| constant_expression LSL   attribute_instances constant_expression
+| constant_expression ASR   attribute_instances constant_expression
+| constant_expression ASL   attribute_instances constant_expression
 | constant_expression TERNARY attribute_instances constant_expression COLON
   constant_expression
 | string
@@ -2026,7 +2049,30 @@ constant_range_expression :
 expression :
   primary
 | unary_operator attribute_instances primary %prec UNARY_OP
-| expression binary_operator expression
+| expression PLUS  attribute_instances expression
+| expression MINUS attribute_instances expression
+| expression STAR  attribute_instances expression
+| expression DIV   attribute_instances expression
+| expression MOD   attribute_instances expression
+| expression L_EQ  attribute_instances expression
+| expression L_NEQ attribute_instances expression
+| expression C_EQ  attribute_instances expression
+| expression C_NEQ attribute_instances expression
+| expression L_AND attribute_instances expression
+| expression L_OR  attribute_instances expression
+| expression POW   attribute_instances expression
+| expression LT    attribute_instances expression
+| expression LTE   attribute_instances expression
+| expression GT    attribute_instances expression
+| expression GTE   attribute_instances expression
+| expression B_AND attribute_instances expression
+| expression B_OR  attribute_instances expression
+| expression B_XOR attribute_instances expression
+| expression B_EQU attribute_instances expression
+| expression LSR   attribute_instances expression
+| expression LSL   attribute_instances expression
+| expression ASR   attribute_instances expression
+| expression ASL   attribute_instances expression
 | conditional_expression
 | string
 ;
@@ -2142,31 +2188,6 @@ unary_operator : PLUS
                | B_EQU
                ;
 
-binary_operator : PLUS      
-                | MINUS     
-                | STAR      
-                | DIV       
-                | MOD       
-                | L_EQ      
-                | L_NEQ     
-                | C_EQ      
-                | C_NEQ     
-                | L_AND     
-                | L_OR      
-                | POW       
-                | LT        
-                | LTE       
-                | GT        
-                | GTE       
-                | B_AND     
-                | B_OR      
-                | B_XOR     
-                | B_EQU     
-                | LSR       
-                | LSL       
-                | ASR       
-                | ASL       
-                ;
 
 unary_module_path_operator  : L_NEG
                             | B_NEG
