@@ -1,7 +1,7 @@
 
 # Verilog Parser
 
-[![Build Status](https://travis-ci.org/ben-marshall/verilog-parser.svg?branch=master)](https://travis-ci.org/ben-marshall/verilog-parser)
+![Build Status](https://travis-ci.org/ben-marshall/verilog-parser.svg?branch=master) [Build & CI Information](https://travis-ci.org/ben-marshall/verilog-parser)
 
 This repository contains a flex / bison parser for the IEEE 1364-2001 Verilog
 Standandard.
@@ -10,12 +10,12 @@ Standandard.
 
 This will get you going.
 
-```sh
-$> source bin/project.sh
-$> cd build
-$> make
-$> make test
-```
+    ```sh
+    $> source bin/project.sh
+    $> cd build
+    $> make
+    $> make test
+    ```
 
 The `project.sh` script will also call the script which downloads the tests
 from asic-world.com. The project uses CMake as it's build system, and
