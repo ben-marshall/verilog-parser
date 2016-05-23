@@ -97,9 +97,9 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # Configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = ../src/ ../README.md
+INPUT                  = ../src/ ../README.md ../docs
 INPUT_ENCODING         = UTF-8
-FILE_PATTERNS          = *.c *.cpp *.h *.hpp *.y
+FILE_PATTERNS          = *.c *.cpp *.h *.hpp *.y *.dox
 RECURSIVE              = YES
 EXCLUDE                =
 EXCLUDE_SYMLINKS       = NO
@@ -138,9 +138,11 @@ IGNORE_PREFIX          =
 GENERATE_HTML          = YES
 HTML_OUTPUT            = html
 HTML_FILE_EXTENSION    = .html
-HTML_HEADER            =
-HTML_FOOTER            =
-HTML_STYLESHEET        =
+HTML_HEADER            = header.html
+HTML_FOOTER            = footer.html
+HTML_STYLESHEET        = stylesheet.css
+:w
+a
 HTML_EXTRA_STYLESHEET  =
 HTML_EXTRA_FILES       =
 HTML_COLORSTYLE_HUE    = 220

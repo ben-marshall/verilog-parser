@@ -1,0 +1,32 @@
+/*!
+@page doc-ast Abstract Syntax Tree
+
+This page describes the structure of the abstract syntax tree that the
+parser constructs. It includes the various root nodes, and how their
+child nodes are structured.
+
+@tableofcontents
+
+---
+
+@section doc-node-types Node Types
+
+@subsection doc-node-root Root Node
+
+@subsection doc-node-library Library Node
+
+@subsection doc-node-config Config Node
+
+@subsection doc-node-module-dec Module Declaration
+
+@subsection doc-node-module-ref Module Reference
+
+@subsection doc-node-port-dec Port Declaration
+
+@subsection doc-node-port-ref Port Reference
+
+@subsection doc-node-module-item-dec Module Item Declaration
+
+@subsection doc-node-module-item-inst Module Item Instantiation
+
+*/
