@@ -8,6 +8,8 @@
 
 %code{
     #include "stdio.h"
+    
+    #include "verilog_ast.h"
 
     void yyerror(const char *msg){
     printf("ERROR: %s\n", msg);

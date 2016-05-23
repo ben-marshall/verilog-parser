@@ -53,7 +53,7 @@ struct verilog_ast_node_t {
     lineno                   line;   //!< Line of the file the node comes from.
     char                   * file;   //!< The file path the node comes from.
     verilog_ast_node       * children; //!< Array of child nodes.
-    unsigned int             chile_count; //!< Number of nodes in children.
+    unsigned int             child_count; //!< Number of nodes in children.
 };
 
 

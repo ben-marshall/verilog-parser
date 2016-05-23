@@ -33,22 +33,5 @@ need to typecast to traverse easily.
 
 @section doc-node-types Data Node Types
 
-@subsection doc-node-root Root Node
-
-@subsection doc-node-library Library Node
-
-@subsection doc-node-config Config Node
-
-@subsection doc-node-module-dec Module Declaration
-
-@subsection doc-node-module-ref Module Reference
-
-@subsection doc-node-port-dec Port Declaration
-
-@subsection doc-node-port-ref Port Reference
-
-@subsection doc-node-module-item-dec Module Item Declaration
-
-@subsection doc-node-module-item-inst Module Item Instantiation
 
 */
