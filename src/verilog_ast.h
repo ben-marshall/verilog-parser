@@ -4,6 +4,9 @@
        and operate on the Verilog Abstract Syntax Tree (AST)
 */
 
+#include "stdarg.h"
+#include "stdlib.h"
+
 #ifndef VERILOG_AST_H
 #define VERILOG_AST_H
 
@@ -16,14 +19,8 @@ typedef unsigned int lineno;
 */
 typedef enum verilog_ast_node_type_e verilog_ast_node_type;
 enum verilog_ast_node_type_e {
-    MODULE_DEC,             //!< A Module Declaration
-    MODULE_INST,            //!< Instantiation of a declared module.
-    PORT_DEC,               //!< Declaration of a module port.
-    PORT_REF,               //!< Reference to a module port.
-    NET_DEC,                //!< Net declaration.
-    NET_REF,                //!< Reference to a net.
-    VAR_DEC,                //!< Variable declaration.
-    VAR_REF                 //!< Reference to a variable.
+    GENERIC,    //!< Generic node for when no alternative exists.
+    NONE        //!< Node has no type.
 };
 
 
@@ -55,6 +52,23 @@ struct verilog_ast_node_t {
     verilog_ast_node       * children; //!< Array of child nodes.
     unsigned int             child_count; //!< Number of nodes in children.
 };
+
+
+/*!
+@brief Creates a new AST node with the supplied parameters.
+*/
+verilog_ast_node new_ast_node(verilog_ast_node_type   type,
+                              lineno                  line,
+                              char                  * file,
+                              unsigned int            childCount);
+
+/*!
+@brief Adds a child to the supplied parent node at index idx.
+*/
+void ast_node_add_child(verilog_ast_node * parent, 
+                        verilog_ast_node   child,
+                        unsigned int       idx);
+
 
 
 /*!

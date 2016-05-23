@@ -6,21 +6,26 @@
 
 %define parse.error verbose
 
-%code{
+%{
     #include "stdio.h"
-    
     #include "verilog_ast.h"
+
+    verilog_ast_node root_node;
 
     void yyerror(const char *msg){
     printf("ERROR: %s\n", msg);
     }
+%}
+
+%code requires{
+    #include "verilog_ast.h"
 }
 
 
 /* token types */
 %union {
-   char*  sval;
-   int    ival;
+   char*  terminal;
+   verilog_ast_node node;
 }
 
 %token ANY
@@ -264,7 +269,7 @@
 
 /* Start variables */
 
-grammar_begin : library_text
+grammar_begin : library_text 
               | config_declaration
               | source_text
               | white_space

@@ -1,4 +1,5 @@
 %{
+    #include "verilog_ast.h"
     #include "verilog_parser.tab.h"
 %}
 
