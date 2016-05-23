@@ -29,6 +29,8 @@ FLEX_TARGET (VerilogScannerCPP
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+# C++ parser test executable
 add_executable(verilog-parser-cpp
                verilog_parser.tab.cc 
                verilog_lexer.yy.cc
@@ -36,6 +38,7 @@ add_executable(verilog-parser-cpp
                main-parse.cpp
 )
 
+# C++ lexer test executable.
 add_executable(verilog-lexer-cpp
                verilog_parser.tab.cc 
                verilog_lexer.yy.cc
@@ -43,21 +46,24 @@ add_executable(verilog-lexer-cpp
                main-lex.cpp
 )
 
-add_library(verilogparserc
-            verilog_parser.tab.c
-            verilog_lexer.y.c
-            verilog_parser.c
-) 
-
+# C++ library test
 add_library(verilogparsercpp
             verilog_parser.tab.cc 
             verilog_lexer.yy.cc
             verilog_driver.cpp 
 ) 
 
+# C library
+add_library(verilogparserc
+            verilog_parser.tab.c
+            verilog_lexer.y.c
+            verilog_parser.c
+            verilog_ast.c
+) 
+
+# C library test exectuable
 add_executable(verilog-parser-c
-               verilog_parser.tab.c
-               verilog_lexer.y.c
-               verilog_parser.c
                main.c
 )
+
+target_link_libraries(verilog-parser-c verilogparserc)
