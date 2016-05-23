@@ -46,6 +46,7 @@ add_executable(verilog-lexer-cpp
 add_library(verilogparserc
             verilog_parser.tab.c
             verilog_lexer.y.c
+            verilog_parser.c
 ) 
 
 add_library(verilogparsercpp
@@ -57,5 +58,6 @@ add_library(verilogparsercpp
 add_executable(verilog-parser-c
                verilog_parser.tab.c
                verilog_lexer.y.c
+               verilog_parser.c
                main.c
 )

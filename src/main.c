@@ -5,9 +5,7 @@
 
 #include "stdio.h"
 
-#include "verilog_parser.tab.h"
-
-extern void yyrestart (FILE *input_file  );
+#include "verilog_parser.h"
 
 int main(int argc, char ** argv)
 {
@@ -18,9 +16,14 @@ int main(int argc, char ** argv)
     }
     else
     {
+        // Load the file.
         FILE * fh = fopen(argv[1], "r");
-        yyrestart(fh);
-        int result = yyparse();
+        
+        // Instance the parser.
+        verilog_parser parser = verilog_file_parse(fh);
+
+        // Parse the file and store the result.
+        int result = verilog_parse_buffer(parser);
         
         printf("Parse result: %d\n", result);
         if(result == 0)
