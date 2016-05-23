@@ -27,15 +27,6 @@ enum verilog_ast_node_type_e {
 };
 
 
-/*!
-@brief The main structure that will hold all information on a particular parsed
-       source file.
-*/
-typedef struct verilog_ast_t {
-
-} verilog_ast;
-
-
 
 /*!
 @brief A container for the various different kinds of node that the AST will
@@ -56,11 +47,23 @@ union verilog_ast_node_data_u {
 */
 typedef struct verilog_ast_node_t verilog_ast_node;
 struct verilog_ast_node_t {
-    verilog_ast_node        * parent; //!< This node's parent in the tree.
-    verilog_ast_node_type     type;   //!< The type of the data member.
-    verilog_ast_node_data     data;   //!< The actual data the node represents.
-    lineno                    line;   //!< Line of the file the node comes from.
-    char                    * file;   //!< The file path the node comes from.
+    verilog_ast_node       * parent; //!< This node's parent in the tree.
+    verilog_ast_node_type    type;   //!< The type of the data member.
+    verilog_ast_node_data    data;   //!< The actual data the node represents.
+    lineno                   line;   //!< Line of the file the node comes from.
+    char                   * file;   //!< The file path the node comes from.
+    verilog_ast_node       * children; //!< Array of child nodes.
+    unsigned int             chile_count; //!< Number of nodes in children.
 };
+
+
+/*!
+@brief The main structure that will hold all information on a particular parsed
+       source file.
+*/
+typedef struct verilog_ast_t {
+    verilog_ast_node root;  //!< The root of the abstract syntax tree.
+} verilog_ast;
+
 
 #endif
