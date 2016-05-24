@@ -111,3 +111,46 @@ ast_lvalue * ast_new_lvalue_concat(ast_lvalue_type type,
     tr -> data.concatenation = concat;
     return tr;
 }
+
+/*!
+@brief Creates a new ast primary which is part of a constant expression tree
+       with the supplied type and value.
+*/
+ast_primary * ast_new_constant_primary(ast_primary_value_type type)
+{
+    ast_primary * tr = calloc(1, sizeof(ast_primary));
+
+    tr -> primary_type  = CONSTANT_PRIMARY;
+    tr -> value_type    = type;
+
+    return tr;
+}
+
+/*!
+@brief Creates a new ast primary which is part of an expression tree
+       with the supplied type and value.
+*/
+ast_primary * ast_new_primary(ast_primary_value_type type)
+{
+    ast_primary * tr = calloc(1, sizeof(ast_primary));
+
+    tr -> primary_type  = PRIMARY;
+    tr -> value_type    = type;
+
+    return tr;
+}
+
+/*!
+@brief Creates a new ast primary which is part of a constant expression tree
+       with the supplied type and value.
+*/
+ast_primary * ast_new_module_path_primary(ast_primary_value_type type)
+                                          
+{
+    ast_primary * tr = calloc(1, sizeof(ast_primary));
+
+    tr -> primary_type  = MODULE_PATH_PRIMARY;
+    tr -> value_type    = type;
+
+    return tr;
+}

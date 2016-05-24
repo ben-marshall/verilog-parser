@@ -19,6 +19,12 @@ typedef char * ast_identifier;
 
 //! Placeholder until this is implemented properly.
 typedef void * ast_concatenation;
+    
+typedef void * ast_number       ;
+typedef void * ast_function_call;
+typedef void * ast_system_call  ;
+typedef void * ast_minmax_exp   ;
+typedef void * ast_macro_use    ;
 
 //-------------- attributes ------------------------------------
 
@@ -95,6 +101,69 @@ ast_lvalue * ast_new_lvalue_id(ast_lvalue_type type, ast_identifier id);
        @ref VAR_CONCATENATION.
 */
 ast_lvalue * ast_new_lvalue_concat(ast_lvalue_type type, ast_concatenation id);
+
+
+// -------------------------------- Primaries ----------------------
+
+//! Describes the kind of expression primary being represented.
+typedef enum ast_primary_type_e
+{
+    CONSTANT_PRIMARY,
+    PRIMARY,
+    MODULE_PATH_PRIMARY
+} ast_primary_type;
+
+
+//! The kind of production the expression primary holds.
+typedef enum ast_primary_value_type_e
+{
+    PRIMARY_NUMBER,
+    PRIMARY_IDENTIFIER,
+    PRIMARY_CONCATENATION,
+    PRIMARY_FUNCTION_CALL,
+    PRIMARY_SYSTEM_CALL,
+    PRIMARY_MINMAX_EXP,
+    PRIMARY_MACRO_USAGE    
+} ast_primary_value_type;
+
+//! The expression primary can produce several different sub-expressions:
+typedef union ast_primary_value_e
+{
+    ast_number          number;
+    ast_identifier      identifier;
+    ast_concatenation   concatenation;
+    ast_function_call   function_call;
+    ast_system_call     system_call;
+    ast_minmax_exp      minmax;
+    ast_macro_use       macro;
+} ast_primary_value;
+
+//! Stores the type and value of an AST primary expression.
+typedef struct ast_primary_t
+{
+    ast_primary_type        primary_type;
+    ast_primary_value_type  value_type;
+    ast_primary_value       value;
+} ast_primary;
+
+
+/*!
+@brief Creates a new ast primary which is part of a constant expression tree
+       with the supplied type and value.
+*/
+ast_primary * ast_new_constant_primary(ast_primary_value_type type);
+
+/*!
+@brief Creates a new ast primary which is part of an expression tree
+       with the supplied type and value.
+*/
+ast_primary * ast_new_primary(ast_primary_value_type type);
+
+/*!
+@brief Creates a new ast primary which is part of a constant expression tree
+       with the supplied type and value.
+*/
+ast_primary * ast_new_module_path_primary(ast_primary_value_type type);
 
 // -------------------------------- Nodes --------------------------
 

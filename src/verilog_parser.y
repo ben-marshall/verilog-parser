@@ -22,16 +22,17 @@
 
 /* token types */
 %union {
-   ast_node * node;
-   ast_node_attributes * node_attributes;
-   char       boolean;
-   ast_identifier   identifier;
-   ast_lvalue     * lvalue;
-   char     * string;
-   char     * number;
-   char     * term;
-   char     * operator;
-   char     * keyword;
+   ast_node             * node;
+   ast_node_attributes  * node_attributes;
+   ast_identifier         identifier;
+   ast_lvalue           * lvalue;
+   ast_primary          * primary;
+   char                   boolean;
+   char                 * string;
+   char                 * number;
+   char                 * term;
+   char                 * operator;
+   char                 * keyword;
 }
 
 %token <string> ANY
@@ -380,7 +381,7 @@
 %type <node> constant_function_call_pid
 %type <node> constant_mintypmax_expression
 %type <node> constant_multiple_concatenation
-%type <node> constant_primary
+%type <primary> constant_primary
 %type <node> constant_range_expression
 %type <node> continuous_assign
 %type <node> current_state
@@ -527,7 +528,7 @@
 %type <node> module_path_expression
 %type <node> module_path_mintypemax_expression
 %type <node> module_path_multiple_concatenation
-%type <node> module_path_primary
+%type <primary> module_path_primary
 %type <node> mos_switch_instance
 %type <node> mos_switch_instances
 %type <node> mos_switchtype
@@ -600,7 +601,7 @@
 %type <node> port_expression
 %type <node> port_reference
 %type <node> ports
-%type <node> primary
+%type <primary> primary
 %type <node> procedural_continuous_assignments
 %type <node> procedural_timing_control_statement
 %type <node> pull_gate_instance
@@ -2542,42 +2543,133 @@ range_expression :
 /* A.8.4 Primaries */
 
 constant_primary :
-  constant_concatenation
-| constant_function_call
-| OPEN_BRACKET constant_mintypmax_expression CLOSE_BRACKET
-| constant_multiple_concatenation
-| genvar_identifier
-| number
-| parameter_identifier
-| specparam_identifier
-| text_macro_usage
+  constant_concatenation {
+      $$ = ast_new_constant_primary(PRIMARY_CONCATENATION);
+      $$ -> value.concatenation = $1;
+}
+| constant_function_call{
+      $$ = ast_new_constant_primary(PRIMARY_FUNCTION_CALL);
+      $$ -> value.function_call = $1;
+}
+| OPEN_BRACKET constant_mintypmax_expression CLOSE_BRACKET{
+      $$ = ast_new_constant_primary(PRIMARY_MINMAX_EXP);
+      $$ -> value.minmax = $2;
+}
+| constant_multiple_concatenation{
+      $$ = ast_new_constant_primary(PRIMARY_CONCATENATION);
+      $$ -> value.concatenation = $1;
+}
+| genvar_identifier{
+      $$ = ast_new_constant_primary(PRIMARY_IDENTIFIER);
+      $$ -> value.identifier = $1;
+}
+| number{
+      $$ = ast_new_constant_primary(PRIMARY_NUMBER);
+      $$ -> value.number = $1;
+}
+| parameter_identifier{
+      $$ = ast_new_constant_primary(PRIMARY_IDENTIFIER);
+      $$ -> value.identifier = $1;
+}
+| specparam_identifier{
+      $$ = ast_new_constant_primary(PRIMARY_IDENTIFIER);
+      $$ -> value.identifier = $1;
+}
+| text_macro_usage{
+      $$ = ast_new_constant_primary(PRIMARY_MACRO_USAGE);
+      $$ -> value.identifier = $1;
+}
 ;
 
 primary :
-  number
-| hierarchical_identifier sq_bracket_expressions
+  number{
+      $$ = ast_new_primary(PRIMARY_NUMBER);
+      $$ -> value.number = $1;
+  }
+| hierarchical_identifier sq_bracket_expressions{
+      $$ = ast_new_primary(PRIMARY_NUMBER);
+      $$ -> value.identifier = $1;
+  }
 | hierarchical_identifier sq_bracket_expressions OPEN_SQ_BRACKET
-  range_expression CLOSE_SQ_BRACKET
-| concatenation
-| multiple_concatenation
-| function_call
-| system_function_call
-| hierarchical_identifier constant_function_call_pid
-| hierarchical_identifier
-| OPEN_BRACKET mintypmax_expression CLOSE_BRACKET
-| text_macro_usage
+  range_expression CLOSE_SQ_BRACKET{
+      $$ = ast_new_primary(PRIMARY_IDENTIFIER);
+      $$ -> value.identifier = $1;
+  }
+| concatenation{
+      $$ = ast_new_primary(PRIMARY_CONCATENATION);
+      $$ -> value.concatenation = $1;
+  }
+| multiple_concatenation{
+      $$ = ast_new_primary(PRIMARY_CONCATENATION);
+      $$ -> value.concatenation = $1;
+  }
+| function_call{
+      $$ = ast_new_primary(PRIMARY_FUNCTION_CALL);
+      $$ -> value.function_call = $1;
+  }
+| system_function_call{
+      $$ = ast_new_primary(PRIMARY_SYSTEM_CALL);
+      $$ -> value.system_call = $1;
+  }
+| hierarchical_identifier constant_function_call_pid{
+      $$ = ast_new_primary(PRIMARY_IDENTIFIER);
+      $$ -> value.identifier = $1;
+  }
+| hierarchical_identifier{
+      $$ = ast_new_primary(PRIMARY_IDENTIFIER);
+      $$ -> value.identifier = $1;
+  }
+| OPEN_BRACKET mintypmax_expression CLOSE_BRACKET{
+      $$ = ast_new_primary(PRIMARY_MINMAX_EXP);
+      $$ -> value.minmax = $2;
+  }
+| text_macro_usage{
+      $$ = ast_new_primary(PRIMARY_MACRO_USAGE);
+      $$ -> value.macro = $1;
+  }
 ;
 
 module_path_primary :
-  number
-| identifier
-| module_path_concatenation
-| module_path_multiple_concatenation
-| function_call
-| system_function_call
-| constant_function_call
-| OPEN_BRACKET module_path_mintypemax_expression CLOSE_BRACKET
-| text_macro_usage
+  number{
+      $$ = ast_new_module_path_primary(PRIMARY_NUMBER);
+      $$ -> value.number = $1;
+  }
+
+| identifier{
+      $$ = ast_new_module_path_primary(PRIMARY_IDENTIFIER);
+      $$ -> value.identifier= $1;
+  }
+
+| module_path_concatenation{
+      $$ = ast_new_module_path_primary(PRIMARY_CONCATENATION);
+      $$ -> value.concatenation = $1;
+  }
+
+| module_path_multiple_concatenation{
+      $$ = ast_new_module_path_primary(PRIMARY_CONCATENATION);
+      $$ -> value.concatenation = $1;
+  }
+
+| function_call{
+      $$ = ast_new_module_path_primary(PRIMARY_FUNCTION_CALL);
+      $$ -> value.function_call = $1;
+  }
+| system_function_call{
+      $$ = ast_new_module_path_primary(PRIMARY_SYSTEM_CALL);
+      $$ -> value.system_call = $1;
+  }
+| constant_function_call{
+      $$ = ast_new_module_path_primary(PRIMARY_FUNCTION_CALL);
+      $$ -> value.function_call = $1;
+  }
+| OPEN_BRACKET module_path_mintypemax_expression CLOSE_BRACKET{
+      $$ = ast_new_module_path_primary(PRIMARY_MINMAX_EXP);
+      $$ -> value.minmax = $2;
+  }
+| text_macro_usage{
+      $$ = ast_new_module_path_primary(PRIMARY_MACRO_USAGE);
+      $$ -> value.macro = $1;
+  }
 ;
 
 /* A.8.5 Expression left-side values */
