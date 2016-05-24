@@ -7,52 +7,31 @@
 #include "stdio.h"
 #include "verilog_ast.h"
 
-
 /*!
-@description Creates a new ast node of the supplied type, adds the
-supplied children and then returns a pointer to the new node.
+@brief Creates a new empty ast_node and returns it.
 */
-verilog_ast_node new_ast_node(verilog_ast_node_type   type,
-                                lineno                  line,
-                                char                  * file,
-                                unsigned int            childCount
-                               )
+ast_node ast_node_new()
 {
-    verilog_ast_node tr;
+    ast_node tr;
 
-    tr.line = line;
-    tr.file = file;
-    tr.type = type;
-
-    tr.child_count = childCount;
-
-    if(childCount > 0)
-    {
-        // Storage for the children of this node that will be added later.
-        tr.children = calloc(childCount, sizeof(verilog_ast_node));
-    }
-    else
-    {
-        tr.children = NULL;
-    }
-
+    tr.type         = NONE;
+    tr.parent       = NULL;
+    tr.children     = NULL;
+    tr.child_count  = 0;
+    
     return tr;
 }
 
-
 /*!
-@brief Adds a child to the supplied parent node at index idx.
+@brief Creates and returns a new node for the tree which contains a
+       single simple identifier.
 */
-void ast_node_add_child(verilog_ast_node * parent, 
-                        verilog_ast_node   child,
-                        unsigned int       idx)
+ast_node ast_new_identifier_node(char * identifier)
 {
-    if(idx < parent -> child_count)
-    {
-        parent -> children[idx] = child;
-    }
-    else
-    {
-        printf("ERRROR! Trying to add more children than you should!\n");
-    }
-}
+    ast_node tr = ast_node_new();
+
+    tr.type         = IDENTIFIER;
+    tr.value.string = identifier;
+
+    return tr;
+}   

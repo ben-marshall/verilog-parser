@@ -10,8 +10,6 @@
     #include "stdio.h"
     #include "verilog_ast.h"
 
-    verilog_ast_node root_node;
-
     void yyerror(const char *msg){
     printf("ERROR: %s\n", msg);
     }
@@ -24,11 +22,16 @@
 
 /* token types */
 %union {
-   char*  terminal;
-   verilog_ast_node node;
+   ast_node node;
+   char    * identifier;
+   char    * string;
+   char    * number;
+   char    * term;
+   char    * operator;
+   char    * keyword;
 }
 
-%token ANY
+%token <string> ANY
 %token END
 %token NEWLINE
 %token SPACE
@@ -49,52 +52,52 @@
 %token OPEN_SQ_BRACE      
 %token CLOSE_SQ_BRACE     
 
-%token NUMBER
-%token UNSIGNED_NUMBER
+%token <number> NUMBER
+%token <number> UNSIGNED_NUMBER
 
-%token SYSTEM_ID
-%token SIMPLE_ID
-%token DEFINE_ID
+%token <identifier> SYSTEM_ID
+%token <identifier> SIMPLE_ID
+%token <identifier> DEFINE_ID
 
 %token ATTRIBUTE_START
 %token ATTRIBUTE_END
 
-%token COMMENT_LINE
-%token COMMENT_BLOCK
+%token <string> COMMENT_LINE
+%token <string> COMMENT_BLOCK
 
-%token STRING
+%token <string> STRING
 
 /* Operators Precedence */
 
-%token STAR
-%token PLUS
-%token MINUS
-%token ASL     
-%token ASR     
-%token LSL     
-%token LSR     
-%token DIV     
-%token POW     
-%token MOD     
-%token GTE     
-%token LTE     
-%token GT      
-%token LT      
-%token L_NEG   
-%token L_AND   
-%token L_OR    
-%token C_EQ    
-%token L_EQ    
-%token C_NEQ   
-%token L_NEQ   
-%token B_NEG   
-%token B_AND   
-%token B_OR    
-%token B_XOR   
-%token B_EQU   
-%token B_NAND  
-%token B_NOR   
-%token TERNARY 
+%token <operator> STAR
+%token <operator> PLUS
+%token <operator> MINUS
+%token <operator> ASL     
+%token <operator> ASR     
+%token <operator> LSL     
+%token <operator> LSR     
+%token <operator> DIV     
+%token <operator> POW     
+%token <operator> MOD     
+%token <operator> GTE     
+%token <operator> LTE     
+%token <operator> GT      
+%token <operator> LT      
+%token <operator> L_NEG   
+%token <operator> L_AND   
+%token <operator> L_OR    
+%token <operator> C_EQ    
+%token <operator> L_EQ    
+%token <operator> C_NEQ   
+%token <operator> L_NEQ   
+%token <operator> B_NEG   
+%token <operator> B_AND   
+%token <operator> B_OR    
+%token <operator> B_XOR   
+%token <operator> B_EQU   
+%token <operator> B_NAND  
+%token <operator> B_NOR   
+%token <operator> TERNARY 
 
 %token UNARY_OP
 
@@ -135,138 +138,186 @@
 %token CD_UNCONNECTED_DRIVE
 %token CD_UNDEF
 
-%token MACRO_TEXT
-%token MACRO_IDENTIFIER
+%token <string>     MACRO_TEXT
+%token <identifier> MACRO_IDENTIFIER
 
-%token KW_ALWAYS
-%token KW_AND
-%token KW_ASSIGN
-%token KW_AUTOMATIC
-%token KW_BEGIN
-%token KW_BUF
-%token KW_BUFIF0
-%token KW_BUFIF1
-%token KW_CASE
-%token KW_CASEX
-%token KW_CASEZ
-%token KW_CELL
-%token KW_CMOS
-%token KW_CONFIG
-%token KW_DEASSIGN
-%token KW_DEFAULT
-%token KW_DEFPARAM
-%token KW_DESIGN
-%token KW_DISABLE
-%token KW_EDGE
-%token KW_ELSE
-%token KW_END
-%token KW_ENDCASE
-%token KW_ENDCONFIG
-%token KW_ENDFUNCTION
-%token KW_ENDGENERATE
-%token KW_ENDMODULE
-%token KW_ENDPRIMITIVE
-%token KW_ENDSPECIFY
-%token KW_ENDTABLE
-%token KW_ENDTASK
-%token KW_EVENT
-%token KW_FOR
-%token KW_FORCE
-%token KW_FOREVER
-%token KW_FORK
-%token KW_FUNCTION
-%token KW_GENERATE
-%token KW_GENVAR
-%token KW_HIGHZ0
-%token KW_HIGHZ1
-%token KW_IF
-%token KW_IFNONE
-%token KW_INCDIR
-%token KW_INCLUDE
-%token KW_INITIAL
-%token KW_INOUT
-%token KW_INPUT
-%token KW_INSTANCE
-%token KW_INTEGER
-%token KW_JOIN
-%token KW_LARGE
-%token KW_LIBLIST
-%token KW_LIBRARY
-%token KW_LOCALPARAM
-%token KW_MACROMODULE
-%token KW_MEDIUM
-%token KW_MODULE
-%token KW_NAND
-%token KW_NEGEDGE
-%token KW_NMOS
-%token KW_NOR
-%token KW_NOSHOWCANCELLED
-%token KW_NOT
-%token KW_NOTIF0
-%token KW_NOTIF1
-%token KW_OR
-%token KW_OUTPUT
-%token KW_PARAMETER
-%token KW_PATHPULSE
-%token KW_PMOS
-%token KW_POSEDGE
-%token KW_PRIMITIVE
-%token KW_PULL0
-%token KW_PULL1
-%token KW_PULLDOWN
-%token KW_PULLUP
-%token KW_PULSESTYLE_ONEVENT
-%token KW_PULSESTYLE_ONDETECT
-%token KW_RCMOS
-%token KW_REAL
-%token KW_REALTIME
-%token KW_REG
-%token KW_RELEASE
-%token KW_REPEAT
-%token KW_RNMOS
-%token KW_RPMOS
-%token KW_RTRAN
-%token KW_RTRANIF0
-%token KW_RTRANIF1
-%token KW_SCALARED
-%token KW_SHOWCANCELLED
-%token KW_SIGNED
-%token KW_SMALL
-%token KW_SPECIFY
-%token KW_SPECPARAM
-%token KW_STRONG0
-%token KW_STRONG1
-%token KW_SUPPLY0
-%token KW_SUPPLY1
-%token KW_TABLE
-%token KW_TASK
-%token KW_TIME
-%token KW_TRAN
-%token KW_TRANIF0
-%token KW_TRANIF1
-%token KW_TRI
-%token KW_TRI0
-%token KW_TRI1
-%token KW_TRIAND
-%token KW_TRIOR
-%token KW_TRIREG
-%token KW_UNSIGNED
-%token KW_USE
-%token KW_VECTORED
-%token KW_WAIT
-%token KW_WAND
-%token KW_WEAK0
-%token KW_WEAK1
-%token KW_WHILE
-%token KW_WIRE
-%token KW_WOR
-%token KW_XNOR
-%token KW_XOR
+%token <keyword> KW_ALWAYS
+%token <keyword> KW_AND
+%token <keyword> KW_ASSIGN
+%token <keyword> KW_AUTOMATIC
+%token <keyword> KW_BEGIN
+%token <keyword> KW_BUF
+%token <keyword> KW_BUFIF0
+%token <keyword> KW_BUFIF1
+%token <keyword> KW_CASE
+%token <keyword> KW_CASEX
+%token <keyword> KW_CASEZ
+%token <keyword> KW_CELL
+%token <keyword> KW_CMOS
+%token <keyword> KW_CONFIG
+%token <keyword> KW_DEASSIGN
+%token <keyword> KW_DEFAULT
+%token <keyword> KW_DEFPARAM
+%token <keyword> KW_DESIGN
+%token <keyword> KW_DISABLE
+%token <keyword> KW_EDGE
+%token <keyword> KW_ELSE
+%token <keyword> KW_END
+%token <keyword> KW_ENDCASE
+%token <keyword> KW_ENDCONFIG
+%token <keyword> KW_ENDFUNCTION
+%token <keyword> KW_ENDGENERATE
+%token <keyword> KW_ENDMODULE
+%token <keyword> KW_ENDPRIMITIVE
+%token <keyword> KW_ENDSPECIFY
+%token <keyword> KW_ENDTABLE
+%token <keyword> KW_ENDTASK
+%token <keyword> KW_EVENT
+%token <keyword> KW_FOR
+%token <keyword> KW_FORCE
+%token <keyword> KW_FOREVER
+%token <keyword> KW_FORK
+%token <keyword> KW_FUNCTION
+%token <keyword> KW_GENERATE
+%token <keyword> KW_GENVAR
+%token <keyword> KW_HIGHZ0
+%token <keyword> KW_HIGHZ1
+%token <keyword> KW_IF
+%token <keyword> KW_IFNONE
+%token <keyword> KW_INCDIR
+%token <keyword> KW_INCLUDE
+%token <keyword> KW_INITIAL
+%token <keyword> KW_INOUT
+%token <keyword> KW_INPUT
+%token <keyword> KW_INSTANCE
+%token <keyword> KW_INTEGER
+%token <keyword> KW_JOIN
+%token <keyword> KW_LARGE
+%token <keyword> KW_LIBLIST
+%token <keyword> KW_LIBRARY
+%token <keyword> KW_LOCALPARAM
+%token <keyword> KW_MACROMODULE
+%token <keyword> KW_MEDIUM
+%token <keyword> KW_MODULE
+%token <keyword> KW_NAND
+%token <keyword> KW_NEGEDGE
+%token <keyword> KW_NMOS
+%token <keyword> KW_NOR
+%token <keyword> KW_NOSHOWCANCELLED
+%token <keyword> KW_NOT
+%token <keyword> KW_NOTIF0
+%token <keyword> KW_NOTIF1
+%token <keyword> KW_OR
+%token <keyword> KW_OUTPUT
+%token <keyword> KW_PARAMETER
+%token <keyword> KW_PATHPULSE
+%token <keyword> KW_PMOS
+%token <keyword> KW_POSEDGE
+%token <keyword> KW_PRIMITIVE
+%token <keyword> KW_PULL0
+%token <keyword> KW_PULL1
+%token <keyword> KW_PULLDOWN
+%token <keyword> KW_PULLUP
+%token <keyword> KW_PULSESTYLE_ONEVENT
+%token <keyword> KW_PULSESTYLE_ONDETECT
+%token <keyword> KW_RCMOS
+%token <keyword> KW_REAL
+%token <keyword> KW_REALTIME
+%token <keyword> KW_REG
+%token <keyword> KW_RELEASE
+%token <keyword> KW_REPEAT
+%token <keyword> KW_RNMOS
+%token <keyword> KW_RPMOS
+%token <keyword> KW_RTRAN
+%token <keyword> KW_RTRANIF0
+%token <keyword> KW_RTRANIF1
+%token <keyword> KW_SCALARED
+%token <keyword> KW_SHOWCANCELLED
+%token <keyword> KW_SIGNED
+%token <keyword> KW_SMALL
+%token <keyword> KW_SPECIFY
+%token <keyword> KW_SPECPARAM
+%token <keyword> KW_STRONG0
+%token <keyword> KW_STRONG1
+%token <keyword> KW_SUPPLY0
+%token <keyword> KW_SUPPLY1
+%token <keyword> KW_TABLE
+%token <keyword> KW_TASK
+%token <keyword> KW_TIME
+%token <keyword> KW_TRAN
+%token <keyword> KW_TRANIF0
+%token <keyword> KW_TRANIF1
+%token <keyword> KW_TRI
+%token <keyword> KW_TRI0
+%token <keyword> KW_TRI1
+%token <keyword> KW_TRIAND
+%token <keyword> KW_TRIOR
+%token <keyword> KW_TRIREG
+%token <keyword> KW_UNSIGNED
+%token <keyword> KW_USE
+%token <keyword> KW_VECTORED
+%token <keyword> KW_WAIT
+%token <keyword> KW_WAND
+%token <keyword> KW_WEAK0
+%token <keyword> KW_WEAK1
+%token <keyword> KW_WHILE
+%token <keyword> KW_WIRE
+%token <keyword> KW_WOR
+%token <keyword> KW_XNOR
+%token <keyword> KW_XOR
 
 %start grammar_begin
 
-%%
+%type <identifier> simple_identifier
+%type <identifier> simple_hierarchical_identifier
+%type <identifier> escaped_identifier 
+%type <identifier> escaped_hierarchical_identifier
+%type <identifier> text_macro_usage
+%type <identifier> event_identifier
+%type <identifier> function_identifier
+%type <identifier> generate_block_identifier
+%type <identifier> genvar_identifier
+%type <identifier> identifier
+%type <identifier> inout_port_identifier     
+%type <identifier> input_port_identifier     
+%type <identifier> instance_identifier       
+%type <identifier> library_identifier        
+%type <identifier> module_identifier         
+%type <identifier> net_identifier            
+%type <identifier> output_port_identifier    
+%type <identifier> parameter_identifier      
+%type <identifier> hierarchical_block_identifier   
+%type <identifier> hierarchical_event_identifier   
+%type <identifier> hierarchical_function_identifier
+%type <identifier> hierarchical_identifier         
+%type <identifier> port_identifier
+%type <identifier> real_identifier
+%type <identifier> specparam_identifier
+%type <identifier> system_function_identifier
+%type <identifier> system_task_identifier
+%type <identifier> task_identifier
+%type <identifier> topmodule_identifier
+%type <identifier> udp_identifier
+%type <identifier> variable_identifier
+%type <identifier> simple_hierarchical_branch
+%type <identifier> escaped_hierarchical_branch
+%type <identifier> block_identifier
+%type <identifier> cell_identifier
+%type <identifier> config_identifier
+%type <identifier> udp_instance_identifier
+%type <identifier> arrayed_identifier
+%type <identifier> simple_arrayed_identifier
+%type <identifier> escaped_arrayed_identifier
+%type <identifier> gate_instance_identifier
+%type <identifier> hierarchical_net_identifier
+%type <identifier> hierarchical_task_identifier
+%type <identifier> hierarchical_variable_identifier
+%type <string>     anys
+%type <string>     comment
+%type <string>     block_comment
+%type <string>     one_line_comment
 
+%%
 /* Start variables */
 
 grammar_begin : library_text 
@@ -2239,23 +2290,23 @@ attr_name : identifier;
 
 /* A.9.2 Comments */
 
-comment             : one_line_comment
-                    | block_comment   
+comment             : one_line_comment {$$=$1;}
+                    | block_comment    {$$=$1;}
                     ;
 
-one_line_comment    : COMMENT_LINE
+one_line_comment    : COMMENT_LINE {$$=$1;};
 
-block_comment       : COMMENT_BLOCK
+block_comment       : COMMENT_BLOCK {$$=$1;};
 
 /* A.9.3 Identifiers */
 
-arrayed_identifier              : simple_arrayed_identifier
-                                | escaped_arrayed_identifier
+arrayed_identifier              : simple_arrayed_identifier     {$$=$1;}
+                                | escaped_arrayed_identifier    {$$=$1;}
                                 ;
 
-block_identifier                : identifier;
-cell_identifier                 : identifier;
-config_identifier               : identifier;
+block_identifier                : identifier {$$=$1;};
+cell_identifier                 : identifier {$$=$1;};
+config_identifier               : identifier {$$=$1;};
 escaped_arrayed_identifier      : escaped_identifier range_o;
 escaped_hierarchical_identifier : escaped_hierarchical_branch 
                                   escaped_hierarchical_identifiers
@@ -2272,63 +2323,67 @@ escaped_hierarchical_identifiers: DOT simple_hierarchical_identifier
 
 escaped_identifier              : '\''
                                   anys 
-                                  white_space 
+                                  white_space {$$=$<identifier>2;}
                                 ;
 
-anys : anys ANY | ANY;
+anys : anys ANY {$$=$2;}
+     | ANY {$$ = $1;}
+     ;
 
-event_identifier                : identifier;
-function_identifier             : identifier;
-gate_instance_identifier        : arrayed_identifier;
-generate_block_identifier       : identifier;
-genvar_identifier               : identifier;
-hierarchical_block_identifier   : hierarchical_identifier;
-hierarchical_event_identifier   : hierarchical_identifier;
-hierarchical_function_identifier: hierarchical_identifier;
-hierarchical_identifier         : simple_hierarchical_identifier 
-                                | escaped_hierarchical_identifier
+event_identifier                : identifier {$$=$1;};
+function_identifier             : identifier {$$=$1;};
+gate_instance_identifier        : arrayed_identifier{$$=$1;};
+generate_block_identifier       : identifier {$$=$1;};
+genvar_identifier               : identifier {$$=$1;};
+hierarchical_block_identifier   : hierarchical_identifier{$$=$1;};
+hierarchical_event_identifier   : hierarchical_identifier{$$=$1;};
+hierarchical_function_identifier: hierarchical_identifier{$$=$1;};
+hierarchical_identifier         : simple_hierarchical_identifier {$$=$1;}
+                                | escaped_hierarchical_identifier{$$=$1;}
                                 ;
 
-hierarchical_net_identifier     : hierarchical_identifier;
-hierarchical_variable_identifier: hierarchical_identifier;
-hierarchical_task_identifier    : hierarchical_identifier;
-identifier                      : simple_identifier 
-                                | escaped_identifier
-                                | text_macro_usage
+hierarchical_net_identifier     : hierarchical_identifier{$$=$1;};
+hierarchical_variable_identifier: hierarchical_identifier{$$=$1;};
+hierarchical_task_identifier    : hierarchical_identifier{$$=$1;};
+identifier                      : simple_identifier  {$$=$1;}
+                                | escaped_identifier {$$=$1;}
+                                | text_macro_usage {$$=$1;}
                                 ;
 
-inout_port_identifier           : identifier;
-input_port_identifier           : identifier;
-instance_identifier             : identifier;
-library_identifier              : identifier;
-module_identifier               : identifier;
+inout_port_identifier           : identifier {$$=$1;};
+input_port_identifier           : identifier {$$=$1;};
+instance_identifier             : identifier {$$=$1;};
+library_identifier              : identifier {$$=$1;};
+module_identifier               : identifier {$$=$1;};
 module_instance_identifier      : arrayed_identifier;
-net_identifier                  : identifier;
-output_port_identifier          : identifier;
-parameter_identifier            : identifier | hierarchical_identifier;
-port_identifier                 : identifier;
-real_identifier                 : identifier;
+net_identifier                  : identifier {$$=$1;};
+output_port_identifier          : identifier {$$=$1;};
+parameter_identifier            : identifier  {$$=$1;}
+                                | hierarchical_identifier{$$=$1;}
+                                ;
+port_identifier                 : identifier {$$=$1;};
+real_identifier                 : identifier {$$=$1;};
 simple_arrayed_identifier       : simple_identifier range_o ;
 
-simple_hierarchical_identifier  : simple_hierarchical_branch 
+simple_hierarchical_identifier  : simple_hierarchical_branch {$$=$1;}
                                 | simple_hierarchical_branch DOT
-                                  escaped_identifier
+                                  escaped_identifier {$$=$1;}
                                 ;
 
-simple_identifier               : SIMPLE_ID
-                                | text_macro_usage
+simple_identifier               : SIMPLE_ID {$$=$1;}
+                                | text_macro_usage {$$=$1;}
                                 ;
 
-specparam_identifier            : identifier;
+specparam_identifier            : identifier {$$=$1;};
 
-system_function_identifier      : SYSTEM_ID {printf("System id\n");};
-system_task_identifier          : SYSTEM_ID {printf("System id\n");};
+system_function_identifier      : SYSTEM_ID {$$=$1;};
+system_task_identifier          : SYSTEM_ID {$$=$1;};
 
-task_identifier                 : identifier;
-topmodule_identifier            : identifier;
-udp_identifier                  : identifier;
-udp_instance_identifier         : arrayed_identifier;
-variable_identifier             : identifier;
+task_identifier                 : identifier {$$=$1;};
+topmodule_identifier            : identifier {$$=$1;};
+udp_identifier                  : identifier {$$=$1;};
+udp_instance_identifier         : arrayed_identifier{$$=$1;};
+variable_identifier             : identifier {$$=$1;};
 
 /* A.9.4 Identifier Branches */
 
@@ -2336,14 +2391,14 @@ variable_identifier             : identifier;
 in the closed brackets reduces to an "unsigned_number" */
 
 simple_hierarchical_branch : 
-  SIMPLE_ID 
-| SIMPLE_ID OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET 
-| SIMPLE_ID OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET 
-| simple_hierarchical_branch DOT simple_identifier
+  SIMPLE_ID {$$=$1;}
+| SIMPLE_ID OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET {$$=$1;}
+| SIMPLE_ID OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET {$$=$1;}
+| simple_hierarchical_branch DOT simple_identifier{$$=$1;}
 | simple_hierarchical_branch DOT SIMPLE_ID OPEN_SQ_BRACKET
-expression CLOSE_SQ_BRACKET 
+expression CLOSE_SQ_BRACKET {$$=$1;}
 | simple_hierarchical_branch DOT SIMPLE_ID OPEN_SQ_BRACKET
-range_expression CLOSE_SQ_BRACKET 
+range_expression CLOSE_SQ_BRACKET {$$=$1;}
 ;
 
 
@@ -2351,12 +2406,13 @@ range_expression CLOSE_SQ_BRACKET
 in the closed brackets reduces to an "unsigned_number" */
 
 escaped_hierarchical_branch :
-  escaped_hierarchical_branch DOT escaped_identifier 
+  escaped_hierarchical_branch DOT escaped_identifier {$$=$1;}
 | escaped_hierarchical_branch DOT escaped_identifier OPEN_SQ_BRACKET 
-  expression CLOSE_SQ_BRACKET 
-| escaped_identifier
-| escaped_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET
+  expression CLOSE_SQ_BRACKET {$$=$1;}
+| escaped_identifier{$$=$1;}
+| escaped_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET{$$=$1;}
 | escaped_identifier OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
+{$$=$1;}
 ;
 
 white_space : SPACE | TAB | NEWLINE;
