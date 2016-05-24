@@ -10,7 +10,15 @@
 #ifndef VERILOG_AST_H
 #define VERILOG_AST_H
 
+//! Forward declare. Defines the core node type for the AST.
 typedef struct ast_node_t ast_node;
+
+//! Typedef to make it easier to change into a proper structure later.
+//! @todo add proper support for hierarchical identifiers and scope.
+typedef char * ast_identifier;
+
+//! Placeholder until this is implemented properly.
+typedef void * ast_concatenation;
 
 //-------------- attributes ------------------------------------
 
@@ -43,6 +51,50 @@ ast_node * ast_new_attribute_node( ast_node_attributes* value);
 void ast_append_attribute(ast_node_attributes * parent, 
                           ast_node_attributes * toadd);
 
+// -------------------------------- L Value ------------------------
+
+/*!
+@brief Identifies the kind of LValue the @ref ast_lvalue structure holds.
+*/
+typedef enum ast_lvalue_type_e
+{
+    NET_IDENTIFIER,
+    VAR_IDENTIFIER,
+    NET_CONCATENATION,
+    VAR_CONCATENATION
+} ast_lvalue_type;
+
+/*!
+@brief Storage for the data describing an assignment L Value.
+*/
+typedef union ast_lvalue_data_u
+{
+    ast_identifier      identifier;     //!< Identifier value.
+    ast_concatenation   concatenation;  //!< Concatenation list.
+} ast_lvalue_data ;
+
+/*!
+@brief Stores and describes an expression l value.
+*/
+typedef struct ast_lvalue_t
+{
+    ast_lvalue_data data; //!< The identifier or concattenation being assigned.
+    ast_lvalue_type type; //!< The type of the L Value assignment.
+} ast_lvalue;
+
+/*!
+@brief Creates and returns a new @ref ast_lvalue pointer, with the data type
+       being a single identifier of either @ref NET_IDENTIFIER or
+       @ref VAR_IDENTIFIER.
+*/
+ast_lvalue * ast_new_lvalue_id(ast_lvalue_type type, ast_identifier id);
+
+/*!
+@brief Creates and returns a new @ref ast_lvalue pointer, with the data type
+       being a concatenation holder of either @ref NET_CONCATENATION or
+       @ref VAR_CONCATENATION.
+*/
+ast_lvalue * ast_new_lvalue_concat(ast_lvalue_type type, ast_concatenation id);
 
 // -------------------------------- Nodes --------------------------
 

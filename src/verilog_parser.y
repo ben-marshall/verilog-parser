@@ -25,7 +25,8 @@
    ast_node * node;
    ast_node_attributes * node_attributes;
    char       boolean;
-   char     * identifier;
+   ast_identifier   identifier;
+   ast_lvalue     * lvalue;
    char     * string;
    char     * number;
    char     * term;
@@ -554,7 +555,7 @@
 %type <node> net_dec_p_vs
 %type <node> net_decl_assignment
 %type <node> net_declaration
-%type <node> net_lvalue
+%type <lvalue> net_lvalue
 %type <node> net_type
 %type <node> net_type_o
 %type <node> next_state
@@ -686,7 +687,7 @@
 %type <node> variable_concatenation
 %type <node> variable_concatenation_cont
 %type <node> variable_concatenation_value
-%type <node> variable_lvalue
+%type <lvalue> variable_lvalue
 %type <node> variable_type
 %type <node> wait_statement
 %type <number> number
@@ -2588,58 +2589,79 @@ sq_bracket_constant_expressions :
 ;
 
 net_lvalue :
-  hierarchical_net_identifier
-| hierarchical_net_identifier sq_bracket_constant_expressions
+  hierarchical_net_identifier{
+    $$ = ast_new_lvalue_id(NET_IDENTIFIER, $1);
+  }
+| hierarchical_net_identifier sq_bracket_constant_expressions{
+    $$ = ast_new_lvalue_id(NET_IDENTIFIER, $1);
+  }
 | hierarchical_net_identifier sq_bracket_constant_expressions 
-  OPEN_SQ_BRACKET constant_range_expression CLOSE_SQ_BRACKET
+  OPEN_SQ_BRACKET constant_range_expression CLOSE_SQ_BRACKET{
+    $$ = ast_new_lvalue_id(NET_IDENTIFIER, $1);
+  }
 | hierarchical_net_identifier OPEN_SQ_BRACKET constant_range_expression 
-  CLOSE_SQ_BRACKET
-| net_concatenation
+  CLOSE_SQ_BRACKET{
+    $$ = ast_new_lvalue_id(NET_IDENTIFIER, $1);
+  }
+| net_concatenation {
+    $$ = ast_new_lvalue_concat(NET_CONCATENATION, $1);
+  }
 ;
 
 variable_lvalue :
-  hierarchical_variable_identifier
-| hierarchical_variable_identifier sq_bracket_constant_expressions
+  hierarchical_variable_identifier{
+    $$ = ast_new_lvalue_id(VAR_IDENTIFIER, $1);
+  }
+| hierarchical_variable_identifier sq_bracket_constant_expressions{
+    $$ = ast_new_lvalue_id(VAR_IDENTIFIER, $1);
+  }
 | hierarchical_variable_identifier sq_bracket_constant_expressions 
-  OPEN_SQ_BRACKET constant_range_expression CLOSE_SQ_BRACKET
+  OPEN_SQ_BRACKET constant_range_expression CLOSE_SQ_BRACKET{
+    $$ = ast_new_lvalue_id(VAR_IDENTIFIER, $1);
+  }
 | hierarchical_variable_identifier OPEN_SQ_BRACKET constant_range_expression 
-  CLOSE_SQ_BRACKET
-| variable_concatenation
+  CLOSE_SQ_BRACKET{
+    $$ = ast_new_lvalue_id(VAR_IDENTIFIER, $1);
+  }
+| variable_concatenation{
+    $$ = ast_new_lvalue_concat(VAR_CONCATENATION, $1);
+  }
+
 ;
 
 /* A.8.6 Operators */
 
-unary_operator : PLUS    
-               | MINUS   
-               | L_NEG   
-               | B_NEG   
-               | B_AND   
-               | B_NAND  
-               | B_OR    
-               | B_NOR   
-               | B_XOR   
-               | B_EQU
+unary_operator : PLUS    {$$ = $1;}
+               | MINUS   {$$ = $1;}
+               | L_NEG   {$$ = $1;}
+               | B_NEG   {$$ = $1;}
+               | B_AND   {$$ = $1;}
+               | B_NAND  {$$ = $1;}
+               | B_OR    {$$ = $1;}
+               | B_NOR   {$$ = $1;}
+               | B_XOR   {$$ = $1;}
+               | B_EQU   {$$ = $1;}
                ;
 
 
-unary_module_path_operator  : L_NEG
-                            | B_NEG
-                            | B_AND
-                            | B_NAND
-                            | B_OR
-                            | B_NOR
-                            | B_XOR                         
-                            | B_EQU
+unary_module_path_operator  : L_NEG  {$$=$1;}
+                            | B_NEG  {$$=$1;}
+                            | B_AND  {$$=$1;}
+                            | B_NAND {$$=$1;}
+                            | B_OR   {$$=$1;}
+                            | B_NOR  {$$=$1;}
+                            | B_XOR  {$$=$1;}
+                            | B_EQU  {$$=$1;}
                             ;
 
-binary_module_path_operator : L_EQ
-                            | L_NEQ
-                            | L_AND
-                            | L_OR
-                            | B_AND
-                            | B_OR                      
-                            | B_XOR                     
-                            | B_EQU
+binary_module_path_operator : L_EQ   {$$=$1;}
+                            | L_NEQ  {$$=$1;}
+                            | L_AND  {$$=$1;}
+                            | L_OR   {$$=$1;}
+                            | B_AND  {$$=$1;}
+                            | B_OR   {$$=$1;}                    
+                            | B_XOR  {$$=$1;}                    
+                            | B_EQU  {$$=$1;}
                             ;
 
 /* A.8.7 Numbers */

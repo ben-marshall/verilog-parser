@@ -28,7 +28,7 @@ ast_node * ast_node_new()
 @brief Creates and returns a new node for the tree which contains a
        single simple identifier.
 */
-ast_node * ast_new_identifier_node(char * identifier)
+ast_node * ast_new_identifier_node(ast_identifier identifier)
 {
     ast_node * tr = ast_node_new();
 
@@ -41,7 +41,7 @@ ast_node * ast_new_identifier_node(char * identifier)
 /*!
 @brief Creates and returns as a pointer a new attribute descriptor.
 */
-ast_node_attributes * ast_new_attributes(char * name, ast_node * value)
+ast_node_attributes * ast_new_attributes(ast_identifier name, ast_node * value)
 {
     ast_node_attributes * tr = calloc(1, sizeof(ast_node_attributes));
     tr->attr_name   = name;
@@ -83,3 +83,31 @@ void ast_append_attribute(ast_node_attributes * parent,
 
 }
 
+/*!
+@brief Creates and returns a new @ref ast_lvalue pointer, with the data type
+       being a single identifier of either @ref NET_IDENTIFIER or
+       @ref VAR_IDENTIFIER.
+*/
+ast_lvalue * ast_new_lvalue_id(ast_lvalue_type type, ast_identifier id)
+{
+    assert(type == NET_IDENTIFIER || type == VAR_IDENTIFIER);
+    ast_lvalue * tr = calloc(1, sizeof(ast_lvalue));
+    tr -> type = type;
+    tr -> data.identifier = id;
+    return tr;
+}
+
+/*!
+@brief Creates and returns a new @ref ast_lvalue pointer, with the data type
+       being a concatenation holder of either @ref NET_CONCATENATION or
+       @ref VAR_CONCATENATION.
+*/
+ast_lvalue * ast_new_lvalue_concat(ast_lvalue_type type, 
+                                   ast_concatenation concat)
+{
+    assert(type == NET_CONCATENATION || type == VAR_CONCATENATION);
+    ast_lvalue * tr = calloc(1, sizeof(ast_lvalue));
+    tr -> type = type;
+    tr -> data.concatenation = concat;
+    return tr;
+}
