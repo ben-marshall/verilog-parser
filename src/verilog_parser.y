@@ -22,14 +22,15 @@
 
 /* token types */
 %union {
-   ast_node node;
-   char      boolean;
-   char    * identifier;
-   char    * string;
-   char    * number;
-   char    * term;
-   char    * operator;
-   char    * keyword;
+   ast_node * node;
+   ast_node_attributes * node_attributes;
+   char       boolean;
+   char     * identifier;
+   char     * string;
+   char     * number;
+   char     * term;
+   char     * operator;
+   char     * keyword;
 }
 
 %token <string> ANY
@@ -338,9 +339,9 @@
 %type <identifier> variable_identifier
 %type <node> actual_argument
 %type <node> always_construct
-%type <node> attr_name
-%type <node> attr_spec
-%type <node> attr_specs
+%type <identifier> attr_name
+%type <node_attributes> attr_spec
+%type <node_attributes> attr_specs
 %type <node> attribute_instances
 %type <node> automatic_o
 %type <node> block_item_declaration
@@ -2656,24 +2657,42 @@ string : STRING;
 
 /* A.9.1 Attributes */
 
-attribute_instances : 
-                    | list_of_attribute_instances
+attribute_instances : {$$=NULL;}
+                    | list_of_attribute_instances {$$=$1;}
                     ;
 
-list_of_attribute_instances : ATTRIBUTE_START attr_spec attr_specs ATTRIBUTE_END
-                            | attribute_instances ATTRIBUTE_START attr_spec attr_specs ATTRIBUTE_END
+list_of_attribute_instances : 
+  ATTRIBUTE_START attr_specs ATTRIBUTE_END {
+      $$ = ast_new_attribute_node($2);
+  }
+| attribute_instances ATTRIBUTE_START attr_specs ATTRIBUTE_END{
+    if($1 != NULL){
+        ast_append_attribute($1 -> value.attributes, $3);
+        $$ = $1;
+    } else {
+        $$ = ast_new_attribute_node($3);
+    }
+  }
                             ;
 
-attr_specs : 
-           | attr_spec
-           | attr_specs COMMA attr_spec
+attr_specs : {$$ = NULL;}
+           | attr_spec {
+               $$ = $1;
+           }
+           | attr_specs COMMA attr_spec {
+               // Append the new item to the existing list and return.
+               ast_append_attribute($1,$3);
+               $$ = $1;
+           }
            ;
 
 attr_spec : attr_name EQ constant_expression
-          | attr_name
+                {$$ = ast_new_attributes($1,$3);}
+          | attr_name 
+                {$$ = ast_new_attributes($1, NULL);}
           ;
 
-attr_name : identifier;
+attr_name : identifier {$$=$1;};
 
 /* A.9.2 Comments */
 

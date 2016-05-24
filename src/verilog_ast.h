@@ -10,6 +10,42 @@
 #ifndef VERILOG_AST_H
 #define VERILOG_AST_H
 
+typedef struct ast_node_t ast_node;
+
+//-------------- attributes ------------------------------------
+
+/*!
+@brief Node data describing an attribute.
+*/
+typedef struct ast_node_attributes_t ast_node_attributes;
+struct ast_node_attributes_t
+{
+    char                * attr_name;    //!< Name of the attribute
+    ast_node            * attr_value;   //!< Value of the attribute.
+
+    ast_node_attributes * next;         //!< Next one in a linked list.
+};
+
+
+/*!
+@brief Creates and returns a new attribute node with the specified value
+       and name.
+*/
+ast_node * ast_new_attribute_node( ast_node_attributes* value);
+
+/*!
+@brief Creates and returns a new attribute node with the specified value
+       and name.
+@param [inout] parent - Pointer to the node which represents the list of
+                        attribute name,value pairs.
+@param [in]    toadd  - The new attribute to add.
+*/
+void ast_append_attribute(ast_node_attributes * parent, 
+                          ast_node_attributes * toadd);
+
+
+// -------------------------------- Nodes --------------------------
+
 /*!
 @brief Stores the various data values that a node in the AST can represent.
 */
@@ -18,6 +54,7 @@ typedef union ast_value_u
     int     integer;
     float   real;
     char  * string;
+    ast_node_attributes * attributes;
 }ast_value;
 
 /*!
@@ -25,7 +62,7 @@ typedef union ast_value_u
 */
 typedef enum ast_value_type_e
 {
-    ATTRIBUTE,      //!< A design attribute.
+    ATTRIBUTE_LIST, //!< A design attribute. @ref ast_node_attributes_t
     NONE,           //!< The node has no stored data type.
     INTEGER,        //!< Node stores and integer.
     REAL,           //!< Node stores a real number.
@@ -37,7 +74,6 @@ typedef enum ast_value_type_e
 /*!
 @brief Node type that forms the tree.
 */
-typedef struct ast_node_t ast_node;
 struct ast_node_t
 {
     ast_node     * parent;      //!< Parent node in the tree.
@@ -51,21 +87,14 @@ struct ast_node_t
 /*!
 @brief Creates a new empty ast_node and returns it.
 */
-ast_node ast_node_new();
+ast_node * ast_node_new();
     
 /*!
 @brief Creates and returns a new node for the tree which contains a
        single simple identifier.
 */
-ast_node ast_new_identifier_node(char * identifier);
+ast_node * ast_new_identifier_node(char * identifier);
 
 
-/*!
-@brief Creates a new module description node.
-*/
-ast_node ast_new_module_node(char     * identifier,
-                             ast_node * parameter_list,
-                             ast_node * port_list,
-                             ast_node * module_items);
 
 #endif

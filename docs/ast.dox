@@ -36,48 +36,48 @@ need to typecast to traverse easily.
 This section contains a list of all grammar constructs and data structures
 that have yet to be written and integrated.
 
-- Attribute Instances
-- Expression L-Values
-- Expression R-Values
- - Expression Primaries
- - Constant Expressions
- - Variable Expressions
-- Proper Number Representation
-- Function Calls
-- Concatenations
-- Path Delays
-- Specify Blocks
-- Statements
- - Loops
- - Case
- - If Else
- - Timing Control
-- Fork Join
-- Procedural Blocks
-- Continous assignments
-- UDP
- - UDP Instance
- - UDP Port
- - UDP Body
-- Generate Loops
-- Module Instantiation
-- Primitives
- - Terminals
- - Strengths
- - Switch Types
-- Task Declaration
-- Function Declaration
-- Declaration Assignments
-- Delays
-- Drive Strenghts
-- Nets
-- Modules
- - Ports
- - Module Paramaters
- - Module Items
-- Configuration Source Text
-- Library Source Text
-- Compiler Directives
-- Top Level
+    - Attribute Instances [DONE]
+    - Expression L-Values
+    - Expression R-Values
+     - Expression Primaries
+     - Constant Expressions
+     - Variable Expressions
+    - Proper Number Representation
+    - Function Calls
+    - Concatenations
+    - Path Delays
+    - Specify Blocks
+    - Statements
+     - Loops
+     - Case
+     - If Else
+     - Timing Control
+    - Fork Join
+    - Procedural Blocks
+    - Continous assignments
+    - UDP
+     - UDP Instance
+     - UDP Port
+     - UDP Body
+    - Generate Loops
+    - Module Instantiation
+    - Primitives
+     - Terminals
+     - Strengths
+     - Switch Types
+    - Task Declaration
+    - Function Declaration
+    - Declaration Assignments
+    - Delays
+    - Drive Strenghts
+    - Nets
+    - Modules
+     - Ports
+     - Module Paramaters
+     - Module Items
+    - Configuration Source Text
+    - Library Source Text
+    - Compiler Directives
+    - Top Level
 
 */
