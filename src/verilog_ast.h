@@ -29,7 +29,8 @@ typedef enum ast_value_type_e
     INTEGER,        //!< Node stores and integer.
     REAL,           //!< Node stores a real number.
     CHAR_STRING,    //<! Node stores a character string.
-    IDENTIFIER      //<! An identifier.
+    IDENTIFIER,     //<! An identifier.
+    MODULE          //<! A design module.
 } ast_value_type;
 
 /*!
@@ -52,5 +53,10 @@ struct ast_node_t
 ast_node ast_node_new();
     
 ast_node ast_new_identifier_node(char * identifier);
+
+ast_node ast_new_module_node(char     * identifier,
+                             ast_node * parameter_list,
+                             ast_node * port_list,
+                             ast_node * module_items);
 
 #endif
