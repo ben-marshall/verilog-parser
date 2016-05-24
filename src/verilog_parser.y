@@ -27,11 +27,12 @@
    ast_identifier         identifier;
    ast_lvalue           * lvalue;
    ast_primary          * primary;
+   ast_expression       * expression;
+   ast_operator         * operator;
    char                   boolean;
    char                 * string;
    char                 * number;
    char                 * term;
-   char                 * operator;
    char                 * keyword;
 }
 
@@ -274,7 +275,23 @@
 
 %type <boolean> reg_o
 %type <boolean> signed_o
+%type <expression> conditional_expression
+%type <expression> constant_expression
+%type <expression> constant_mintypmax_expression
+%type <expression> constant_range_expression
+%type <expression> data_source_expression
+%type <expression> event_expression
+%type <expression> expression
+%type <expression> expression_o
+%type <expression> mintypmax_expression
+%type <expression> module_path_conditional_expression
+%type <expression> module_path_expression
+%type <expression> module_path_mintypemax_expression
+%type <expression> path_delay_expression
+%type <expression> port_expression
+%type <expression> range_expression
 %type <identifier> arrayed_identifier
+%type <identifier> attr_name
 %type <identifier> block_identifier
 %type <identifier> cell_identifier
 %type <identifier> config_identifier
@@ -339,11 +356,10 @@
 %type <identifier> udp_identifier
 %type <identifier> udp_instance_identifier
 %type <identifier> variable_identifier
+%type <lvalue> net_lvalue
+%type <lvalue> variable_lvalue
 %type <node> actual_argument
 %type <node> always_construct
-%type <identifier> attr_name
-%type <node_attributes> attr_spec
-%type <node_attributes> attr_specs
 %type <node> attribute_instances
 %type <node> automatic_o
 %type <node> block_item_declaration
@@ -367,25 +383,19 @@
 %type <node> concatenation
 %type <node> concatenation_cont
 %type <node> conditional_compile_directive
-%type <node> conditional_expression
 %type <node> conditional_statement
 %type <node> config_declaration
 %type <node> config_rule_statement
 %type <node> config_rule_statement_os
 %type <node> constant_concatenation
 %type <node> constant_concatenation_cont
-%type <node> constant_expression
 %type <node> constant_expression_o
 %type <node> constant_expressions
 %type <node> constant_function_call
 %type <node> constant_function_call_pid
-%type <node> constant_mintypmax_expression
 %type <node> constant_multiple_concatenation
-%type <primary> constant_primary
-%type <node> constant_range_expression
 %type <node> continuous_assign
 %type <node> current_state
-%type <node> data_source_expression
 %type <node> default_clause
 %type <node> default_net_type_cd
 %type <node> delay2
@@ -418,10 +428,7 @@
 %type <node> error_limit_value_o
 %type <node> event_control
 %type <node> event_declaration
-%type <node> event_expression
 %type <node> event_trigger
-%type <node> expression
-%type <node> expression_o
 %type <node> expressions
 %type <node> expressions_o
 %type <node> file_path_spec
@@ -511,7 +518,6 @@
 %type <node> list_of_specparam_assignments
 %type <node> local_parameter_declaration
 %type <node> loop_statement
-%type <node> mintypmax_expression
 %type <node> modpath_concatenation_cont
 %type <node> module_declaration
 %type <node> module_instance
@@ -524,11 +530,7 @@
 %type <node> module_parameter_port_list
 %type <node> module_params
 %type <node> module_path_concatenation
-%type <node> module_path_conditional_expression
-%type <node> module_path_expression
-%type <node> module_path_mintypemax_expression
 %type <node> module_path_multiple_concatenation
-%type <primary> module_path_primary
 %type <node> mos_switch_instance
 %type <node> mos_switch_instances
 %type <node> mos_switchtype
@@ -556,7 +558,6 @@
 %type <node> net_dec_p_vs
 %type <node> net_decl_assignment
 %type <node> net_declaration
-%type <lvalue> net_lvalue
 %type <node> net_type
 %type <node> net_type_o
 %type <node> next_state
@@ -588,7 +589,6 @@
 %type <node> pass_switch_instances
 %type <node> pass_switchtype
 %type <node> path_declaration
-%type <node> path_delay_expression
 %type <node> path_delay_value
 %type <node> pcontrol_terminal
 %type <node> polarity_operator
@@ -598,10 +598,8 @@
 %type <node> port_declaration_l
 %type <node> port_declarations
 %type <node> port_dir
-%type <node> port_expression
 %type <node> port_reference
 %type <node> ports
-%type <primary> primary
 %type <node> procedural_continuous_assignments
 %type <node> procedural_timing_control_statement
 %type <node> pull_gate_instance
@@ -613,7 +611,6 @@
 %type <node> pulse_control_specparam
 %type <node> pulsestyle_declaration
 %type <node> range
-%type <node> range_expression
 %type <node> range_expression_o
 %type <node> range_o
 %type <node> range_or_type
@@ -688,14 +685,18 @@
 %type <node> variable_concatenation
 %type <node> variable_concatenation_cont
 %type <node> variable_concatenation_value
-%type <lvalue> variable_lvalue
 %type <node> variable_type
 %type <node> wait_statement
+%type <node_attributes> attr_spec
+%type <node_attributes> attr_specs
 %type <number> number
 %type <number> unsigned_number
 %type <operator> binary_module_path_operator
 %type <operator> unary_module_path_operator
 %type <operator> unary_operator
+%type <primary> constant_primary
+%type <primary> module_path_primary
+%type <primary> primary
 %type <string> CB
 %type <string> OB
 %type <string> anys

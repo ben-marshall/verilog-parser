@@ -19,8 +19,11 @@ typedef char * ast_identifier;
 
 //! Placeholder until this is implemented properly.
 typedef void * ast_concatenation;
+
+typedef struct ast_expression_t ast_expression;
     
 typedef void * ast_number       ;
+typedef char * ast_operator     ;
 typedef void * ast_function_call;
 typedef void * ast_system_call  ;
 typedef void * ast_minmax_exp   ;
@@ -165,6 +168,55 @@ ast_primary * ast_new_primary(ast_primary_value_type type);
 */
 ast_primary * ast_new_module_path_primary(ast_primary_value_type type);
 
+// -------------------------------- Expressions --------------------
+
+//! Describes the kind of expression a node contains.
+typedef enum ast_expression_type_e
+{
+    PRIMARY_EXPRESSION,                 //!< A straight value
+    UNARY_EXPRESSION,                   //!< A unary op: "~bits" for example.
+    BINARY_EXPRESSION,                  //!< The "normal" expression
+    RANGE_EXPRESSION_UP_DOWN,           //!< Bit range expression
+    RANGE_EXPRESSION_INDEX,             //!< Bit index expression
+    MINTYPMAX_EXPRESSION,               //!< Minimum typical maximum
+    CONDITIONAL_EXPRESSION,             //!< Conditional expression
+    MODULE_PATH_EXPRESSION,
+    MODULE_PATH_MINTYPMAX_EXPRESSION,
+    STRING_EXPRESSION
+} ast_expression_type;
+
+
+/*! 
+@brief Storage type for an entire expression / subexpression tree.
+*/
+struct ast_expression_t
+{
+    ast_expression_type type;           //!< What sort of expression is this?
+    ast_node_attributes * attributes;   //!< Additional expression attributes.
+    ast_operator     operation;         //!< What are we doing?
+    ast_expression * left;              //!< LHS of operation
+    ast_expression * right;             //!< RHS of operation
+    ast_expression * aux;               //!< Optional auxiliary/predicate.
+};
+
+/*!
+@brief Creates a new primary infix expression with the supplied operands.
+@todo implement this.
+*/
+ast_expression * ast_new_primary_expression(ast_expression * left,
+                                            ast_expression * right,
+                                            ast_operator     operation,
+                                            ast_node_attributes * attr);
+
+/*!
+@brief Creates a new unary expression tree branch.
+@todo implement this.
+*/
+ast_expression * ast_new_unary_expression(ast_expression * operand,
+                                          ast_operator     operation,
+                                          ast_node_attributes * attr);
+
+
 // -------------------------------- Nodes --------------------------
 
 /*!
@@ -181,16 +233,14 @@ typedef union ast_value_u
 /*!
 @brief Enum type describing the data value that an AST node holds.
 */
-typedef enum ast_value_type_e
+typedef enum ast_node_type_e
 {
     ATTRIBUTE_LIST, //!< A design attribute. @ref ast_node_attributes_t
-    NONE,           //!< The node has no stored data type.
-    INTEGER,        //!< Node stores and integer.
-    REAL,           //!< Node stores a real number.
-    CHAR_STRING,    //<! Node stores a character string.
+    EXPRESSION,     //!< A constant or variable expression.
     IDENTIFIER,     //<! An identifier.
-    MODULE          //<! A design module.
-} ast_value_type;
+    MODULE,         //<! A design module.
+    NONE,           //!< The node has no stored data type.
+} ast_node_type;
 
 /*!
 @brief Node type that forms the tree.
@@ -202,7 +252,7 @@ struct ast_node_t
     ast_node     * children;    //!< Linked list of children.
 
     ast_value      value;       //!< Data value of the node.
-    ast_value_type type;        //!< Datatype of the value stored in the node.
+    ast_node_type  type;        //!< Datatype of the value stored in the node.
 };
 
 /*!
