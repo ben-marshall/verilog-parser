@@ -269,6 +269,7 @@
 
 %start grammar_begin
 
+%type <boolean> reg_o
 %type <boolean> signed_o
 %type <identifier> arrayed_identifier
 %type <identifier> block_identifier
@@ -330,6 +331,7 @@
 %type <identifier> system_task_identifier
 %type <identifier> task_identifier
 %type <identifier> text_macro_name
+%type <identifier> text_macro_usage
 %type <identifier> topmodule_identifier
 %type <identifier> udp_identifier
 %type <identifier> udp_instance_identifier
@@ -618,7 +620,6 @@
 %type <node> reg_dec_p_range
 %type <node> reg_dec_p_signed
 %type <node> reg_declaration
-%type <node> reg_o
 %type <node> reject_limit_value
 %type <node> seq_block
 %type <node> seq_input_list
@@ -657,7 +658,6 @@
 %type <node> task_port_type
 %type <node> task_port_type_o
 %type <node> text_macro_definition
-%type <node> text_macro_usage
 %type <node> tf_inout_declaration
 %type <node> tf_input_declaration
 %type <node> tf_input_declarations
@@ -900,9 +900,6 @@ module_declaration : attribute_instances
                      SEMICOLON
                      non_port_module_item_os
                      KW_ENDMODULE
-                     {
-                        $$ = ast_new_moddule_node($2,$3,$4,$6);
-                     }
                    | attribute_instances
                      module_keyword
                      module_identifier
@@ -911,9 +908,6 @@ module_declaration : attribute_instances
                      SEMICOLON
                      module_item_os
                      KW_ENDMODULE
-                     {
-                        $$ = ast_new_moddule_node($2,$3,$4,$6);
-                     }
                    ;
 
 module_keyword     : KW_MODULE

@@ -25,6 +25,7 @@ typedef union ast_value_u
 */
 typedef enum ast_value_type_e
 {
+    ATTRIBUTE,      //!< A design attribute.
     NONE,           //!< The node has no stored data type.
     INTEGER,        //!< Node stores and integer.
     REAL,           //!< Node stores a real number.
@@ -43,8 +44,8 @@ struct ast_node_t
     unsigned int   child_count; //!< Number of children the node has.
     ast_node     * children;    //!< Linked list of children.
 
-    ast_value      value;       //<! Data value of the node.
-    ast_value_type type;        //<! Datatype of the value stored in the node.
+    ast_value      value;       //!< Data value of the node.
+    ast_value_type type;        //!< Datatype of the value stored in the node.
 };
 
 /*!
@@ -52,8 +53,16 @@ struct ast_node_t
 */
 ast_node ast_node_new();
     
+/*!
+@brief Creates and returns a new node for the tree which contains a
+       single simple identifier.
+*/
 ast_node ast_new_identifier_node(char * identifier);
 
+
+/*!
+@brief Creates a new module description node.
+*/
 ast_node ast_new_module_node(char     * identifier,
                              ast_node * parameter_list,
                              ast_node * port_list,
