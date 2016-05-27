@@ -28,6 +28,7 @@ typedef void * ast_function_call;
 typedef void * ast_system_call  ;
 typedef void * ast_minmax_exp   ;
 typedef void * ast_macro_use    ;
+typedef char   ast_boolean      ;
 
 //-------------- attributes ------------------------------------
 
@@ -197,7 +198,7 @@ struct ast_expression_t
     ast_expression * left;              //!< LHS of operation
     ast_expression * right;             //!< RHS of operation
     ast_expression * aux;               //!< Optional auxiliary/predicate.
-    boolean          constant;          //!< True iff constant_expression.
+    ast_boolean      constant;          //!< True iff constant_expression.
 };
 
 /*!
