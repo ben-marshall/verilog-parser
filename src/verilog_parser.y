@@ -28,7 +28,7 @@
    ast_lvalue           * lvalue;
    ast_primary          * primary;
    ast_expression       * expression;
-   ast_operator         * operator;
+   ast_operator           operator;
    char                   boolean;
    char                 * string;
    char                 * number;
@@ -360,7 +360,7 @@
 %type <lvalue> variable_lvalue
 %type <node> actual_argument
 %type <node> always_construct
-%type <node> attribute_instances
+%type <node_attributes> attribute_instances
 %type <node> automatic_o
 %type <node> block_item_declaration
 %type <node> block_item_declarations
@@ -2483,31 +2483,79 @@ constant_range_expression :
 expression :
   primary
 | unary_operator attribute_instances primary %prec UNARY_OP
-| expression PLUS  attribute_instances expression
-| expression MINUS attribute_instances expression
-| expression STAR  attribute_instances expression
-| expression DIV   attribute_instances expression
-| expression MOD   attribute_instances expression
-| expression L_EQ  attribute_instances expression
-| expression L_NEQ attribute_instances expression
-| expression C_EQ  attribute_instances expression
-| expression C_NEQ attribute_instances expression
-| expression L_AND attribute_instances expression
-| expression L_OR  attribute_instances expression
-| expression POW   attribute_instances expression
-| expression LT    attribute_instances expression
-| expression LTE   attribute_instances expression
-| expression GT    attribute_instances expression
-| expression GTE   attribute_instances expression
-| expression B_AND attribute_instances expression
-| expression B_OR  attribute_instances expression
-| expression B_XOR attribute_instances expression
-| expression B_EQU attribute_instances expression
-| expression LSR   attribute_instances expression
-| expression LSL   attribute_instances expression
-| expression ASR   attribute_instances expression
-| expression ASL   attribute_instances expression
-| conditional_expression
+| expression PLUS  attribute_instances expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3);
+  }
+| expression MINUS attribute_instances expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3);
+  }
+| expression STAR  attribute_instances expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3);
+  }
+| expression DIV   attribute_instances expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3);
+  }
+| expression MOD   attribute_instances expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3);
+  }
+| expression L_EQ  attribute_instances expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3);
+  }
+| expression L_NEQ attribute_instances expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3);
+  }
+| expression C_EQ  attribute_instances expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3);
+  }
+| expression C_NEQ attribute_instances expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3);
+  }
+| expression L_AND attribute_instances expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3);
+  }
+| expression L_OR  attribute_instances expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3);
+  }
+| expression POW   attribute_instances expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3);
+  }
+| expression LT    attribute_instances expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3);
+  }
+| expression LTE   attribute_instances expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3);
+  }
+| expression GT    attribute_instances expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3);
+  }
+| expression GTE   attribute_instances expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3);
+  }
+| expression B_AND attribute_instances expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3);
+  }
+| expression B_OR  attribute_instances expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3);
+  }
+| expression B_XOR attribute_instances expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3);
+  }
+| expression B_EQU attribute_instances expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3);
+  }
+| expression LSR   attribute_instances expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3);
+  }
+| expression LSL   attribute_instances expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3);
+  }
+| expression ASR   attribute_instances expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3);
+  }
+| expression ASL   attribute_instances expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3);
+  }
+| conditional_expression {$$=$1;}
 | string
 ;
 
@@ -2536,9 +2584,17 @@ module_path_mintypemax_expression :
 ;
 
 range_expression :
-  expression
-| expression COLON       constant_expression
-| expression IDX_PRT_SEL constant_expression %prec IDX_PRT_SEL
+  expression {
+    $$ = ast_new_index_expression($1);
+  }
+| expression COLON       constant_expression{
+    $$ = ast_new_range_expression($1,$3);
+  }
+
+| expression IDX_PRT_SEL constant_expression %prec IDX_PRT_SEL{
+    $$ = ast_new_range_expression($1,$3);
+  }
+
 ;
 
 /* A.8.4 Primaries */
@@ -2778,11 +2834,11 @@ attribute_instances : {$$=NULL;}
 
 list_of_attribute_instances : 
   ATTRIBUTE_START attr_specs ATTRIBUTE_END {
-      $$ = ast_new_attribute_node($2);
+      $$ = $2;
   }
 | attribute_instances ATTRIBUTE_START attr_specs ATTRIBUTE_END{
     if($1 != NULL){
-        ast_append_attribute($1 -> value.attributes, $3);
+        ast_append_attribute($1, $3);
         $$ = $1;
     } else {
         $$ = ast_new_attribute_node($3);

@@ -200,21 +200,56 @@ struct ast_expression_t
 };
 
 /*!
-@brief Creates a new primary infix expression with the supplied operands.
-@todo implement this.
+@brief Creates a new binary infix expression with the supplied operands.
 */
-ast_expression * ast_new_primary_expression(ast_expression * left,
-                                            ast_expression * right,
-                                            ast_operator     operation,
-                                            ast_node_attributes * attr);
+ast_expression * ast_new_binary_expression(ast_expression * left,
+                                           ast_expression * right,
+                                           ast_operator     operation,
+                                           ast_node_attributes * attr);
+
+/*!
+@brief Creates a new range expression with the supplied operands.
+*/
+ast_expression * ast_new_range_expression(ast_expression * left,
+                                          ast_expression * right);
+                                           
+/*!
+@brief Creates a new range index expression with the supplied operands.
+*/
+ast_expression * ast_new_index_expression(ast_expression * left);
+
 
 /*!
 @brief Creates a new unary expression tree branch.
-@todo implement this.
 */
 ast_expression * ast_new_unary_expression(ast_expression * operand,
                                           ast_operator     operation,
                                           ast_node_attributes * attr);
+
+/*!
+@todo Implement.
+*/
+ast_expression * ast_new_conditional_expression();
+
+/*!
+@todo Implement.
+*/
+ast_expression * ast_new_modpath_expression();
+
+/*!
+@todo Implement.
+*/
+ast_expression * ast_new_modpath_conditional_expression();
+
+/*!
+@todo Implement.
+*/
+ast_expression * ast_new_mintypmax_expression();
+
+/*!
+@todo Implement.
+*/
+ast_expression * ast_new_modpath_mintypmax_expression();
 
 
 // -------------------------------- Nodes --------------------------

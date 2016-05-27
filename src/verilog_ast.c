@@ -154,3 +154,78 @@ ast_primary * ast_new_module_path_primary(ast_primary_value_type type)
 
     return tr;
 }
+
+
+/*!
+@brief Creates a new unary expression with the supplied operation.
+*/
+ast_expression * ast_new_unary_expression(ast_expression * operand,
+                                          ast_operator     operation,
+                                          ast_node_attributes * attr)
+{
+    ast_expression * tr = calloc(1, sizeof(ast_expression));
+    
+    tr -> operation     = operation;
+    tr -> attributes    = attr;
+    tr -> right         = operand;
+    tr -> left          = NULL;
+    tr -> aux           = NULL;
+    tr -> type          = UNARY_EXPRESSION;
+
+    return tr;
+}
+
+/*!
+@brief Creates a new range expression with the supplied operands.
+*/
+ast_expression * ast_new_range_expression(ast_expression * left,
+                                          ast_expression * right)
+{
+    ast_expression * tr = calloc(1, sizeof(ast_expression));
+    
+    tr -> attributes    = NULL;
+    tr -> right         = right;
+    tr -> left          = left;
+    tr -> aux           = NULL;
+    tr -> type          = RANGE_EXPRESSION_UP_DOWN;
+
+    return tr;
+}
+                                           
+/*!
+@brief Creates a new range index expression with the supplied operands.
+*/
+ast_expression * ast_new_index_expression(ast_expression * left)
+{
+    ast_expression * tr = calloc(1, sizeof(ast_expression));
+    
+    tr -> attributes    = NULL;
+    tr -> right         = NULL;
+    tr -> left          = left;
+    tr -> aux           = NULL;
+    tr -> type          = RANGE_EXPRESSION_INDEX;
+
+    return tr;
+}
+
+/*!
+@brief Creates a new primary expression with the supplied operation
+and operands.
+@note Sets the type of the expression 
+*/
+ast_expression * ast_new_binary_expression(ast_expression * left,
+                                           ast_expression * right,
+                                           ast_operator     operation,
+                                           ast_node_attributes * attr)
+{
+    ast_expression * tr = calloc(1, sizeof(ast_expression));
+    
+    tr -> operation     = operation;
+    tr -> attributes    = attr;
+    tr -> right         = right;
+    tr -> left          = left;
+    tr -> aux           = NULL;
+    tr -> type          = BINARY_EXPRESSION;
+
+    return tr;
+}
