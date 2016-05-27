@@ -155,13 +155,37 @@ ast_primary * ast_new_module_path_primary(ast_primary_value_type type)
     return tr;
 }
 
+/*!
+@brief Creates and returns a new expression primary.
+@description This is simply an expression instance wrapped around a
+primary instance for the purposes of mirroring the expression tree gramamr.
+Whether or not the expression is constant is denoted by the type member
+of the passed primary.
+*/
+ast_expression * ast_new_expression_primary(ast_primary * p)
+{
+    ast_expression * tr = calloc(1, sizeof(ast_expression));
+    
+    tr -> attributes    = NULL;
+    tr -> right         = NULL;
+    tr -> left          = NULL;
+    tr -> aux           = NULL;
+    tr -> type          = PRIMARY_EXPRESSION;
+    tr -> primary       = p;
+    tr -> constant      = p -> primary_type == CONSTANT_PRIMARY ? AST_TRUE 
+                                                                : AST_FALSE;
+
+    return tr;
+}
+
 
 /*!
 @brief Creates a new unary expression with the supplied operation.
 */
 ast_expression * ast_new_unary_expression(ast_expression * operand,
                                           ast_operator     operation,
-                                          ast_node_attributes * attr)
+                                          ast_node_attributes * attr,
+                                          ast_boolean       constant)
 {
     ast_expression * tr = calloc(1, sizeof(ast_expression));
     
@@ -171,6 +195,7 @@ ast_expression * ast_new_unary_expression(ast_expression * operand,
     tr -> left          = NULL;
     tr -> aux           = NULL;
     tr -> type          = UNARY_EXPRESSION;
+    tr -> constant      = constant;
 
     return tr;
 }
@@ -216,7 +241,8 @@ and operands.
 ast_expression * ast_new_binary_expression(ast_expression * left,
                                            ast_expression * right,
                                            ast_operator     operation,
-                                           ast_node_attributes * attr)
+                                           ast_node_attributes * attr,
+                                           ast_boolean      constant)
 {
     ast_expression * tr = calloc(1, sizeof(ast_expression));
     
@@ -226,6 +252,72 @@ ast_expression * ast_new_binary_expression(ast_expression * left,
     tr -> left          = left;
     tr -> aux           = NULL;
     tr -> type          = BINARY_EXPRESSION;
+    tr -> constant      = constant;
 
     return tr;
 }
+
+
+/*!
+@brief Creates a new string expression.
+*/
+ast_expression * ast_new_string_expression(ast_string string)
+{
+    ast_expression * tr = calloc(1, sizeof(ast_expression));
+
+    tr -> attributes    = NULL;
+    tr -> right         = NULL;
+    tr -> left          = NULL;
+    tr -> aux           = NULL;
+    tr -> type          = STRING_EXPRESSION;
+    tr -> constant      = AST_TRUE;
+    tr -> string        = string;
+    
+    return tr;
+}
+
+
+/*!
+@brief Creates a new conditional expression node. 
+@note The condition is stored in the aux member, if_true in left, and if_false
+on the right.
+*/
+ast_expression * ast_new_conditional_expression(ast_expression * condition,
+                                                ast_expression * if_true,
+                                                ast_expression * if_false,
+                                                ast_node_attributes * attr)
+{
+    ast_expression * tr = calloc(1, sizeof(ast_expression));
+
+    tr -> attributes    = attr;
+    tr -> right         = if_false;
+    tr -> left          = if_true;
+    tr -> aux           = condition;
+    tr -> type          = CONDITIONAL_EXPRESSION;
+    
+    return tr;
+}
+
+/*!
+@brief Creates a new (min,typical,maximum) expression.
+@decription If the mintypmax expression only specifies a typical value,
+then the min and max arguments should be NULL, and only typ set. 
+*/
+ast_expression * ast_new_mintypmax_expression(ast_expression * min,
+                                              ast_expression * typ,
+                                              ast_expression * max)
+{
+    ast_expression * tr = calloc(1, sizeof(ast_expression));
+
+    tr -> attributes    = NULL;
+    tr -> right         = max;
+    tr -> left          = min;
+    tr -> aux           = typ;
+    tr -> type          = MINTYPMAX_EXPRESSION;
+    
+    return tr;
+}
+
+
+
+

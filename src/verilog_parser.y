@@ -2434,153 +2434,249 @@ system_function_call :
 /* A.8.3 Expressions */
 
 conditional_expression : 
-  expression TERNARY attribute_instances expression COLON expression
+  expression TERNARY attribute_instances expression COLON expression{
+    $$ = ast_new_conditional_expression($1,$4,$6,$3);
+  }
+
 ;
 
 constant_expression:
-  constant_primary
-| unary_operator attribute_instances constant_primary
-| constant_expression PLUS  attribute_instances constant_expression
-| constant_expression MINUS attribute_instances constant_expression
-| constant_expression STAR  attribute_instances constant_expression
-| constant_expression DIV   attribute_instances constant_expression
-| constant_expression MOD   attribute_instances constant_expression
-| constant_expression L_EQ  attribute_instances constant_expression
-| constant_expression L_NEQ attribute_instances constant_expression
-| constant_expression C_EQ  attribute_instances constant_expression
-| constant_expression C_NEQ attribute_instances constant_expression
-| constant_expression L_AND attribute_instances constant_expression
-| constant_expression L_OR  attribute_instances constant_expression
-| constant_expression POW   attribute_instances constant_expression
-| constant_expression LT    attribute_instances constant_expression
-| constant_expression LTE   attribute_instances constant_expression
-| constant_expression GT    attribute_instances constant_expression
-| constant_expression GTE   attribute_instances constant_expression
-| constant_expression B_AND attribute_instances constant_expression
-| constant_expression B_OR  attribute_instances constant_expression
-| constant_expression B_XOR attribute_instances constant_expression
-| constant_expression B_EQU attribute_instances constant_expression
-| constant_expression LSR   attribute_instances constant_expression
-| constant_expression LSL   attribute_instances constant_expression
-| constant_expression ASR   attribute_instances constant_expression
-| constant_expression ASL   attribute_instances constant_expression
+  constant_primary {$$ = ast_new_expression_primary($1);}
+| unary_operator attribute_instances constant_primary{
+    $$ = ast_new_unary_expression(ast_new_expression_primary($3),
+                                  $1,$2,AST_TRUE);
+  }
+| constant_expression PLUS  attribute_instances constant_expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_TRUE);
+  }
+| constant_expression MINUS attribute_instances constant_expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_TRUE);
+  }
+| constant_expression STAR  attribute_instances constant_expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_TRUE);
+  }
+| constant_expression DIV   attribute_instances constant_expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_TRUE);
+  }
+| constant_expression MOD   attribute_instances constant_expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_TRUE);
+  }
+| constant_expression L_EQ  attribute_instances constant_expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_TRUE);
+  }
+| constant_expression L_NEQ attribute_instances constant_expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_TRUE);
+  }
+| constant_expression C_EQ  attribute_instances constant_expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_TRUE);
+  }
+| constant_expression C_NEQ attribute_instances constant_expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_TRUE);
+  }
+| constant_expression L_AND attribute_instances constant_expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_TRUE);
+  }
+| constant_expression L_OR  attribute_instances constant_expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_TRUE);
+  }
+| constant_expression POW   attribute_instances constant_expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_TRUE);
+  }
+| constant_expression LT    attribute_instances constant_expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_TRUE);
+  }
+| constant_expression LTE   attribute_instances constant_expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_TRUE);
+  }
+| constant_expression GT    attribute_instances constant_expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_TRUE);
+  }
+| constant_expression GTE   attribute_instances constant_expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_TRUE);
+  }
+| constant_expression B_AND attribute_instances constant_expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_TRUE);
+  }
+| constant_expression B_OR  attribute_instances constant_expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_TRUE);
+  }
+| constant_expression B_XOR attribute_instances constant_expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_TRUE);
+  }
+| constant_expression B_EQU attribute_instances constant_expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_TRUE);
+  }
+| constant_expression LSR   attribute_instances constant_expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_TRUE);
+  }
+| constant_expression LSL   attribute_instances constant_expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_TRUE);
+  }
+| constant_expression ASR   attribute_instances constant_expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_TRUE);
+  }
+| constant_expression ASL   attribute_instances constant_expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_TRUE);
+  }
 | constant_expression TERNARY attribute_instances constant_expression COLON
-  constant_expression
-| string
+  constant_expression{
+    $$ = ast_new_conditional_expression($1,$4,$6,$3);
+  }
+| string { $$ = ast_new_string_expression($1);}
 ;
 
 constant_mintypmax_expression :
-  constant_expression
-| constant_expression COLON constant_expression COLON constant_expression
+  constant_expression{
+      $$ = ast_new_mintypmax_expression(NULL,$1,NULL);
+  }
+| constant_expression COLON constant_expression COLON constant_expression{
+      $$ = ast_new_mintypmax_expression($1,$3,$5);
+  }
 ;
 
 constant_range_expression :
-  constant_expression
-| constant_expression COLON       constant_expression
-| constant_expression IDX_PRT_SEL constant_expression
+  constant_expression{
+    $$ = ast_new_index_expression($1);
+  }
+
+| constant_expression COLON       constant_expression{
+    $$ = ast_new_range_expression($1,$3);
+  }
+| constant_expression IDX_PRT_SEL constant_expression{
+    $$ = ast_new_range_expression($1,$3);
+  }
 ;
 
 expression :
-  primary
-| unary_operator attribute_instances primary %prec UNARY_OP
+  primary {
+    $$ = ast_new_expression_primary($1);
+  }
+| unary_operator attribute_instances primary %prec UNARY_OP{
+    $$ = ast_new_unary_expression(ast_new_expression_primary($3),
+                                  $1,$2, AST_FALSE);
+  }
 | expression PLUS  attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3);
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
   }
 | expression MINUS attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3);
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
   }
 | expression STAR  attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3);
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
   }
 | expression DIV   attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3);
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
   }
 | expression MOD   attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3);
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
   }
 | expression L_EQ  attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3);
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
   }
 | expression L_NEQ attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3);
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
   }
 | expression C_EQ  attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3);
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
   }
 | expression C_NEQ attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3);
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
   }
 | expression L_AND attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3);
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
   }
 | expression L_OR  attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3);
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
   }
 | expression POW   attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3);
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
   }
 | expression LT    attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3);
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
   }
 | expression LTE   attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3);
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
   }
 | expression GT    attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3);
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
   }
 | expression GTE   attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3);
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
   }
 | expression B_AND attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3);
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
   }
 | expression B_OR  attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3);
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
   }
 | expression B_XOR attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3);
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
   }
 | expression B_EQU attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3);
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
   }
 | expression LSR   attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3);
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
   }
 | expression LSL   attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3);
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
   }
 | expression ASR   attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3);
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
   }
 | expression ASL   attribute_instances expression{
-    $$ = ast_new_binary_expression($1,$4,$2,$3);
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
   }
 | conditional_expression {$$=$1;}
-| string
+| string {$$ = ast_new_string_expression($1);}
 ;
 
 mintypmax_expression :
-  expression
-| expression COLON expression COLON expression
+  expression{
+      $$ = ast_new_mintypmax_expression(NULL,$1,NULL);
+  }
+| expression COLON expression COLON expression{
+      $$ = ast_new_mintypmax_expression($1,$3,$5);
+  }
 ;
 
 module_path_conditional_expression :
   module_path_expression TERNARY attribute_instances module_path_expression
-  COLON module_path_expression
+  COLON module_path_expression{
+    $$ = ast_new_conditional_expression($1, $4, $6, $3);
+    $$ -> type = MODULE_PATH_CONDITIONAL_EXPRESSION;
+  }
 ;
 
-module_path_expression :
-  module_path_primary
-| unary_module_path_operator attribute_instances module_path_primary
+module_path_expression : /* TODO: */
+  module_path_primary{
+    $$ = ast_new_expression_primary($1);
+    $$ -> type = MODULE_PATH_PRIMARY_EXPRESSION;
+  }
+| unary_module_path_operator attribute_instances module_path_primary{
+    $$ = ast_new_unary_expression(ast_new_expression_primary($3),
+                                  $1,$2,AST_FALSE);
+    $$ -> type == MODULE_PATH_UNARY_EXPRESSION;
+}
 | module_path_expression binary_module_path_operator attribute_instances
-  module_path_expression
-| module_path_conditional_expression
+  module_path_expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
+    $$ -> type = MODULE_PATH_BINARY_EXPRESSION;
+  }
+| module_path_conditional_expression {$$ = $1;}
 ;
 
 module_path_mintypemax_expression :
-  module_path_expression
+  module_path_expression {
+      $$ = ast_new_mintypmax_expression(NULL,$1,NULL);
+      $$ -> type = MODULE_PATH_MINTYPMAX_EXPRESSION;
+  }
 | module_path_expression COLON module_path_expression COLON 
-  module_path_expression
+  module_path_expression {
+      $$ = ast_new_mintypmax_expression($1,$3,$5);
+      $$ -> type = MODULE_PATH_MINTYPMAX_EXPRESSION;
+  }
+
 ;
 
 range_expression :

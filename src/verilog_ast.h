@@ -28,7 +28,14 @@ typedef void * ast_function_call;
 typedef void * ast_system_call  ;
 typedef void * ast_minmax_exp   ;
 typedef void * ast_macro_use    ;
-typedef char   ast_boolean      ;
+typedef char * ast_string       ;
+
+//! Stores the values of booleans.
+typedef enum  ast_boolean_e
+{
+    AST_TRUE=1,
+    AST_FALSE=0
+} ast_boolean;
 
 //-------------- attributes ------------------------------------
 
@@ -181,7 +188,10 @@ typedef enum ast_expression_type_e
     RANGE_EXPRESSION_INDEX,             //!< Bit index expression
     MINTYPMAX_EXPRESSION,               //!< Minimum typical maximum
     CONDITIONAL_EXPRESSION,             //!< Conditional expression
-    MODULE_PATH_EXPRESSION,
+    MODULE_PATH_PRIMARY_EXPRESSION,
+    MODULE_PATH_BINARY_EXPRESSION,
+    MODULE_PATH_UNARY_EXPRESSION,
+    MODULE_PATH_CONDITIONAL_EXPRESSION,
     MODULE_PATH_MINTYPMAX_EXPRESSION,
     STRING_EXPRESSION
 } ast_expression_type;
@@ -199,63 +209,71 @@ struct ast_expression_t
     ast_expression * right;             //!< RHS of operation
     ast_expression * aux;               //!< Optional auxiliary/predicate.
     ast_boolean      constant;          //!< True iff constant_expression.
+    ast_string       string;            //!< The string constant. Valid IFF type == STRING_EXPRESSION.
+    ast_primary    * primary;           //!< Valid IFF type == PRIMARY_EXPRESSION.
 };
 
 /*!
+@brief Creates and returns a new expression primary.
+@description This is simply an expression instance wrapped around a
+primary instance for the purposes of mirroring the expression tree gramamr.
+Whether or not the expression is constant is denoted by the type member
+of the passed primary.
+*/
+ast_expression * ast_new_expression_primary(ast_primary * p);
+
+/*!
 @brief Creates a new binary infix expression with the supplied operands.
-@todo Set constant bit?
 */
 ast_expression * ast_new_binary_expression(ast_expression * left,
                                            ast_expression * right,
                                            ast_operator     operation,
-                                           ast_node_attributes * attr);
+                                           ast_node_attributes * attr,
+                                           ast_boolean      constant);
 
 /*!
-@brief Creates a new range expression with the supplied operands.
-@todo Set constant bit?
-*/
-ast_expression * ast_new_range_expression(ast_expression * left,
-                                          ast_expression * right);
-                                           
-/*!
-@brief Creates a new range index expression with the supplied operands.
-@todo Set constant bit?
-*/
-ast_expression * ast_new_index_expression(ast_expression * left);
-
-
-/*!
-@brief Creates a new unary expression tree branch.
-@todo Set constant bit?
+@brief Creates a new unary expression with the supplied operation.
 */
 ast_expression * ast_new_unary_expression(ast_expression * operand,
                                           ast_operator     operation,
-                                          ast_node_attributes * attr);
+                                          ast_node_attributes * attr,
+                                          ast_boolean       constant);
 
 /*!
-@todo Implement.
+@brief Creates a new range expression with the supplied operands.
 */
-ast_expression * ast_new_conditional_expression();
+ast_expression * ast_new_range_expression(ast_expression * left,
+                                          ast_expression * right);
 
 /*!
-@todo Implement.
+@brief Creates a new range index expression with the supplied operands.
 */
-ast_expression * ast_new_modpath_expression();
+ast_expression * ast_new_index_expression(ast_expression * left);
 
 /*!
-@todo Implement.
+@brief Creates a new string expression.
 */
-ast_expression * ast_new_modpath_conditional_expression();
+ast_expression * ast_new_string_expression(ast_string string);
+
 
 /*!
-@todo Implement.
+@brief Creates a new conditional expression node. 
+@note The condition is stored in the aux member, if_true in left, and if_false
+on the right.
 */
-ast_expression * ast_new_mintypmax_expression();
+ast_expression * ast_new_conditional_expression(ast_expression * condition,
+                                                ast_expression * if_true,
+                                                ast_expression * if_false,
+                                                ast_node_attributes * attr);
 
 /*!
-@todo Implement.
+@brief Creates a new (min,typical,maximum) expression.
+@decription If the mintypmax expression only specifies a typical value,
+then the min and max arguments should be NULL, and only typ set. 
 */
-ast_expression * ast_new_modpath_mintypmax_expression();
+ast_expression * ast_new_mintypmax_expression(ast_expression * min,
+                                              ast_expression * typ,
+                                              ast_expression * max);
 
 // -------------------------------- Function Calls ---------------------------
 
