@@ -13,6 +13,7 @@ This will get you going.
     ```sh
     $> source bin/project.sh
     $> cd build
+    $> make docs
     $> make
     $> make test
     ```
@@ -51,6 +52,5 @@ There are some things that the parser does not support:
   since Verilog is a subset of SystemVerilog.
 - System timing checks. See Annex 7.5.1 of the specification for what this
   omits. It hopefully won't be long before I get round to adding it though.
-- Abstract Syntax Trees. Getting the grammar built has been a challenge
-  enough, having it build an AST will be another on-going project in order
-  to make the whole thing actually useful!
+- Abstract Syntax Trees. This is a work in progress, but it will be in there
+  eventually.
