@@ -197,10 +197,12 @@ struct ast_expression_t
     ast_expression * left;              //!< LHS of operation
     ast_expression * right;             //!< RHS of operation
     ast_expression * aux;               //!< Optional auxiliary/predicate.
+    boolean          constant;          //!< True iff constant_expression.
 };
 
 /*!
 @brief Creates a new binary infix expression with the supplied operands.
+@todo Set constant bit?
 */
 ast_expression * ast_new_binary_expression(ast_expression * left,
                                            ast_expression * right,
@@ -209,18 +211,21 @@ ast_expression * ast_new_binary_expression(ast_expression * left,
 
 /*!
 @brief Creates a new range expression with the supplied operands.
+@todo Set constant bit?
 */
 ast_expression * ast_new_range_expression(ast_expression * left,
                                           ast_expression * right);
                                            
 /*!
 @brief Creates a new range index expression with the supplied operands.
+@todo Set constant bit?
 */
 ast_expression * ast_new_index_expression(ast_expression * left);
 
 
 /*!
 @brief Creates a new unary expression tree branch.
+@todo Set constant bit?
 */
 ast_expression * ast_new_unary_expression(ast_expression * operand,
                                           ast_operator     operation,
@@ -251,8 +256,88 @@ ast_expression * ast_new_mintypmax_expression();
 */
 ast_expression * ast_new_modpath_mintypmax_expression();
 
+// -------------------------------- Function Calls ---------------------------
 
-// -------------------------------- Nodes --------------------------
+
+// -------------------------------- Concatenations ---------------------------
+
+
+// -------------------------------- Specify Blocks ---------------------------
+
+
+// -------------------------------- Loop Statements --------------------------
+
+
+// -------------------------------- Case Statements --------------------------
+
+
+// -------------------------------- IF Else Statements -----------------------
+
+
+// -------------------------------- Timing Control Statements ----------------
+
+
+// -------------------------------- Fork Join Sequential ---------------------
+
+
+// -------------------------------- Procedural Blocks and Assignments --------
+
+
+// -------------------------------- UDP Blocks -------------------------------
+
+
+// -------------------------------- Generate Statements ----------------------
+
+
+// -------------------------------- Module Instantiation ---------------------
+
+
+// -------------------------------- Primitives -------------------------------
+
+
+// -------------------------------- Task Declaration -------------------------
+
+
+// -------------------------------- Function Declaration ---------------------
+
+
+// -------------------------------- Declaration Lists ------------------------
+
+
+// -------------------------------- Delays -----------------------------------
+
+
+// -------------------------------- Strengths --------------------------------
+
+
+// -------------------------------- Nets and Variables -----------------------
+
+
+// -------------------------------- Type Declarations ------------------------
+
+
+// -------------------------------- Port Declarations ------------------------
+
+
+// -------------------------------- Module Parameters ------------------------
+
+
+// -------------------------------- Module Items -----------------------------
+
+
+// -------------------------------- Module Declarations ----------------------
+
+
+// -------------------------------- Configuration Source ---------------------
+
+
+// -------------------------------- Library Source Text ----------------------
+
+
+// -------------------------------- Compiler Directives ----------------------
+
+
+// -------------------------------- Grammar Top Level ------------------------
 
 /*!
 @brief Stores the various data values that a node in the AST can represent.
