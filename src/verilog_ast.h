@@ -125,6 +125,7 @@ struct ast_function_call_t {
     ast_boolean         system;     //!< System function call?
     ast_identifier      function;   //!< Function identifier
     ast_list        *   arguments;  //!< Linked list of arguments.
+    ast_node_attributes * attributes;
 };
 
 
@@ -137,7 +138,8 @@ no arguments, then it is an empty list, not NULL.
 ast_function_call * ast_new_function_call(ast_identifier  id,
                                           ast_boolean     constant,
                                           ast_boolean     system,
-                                          ast_list      * aguments);
+                                          ast_node_attributes * attr,
+                                          ast_list      * arguments);
 
 
 // -------------------------------- Primaries ----------------------

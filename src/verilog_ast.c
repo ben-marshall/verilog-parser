@@ -339,15 +339,28 @@ ast_expression * ast_new_mintypmax_expression(ast_expression * min,
 @brief Creates and returns a new node representing a function call.
 @param [in] arguments - list of elements of type ast_expression
 representing the various parameters to the function. If the function has
-no arguments, then it is an empty list, not NULL.
+no arguments, then it is an empty list, not NULL. If this is supplied as
+NULL, then an empty list is added automatically by the function.
 @todo Implement the internals of this.
 */
 ast_function_call * ast_new_function_call(ast_identifier  id,
                                           ast_boolean     constant,
                                           ast_boolean     system,
-                                          ast_list      * aguments)
+                                          ast_node_attributes * attr,
+                                          ast_list      * arguments)
 {
     ast_function_call * tr = calloc(1, sizeof(ast_function_call));
+
+    tr -> function  = id;
+    tr -> constant  = constant;
+    tr -> system    = system;
+    tr -> arguments = arguments;
+    tr -> attributes = attr;
+    
+    if(tr -> arguments == NULL)
+    {
+        tr -> arguments = ast_list_new();
+    }
 
     return tr;
 }

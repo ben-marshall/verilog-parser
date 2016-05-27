@@ -30,6 +30,7 @@
    ast_expression       * expression;
    ast_operator           operator;
    ast_function_call    * call_function;
+   ast_list             * list;
    char                   boolean;
    char                 * string;
    char                 * number;
@@ -391,7 +392,7 @@
 %type <node> constant_concatenation
 %type <node> constant_concatenation_cont
 %type <node> constant_expression_o
-%type <node> constant_expressions
+%type <list> constant_expressions
 %type <call_function> constant_function_call
 %type <call_function> constant_function_call_pid
 %type <node> constant_multiple_concatenation
@@ -430,7 +431,7 @@
 %type <node> event_control
 %type <node> event_declaration
 %type <node> event_trigger
-%type <node> expressions
+%type <list> expressions
 %type <node> expressions_o
 %type <node> file_path_spec
 %type <node> file_path_specs
@@ -2403,32 +2404,56 @@ variable_concatenation_value :
 /* A.8.2 Function calls */
 
 constant_expressions :
-  constant_expression
-| constant_expressions COMMA constant_expression
+  constant_expression{
+        $$ = ast_list_new();
+        ast_list_append($$,$1);
+  }
+| constant_expressions COMMA constant_expression{
+        $$ = $1;
+        ast_list_append($$,$3);
+  }
 ;
 
 expressions :
-  expression 
-| expressions COMMA expression
+  expression {
+        $$ = ast_list_new();
+        ast_list_append($$,$1);
+  }
+| expressions COMMA expression{
+        $$ = $1;
+        ast_list_append($$,$3);
+  }
 ;
 
 constant_function_call :
   function_identifier attribute_instances OPEN_BRACKET constant_expressions 
-  CLOSE_BRACKET
+  CLOSE_BRACKET{
+    $$ = ast_new_function_call($1,AST_FALSE,AST_FALSE,$2,$4);
+ }
 ;
 
 constant_function_call_pid :
-  attribute_instances OPEN_BRACKET constant_expressions CLOSE_BRACKET
+  attribute_instances OPEN_BRACKET constant_expressions CLOSE_BRACKET{
+    $$ = ast_new_function_call("unknown",AST_TRUE,AST_FALSE,$1,$3);
+ }
 ;
 
 function_call : hierarchical_function_identifier
- attribute_instances OPEN_BRACKET expressions CLOSE_BRACKET
+ attribute_instances OPEN_BRACKET expressions CLOSE_BRACKET{
+    $$ = ast_new_function_call($1,AST_FALSE,AST_FALSE,$2,$4);
+ }
 ;
 
 system_function_call : 
-  system_function_identifier
-| system_function_identifier OPEN_BRACKET CLOSE_BRACKET
-| system_function_identifier OPEN_BRACKET expressions CLOSE_BRACKET
+  system_function_identifier{
+    $$ = ast_new_function_call($1,AST_FALSE,AST_TRUE,NULL,NULL);
+  }
+| system_function_identifier OPEN_BRACKET CLOSE_BRACKET{
+    $$ = ast_new_function_call($1,AST_FALSE,AST_TRUE,NULL,NULL);
+  }
+| system_function_identifier OPEN_BRACKET expressions CLOSE_BRACKET{
+    $$ = ast_new_function_call($1,AST_FALSE,AST_TRUE,NULL,$3);
+  }
 ;
 
 
