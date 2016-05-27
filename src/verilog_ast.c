@@ -126,6 +126,22 @@ ast_primary * ast_new_constant_primary(ast_primary_value_type type)
     return tr;
 }
 
+
+/*!
+@brief Creates a new AST primary wrapper around a function call.
+*/
+ast_primary * ast_new_primary_function_call(ast_function_call * call)
+{
+    ast_primary * tr = calloc(1, sizeof(ast_primary));
+
+    tr -> primary_type  = PRIMARY;
+    tr -> value_type    = PRIMARY_FUNCTION_CALL;
+    tr -> value.function_call = call;
+
+    return tr;
+}
+
+
 /*!
 @brief Creates a new ast primary which is part of an expression tree
        with the supplied type and value.
@@ -315,6 +331,24 @@ ast_expression * ast_new_mintypmax_expression(ast_expression * min,
     tr -> aux           = typ;
     tr -> type          = MINTYPMAX_EXPRESSION;
     
+    return tr;
+}
+
+
+/*!
+@brief Creates and returns a new node representing a function call.
+@param [in] arguments - list of elements of type ast_expression
+representing the various parameters to the function. If the function has
+no arguments, then it is an empty list, not NULL.
+@todo Implement the internals of this.
+*/
+ast_function_call * ast_new_function_call(ast_identifier  id,
+                                          ast_boolean     constant,
+                                          ast_boolean     system,
+                                          ast_list      * aguments)
+{
+    ast_function_call * tr = calloc(1, sizeof(ast_function_call));
+
     return tr;
 }
 

@@ -59,6 +59,7 @@ add_library(verilogparserc
             verilog_lexer.y.c
             verilog_parser.c
             verilog_ast.c
+            verilog_ast_common.c
 ) 
 
 # C library test exectuable

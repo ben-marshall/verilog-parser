@@ -7,6 +7,8 @@
 #include "stdarg.h"
 #include "stdlib.h"
 
+#include "verilog_ast_common.h"
+
 #ifndef VERILOG_AST_H
 #define VERILOG_AST_H
 
@@ -21,11 +23,10 @@ typedef char * ast_identifier;
 typedef void * ast_concatenation;
 
 typedef struct ast_expression_t ast_expression;
+typedef struct ast_function_call_t ast_function_call;
     
 typedef void * ast_number       ;
 typedef char * ast_operator     ;
-typedef void * ast_function_call;
-typedef void * ast_system_call  ;
 typedef void * ast_minmax_exp   ;
 typedef void * ast_macro_use    ;
 typedef char * ast_string       ;
@@ -113,6 +114,31 @@ ast_lvalue * ast_new_lvalue_id(ast_lvalue_type type, ast_identifier id);
 */
 ast_lvalue * ast_new_lvalue_concat(ast_lvalue_type type, ast_concatenation id);
 
+// -------------------------------- Function Calls ---------------------------
+
+/*!
+@brief describes a single call to a function, constant function, or
+system fucntion.
+*/
+struct ast_function_call_t {
+    ast_boolean         constant;   //!< Constant function call?
+    ast_boolean         system;     //!< System function call?
+    ast_identifier      function;   //!< Function identifier
+    ast_list        *   arguments;  //!< Linked list of arguments.
+};
+
+
+/*!
+@brief Creates and returns a new node representing a function call.
+@param [in] arguments - list of elements of type ast_expression
+representing the various parameters to the function. If the function has
+no arguments, then it is an empty list, not NULL.
+*/
+ast_function_call * ast_new_function_call(ast_identifier  id,
+                                          ast_boolean     constant,
+                                          ast_boolean     system,
+                                          ast_list      * aguments);
+
 
 // -------------------------------- Primaries ----------------------
 
@@ -132,7 +158,6 @@ typedef enum ast_primary_value_type_e
     PRIMARY_IDENTIFIER,
     PRIMARY_CONCATENATION,
     PRIMARY_FUNCTION_CALL,
-    PRIMARY_SYSTEM_CALL,
     PRIMARY_MINMAX_EXP,
     PRIMARY_MACRO_USAGE    
 } ast_primary_value_type;
@@ -143,8 +168,7 @@ typedef union ast_primary_value_e
     ast_number          number;
     ast_identifier      identifier;
     ast_concatenation   concatenation;
-    ast_function_call   function_call;
-    ast_system_call     system_call;
+    ast_function_call * function_call;
     ast_minmax_exp      minmax;
     ast_macro_use       macro;
 } ast_primary_value;
@@ -163,6 +187,11 @@ typedef struct ast_primary_t
        with the supplied type and value.
 */
 ast_primary * ast_new_constant_primary(ast_primary_value_type type);
+
+/*!
+@brief Creates a new AST primary wrapper around a function call.
+*/
+ast_primary * ast_new_primary_function_call(ast_function_call * call);
 
 /*!
 @brief Creates a new ast primary which is part of an expression tree
@@ -274,9 +303,6 @@ then the min and max arguments should be NULL, and only typ set.
 ast_expression * ast_new_mintypmax_expression(ast_expression * min,
                                               ast_expression * typ,
                                               ast_expression * max);
-
-// -------------------------------- Function Calls ---------------------------
-
 
 // -------------------------------- Concatenations ---------------------------
 

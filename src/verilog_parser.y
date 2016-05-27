@@ -29,6 +29,7 @@
    ast_primary          * primary;
    ast_expression       * expression;
    ast_operator           operator;
+   ast_function_call    * call_function;
    char                   boolean;
    char                 * string;
    char                 * number;
@@ -391,8 +392,8 @@
 %type <node> constant_concatenation_cont
 %type <node> constant_expression_o
 %type <node> constant_expressions
-%type <node> constant_function_call
-%type <node> constant_function_call_pid
+%type <call_function> constant_function_call
+%type <call_function> constant_function_call_pid
 %type <node> constant_multiple_concatenation
 %type <node> continuous_assign
 %type <node> current_state
@@ -436,7 +437,7 @@
 %type <node> full_edge_sensitive_path_description
 %type <node> full_path_description
 %type <node> function_blocking_assignment
-%type <node> function_call
+%type <call_function> function_call
 %type <node> function_case_item
 %type <node> function_case_items
 %type <node> function_case_statement
@@ -646,7 +647,7 @@
 %type <node> statements_o
 %type <node> strength0
 %type <node> strength1
-%type <node> system_function_call
+%type <call_function> system_function_call
 %type <node> system_task_enable
 %type <node> system_timing_check
 %type <node> task_declaration
@@ -2701,8 +2702,7 @@ constant_primary :
       $$ -> value.concatenation = $1;
 }
 | constant_function_call{
-      $$ = ast_new_constant_primary(PRIMARY_FUNCTION_CALL);
-      $$ -> value.function_call = $1;
+      $$ = ast_new_primary_function_call($1);
 }
 | OPEN_BRACKET constant_mintypmax_expression CLOSE_BRACKET{
       $$ = ast_new_constant_primary(PRIMARY_MINMAX_EXP);
@@ -2757,16 +2757,13 @@ primary :
       $$ -> value.concatenation = $1;
   }
 | function_call{
-      $$ = ast_new_primary(PRIMARY_FUNCTION_CALL);
-      $$ -> value.function_call = $1;
+      $$ = ast_new_primary_function_call($1);
   }
 | system_function_call{
-      $$ = ast_new_primary(PRIMARY_SYSTEM_CALL);
-      $$ -> value.system_call = $1;
+      $$ = ast_new_primary_function_call($1);
   }
 | hierarchical_identifier constant_function_call_pid{
-      $$ = ast_new_primary(PRIMARY_IDENTIFIER);
-      $$ -> value.identifier = $1;
+      $$ = ast_new_primary_function_call($2);
   }
 | hierarchical_identifier{
       $$ = ast_new_primary(PRIMARY_IDENTIFIER);
@@ -2804,16 +2801,13 @@ module_path_primary :
   }
 
 | function_call{
-      $$ = ast_new_module_path_primary(PRIMARY_FUNCTION_CALL);
-      $$ -> value.function_call = $1;
+      $$ = ast_new_primary_function_call($1);
   }
 | system_function_call{
-      $$ = ast_new_module_path_primary(PRIMARY_SYSTEM_CALL);
-      $$ -> value.system_call = $1;
+      $$ = ast_new_primary_function_call($1);
   }
 | constant_function_call{
-      $$ = ast_new_module_path_primary(PRIMARY_FUNCTION_CALL);
-      $$ -> value.function_call = $1;
+      $$ = ast_new_primary_function_call($1);
   }
 | OPEN_BRACKET module_path_mintypemax_expression CLOSE_BRACKET{
       $$ = ast_new_module_path_primary(PRIMARY_MINMAX_EXP);
