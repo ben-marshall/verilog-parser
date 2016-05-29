@@ -4,8 +4,8 @@
        and operate on the Verilog Abstract Syntax Tree (AST)
 */
 
-#include "stdarg.h"
-#include "stdlib.h"
+#include <stdarg.h>
+#include <stdlib.h>
 
 #include "verilog_ast_common.h"
 
@@ -92,7 +92,7 @@ struct ast_concatenation_t{
 @brief Creates a new AST concatenation element with the supplied type and
 initial starting value.
 @param [in] repeat - Used for replications or multiple_concatenation
-@description Depending on the type supplied, the type of first_value
+@details Depending on the type supplied, the type of first_value
 should be:
     - CONCATENATION_EXPRESSION          : ast_expression
     - CONCATENATION_CONSTANT_EXPRESSION : ast_expression
@@ -111,7 +111,7 @@ ast_concatenation * ast_new_empty_concatenation(ast_concatenation_type type);
 
 /*!
 @brief Adds a new data element on to the *front* of a concatenation.
-@description Appends to the front because this naturally follows the
+@details Appends to the front because this naturally follows the
 behaviour of a left-recursive grammar.
 */
 void                ast_extend_concatenation(ast_concatenation * element,
@@ -296,7 +296,7 @@ struct ast_expression_t
 
 /*!
 @brief Creates and returns a new expression primary.
-@description This is simply an expression instance wrapped around a
+@details This is simply an expression instance wrapped around a
 primary instance for the purposes of mirroring the expression tree gramamr.
 Whether or not the expression is constant is denoted by the type member
 of the passed primary.
@@ -349,7 +349,7 @@ ast_expression * ast_new_conditional_expression(ast_expression * condition,
 
 /*!
 @brief Creates a new (min,typical,maximum) expression.
-@decription If the mintypmax expression only specifies a typical value,
+@details If the mintypmax expression only specifies a typical value,
 then the min and max arguments should be NULL, and only typ set. 
 */
 ast_expression * ast_new_mintypmax_expression(ast_expression * min,

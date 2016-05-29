@@ -4,8 +4,8 @@
        operate on the Verilog Abstract Syntax Tree (AST)
 */
 
-#include "assert.h"
-#include "stdio.h"
+#include <assert.h>
+#include <stdio.h>
 
 #include "verilog_ast.h"
 
@@ -173,7 +173,7 @@ ast_primary * ast_new_module_path_primary(ast_primary_value_type type)
 
 /*!
 @brief Creates and returns a new expression primary.
-@description This is simply an expression instance wrapped around a
+@details This is simply an expression instance wrapped around a
 primary instance for the purposes of mirroring the expression tree gramamr.
 Whether or not the expression is constant is denoted by the type member
 of the passed primary.
@@ -316,7 +316,7 @@ ast_expression * ast_new_conditional_expression(ast_expression * condition,
 
 /*!
 @brief Creates a new (min,typical,maximum) expression.
-@decription If the mintypmax expression only specifies a typical value,
+@details If the mintypmax expression only specifies a typical value,
 then the min and max arguments should be NULL, and only typ set. 
 */
 ast_expression * ast_new_mintypmax_expression(ast_expression * min,
@@ -337,11 +337,14 @@ ast_expression * ast_new_mintypmax_expression(ast_expression * min,
 
 /*!
 @brief Creates and returns a new node representing a function call.
+@param [in] id - The function identifier.
+@param [in] attr - Attributes to be passed to the function call.
+@param [in] system - Is this a system function call?
+@param [in] constant - Is this a constant function call?
 @param [in] arguments - list of elements of type ast_expression
 representing the various parameters to the function. If the function has
 no arguments, then it is an empty list, not NULL. If this is supplied as
 NULL, then an empty list is added automatically by the function.
-@todo Implement the internals of this.
 */
 ast_function_call * ast_new_function_call(ast_identifier  id,
                                           ast_boolean     constant,
@@ -369,8 +372,10 @@ ast_function_call * ast_new_function_call(ast_identifier  id,
 /*!
 @brief Creates a new AST concatenation element with the supplied type and
 initial starting value.
-@param [in] repeat - Used for replications or multiple_concatenation
-@description Depending on the type supplied, the type of first_value
+@param [in] repeat - Used for replications or multiple_concatenation.
+@param [in] type - The kind of value being concatenated.
+@param [in] first_value - The first value at the LHS of the concatenation.
+@details Depending on the type supplied, the type of first_value
 should be:
     - CONCATENATION_EXPRESSION          : ast_expression
     - CONCATENATION_CONSTANT_EXPRESSION : ast_expression
@@ -410,7 +415,7 @@ ast_concatenation * ast_new_empty_concatenation(ast_concatenation_type type)
 
 /*!
 @brief Adds a new data element on to the end of a concatenation.
-@description Appends to the front because this naturally follows the
+@details Appends to the front because this naturally follows the
 behaviour of a left-recursive grammar.
 @todo Better implement repetition of elements.
 */

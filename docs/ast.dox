@@ -13,7 +13,7 @@ child nodes are structured.
 
 The AST constructed by the parser has the following structure:
 
-- The tree is constructed with identical nodes of type @ref verilog_ast_node_t
+- The tree is constructed with identical nodes of type @ref ast_node_t
 - Each node has a single parent and zero or more children. These pointers
   form the basis of the tree.
 - Only the root node can have no parent, in which case, this member is set

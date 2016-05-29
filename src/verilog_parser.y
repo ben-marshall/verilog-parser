@@ -7,7 +7,7 @@
 %define parse.error verbose
 
 %{
-    #include "stdio.h"
+    #include <stdio.h>
     #include "verilog_ast.h"
 
     void yyerror(const char *msg){

@@ -16,7 +16,7 @@ extern YY_BUFFER_STATE  yy_scan_string      (const char *yy_str  );
 
 /*!
 @brief Creates and returns a verilog parser handle.
-@detail Used for parsing a file from disk. Acts as a wrapper
+@details Used for parsing a file from disk. Acts as a wrapper
         for the yy_create_buffer function.
 */
 verilog_parser verilog_file_parse(FILE * file)
@@ -28,7 +28,7 @@ verilog_parser verilog_file_parse(FILE * file)
 
 /*!
 @brief Creates and returns a verilog parser handle.
-@detail Used for parsing a string that has already been loaded
+@details Used for parsing a string that has already been loaded
         into memory. Acts as a wrapper for the yy_scan_string function.
 */
 verilog_parser verilog_string_parse(const char * str)
@@ -40,7 +40,7 @@ verilog_parser verilog_string_parse(const char * str)
 
 /*!
 @brief Selects which buffer we are currently parsing.
-@detail Acts as a wrapper around yy_switch_to_buffer.
+@details Acts as a wrapper around yy_switch_to_buffer.
 */
 void           verilog_set_parser(verilog_parser parser)
 {
@@ -50,7 +50,7 @@ void           verilog_set_parser(verilog_parser parser)
 
 /*!
 @brief Destroys the buffer handle and all of its resources.
-@detail Acts as a wrapper for the yy_delete_buffer function.
+@details Acts as a wrapper for the yy_delete_buffer function.
 */
 void           verilog_free_parser(verilog_parser parser)
 {
@@ -60,7 +60,7 @@ void           verilog_free_parser(verilog_parser parser)
 
 /*!
 @brief Perform a parsing operation on the currently selected buffer.
-@detail Acts as a wrapper around yyparse().
+@details Acts as a wrapper around yyparse().
 */
 int            verilog_parse_current_buffer()
 {
@@ -69,7 +69,7 @@ int            verilog_parse_current_buffer()
 
 /*!
 @brief Perform a parsing operation on the supplied buffer.
-@detail Acts as a wrapper around yyparse(). Switches to the supplied parser
+@details Acts as a wrapper around yyparse(). Switches to the supplied parser
         and then calls verilog_parse_current_buffer().
 */
 int            verilog_parse_buffer(verilog_parser parser)
