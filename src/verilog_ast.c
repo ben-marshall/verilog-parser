@@ -103,7 +103,7 @@ ast_lvalue * ast_new_lvalue_id(ast_lvalue_type type, ast_identifier id)
        @ref VAR_CONCATENATION.
 */
 ast_lvalue * ast_new_lvalue_concat(ast_lvalue_type type, 
-                                   ast_concatenation concat)
+                                   ast_concatenation*concat)
 {
     assert(type == NET_CONCATENATION || type == VAR_CONCATENATION);
     ast_lvalue * tr = calloc(1, sizeof(ast_lvalue));
@@ -366,5 +366,57 @@ ast_function_call * ast_new_function_call(ast_identifier  id,
 }
 
 
+/*!
+@brief Creates a new AST concatenation element with the supplied type and
+initial starting value.
+@param [in] repeat - Used for replications or multiple_concatenation
+@description Depending on the type supplied, the type of first_value
+should be:
+    - CONCATENATION_EXPRESSION          : ast_expression
+    - CONCATENATION_CONSTANT_EXPRESSION : ast_expression
+    - CONCATENATION_NET                 : TBD
+    - CONCATENATION_VARIABLE            : TBD
+    - CONCATENATION_MODULE_PATH         : TBD
+@todo Better implement repetition of elements.
+*/
+ast_concatenation * ast_new_concatenation(ast_concatenation_type type,
+                                          ast_expression * repeat,
+                                          void * first_value)
+{
+    ast_concatenation * tr = calloc(1,sizeof(ast_concatenation));
+
+    tr -> repeat = repeat;
+    tr -> type   = type;
+    tr -> items  = ast_list_new();
+    ast_list_append(tr -> items, first_value);
+
+    return tr;
+}
+
+/*!
+@brief Creates and returns a new empty concatenation of the specified type.
+*/
+ast_concatenation * ast_new_empty_concatenation(ast_concatenation_type type)
+{
+    ast_concatenation * tr = calloc(1,sizeof(ast_concatenation));
+
+    tr -> repeat = NULL;
+    tr -> type   = type;
+    tr -> items  = ast_list_new();
+
+    return tr;
+}
 
 
+/*!
+@brief Adds a new data element on to the end of a concatenation.
+@description Appends to the front because this naturally follows the
+behaviour of a left-recursive grammar.
+@todo Better implement repetition of elements.
+*/
+void                ast_extend_concatenation(ast_concatenation * element,
+                                             ast_expression * repeat,
+                                             void * data)
+{
+    ast_list_preappend(element -> items, data);
+}

@@ -54,4 +54,10 @@ void       ast_list_free(ast_list * list);
 */
 void       ast_list_append(ast_list * list, void * data);
 
+
+/*!
+@brief Adds a new item to the front of a linked list.
+*/
+void       ast_list_preappend(ast_list * list, void * data);
+
 #endif

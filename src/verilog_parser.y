@@ -31,6 +31,7 @@
    ast_operator           operator;
    ast_function_call    * call_function;
    ast_list             * list;
+   ast_concatenation    * concatenation;
    char                   boolean;
    char                 * string;
    char                 * number;
@@ -277,6 +278,25 @@
 
 %type <boolean> reg_o
 %type <boolean> signed_o
+%type <call_function> constant_function_call
+%type <call_function> constant_function_call_pid
+%type <call_function> function_call
+%type <call_function> system_function_call
+%type <concatenation> concatenation
+%type <concatenation> concatenation_cont
+%type <concatenation> constant_concatenation
+%type <concatenation> constant_concatenation_cont
+%type <concatenation> constant_multiple_concatenation
+%type <concatenation> modpath_concatenation_cont
+%type <concatenation> module_path_concatenation
+%type <concatenation> module_path_multiple_concatenation
+%type <concatenation> multiple_concatenation
+%type <concatenation> net_concatenation
+%type <concatenation> net_concatenation_cont
+%type <concatenation> net_concatenation_value
+%type <concatenation> variable_concatenation
+%type <concatenation> variable_concatenation_cont
+%type <concatenation> variable_concatenation_value
 %type <expression> conditional_expression
 %type <expression> constant_expression
 %type <expression> constant_mintypmax_expression
@@ -358,11 +378,12 @@
 %type <identifier> udp_identifier
 %type <identifier> udp_instance_identifier
 %type <identifier> variable_identifier
+%type <list> constant_expressions
+%type <list> expressions
 %type <lvalue> net_lvalue
 %type <lvalue> variable_lvalue
 %type <node> actual_argument
 %type <node> always_construct
-%type <node_attributes> attribute_instances
 %type <node> automatic_o
 %type <node> block_item_declaration
 %type <node> block_item_declarations
@@ -382,20 +403,12 @@
 %type <node> combinational_entrys
 %type <node> compiler_directive
 %type <node> compiler_directives
-%type <node> concatenation
-%type <node> concatenation_cont
 %type <node> conditional_compile_directive
 %type <node> conditional_statement
 %type <node> config_declaration
 %type <node> config_rule_statement
 %type <node> config_rule_statement_os
-%type <node> constant_concatenation
-%type <node> constant_concatenation_cont
 %type <node> constant_expression_o
-%type <list> constant_expressions
-%type <call_function> constant_function_call
-%type <call_function> constant_function_call_pid
-%type <node> constant_multiple_concatenation
 %type <node> continuous_assign
 %type <node> current_state
 %type <node> default_clause
@@ -431,14 +444,12 @@
 %type <node> event_control
 %type <node> event_declaration
 %type <node> event_trigger
-%type <list> expressions
 %type <node> expressions_o
 %type <node> file_path_spec
 %type <node> file_path_specs
 %type <node> full_edge_sensitive_path_description
 %type <node> full_path_description
 %type <node> function_blocking_assignment
-%type <call_function> function_call
 %type <node> function_case_item
 %type <node> function_case_items
 %type <node> function_case_statement
@@ -520,7 +531,6 @@
 %type <node> list_of_specparam_assignments
 %type <node> local_parameter_declaration
 %type <node> loop_statement
-%type <node> modpath_concatenation_cont
 %type <node> module_declaration
 %type <node> module_instance
 %type <node> module_instances
@@ -531,12 +541,9 @@
 %type <node> module_or_generate_item_declaration
 %type <node> module_parameter_port_list
 %type <node> module_params
-%type <node> module_path_concatenation
-%type <node> module_path_multiple_concatenation
 %type <node> mos_switch_instance
 %type <node> mos_switch_instances
 %type <node> mos_switchtype
-%type <node> multiple_concatenation
 %type <node> n_input_gate_instance
 %type <node> n_input_gate_instances
 %type <node> n_output_gate_instance
@@ -550,9 +557,6 @@
 %type <node> named_port_connections
 %type <node> ncontrol_terminal
 %type <node> net_assignment
-%type <node> net_concatenation
-%type <node> net_concatenation_cont
-%type <node> net_concatenation_value
 %type <node> net_dec_p_delay
 %type <node> net_dec_p_ds
 %type <node> net_dec_p_range
@@ -648,7 +652,6 @@
 %type <node> statements_o
 %type <node> strength0
 %type <node> strength1
-%type <call_function> system_function_call
 %type <node> system_task_enable
 %type <node> system_timing_check
 %type <node> task_declaration
@@ -684,13 +687,11 @@
 %type <node> undefine_compiler_directive
 %type <node> use_clause
 %type <node> variable_assignment
-%type <node> variable_concatenation
-%type <node> variable_concatenation_cont
-%type <node> variable_concatenation_value
 %type <node> variable_type
 %type <node> wait_statement
 %type <node_attributes> attr_spec
 %type <node_attributes> attr_specs
+%type <node_attributes> attribute_instances
 %type <number> number
 %type <number> unsigned_number
 %type <operator> binary_module_path_operator
@@ -2319,85 +2320,165 @@ system_timing_check : {printf("%s:%d Not Supported\n",__FILE__,__LINE__);};
 /* A.8.1 Concatenations */
 
 concatenation : 
-  OPEN_SQ_BRACE expression concatenation_cont
+  OPEN_SQ_BRACE expression concatenation_cont{
+    $$ = $3;
+    ast_extend_concatenation($3,NULL,$2);
+  }
 ;
 
 concatenation_cont :
-  CLOSE_SQ_BRACE
-| COMMA expression concatenation_cont
+  CLOSE_SQ_BRACE {
+      $$ = ast_new_empty_concatenation(CONCATENATION_EXPRESSION);
+  }
+| COMMA expression concatenation_cont{
+      $$ = $3;
+      ast_extend_concatenation($3,NULL,$2);
+  }
 ;
 
-
 constant_concatenation : 
-  OPEN_SQ_BRACE expression constant_concatenation_cont
+  OPEN_SQ_BRACE expression constant_concatenation_cont{
+    $$ = $3;
+    ast_extend_concatenation($3,NULL,$2);
+  }
 ;
 
 constant_concatenation_cont : 
-  CLOSE_SQ_BRACE
-| COMMA expression concatenation_cont
+  CLOSE_SQ_BRACE{
+      $$ = ast_new_empty_concatenation(CONCATENATION_EXPRESSION);
+  }
+| COMMA expression concatenation_cont{
+      $$ = $3;
+      ast_extend_concatenation($3,NULL,$2);
+  }
 ;
 
 multiple_concatenation :
-  OPEN_SQ_BRACE constant_expression concatenation CLOSE_SQ_BRACE
-| OPEN_SQ_BRACE constant_expression concatenation_cont
+  OPEN_SQ_BRACE constant_expression concatenation CLOSE_SQ_BRACE{
+    $$ = $3;
+    $$ -> repeat = $2;
+  }
+| OPEN_SQ_BRACE constant_expression concatenation_cont{
+    $$ = $3;
+    $$ -> repeat = $2;
+  }
 ;
 
 constant_multiple_concatenation : 
-  OPEN_SQ_BRACE constant_expression constant_concatenation CLOSE_SQ_BRACE
-| OPEN_SQ_BRACE constant_expression constant_concatenation_cont
+  OPEN_SQ_BRACE constant_expression constant_concatenation CLOSE_SQ_BRACE{
+    $$ = $3;
+    $$ -> repeat = $2;
+  }
+| OPEN_SQ_BRACE constant_expression constant_concatenation_cont{
+    $$ = $3;
+    $$ -> repeat = $2;
+  }
 ;
 
 module_path_concatenation : 
-  OPEN_SQ_BRACE module_path_expression modpath_concatenation_cont
+  OPEN_SQ_BRACE module_path_expression modpath_concatenation_cont{
+      $$ = $3;
+      ast_extend_concatenation($3,NULL,$2);
+  }
 ;
 
 modpath_concatenation_cont : 
-  CLOSE_SQ_BRACE
-| COMMA module_path_expression modpath_concatenation_cont
+  CLOSE_SQ_BRACE{
+      $$ = ast_new_empty_concatenation(CONCATENATION_MODULE_PATH);
+  }
+| COMMA module_path_expression modpath_concatenation_cont{
+      $$ = $3;
+      ast_extend_concatenation($3,NULL,$2);
+  }
 ;
 
 module_path_multiple_concatenation : 
-  OPEN_SQ_BRACE constant_expression module_path_concatenation CLOSE_SQ_BRACE
+  OPEN_SQ_BRACE constant_expression module_path_concatenation CLOSE_SQ_BRACE{
+      $$ = $3;
+      $3 -> repeat = $2;
+  }
 ;
 
 net_concatenation :
-  OPEN_SQ_BRACE net_concatenation_value net_concatenation_cont
+  OPEN_SQ_BRACE net_concatenation_value net_concatenation_cont{
+      $$ = $3;
+      ast_extend_concatenation($3,NULL,$2);
+  }
 ;
 
 net_concatenation_cont :
-  CLOSE_SQ_BRACE
-| COMMA net_concatenation_value net_concatenation_cont
+  CLOSE_SQ_BRACE{
+      $$ = ast_new_empty_concatenation(CONCATENATION_NET);
+  }
+| COMMA net_concatenation_value net_concatenation_cont{
+      $$ = $3;
+      ast_extend_concatenation($3,NULL,$2);
+  }
 ;
 
-sq_bracket_expressions :
-  OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET
-| OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
-| OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET sq_bracket_expressions
+sq_bracket_expressions :/* TODO - fix types. */
+  OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET{
+      $$ = $2;
+  }
+| OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET{
+      $$ = $2;
+  }
+| OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET sq_bracket_expressions{
+      $$ = $2;
+  }
 ;
 
-net_concatenation_value :
-  hierarchical_net_identifier
-| hierarchical_net_identifier sq_bracket_expressions
-| hierarchical_net_identifier sq_bracket_expressions range_expression
-| hierarchical_net_identifier range_expression
-| net_concatenation
+net_concatenation_value : /* TODO - fix proper identifier stuff. */
+  hierarchical_net_identifier {
+      $$ = $1;
+  }
+| hierarchical_net_identifier sq_bracket_expressions {
+      $$ = $1;
+  }
+| hierarchical_net_identifier sq_bracket_expressions range_expression {
+      $$ = $1;
+  }
+| hierarchical_net_identifier range_expression {
+      $$ = $1;
+  }
+| net_concatenation {
+      $$ = $1;
+  }
 ;
 
 variable_concatenation :
-  OPEN_SQ_BRACE variable_concatenation_value variable_concatenation_cont
+  OPEN_SQ_BRACE variable_concatenation_value variable_concatenation_cont{
+      $$ = $3;
+      ast_extend_concatenation($3,NULL,$2);
+  }
 ;
 
 variable_concatenation_cont :
-  CLOSE_SQ_BRACE
-| COMMA variable_concatenation_value variable_concatenation_cont
+  CLOSE_SQ_BRACE{
+      $$ = ast_new_empty_concatenation(CONCATENATION_VARIABLE);
+  }
+| COMMA variable_concatenation_value variable_concatenation_cont{
+      $$ = $3;
+      ast_extend_concatenation($3,NULL,$2);
+  }
 ;
 
-variable_concatenation_value :
-  hierarchical_variable_identifier
-| hierarchical_variable_identifier sq_bracket_expressions
-| hierarchical_variable_identifier sq_bracket_expressions range_expression
-| hierarchical_variable_identifier range_expression
-| variable_concatenation
+variable_concatenation_value : /* TODO - fix proper identifier stuff. */
+  hierarchical_variable_identifier {
+      $$ = $1;
+  }
+| hierarchical_variable_identifier sq_bracket_expressions {
+      $$ = $1;
+  }
+| hierarchical_variable_identifier sq_bracket_expressions range_expression {
+      $$ = $1;
+  }
+| hierarchical_variable_identifier range_expression {
+      $$ = $1;
+  }
+| variable_concatenation {
+      $$ = $1;
+  }
 ;
 
 

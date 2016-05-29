@@ -20,7 +20,7 @@ typedef struct ast_node_t ast_node;
 typedef char * ast_identifier;
 
 //! Placeholder until this is implemented properly.
-typedef void * ast_concatenation;
+typedef struct ast_concatenation_t ast_concatenation;
 
 typedef struct ast_expression_t ast_expression;
 typedef struct ast_function_call_t ast_function_call;
@@ -69,6 +69,56 @@ ast_node * ast_new_attribute_node( ast_node_attributes* value);
 void ast_append_attribute(ast_node_attributes * parent, 
                           ast_node_attributes * toadd);
 
+// -------------------------------- Concatenations ---------------------------
+
+//! Describes the type of concatenation being dealt with.
+typedef enum ast_concatenation_type_e
+{
+    CONCATENATION_EXPRESSION,
+    CONCATENATION_CONSTANT_EXPRESSION,
+    CONCATENATION_NET,
+    CONCATENATION_VARIABLE,
+    CONCATENATION_MODULE_PATH
+} ast_concatenation_type;
+
+//! Fully describes a concatenation in terms of type and data.
+struct ast_concatenation_t{
+    ast_concatenation_type   type;  //!< The type of concatenation
+    ast_expression         * repeat;//!< The number of repetitions. Normally 1.
+    ast_list               * items; //!< sequence of items.
+};
+
+/*!
+@brief Creates a new AST concatenation element with the supplied type and
+initial starting value.
+@param [in] repeat - Used for replications or multiple_concatenation
+@description Depending on the type supplied, the type of first_value
+should be:
+    - CONCATENATION_EXPRESSION          : ast_expression
+    - CONCATENATION_CONSTANT_EXPRESSION : ast_expression
+    - CONCATENATION_NET                 : TBD
+    - CONCATENATION_VARIABLE            : TBD
+    - CONCATENATION_MODULE_PATH         : TBD
+*/
+ast_concatenation * ast_new_concatenation(ast_concatenation_type type,
+                                          ast_expression * repeat,
+                                          void * first_value);
+
+/*!
+@brief Creates and returns a new empty concatenation of the specified type.
+*/
+ast_concatenation * ast_new_empty_concatenation(ast_concatenation_type type);
+
+/*!
+@brief Adds a new data element on to the *front* of a concatenation.
+@description Appends to the front because this naturally follows the
+behaviour of a left-recursive grammar.
+*/
+void                ast_extend_concatenation(ast_concatenation * element,
+                                             ast_expression * repeat,
+                                             void * data);
+
+
 // -------------------------------- L Value ------------------------
 
 /*!
@@ -88,7 +138,7 @@ typedef enum ast_lvalue_type_e
 typedef union ast_lvalue_data_u
 {
     ast_identifier      identifier;     //!< Identifier value.
-    ast_concatenation   concatenation;  //!< Concatenation list.
+    ast_concatenation * concatenation;  //!< Concatenation list.
 } ast_lvalue_data ;
 
 /*!
@@ -112,7 +162,7 @@ ast_lvalue * ast_new_lvalue_id(ast_lvalue_type type, ast_identifier id);
        being a concatenation holder of either @ref NET_CONCATENATION or
        @ref VAR_CONCATENATION.
 */
-ast_lvalue * ast_new_lvalue_concat(ast_lvalue_type type, ast_concatenation id);
+ast_lvalue * ast_new_lvalue_concat(ast_lvalue_type type, ast_concatenation*id);
 
 // -------------------------------- Function Calls ---------------------------
 
@@ -169,7 +219,7 @@ typedef union ast_primary_value_e
 {
     ast_number          number;
     ast_identifier      identifier;
-    ast_concatenation   concatenation;
+    ast_concatenation * concatenation;
     ast_function_call * function_call;
     ast_minmax_exp      minmax;
     ast_macro_use       macro;
@@ -305,9 +355,6 @@ then the min and max arguments should be NULL, and only typ set.
 ast_expression * ast_new_mintypmax_expression(ast_expression * min,
                                               ast_expression * typ,
                                               ast_expression * max);
-
-// -------------------------------- Concatenations ---------------------------
-
 
 // -------------------------------- Specify Blocks ---------------------------
 

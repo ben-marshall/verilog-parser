@@ -40,10 +40,10 @@ that have yet to be written and integrated.
     - Expression L-Values [DONE]
     - Expression R-Values [DONE]
      - Expression Primaries [DONE]
-     - Constant Expressions
-     - Variable Expressions
+     - Constant Expressions [DONE]
+     - Variable Expressions [DONE]
     - Proper Number Representation
-    - Function Calls
+    - Function Calls [DONE]
     - Concatenations
     - Path Delays
     - Specify Blocks
