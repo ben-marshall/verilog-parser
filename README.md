@@ -43,6 +43,44 @@ code, and ideally, not trigger in you're submitted fix! I'm open to people
 just submitting bugs as well, but it might take longer for me to get round to
 fixing it!
 
+## Design Choices
+
+### Why C, why not something more modern?
+
+This comes down to who will use this tool, and who will develop this tool.
+Ideally, these are the same people. The current demographic of people working
+in ASIC / RTL design are (please excuse my generalising) electronic engineers,
+with little experience of recent programming language technologies like
+Haskell (great for parsing and formal/state-based assertions) and Python (perl
+is still king in ASIC design flows, but this is changing).  Further, the size
+and complexity of many RTL designs means you need a language that has lots of
+low-level acceleration potential, as well as being tried-and-tested. C meets
+most of these points, while also being something that eletronics engineers are
+more likely to be familiar with and comfortable using.
+
+### Why flex/bison, why not Boost::Sprint, ANTLR, or something custom?
+
+Similar to the above answer. These are tools that are *very* old, and *very*
+stable. They are more likely to be available and supported for the kinds
+of developement environments RTL designers work in which are often at least
+a decade old. What flex and bison loose in terms of nice fetures, syntactic
+sugar, and, sadly, ease of use - they make up for in stability and
+likelihood of familiarity for the people I hope will use this project.
+Many of the design decisions around this project have been equal parts
+social and engineering in their justification.
+
+### Why CMake?
+
+Because I am not a total masochist, despite the above. I will probably end up
+creating a pure Make build system though, and adding a minimal CMake wrapper
+around it. This will make building on old systems where a recent CMake version
+doesn't exist easier, while also making integration into other projects
+possible and a little less painful.
+
+
+---
+
+
 ## Todo list
 
 There are some things that the parser does not support:
