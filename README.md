@@ -6,6 +6,14 @@
 This repository contains a flex / bison parser for the IEEE 1364-2001 Verilog
 Standandard.
 
+- [Getting Started](#getting-started)
+- [Testing](#testing)
+- [Contributing](#contributing)
+- [Design Choices](#design-choices)
+- [Todo List](#todo)
+
+---
+
 ## Getting Started
 
 This will get you going.
@@ -81,7 +89,7 @@ possible and a little less painful.
 ---
 
 
-## Todo list
+## Todo
 
 There are some things that the parser does not support:
 
