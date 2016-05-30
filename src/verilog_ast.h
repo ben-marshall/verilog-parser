@@ -233,7 +233,7 @@ ast_function_call * ast_new_function_call(ast_identifier  id,
 /*!
 @defgroup ast-node-expression-primaries Expression Primaries
 @{
-@ingroup ast-construction
+@ingroup ast-node-expressions
 @brief Expresses primary terms of expressions. These can be sub-expressions,
 numbers, identifiers etc.
 */
@@ -474,7 +474,7 @@ ast_simple_full_path_declaration * ast_new_simple_full_path_declaration
 /*!
 @defgroup ast-node-loop-statements Loop Statements
 @{
-@ingroup ast-construction
+@ingroup ast-node-procedural
 @brief Describes for and while loop representation.
 */
 
@@ -487,7 +487,7 @@ ast_simple_full_path_declaration * ast_new_simple_full_path_declaration
 /*!
 @defgroup ast-node-case-statements Case Statements
 @{
-@ingroup ast-construction
+@ingroup ast-node-procedural
 @brief 
 */
 
@@ -500,7 +500,7 @@ ast_simple_full_path_declaration * ast_new_simple_full_path_declaration
 /*!
 @defgroup ast-node-if-else If Else Statements
 @{
-@ingroup ast-construction
+@ingroup ast-node-procedural
 @brief 
 */
 
@@ -526,7 +526,7 @@ ast_simple_full_path_declaration * ast_new_simple_full_path_declaration
 /*!
 @defgroup ast-node-fork-join Fork Join
 @{
-@ingroup ast-construction
+@ingroup ast-node-module-items
 @brief Fork join stamements.
 */
 
@@ -539,7 +539,7 @@ ast_simple_full_path_declaration * ast_new_simple_full_path_declaration
 /*!
 @defgroup ast-node-procedural Procedural Blocks and Assignments
 @{
-@ingroup ast-construction
+@ingroup ast-node-module-items
 @brief Describes items found inside procedural blocks.
 */
 
@@ -565,7 +565,7 @@ ast_simple_full_path_declaration * ast_new_simple_full_path_declaration
 /*!
 @defgroup ast-node-generate-statement Generate Statements
 @{
-@ingroup ast-construction
+@ingroup ast-node-module-items
 @brief Represents generate loops.
 */
 
@@ -578,7 +578,7 @@ ast_simple_full_path_declaration * ast_new_simple_full_path_declaration
 /*!
 @defgroup ast-node-module-instantiation Module Instantiation
 @{
-@ingroup ast-construction
+@ingroup ast-node-module-items
 @brief Describes the instantiation of a module, as opposed to it's declaration.
 */
 
@@ -605,7 +605,7 @@ gates, etc.
 /*!
 @defgroup ast-node-task-declaration Task Declaration
 @{
-@ingroup ast-construction
+@ingroup ast-node-module-items
 @brief User task (procedure) definition.
 */
 
@@ -618,7 +618,7 @@ gates, etc.
 /*!
 @defgroup ast-node-function-declaration Function Declaration
 @{
-@ingroup ast-construction
+@ingroup ast-node-module-items
 @brief Describes a declaration of a user function.
 */
 
