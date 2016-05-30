@@ -358,6 +358,24 @@ ast_expression * ast_new_mintypmax_expression(ast_expression * min,
 
 // -------------------------------- Specify Blocks ---------------------------
 
+/*
+types of path declaration:
+- simple
+ - parallel
+ - full
+- edge_sensitive
+ - parallel
+ - full
+- state dependent
+ - simple
+ - edge_sensitive
+
+ Need to record:
+ - input terminal
+ - output terminal
+ - data source expression (edge only)
+*/
+
 //! Describes the type of path being declared.
 typedef enum ast_path_declaration_type_e{
     FULL_PATH_DELCARATION,
@@ -368,7 +386,11 @@ typedef enum ast_path_declaration_type_e{
 
 //! Describes the declaration of a path.
 typedef struct ast_path_declaration_t{
-
+    ast_identifier          * input_terminal;   //!< Start of the path
+    ast_identifier          * output_terminal;  //!< End of the path
+    ast_expression          * expression;       //!< Delay Expression
+    ast_expression          * condition;        //!< State expression. 
+    ast_path_declaration_type type;             //!< Type of path declaration.
 } ast_path_declaration;
 
 // -------------------------------- Loop Statements --------------------------

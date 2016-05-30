@@ -368,6 +368,7 @@
 %type <identifier> simple_hierarchical_branch
 %type <identifier> simple_hierarchical_identifier
 %type <identifier> simple_identifier
+%type <identifier> specify_input_terminal_descriptor
 %type <identifier> specparam_identifier
 %type <identifier> system_function_identifier
 %type <identifier> system_task_identifier
@@ -380,6 +381,19 @@
 %type <identifier> variable_identifier
 %type <list> constant_expressions
 %type <list> expressions
+%type <list> list_of_actual_arguments
+%type <list> list_of_attribute_instances
+%type <list> list_of_formal_arguments
+%type <list> list_of_net_assignments
+%type <list> list_of_net_decl_assignments
+%type <list> list_of_parameter_assignments
+%type <list> list_of_path_delay_expressions
+%type <list> list_of_path_inputs
+%type <list> list_of_path_outputs
+%type <list> list_of_port_connections
+%type <list> list_of_port_declarations
+%type <list> list_of_ports
+%type <list> list_of_specparam_assignments
 %type <lvalue> net_lvalue
 %type <lvalue> variable_lvalue
 %type <node> actual_argument
@@ -515,19 +529,6 @@
 %type <node> library_text
 %type <node> limit_value
 %type <node> line_directive
-%type <list> list_of_actual_arguments
-%type <list> list_of_attribute_instances
-%type <list> list_of_formal_arguments
-%type <list> list_of_net_assignments
-%type <list> list_of_net_decl_assignments
-%type <list> list_of_parameter_assignments
-%type <list> list_of_path_delay_expressions
-%type <list> list_of_path_inputs
-%type <list> list_of_path_outputs
-%type <list> list_of_port_connections
-%type <list> list_of_port_declarations
-%type <list> list_of_ports
-%type <list> list_of_specparam_assignments
 %type <node> local_parameter_declaration
 %type <node> loop_statement
 %type <node> module_declaration
@@ -616,7 +617,6 @@
 %type <node> pulse_control_specparam
 %type <node> pulsestyle_declaration
 %type <node> range
-%type <node> range_expression_o
 %type <node> range_o
 %type <node> range_or_type
 %type <node> real_declaration
@@ -635,7 +635,6 @@
 %type <node> simple_path_declaration
 %type <node> source_text
 %type <node> specify_block
-%type <node> specify_input_terminal_descriptor
 %type <node> specify_item
 %type <node> specify_items
 %type <node> specify_items_o
@@ -2197,7 +2196,7 @@ simple_path_declaration : parallel_path_description EQ path_delay_value
                         ;
 
 parallel_path_description : 
-OPEN_BRACKET specify_input_terminal_descriptor polarity_operator_o GTE
+OPEN_BRACKET specify_input_terminal_descriptor polarity_operator_o EQ GT
 specify_output_terminal_descriptor CLOSE_BRACKET
                           ;
 
