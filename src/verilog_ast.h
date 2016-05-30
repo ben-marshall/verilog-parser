@@ -422,7 +422,11 @@ ast_expression * ast_new_mintypmax_expression(ast_expression * min,
 //! Describes the type of path being declared.
 typedef enum ast_path_declaration_type_e{
     SIMPLE_PARALLEL_PATH,
-    SIMPLE_FULL_PATH
+    SIMPLE_FULL_PATH,
+    EDGE_SENSITIVE_PARALLEL_PATH,
+    EDGE_SENSITIVE_FULL_PATH,
+    STATE_DEPENDENT_PARALLEL_PATH,
+    STATE_DEPENDENT_FULL_PATH,
 } ast_path_declaration_type;
 
 

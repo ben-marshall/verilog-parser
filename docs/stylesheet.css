@@ -4,6 +4,9 @@ body, table, div, p, dl {
 	font: 400 14px/22px Roboto,sans-serif;
 }
 
+#navrow1{display:none;}
+#navrow2{display:none;}
+
 /* @group Heading Levels */
 
 h1.groupheader {

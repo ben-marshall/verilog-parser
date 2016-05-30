@@ -82,7 +82,7 @@ SHOW_USED_FILES        = YES
 SHOW_FILES             = YES
 SHOW_NAMESPACES        = YES
 FILE_VERSION_FILTER    =
-LAYOUT_FILE            =
+LAYOUT_FILE            = layout.xml
 CITE_BIB_FILES         =
 #---------------------------------------------------------------------------
 # Configuration options related to warning and progress messages
@@ -119,7 +119,7 @@ USE_MDFILE_AS_MAINPAGE = ../README.md
 #---------------------------------------------------------------------------
 SOURCE_BROWSER         = YES
 INLINE_SOURCES         = NO
-STRIP_CODE_COMMENTS    = YES
+STRIP_CODE_COMMENTS    = NO 
 REFERENCED_BY_RELATION = NO
 REFERENCES_RELATION    = NO
 REFERENCES_LINK_SOURCE = YES
@@ -143,9 +143,9 @@ HTML_FOOTER            = footer.html
 HTML_STYLESHEET        = stylesheet.css
 HTML_EXTRA_STYLESHEET  =
 HTML_EXTRA_FILES       =
-HTML_COLORSTYLE_HUE    = 220
-HTML_COLORSTYLE_SAT    = 100
-HTML_COLORSTYLE_GAMMA  = 80
+HTML_COLORSTYLE_HUE    = 240
+HTML_COLORSTYLE_SAT    = 20
+HTML_COLORSTYLE_GAMMA  = 40
 HTML_TIMESTAMP         = YES
 HTML_DYNAMIC_SECTIONS  = YES
 HTML_INDEX_NUM_ENTRIES = 100
