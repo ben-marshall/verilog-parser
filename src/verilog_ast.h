@@ -358,6 +358,18 @@ ast_expression * ast_new_mintypmax_expression(ast_expression * min,
 
 // -------------------------------- Specify Blocks ---------------------------
 
+//! Describes the type of path being declared.
+typedef enum ast_path_declaration_type_e{
+    FULL_PATH_DELCARATION,
+    PARALLEL_PATH_DELCARATION,
+    EDGE_SENSITIVE_PATH_DECLARATION,
+    STATE_DEPENDENT_PATH_DECLARATION
+} ast_path_declaration_type;
+
+//! Describes the declaration of a path.
+typedef struct ast_path_declaration_t{
+
+} ast_path_declaration;
 
 // -------------------------------- Loop Statements --------------------------
 

@@ -408,7 +408,6 @@
 %type <node> config_declaration
 %type <node> config_rule_statement
 %type <node> config_rule_statement_os
-%type <node> constant_expression_o
 %type <node> continuous_assign
 %type <node> current_state
 %type <node> default_clause
@@ -516,19 +515,19 @@
 %type <node> library_text
 %type <node> limit_value
 %type <node> line_directive
-%type <node> list_of_actual_arguments
-%type <node> list_of_attribute_instances
-%type <node> list_of_formal_arguments
-%type <node> list_of_net_assignments
-%type <node> list_of_net_decl_assignments
-%type <node> list_of_parameter_assignments
-%type <node> list_of_path_delay_expressions
-%type <node> list_of_path_inputs
-%type <node> list_of_path_outputs
-%type <node> list_of_port_connections
-%type <node> list_of_port_declarations
-%type <node> list_of_ports
-%type <node> list_of_specparam_assignments
+%type <list> list_of_actual_arguments
+%type <list> list_of_attribute_instances
+%type <list> list_of_formal_arguments
+%type <list> list_of_net_assignments
+%type <list> list_of_net_decl_assignments
+%type <list> list_of_parameter_assignments
+%type <list> list_of_path_delay_expressions
+%type <list> list_of_path_inputs
+%type <list> list_of_path_outputs
+%type <list> list_of_port_connections
+%type <list> list_of_port_declarations
+%type <list> list_of_ports
+%type <list> list_of_specparam_assignments
 %type <node> local_parameter_declaration
 %type <node> loop_statement
 %type <node> module_declaration
@@ -2188,57 +2187,73 @@ showcancelled_declaration   : KW_SHOWCANCELLED list_of_path_outputs SEMICOLON
 
 /* A.7.2 specify path declarations */
 
-path_declaration : simple_path_declaration SEMICOLON
-                 | edge_sensitive_path_declaration SEMICOLON
-                 | state_dependent_path_declaration SEMICOLON
+path_declaration : simple_path_declaration SEMICOLON{
+                     $$ = $1;
+                 }
+                 | edge_sensitive_path_declaration SEMICOLON{
+                     $$ = $1;
+                 }
+                 | state_dependent_path_declaration SEMICOLON{
+                     $$ = $1;
+                 }
                  ;
 
 simple_path_declaration : parallel_path_description EQ path_delay_value
                         | full_path_description EQ path_delay_value
                         ;
 
-parallel_path_description : OPEN_BRACKET specify_input_terminal_descriptor
-                            polarity_operator_o EQ GT
-                            specify_output_terminal_descriptor CLOSE_BRACKET
+parallel_path_description : 
+OPEN_BRACKET specify_input_terminal_descriptor polarity_operator_o GTE
+specify_output_terminal_descriptor CLOSE_BRACKET
                           ;
 
-polarity_operator_o : polarity_operator | ;
-
-full_path_description : OPEN_BRACKET list_of_path_inputs polarity_operator_o 
-                        STAR GT list_of_path_outputs CLOSE_BRACKET
+full_path_description : 
+OPEN_BRACKET list_of_path_inputs polarity_operator_o STAR GT 
+list_of_path_outputs CLOSE_BRACKET
                       ;
 
-list_of_path_inputs   : specify_input_terminal_descriptor
-                      | list_of_path_inputs COMMA 
-                        specify_input_terminal_descriptor
-                      ;
+list_of_path_inputs   : 
+  specify_input_terminal_descriptor {
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| list_of_path_inputs COMMA specify_input_terminal_descriptor{
+    $$ = $1;
+    ast_list_append($$,$3);
+  }
+;
 
-list_of_path_outputs  : specify_output_terminal_descriptor
-                      | list_of_path_outputs COMMA 
-                        specify_output_terminal_descriptor
-                      ;
+list_of_path_outputs  : 
+  specify_output_terminal_descriptor {
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| list_of_path_outputs COMMA specify_output_terminal_descriptor{
+    $$ = $1;
+    ast_list_append($$,$3);
+  }
+;
 
 /* A.7.3 specify block terminals */
 
-specify_input_terminal_descriptor : input_identifier
-                                  | input_identifier constant_expression_o
-                                  | input_identifier range_expression_o
-                                  ;
+specify_input_terminal_descriptor :/* TODO FIX THIS */
+  input_identifier {$$ = $1;}
+| input_identifier constant_expression {$$ = $1;}
+| input_identifier range_expression {$$ = $1;}
+;
 
-specify_output_terminal_descriptor : output_identifier
-                                   | output_identifier constant_expression_o
-                                   | output_identifier range_expression_o
-                                   ;
+specify_output_terminal_descriptor :
+  output_identifier {$$ = $1;}
+| output_identifier constant_expression {$$ = $1;}
+| output_identifier range_expression {$$ = $1;}
+;
 
-constant_expression_o : constant_expression | ;
-range_expression_o : range_expression | ;
-
-input_identifier : input_port_identifier
-                 | inout_port_identifier
+input_identifier : input_port_identifier {$$ = $1;}
+                 | inout_port_identifier {$$ = $1;}
                  ;
 
-output_identifier : output_port_identifier 
-                  | inout_port_identifier
+output_identifier : output_port_identifier  {$$ = $1;}
+                  | inout_port_identifier {$$ = $1;}
                   ;
 
 /* A.7.4 specify path delays */
@@ -2273,41 +2288,48 @@ list_of_path_delay_expressions : path_delay_expression
                                  path_delay_expression
                                ;
 
-path_delay_expression : constant_mintypmax_expression ;
+path_delay_expression : constant_mintypmax_expression  {$$=$1;};
 
-edge_sensitive_path_declaration : parallel_edge_sensitive_path_description EQ
-                                  path_delay_value
-                                | full_edge_sensitive_path_description EQ 
-                                  path_delay_value
-                                ;
+edge_sensitive_path_declaration : 
+  parallel_edge_sensitive_path_description EQ path_delay_value
+| full_edge_sensitive_path_description EQ 
+  path_delay_value
+;
 
-parallel_edge_sensitive_path_description : OPEN_BRACKET edge_identifier_o 
-                                           specify_input_terminal_descriptor 
-                                           EQ GT
-                                           specify_output_terminal_descriptor 
-                                           polarity_operator_o COLON 
-                                           data_source_expression CLOSE_BRACKET
+parallel_edge_sensitive_path_description : 
+OPEN_BRACKET edge_identifier_o specify_input_terminal_descriptor EQ GT
+specify_output_terminal_descriptor polarity_operator_o COLON 
+data_source_expression CLOSE_BRACKET
 
-full_edge_sensitive_path_description : OPEN_BRACKET edge_identifier_o 
-                                       list_of_path_inputs STAR GT
-                                       list_of_path_outputs polarity_operator_o
-                                       COLON data_source_expression CLOSE_BRACKET
-                                     ;
+full_edge_sensitive_path_description : 
+OPEN_BRACKET edge_identifier_o list_of_path_inputs STAR GT 
+list_of_path_outputs polarity_operator_o COLON data_source_expression 
+CLOSE_BRACKET
+;
 
-data_source_expression : expression ;
+data_source_expression : expression  {$$=$1;};
 
-edge_identifier_o : edge_identifier | ;
-edge_identifier : KW_POSEDGE | KW_NEGEDGE;
+edge_identifier_o : edge_identifier  {$$=$1;}
+                  ;
+edge_identifier   : KW_POSEDGE {$$=$1;} 
+                  | KW_NEGEDGE {$$=$1;}
+                  ;
 
-state_dependent_path_declaration : KW_IF OPEN_BRACKET module_path_expression CLOSE_BRACKET 
-                                   simple_path_declaration
-                                 | KW_IF OPEN_BRACKET module_path_expression CLOSE_BRACKET 
-                                   edge_sensitive_path_declaration
-                                 | KW_IFNONE simple_path_declaration
-                                 ;
+state_dependent_path_declaration : 
+  KW_IF OPEN_BRACKET module_path_expression CLOSE_BRACKET 
+  simple_path_declaration
+| KW_IF OPEN_BRACKET module_path_expression CLOSE_BRACKET 
+  edge_sensitive_path_declaration
+| KW_IFNONE simple_path_declaration
+;
 
-polarity_operator_o : polarity_operator | ;
-polarity_operator : PLUS | MINUS ;
+polarity_operator_o : polarity_operator  {$$=$1;}
+                    |  {$$="";}
+                    ;
+
+polarity_operator : PLUS  {$$=$1;}
+                  | MINUS {$$=$1;}
+                  ;
 
 /* A.7.5.1 System timing check commands */
 
