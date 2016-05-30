@@ -1,0 +1,15 @@
+/*!
+
+@defgroup ast-structure AST Structure
+@ingroup ast
+
+@brief Describes the main structure of the tree, and how node parentage is
+represented.
+
+@todo Document all of this.
+
+The AST constructed by the parser has the following structure:
+
+TBD!!
+
+*/

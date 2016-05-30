@@ -1,83 +1,9 @@
 /*!
-@page doc-ast Abstract Syntax Tree
+
+@defgroup ast Abstract Syntax Tree
 
 This page describes the structure of the abstract syntax tree that the
 parser constructs. It includes the various root nodes, and how their
 child nodes are structured.
-
-@tableofcontents
-
----
-
-@section doc-top-node Tree Structure
-
-The AST constructed by the parser has the following structure:
-
-- The tree is constructed with identical nodes of type @ref ast_node_t
-- Each node has a single parent and zero or more children. These pointers
-  form the basis of the tree.
-- Only the root node can have no parent, in which case, this member is set
-  to NULL.
-- Each node has corresponding `data` and `type` members. The type member
-  tells us what sort of data the node holds, while the data member is a
-  union, which can store any of the required objects. Child nodes should
-  never be stored in the data member.
-
-Each node also has lineno and file members. These tell us the line number
-and file path where the source code which gave us the node came from.
-
-Traversal of the tree can therefore be done using a single expected data type,
-rather than having lots of different types of node which we might otherwise
-need to typecast to traverse easily.
-
-@section ast-todo Nodes To Do
-
-@todo AST Nodes.
-This section contains a list of all grammar constructs and data structures
-that have yet to be written and integrated.
-
-    - Attribute Instances [DONE]
-    - Expression L-Values [DONE]
-    - Expression R-Values [DONE]
-     - Expression Primaries [DONE]
-     - Constant Expressions [DONE]
-     - Variable Expressions [DONE]
-    - Proper Number Representation
-    - Function Calls [DONE]
-    - Concatenations
-    - Path Delays
-    - Specify Blocks
-    - Statements
-     - Loops
-     - Case
-     - If Else
-     - Timing Control
-    - Fork Join
-    - Procedural Blocks
-    - Continous assignments
-    - UDP
-     - UDP Instance
-     - UDP Port
-     - UDP Body
-    - Generate Loops
-    - Module Instantiation
-    - Primitives
-     - Terminals
-     - Strengths
-     - Switch Types
-    - Task Declaration
-    - Function Declaration
-    - Declaration Assignments
-    - Delays
-    - Drive Strenghts
-    - Nets
-    - Modules
-     - Ports
-     - Module Paramaters
-     - Module Items
-    - Configuration Source Text
-    - Library Source Text
-    - Compiler Directives
-    - Top Level
 
 */

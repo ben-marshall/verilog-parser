@@ -1,0 +1,13 @@
+/*!
+@defgroup ast-construction AST Construction Functions
+@ingroup ast
+
+@brief This page describes all of the functions used to construct the AST
+representation of the input code, along with the corresponding data
+structures.
+
+@details
+All functions and data structures are grouped depending on which syntactic
+feature of the language you are trying to represent.
+
+*/

@@ -41,6 +41,14 @@ typedef enum  ast_boolean_e
 //-------------- attributes ------------------------------------
 
 /*!
+@defgroup ast-node-attributes Attributes
+@{
+@ingroup ast-construction
+@brief Describes attributes passed to modules, functions and expression
+assignments.
+*/
+
+/*!
 @brief Node data describing an attribute.
 */
 typedef struct ast_node_attributes_t ast_node_attributes;
@@ -69,7 +77,16 @@ ast_node * ast_new_attribute_node( ast_node_attributes* value);
 void ast_append_attribute(ast_node_attributes * parent, 
                           ast_node_attributes * toadd);
 
+/*! @} */
 // -------------------------------- Concatenations ---------------------------
+
+/*!
+@defgroup ast-node-concatenations Concatenations
+@{
+@ingroup ast-construction
+@brief Concatenations of expressions, l-values, variables, nets and
+module paths.
+*/
 
 //! Describes the type of concatenation being dealt with.
 typedef enum ast_concatenation_type_e
@@ -119,7 +136,16 @@ void                ast_extend_concatenation(ast_concatenation * element,
                                              void * data);
 
 
+/*! @} */
 // -------------------------------- L Value ------------------------
+
+/*!
+@defgroup ast-node-lvalues L-Values
+@{
+@ingroup ast-construction
+@brief Represents the class of values which represent the left hand term
+of an assignment.
+*/
 
 /*!
 @brief Identifies the kind of LValue the @ref ast_lvalue structure holds.
@@ -164,9 +190,18 @@ ast_lvalue * ast_new_lvalue_id(ast_lvalue_type type, ast_identifier id);
 */
 ast_lvalue * ast_new_lvalue_concat(ast_lvalue_type type, ast_concatenation*id);
 
+/*! @} */
 // -------------------------------- Function Calls ---------------------------
 
 /*!
+@defgroup ast-node-function-calls Function Calls
+@{
+@ingroup ast-construction
+@brief Represents a call to a system or user function. Note this is
+destinct from a function declaration.
+*/
+/*!
+
 @brief describes a single call to a function, constant function, or
 system fucntion.
 */
@@ -192,7 +227,16 @@ ast_function_call * ast_new_function_call(ast_identifier  id,
                                           ast_list      * arguments);
 
 
+/*! @} */
 // -------------------------------- Primaries ----------------------
+
+/*!
+@defgroup ast-node-expression-primaries Expression Primaries
+@{
+@ingroup ast-construction
+@brief Expresses primary terms of expressions. These can be sub-expressions,
+numbers, identifiers etc.
+*/
 
 //! Describes the kind of expression primary being represented.
 typedef enum ast_primary_type_e
@@ -257,7 +301,16 @@ ast_primary * ast_new_primary(ast_primary_value_type type);
 */
 ast_primary * ast_new_module_path_primary(ast_primary_value_type type);
 
+/*! @} */
 // -------------------------------- Expressions --------------------
+
+/*!
+@defgroup ast-node-expressions Expressions
+@{
+@ingroup ast-construction
+@brief Super-group for data-structures representing the kinds of 
+expressions that Verilog has.
+*/
 
 //! Describes the kind of expression a node contains.
 typedef enum ast_expression_type_e
@@ -356,19 +409,14 @@ ast_expression * ast_new_mintypmax_expression(ast_expression * min,
                                               ast_expression * typ,
                                               ast_expression * max);
 
+/*! @} */
 // -------------------------------- Specify Blocks ---------------------------
 
-/*
-types of path declaration:
-- simple
- - parallel
- - full
-- edge_sensitive
- - parallel
- - full
-- state dependent
- - simple
- - edge_sensitive
+/*!
+@defgroup ast-node-path-declaration Path Declarations
+@{
+@ingroup ast-construction
+@brief Describes construction of path declarations and delay specifiers.
 */
 
 //! Describes the type of path being declared.
@@ -419,80 +467,330 @@ ast_simple_full_path_declaration * ast_new_simple_full_path_declaration
     ast_list        *   delay_value
 );
 
+/*! @} */
 
 // -------------------------------- Loop Statements --------------------------
 
+/*!
+@defgroup ast-node-loop-statements Loop Statements
+@{
+@ingroup ast-construction
+@brief Describes for and while loop representation.
+*/
+
+
+
+/*! @} */
 
 // -------------------------------- Case Statements --------------------------
 
+/*!
+@defgroup ast-node-case-statements Case Statements
+@{
+@ingroup ast-construction
+@brief 
+*/
+
+
+
+/*! @} */
 
 // -------------------------------- IF Else Statements -----------------------
 
+/*!
+@defgroup ast-node-if-else If Else Statements
+@{
+@ingroup ast-construction
+@brief 
+*/
+
+
+
+/*! @} */
 
 // -------------------------------- Timing Control Statements ----------------
 
+/*!
+@defgroup ast-node-timing-control Timing Control Statements
+@{
+@ingroup ast-construction
+@brief 
+*/
+
+
+
+/*! @} */
 
 // -------------------------------- Fork Join Sequential ---------------------
 
+/*!
+@defgroup ast-node-fork-join Fork Join
+@{
+@ingroup ast-construction
+@brief Fork join stamements.
+*/
+
+
+
+/*! @} */
 
 // -------------------------------- Procedural Blocks and Assignments --------
 
+/*!
+@defgroup ast-node-procedural Procedural Blocks and Assignments
+@{
+@ingroup ast-construction
+@brief Describes items found inside procedural blocks.
+*/
+
+
+
+/*! @} */
 
 // -------------------------------- UDP Blocks -------------------------------
 
+/*!
+@defgroup ast-node-udp-block User Defined Primitives
+@{
+@ingroup ast-construction
+@brief User defined primitive types.
+*/
+
+
+
+/*! @} */
 
 // -------------------------------- Generate Statements ----------------------
 
+/*!
+@defgroup ast-node-generate-statement Generate Statements
+@{
+@ingroup ast-construction
+@brief Represents generate loops.
+*/
+
+
+
+/*! @} */
 
 // -------------------------------- Module Instantiation ---------------------
 
+/*!
+@defgroup ast-node-module-instantiation Module Instantiation
+@{
+@ingroup ast-construction
+@brief Describes the instantiation of a module, as opposed to it's declaration.
+*/
+
+
+
+/*! @} */
 
 // -------------------------------- Primitives -------------------------------
 
+/*!
+@defgroup ast-node-primitives Primitives
+@{
+@ingroup ast-construction
+@brief Digital design primitive representation. Transistors, transmission
+gates, etc.
+*/
+
+
+
+/*! @} */
 
 // -------------------------------- Task Declaration -------------------------
 
+/*!
+@defgroup ast-node-task-declaration Task Declaration
+@{
+@ingroup ast-construction
+@brief User task (procedure) definition.
+*/
+
+
+
+/*! @} */
 
 // -------------------------------- Function Declaration ---------------------
 
+/*!
+@defgroup ast-node-function-declaration Function Declaration
+@{
+@ingroup ast-construction
+@brief Describes a declaration of a user function.
+*/
+
+
+
+/*! @} */
 
 // -------------------------------- Declaration Lists ------------------------
 
+/*!
+@defgroup ast-node-declaration-lists Declaration Lists
+@{
+@ingroup ast-construction
+@brief 
+*/
+
+
+
+/*! @} */
 
 // -------------------------------- Delays -----------------------------------
 
+/*!
+@defgroup ast-node-delays Delays
+@{
+@ingroup ast-construction
+@brief Signal propagation delays
+*/
+
+
+
+/*! @} */
 
 // -------------------------------- Strengths --------------------------------
 
+/*!
+@defgroup ast-node-strengths Drive Strengths
+@{
+@ingroup ast-construction
+@brief Describes signal drive strengths.
+*/
+
+
+
+/*! @} */
 
 // -------------------------------- Nets and Variables -----------------------
 
+/*!
+@defgroup ast-node-net-variables Nets and Variables
+@{
+@ingroup ast-construction
+@brief Net and variable types, declarations and assignments.
+*/
+
+
+
+/*! @} */
 
 // -------------------------------- Type Declarations ------------------------
 
+/*!
+@defgroup ast-node-type-declaration Type Declaration
+@{
+@ingroup ast-construction
+@brief Custom type declarations.
+*/
+
+
+
+/*! @} */
 
 // -------------------------------- Port Declarations ------------------------
 
+/*!
+@defgroup ast-node-port-declarations Module Port Declaration
+@{
+@ingroup ast-node-module-declaration
+@brief 
+*/
+
+
+
+/*! @} */
 
 // -------------------------------- Module Parameters ------------------------
 
+/*!
+@defgroup ast-node-module-parameters Module Parameters
+@{
+@ingroup ast-node-module-declaration
+@brief 
+*/
+
+
+
+/*! @} */
 
 // -------------------------------- Module Items -----------------------------
 
+/*!
+@defgroup ast-node-module-items Module Items
+@{
+@ingroup ast-node-module-declaration
+@brief Contains things like continuous assignments, procedural blocks and
+module instantiations.
+*/
+
+
+
+/*! @} */
 
 // -------------------------------- Module Declarations ----------------------
 
+/*!
+@defgroup ast-node-module-declaration Module Declaration
+@{
+@ingroup ast-construction
+@brief Details declaration of module ports and parameters.
+*/
+
+
+
+/*! @} */
 
 // -------------------------------- Configuration Source ---------------------
 
+/*!
+@defgroup ast-node-configuration-source Configuration Source
+@{
+@ingroup ast-construction
+@brief 
+*/
+
+
+
+/*! @} */
 
 // -------------------------------- Library Source Text ----------------------
 
+/*!
+@defgroup ast-node-library-source-text Library Source
+@{
+@ingroup ast-construction
+@brief 
+*/
+
+
+
+/*! @} */
 
 // -------------------------------- Compiler Directives ----------------------
 
+/*!
+@defgroup ast-node-compiler-directives Compiler Directives
+@{
+@ingroup ast-construction
+@brief 
+*/
+
+
+
+/*! @} */
 
 // -------------------------------- Grammar Top Level ------------------------
+
+/*!
+@defgroup ast-node-top-level Top Level
+@{
+@ingroup ast-construction
+@brief 
+*/
 
 /*!
 @brief Stores the various data values that a node in the AST can represent.
@@ -541,6 +839,8 @@ ast_node * ast_node_new();
 */
 ast_node * ast_new_identifier_node(char * identifier);
 
+
+/*! @} */
 
 
 #endif
