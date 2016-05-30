@@ -1,0 +1,9 @@
+/*!
+@defgroup ast-utility AST Utility Functions
+@ingroup ast
+
+@brief Contains utility data structures and functions which are used to
+help represent portions of the AST, but which are not specific to a
+particular node.
+
+*/

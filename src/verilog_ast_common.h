@@ -13,6 +13,13 @@
 
 // --------------- Linked List ------------------------
 
+/*!
+@defgroup ast-linked-lists Linked List
+@{
+@ingroup ast-utility
+*/
+
+
 //! Typedef for the ast_list_element_t
 typedef struct ast_list_element_t ast_list_element;
 
@@ -59,5 +66,7 @@ void       ast_list_append(ast_list * list, void * data);
 @brief Adds a new item to the front of a linked list.
 */
 void       ast_list_preappend(ast_list * list, void * data);
+
+/*! @} */
 
 #endif
