@@ -369,29 +369,56 @@ types of path declaration:
 - state dependent
  - simple
  - edge_sensitive
-
- Need to record:
- - input terminal
- - output terminal
- - data source expression (edge only)
 */
 
 //! Describes the type of path being declared.
 typedef enum ast_path_declaration_type_e{
-    FULL_PATH_DELCARATION,
-    PARALLEL_PATH_DELCARATION,
-    EDGE_SENSITIVE_PATH_DECLARATION,
-    STATE_DEPENDENT_PATH_DECLARATION
+    SIMPLE_PARALLEL_PATH,
+    SIMPLE_FULL_PATH
 } ast_path_declaration_type;
 
+
 //! Describes the declaration of a path.
-typedef struct ast_path_declaration_t{
-    ast_identifier          * input_terminal;   //!< Start of the path
-    ast_identifier          * output_terminal;  //!< End of the path
-    ast_expression          * expression;       //!< Delay Expression
-    ast_expression          * condition;        //!< State expression. 
-    ast_path_declaration_type type;             //!< Type of path declaration.
-} ast_path_declaration;
+typedef struct ast_simple_parallel_path_declaration_t{
+    ast_identifier      input_terminal;
+    ast_operator        polarity;
+    ast_identifier      output_terminal;
+    ast_list        *   delay_value;
+} ast_simple_parallel_path_declaration;
+
+
+//! Describes the declaration of a path.
+typedef struct ast_simple_full_path_declaration_t{
+    ast_list        *   input_terminals;
+    ast_operator        polarity;
+    ast_list        *   output_terminals;
+    ast_list        *   delay_value;
+} ast_simple_full_path_declaration;
+
+
+/*!
+@brief Creates and returns a pointer to a new simple parallel path declaration.
+*/
+ast_simple_parallel_path_declaration * ast_new_simple_parallel_path_declaration
+(
+    ast_identifier      input_terminal,
+    ast_operator        polarity,
+    ast_identifier      output_terminal,
+    ast_list        *   delay_value
+);
+
+
+/*!
+@brief Creates and returns a pointer to a new simple full path declaration.
+*/
+ast_simple_full_path_declaration * ast_new_simple_full_path_declaration
+(
+    ast_list        *   input_terminals,
+    ast_operator        polarity,
+    ast_list        *   output_terminals,
+    ast_list        *   delay_value
+);
+
 
 // -------------------------------- Loop Statements --------------------------
 

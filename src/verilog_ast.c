@@ -425,3 +425,50 @@ void                ast_extend_concatenation(ast_concatenation * element,
 {
     ast_list_preappend(element -> items, data);
 }
+
+/*!
+@brief Creates and returns a pointer to a new simple parallel path declaration.
+*/
+ast_simple_parallel_path_declaration * ast_new_simple_parallel_path_declaration
+    (
+        ast_identifier      input_terminal,
+        ast_operator        polarity,
+        ast_identifier      output_terminal,
+        ast_list        *   delay_value
+    )
+{
+    ast_simple_parallel_path_declaration * tr = 
+            calloc(1, 
+            sizeof(ast_simple_parallel_path_declaration));
+
+    tr -> input_terminal = input_terminal;
+    tr -> polarity       = polarity;
+    tr -> output_terminal= output_terminal;
+    tr -> delay_value    = delay_value;
+
+    return tr;
+}
+
+
+/*!
+@brief Creates and returns a pointer to a new simple full path declaration.
+*/
+ast_simple_full_path_declaration * ast_new_simple_full_path_declaration
+    (
+        ast_list        *   input_terminals,
+        ast_operator        polarity,
+        ast_list        *   output_terminals,
+        ast_list        *   delay_value
+    )
+{
+    ast_simple_full_path_declaration * tr = 
+            calloc(1, 
+            sizeof(ast_simple_full_path_declaration));
+
+    tr -> input_terminals= input_terminals;
+    tr -> polarity       = polarity;
+    tr -> output_terminals=output_terminals;
+    tr -> delay_value    = delay_value;
+
+    return tr;
+}

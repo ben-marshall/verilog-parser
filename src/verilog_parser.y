@@ -32,6 +32,8 @@
    ast_function_call    * call_function;
    ast_list             * list;
    ast_concatenation    * concatenation;
+   ast_simple_parallel_path_declaration *  simple_parallel_path_declaration;
+   ast_simple_full_path_declaration *  simple_full_path_declaration;
    char                   boolean;
    char                 * string;
    char                 * number;
@@ -461,7 +463,6 @@
 %type <node> file_path_spec
 %type <node> file_path_specs
 %type <node> full_edge_sensitive_path_description
-%type <node> full_path_description
 %type <node> function_blocking_assignment
 %type <node> function_case_item
 %type <node> function_case_items
@@ -582,7 +583,6 @@
 %type <node> output_variable_type_o
 %type <node> par_block
 %type <node> parallel_edge_sensitive_path_description
-%type <node> parallel_path_description
 %type <node> param_assignment
 %type <node> parameter_declaration
 %type <node> parameter_override
@@ -595,10 +595,10 @@
 %type <node> pass_switch_instances
 %type <node> pass_switchtype
 %type <node> path_declaration
-%type <node> path_delay_value
+%type <list> path_delay_value
 %type <node> pcontrol_terminal
 %type <node> polarity_operator
-%type <node> polarity_operator_o
+%type <operator> polarity_operator_o
 %type <node> port
 %type <node> port_declaration
 %type <node> port_declaration_l
@@ -638,7 +638,7 @@
 %type <node> specify_item
 %type <node> specify_items
 %type <node> specify_items_o
-%type <node> specify_output_terminal_descriptor
+%type <identifier> specify_output_terminal_descriptor
 %type <node> specparam_assignment
 %type <node> specparam_declaration
 %type <node> sq_bracket_constant_expressions
@@ -2186,24 +2186,26 @@ showcancelled_declaration   : KW_SHOWCANCELLED list_of_path_outputs SEMICOLON
 
 /* A.7.2 specify path declarations */
 
-path_declaration : simple_path_declaration          SEMICOLON {$$ = $1;}
-                 | edge_sensitive_path_declaration  SEMICOLON {$$ = $1;}
-                 | state_dependent_path_declaration SEMICOLON {$$ = $1;}
+path_declaration : simple_path_declaration          SEMICOLON
+                 | edge_sensitive_path_declaration  SEMICOLON
+                 | state_dependent_path_declaration SEMICOLON
                  ;
 
-simple_path_declaration : parallel_path_description EQ path_delay_value
-                        | full_path_description EQ path_delay_value
-                        ;
+simple_path_declaration : 
+  OPEN_BRACKET specify_input_terminal_descriptor polarity_operator_o EQ GT
+  specify_output_terminal_descriptor CLOSE_BRACKET EQ path_delay_value{
+    $$ = ast_new_simple_parallel_path_declaration(
+        $2,$3,$6,$9
+    );
+  }
+| OPEN_BRACKET list_of_path_inputs polarity_operator_o STAR GT 
+  list_of_path_outputs CLOSE_BRACKET EQ path_delay_value{
+    $$ = ast_new_simple_full_path_declaration(
+        $2,$3,$6,$9
+    );
+  }
+;
 
-parallel_path_description : 
-OPEN_BRACKET specify_input_terminal_descriptor polarity_operator_o EQ GT
-specify_output_terminal_descriptor CLOSE_BRACKET
-                          ;
-
-full_path_description : 
-OPEN_BRACKET list_of_path_inputs polarity_operator_o STAR GT 
-list_of_path_outputs CLOSE_BRACKET
-                      ;
 
 list_of_path_inputs   : 
   specify_input_terminal_descriptor {
@@ -2251,8 +2253,9 @@ output_identifier : output_port_identifier  {$$ = $1;}
 
 /* A.7.4 specify path delays */
 
-path_delay_value : list_of_path_delay_expressions
+path_delay_value : list_of_path_delay_expressions {$$=$1;}
                  | OPEN_BRACKET list_of_path_delay_expressions CLOSE_BRACKET
+                   {$$=$2;}
                  ;
 
 list_of_path_delay_expressions : 
@@ -2304,19 +2307,12 @@ list_of_path_delay_expressions :
 path_delay_expression : constant_mintypmax_expression  {$$=$1;};
 
 edge_sensitive_path_declaration : 
-  parallel_edge_sensitive_path_description EQ path_delay_value
-| full_edge_sensitive_path_description     EQ path_delay_value
-;
-
-parallel_edge_sensitive_path_description : 
-OPEN_BRACKET edge_identifier_o specify_input_terminal_descriptor EQ GT
-specify_output_terminal_descriptor polarity_operator_o COLON 
-data_source_expression CLOSE_BRACKET
-
-full_edge_sensitive_path_description : 
-OPEN_BRACKET edge_identifier_o list_of_path_inputs STAR GT 
-list_of_path_outputs polarity_operator_o COLON data_source_expression 
-CLOSE_BRACKET
+  OPEN_BRACKET edge_identifier_o specify_input_terminal_descriptor EQ GT
+  specify_output_terminal_descriptor polarity_operator_o COLON
+  data_source_expression CLOSE_BRACKET EQ path_delay_value
+| OPEN_BRACKET edge_identifier_o list_of_path_inputs STAR GT
+  list_of_path_outputs polarity_operator_o COLON data_source_expression
+  CLOSE_BRACKET EQ path_delay_value
 ;
 
 data_source_expression : expression  {$$=$1;};
