@@ -2187,15 +2187,9 @@ showcancelled_declaration   : KW_SHOWCANCELLED list_of_path_outputs SEMICOLON
 
 /* A.7.2 specify path declarations */
 
-path_declaration : simple_path_declaration SEMICOLON{
-                     $$ = $1;
-                 }
-                 | edge_sensitive_path_declaration SEMICOLON{
-                     $$ = $1;
-                 }
-                 | state_dependent_path_declaration SEMICOLON{
-                     $$ = $1;
-                 }
+path_declaration : simple_path_declaration          SEMICOLON {$$ = $1;}
+                 | edge_sensitive_path_declaration  SEMICOLON {$$ = $1;}
+                 | state_dependent_path_declaration SEMICOLON {$$ = $1;}
                  ;
 
 simple_path_declaration : parallel_path_description EQ path_delay_value
@@ -2262,38 +2256,57 @@ path_delay_value : list_of_path_delay_expressions
                  | OPEN_BRACKET list_of_path_delay_expressions CLOSE_BRACKET
                  ;
 
-list_of_path_delay_expressions : path_delay_expression
-                               | path_delay_expression COMMA
-                                 path_delay_expression 
-                               | path_delay_expression COMMA
-                                 path_delay_expression COMMA
-                                 path_delay_expression
-                               | path_delay_expression COMMA
-                                 path_delay_expression COMMA
-                                 path_delay_expression COMMA
-                                 path_delay_expression COMMA
-                                 path_delay_expression COMMA
-                                 path_delay_expression
-                               | path_delay_expression COMMA
-                                 path_delay_expression COMMA
-                                 path_delay_expression COMMA
-                                 path_delay_expression COMMA
-                                 path_delay_expression COMMA
-                                 path_delay_expression
-                                 path_delay_expression COMMA
-                                 path_delay_expression COMMA
-                                 path_delay_expression COMMA
-                                 path_delay_expression COMMA
-                                 path_delay_expression COMMA
-                                 path_delay_expression
-                               ;
+list_of_path_delay_expressions : 
+  path_delay_expression{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| path_delay_expression COMMA
+  path_delay_expression {
+    $$ = ast_list_new(); ast_list_append($$,$1); ast_list_append($$,$3);
+  }
+| path_delay_expression COMMA
+  path_delay_expression COMMA
+  path_delay_expression{
+    $$ = ast_list_new(); ast_list_append($$,$1); ast_list_append($$,$3);
+    ast_list_append($$,$5);
+  }
+| path_delay_expression COMMA
+  path_delay_expression COMMA
+  path_delay_expression COMMA
+  path_delay_expression COMMA
+  path_delay_expression COMMA
+  path_delay_expression{
+    $$ = ast_list_new(); ast_list_append($$,$1); ast_list_append($$,$3);
+    ast_list_append($$,$5); ast_list_append($$,$7); ast_list_append($$,$9);
+    ast_list_append($$,$11);
+  }
+| path_delay_expression COMMA
+  path_delay_expression COMMA
+  path_delay_expression COMMA
+  path_delay_expression COMMA
+  path_delay_expression COMMA
+  path_delay_expression COMMA
+  path_delay_expression COMMA
+  path_delay_expression COMMA
+  path_delay_expression COMMA
+  path_delay_expression COMMA
+  path_delay_expression COMMA
+  path_delay_expression{
+    $$ = ast_list_new();  ast_list_append($$,$1);  ast_list_append($$,$3);
+    ast_list_append($$,$5);  ast_list_append($$,$7);  ast_list_append($$,$9);
+    ast_list_append($$,$11); ast_list_append($$,$13); ast_list_append($$,$15);
+    ast_list_append($$,$17); ast_list_append($$,$19); ast_list_append($$,$21);
+    ast_list_append($$,$23);
+
+  }
+;
 
 path_delay_expression : constant_mintypmax_expression  {$$=$1;};
 
 edge_sensitive_path_declaration : 
   parallel_edge_sensitive_path_description EQ path_delay_value
-| full_edge_sensitive_path_description EQ 
-  path_delay_value
+| full_edge_sensitive_path_description     EQ path_delay_value
 ;
 
 parallel_edge_sensitive_path_description : 
