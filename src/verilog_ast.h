@@ -38,6 +38,14 @@ typedef enum  ast_boolean_e
     AST_FALSE=0
 } ast_boolean;
 
+//! Describes a rising or falling edge, or where none is specified.
+typedef enum ast_edge_e{
+    EDGE_POS,
+    EDGE_NEG,
+    EDGE_NONE,
+    EDGE_ANY 
+} ast_edge;
+
 //-------------- attributes ------------------------------------
 
 /*!
@@ -427,6 +435,8 @@ typedef enum ast_path_declaration_type_e{
     EDGE_SENSITIVE_FULL_PATH,
     STATE_DEPENDENT_PARALLEL_PATH,
     STATE_DEPENDENT_FULL_PATH,
+    STATE_DEPENDENT_EDGE_PARALLEL_PATH,
+    STATE_DEPENDENT_EDGE_FULL_PATH,
 } ast_path_declaration_type;
 
 
@@ -447,6 +457,44 @@ typedef struct ast_simple_full_path_declaration_t{
     ast_list        *   delay_value;
 } ast_simple_full_path_declaration;
 
+
+//! Describes a single edge sensitive path declaration
+typedef struct ast_edge_sensitive_parallel_path_declaration_t {
+    ast_edge            edge;               //!< edge_identifier
+    ast_identifier      input_terminal;     //!< specify_input_terminal_descriptor
+    ast_operator        polarity;           //!< polarity_operator
+    ast_identifier      output_terminal;    //!< specify_output_terminal_descriptor
+    ast_expression  *   data_source;        //!< data_source_expression
+    ast_list        *   delay_value;        //!< path_delay_value
+} ast_edge_sensitive_parallel_path_declaration;
+
+//! Describes a parallel edge sensitive path declaration
+typedef struct ast_edge_sensitive_full_path_declaration_t {
+    ast_edge            edge;               //!< edge_identifier
+    ast_list        *   input_terminal;     //!< list_of_path_inputs
+    ast_operator        polarity;           //!< polarity_operator
+    ast_list        *   output_terminal;    //!< list_of_path_outputs
+    ast_expression  *   data_source;        //!< data_source_expression
+    ast_list        *   delay_value;        //!< path_delay_value
+} ast_edge_sensitive_full_path_declaration;
+
+//! Struct which holds the type and data of a path declaration.
+typedef struct ast_path_declaration_t{
+    ast_path_declaration_type   type;
+    ast_expression        * state_expression; //!< Used iff type == state_dependent_*
+    union {
+        ast_simple_parallel_path_declaration         * parallel;
+        ast_simple_full_path_declaration             * full;
+        ast_edge_sensitive_parallel_path_declaration * es_parallel;
+        ast_edge_sensitive_full_path_declaration     * es_full;
+    };
+} ast_path_declaration;
+
+/*!
+@brief Creates and returns a new path declaration type. Expects that the data
+be filled in manually;
+*/
+ast_path_declaration * ast_new_path_declaration(ast_path_declaration_type type);
 
 /*!
 @brief Creates and returns a pointer to a new simple parallel path declaration.
@@ -470,6 +518,33 @@ ast_simple_full_path_declaration * ast_new_simple_full_path_declaration
     ast_list        *   output_terminals,
     ast_list        *   delay_value
 );
+
+/*! 
+@brief Describes a single edge sensitive path declaration
+*/
+ast_edge_sensitive_parallel_path_declaration * 
+  ast_new_edge_sensitive_parallel_path_declaration(
+    ast_edge            edge,               //!< edge_identifier
+    ast_identifier      input_terminal,     //!< specify_input_terminal_descriptor
+    ast_operator        polarity,           //!< polarity_operator
+    ast_identifier      output_terminal,    //!< specify_output_terminal_descriptor
+    ast_expression  *   data_source,        //!< data_source_expression
+    ast_list        *   delay_value         //!< path_delay_value
+);
+
+/*! 
+@brief Describes a parallel edge sensitive path declaration
+*/
+ast_edge_sensitive_full_path_declaration * 
+  ast_new_edge_sensitive_full_path_declaration(
+    ast_edge            edge,               //!< edge_identifier
+    ast_list        *   input_terminal,     //!< list_of_path_inputs
+    ast_operator        polarity,           //!< polarity_operator
+    ast_list        *   output_terminal,    //!< list_of_path_outputs
+    ast_expression  *   data_source,        //!< data_source_expression
+    ast_list        *   delay_value         //!< path_delay_value
+); 
+
 
 /*! @} */
 

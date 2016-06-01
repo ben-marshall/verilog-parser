@@ -22,23 +22,23 @@
 
 /* token types */
 %union {
-   ast_node             * node;
-   ast_node_attributes  * node_attributes;
-   ast_identifier         identifier;
-   ast_lvalue           * lvalue;
-   ast_primary          * primary;
-   ast_expression       * expression;
-   ast_operator           operator;
-   ast_function_call    * call_function;
-   ast_list             * list;
-   ast_concatenation    * concatenation;
-   ast_simple_parallel_path_declaration *  simple_parallel_path_declaration;
-   ast_simple_full_path_declaration *  simple_full_path_declaration;
-   char                   boolean;
-   char                 * string;
-   char                 * number;
-   char                 * term;
-   char                 * keyword;
+    ast_edge              edge;
+    ast_node             * node;
+    ast_node_attributes  * node_attributes;
+    ast_identifier         identifier;
+    ast_lvalue           * lvalue;
+    ast_primary          * primary;
+    ast_expression       * expression;
+    ast_operator           operator;
+    ast_function_call    * call_function;
+    ast_list             * list;
+    ast_concatenation    * concatenation;
+    ast_path_declaration * path_declaration; 
+    char                   boolean;
+    char                 * string;
+    char                 * number;
+    char                 * term;
+    char                 * keyword;
 }
 
 %token <string> ANY
@@ -319,8 +319,8 @@
 %type <identifier> block_identifier
 %type <identifier> cell_identifier
 %type <identifier> config_identifier
-%type <identifier> edge_identifier
-%type <identifier> edge_identifier_o
+%type <edge> edge_identifier
+%type <edge> edge_identifier_o
 %type <identifier> escaped_arrayed_identifier
 %type <identifier> escaped_hierarchical_branch
 %type <identifier> escaped_hierarchical_identifier
@@ -446,7 +446,7 @@
 %type <node> drive_strength_o
 %type <node> edge_indicator
 %type <node> edge_input_list
-%type <node> edge_sensitive_path_declaration
+%type <path_declaration> edge_sensitive_path_declaration
 %type <node> edge_symbol
 %type <node> else_if_statements
 %type <node> enable_gate_instance
@@ -594,7 +594,7 @@
 %type <node> pass_switch_instance
 %type <node> pass_switch_instances
 %type <node> pass_switchtype
-%type <node> path_declaration
+%type <path_declaration> path_declaration
 %type <list> path_delay_value
 %type <node> pcontrol_terminal
 %type <node> polarity_operator
@@ -632,7 +632,7 @@
 %type <node> sequential_entry
 %type <node> sequential_entrys
 %type <node> showcancelled_declaration
-%type <node> simple_path_declaration
+%type <path_declaration> simple_path_declaration
 %type <node> source_text
 %type <node> specify_block
 %type <node> specify_item
@@ -643,7 +643,7 @@
 %type <node> specparam_declaration
 %type <node> sq_bracket_constant_expressions
 %type <node> sq_bracket_expressions
-%type <node> state_dependent_path_declaration
+%type <path_declaration> state_dependent_path_declaration
 %type <node> statement
 %type <node> statement_or_null
 %type <node> statements
@@ -2186,21 +2186,23 @@ showcancelled_declaration   : KW_SHOWCANCELLED list_of_path_outputs SEMICOLON
 
 /* A.7.2 specify path declarations */
 
-path_declaration : simple_path_declaration          SEMICOLON
-                 | edge_sensitive_path_declaration  SEMICOLON
-                 | state_dependent_path_declaration SEMICOLON
+path_declaration : simple_path_declaration          SEMICOLON {$$=$1;}
+                 | edge_sensitive_path_declaration  SEMICOLON {$$=$1;}
+                 | state_dependent_path_declaration SEMICOLON {$$=$1;}
                  ;
 
 simple_path_declaration : 
   OPEN_BRACKET specify_input_terminal_descriptor polarity_operator_o EQ GT
   specify_output_terminal_descriptor CLOSE_BRACKET EQ path_delay_value{
-    $$ = ast_new_simple_parallel_path_declaration(
+    $$ = ast_new_path_declaration(SIMPLE_PARALLEL_PATH);
+    $$ -> parallel = ast_new_simple_parallel_path_declaration(
         $2,$3,$6,$9
     );
   }
 | OPEN_BRACKET list_of_path_inputs polarity_operator_o STAR GT 
   list_of_path_outputs CLOSE_BRACKET EQ path_delay_value{
-    $$ = ast_new_simple_full_path_declaration(
+    $$ = ast_new_path_declaration(SIMPLE_FULL_PATH);
+    $$ -> full = ast_new_simple_full_path_declaration(
         $2,$3,$6,$9
     );
   }
@@ -2309,26 +2311,56 @@ path_delay_expression : constant_mintypmax_expression  {$$=$1;};
 edge_sensitive_path_declaration : 
   OPEN_BRACKET edge_identifier_o specify_input_terminal_descriptor EQ GT
   specify_output_terminal_descriptor polarity_operator_o COLON
-  data_source_expression CLOSE_BRACKET EQ path_delay_value
+  data_source_expression CLOSE_BRACKET EQ path_delay_value{
+    $$ = ast_new_path_declaration(EDGE_SENSITIVE_PARALLEL_PATH);
+    $$ -> es_parallel = 
+        ast_new_edge_sensitive_parallel_path_declaration($2,$3,$7,$6,$9,$12);
+  }
 | OPEN_BRACKET edge_identifier_o list_of_path_inputs STAR GT
   list_of_path_outputs polarity_operator_o COLON data_source_expression
-  CLOSE_BRACKET EQ path_delay_value
+  CLOSE_BRACKET EQ path_delay_value{
+    $$ = ast_new_path_declaration(EDGE_SENSITIVE_FULL_PATH);
+    $$ -> es_full= 
+        ast_new_edge_sensitive_full_path_declaration($2,$3,$7,$6,$9,$12);
+  }
 ;
 
 data_source_expression : expression  {$$=$1;};
 
 edge_identifier_o : edge_identifier  {$$=$1;}
+                  | {$$ = EDGE_NONE;}
                   ;
-edge_identifier   : KW_POSEDGE {$$=$1;} 
-                  | KW_NEGEDGE {$$=$1;}
+edge_identifier   : KW_POSEDGE {$$=EDGE_POS;} 
+                  | KW_NEGEDGE {$$=EDGE_NEG;}
                   ;
 
 state_dependent_path_declaration : 
-  KW_IF OPEN_BRACKET module_path_expression CLOSE_BRACKET 
-  simple_path_declaration
+  KW_IF OPEN_BRACKET module_path_expression CLOSE_BRACKET
+  simple_path_declaration{
+    $$ = $5;
+    if($$ -> type == SIMPLE_PARALLEL_PATH)
+        $$ -> type = STATE_DEPENDENT_PARALLEL_PATH;
+    else if($$ -> type == SIMPLE_FULL_PATH)
+        $$ -> type = STATE_DEPENDENT_FULL_PATH;
+    else
+        printf("%s:%d ERROR, invalid path declaration type when state dependent\n",
+            __FILE__,__LINE__);
+  }
 | KW_IF OPEN_BRACKET module_path_expression CLOSE_BRACKET 
-  edge_sensitive_path_declaration
-| KW_IFNONE simple_path_declaration
+  edge_sensitive_path_declaration{
+    $$ = $5;
+    if($$ -> type == EDGE_SENSITIVE_PARALLEL_PATH)
+        $$ -> type = STATE_DEPENDENT_EDGE_PARALLEL_PATH;
+    else if($$ -> type == EDGE_SENSITIVE_FULL_PATH)
+        $$ -> type = STATE_DEPENDENT_EDGE_FULL_PATH;
+    else
+        printf("%s:%d ERROR, invalid path declaration type when state dependent\n",
+            __FILE__,__LINE__);
+  }
+
+| KW_IFNONE simple_path_declaration{
+    $$ = $2;
+    }
 ;
 
 polarity_operator_o : polarity_operator  {$$=$1;}

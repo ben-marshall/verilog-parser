@@ -426,6 +426,21 @@ void                ast_extend_concatenation(ast_concatenation * element,
     ast_list_preappend(element -> items, data);
 }
 
+
+/*!
+@brief Creates and returns a new path declaration type. Expects that the data
+be filled in manually;
+*/
+ast_path_declaration * ast_new_path_declaration(ast_path_declaration_type type)
+{
+    ast_path_declaration * tr = calloc(1,sizeof(ast_path_declaration));
+
+    tr -> type = type;
+    tr -> state_expression = NULL;
+
+    return tr;
+}
+
 /*!
 @brief Creates and returns a pointer to a new simple parallel path declaration.
 */
@@ -469,6 +484,60 @@ ast_simple_full_path_declaration * ast_new_simple_full_path_declaration
     tr -> polarity       = polarity;
     tr -> output_terminals=output_terminals;
     tr -> delay_value    = delay_value;
+
+    return tr;
+}
+
+
+/*! 
+@brief Describes a single edge sensitive path declaration
+*/
+ast_edge_sensitive_parallel_path_declaration * 
+  ast_new_edge_sensitive_parallel_path_declaration(
+    ast_edge            edge,               //!< edge_identifier
+    ast_identifier      input_terminal,     //!< specify_input_terminal_descriptor
+    ast_operator        polarity,           //!< polarity_operator
+    ast_identifier      output_terminal,    //!< specify_output_terminal_descriptor
+    ast_expression  *   data_source,        //!< data_source_expression
+    ast_list        *   delay_value         //!< path_delay_value
+)
+{
+    ast_edge_sensitive_parallel_path_declaration * tr = 
+        calloc(1,sizeof(ast_edge_sensitive_parallel_path_declaration));
+
+    tr -> edge            = edge           ;
+    tr -> input_terminal  = input_terminal ;
+    tr -> polarity        = polarity       ;
+    tr -> output_terminal = output_terminal;
+    tr -> data_source     = data_source    ;
+    tr -> delay_value     = delay_value    ;
+
+    return tr;
+}
+
+
+/*! 
+@brief Describes a parallel edge sensitive path declaration
+*/
+ast_edge_sensitive_full_path_declaration * 
+  ast_new_edge_sensitive_full_path_declaration(
+    ast_edge            edge,               //!< edge_identifier
+    ast_list        *   input_terminal,     //!< list_of_path_inputs
+    ast_operator        polarity,           //!< polarity_operator
+    ast_list        *   output_terminal,    //!< list_of_path_outputs
+    ast_expression  *   data_source,        //!< data_source_expression
+    ast_list        *   delay_value         //!< path_delay_value
+)
+{
+    ast_edge_sensitive_full_path_declaration * tr = 
+        calloc(1,sizeof(ast_edge_sensitive_full_path_declaration));
+
+    tr -> edge            = edge           ;
+    tr -> input_terminal  = input_terminal ;
+    tr -> polarity        = polarity       ;
+    tr -> output_terminal = output_terminal;
+    tr -> data_source     = data_source    ;
+    tr -> delay_value     = delay_value    ;
 
     return tr;
 }
