@@ -634,7 +634,7 @@
 %type <node> showcancelled_declaration
 %type <path_declaration> simple_path_declaration
 %type <node> source_text
-%type <node> specify_block
+%type <list> specify_block
 %type <node> specify_item
 %type <node> specify_items
 %type <node> specify_items_o
@@ -2161,12 +2161,21 @@ task_enable             : hierarchical_task_identifier expressions_o SEMICOLON ;
 
 /* A.7.1 specify block declaration */
 
-specify_block           : KW_SPECIFY specify_items_o KW_ENDSPECIFY;
+specify_block           : KW_SPECIFY specify_items_o KW_ENDSPECIFY {$$ = $2;}
+                        ;
 
-specify_items_o         : specify_items | ;
+specify_items_o         : specify_items {$$ = $1;}
+                        | {$$ = ast_list_new();}
+                        ;
 
-specify_items           : specify_item
-                        | specify_items specify_item
+specify_items           : specify_item{
+                            $$ = ast_list_new();
+                            ast_list_append($1);
+                        }
+                        | specify_items specify_item{
+                            $$ = $1;
+                            ast_list_append($2);
+                        }
                         ;
 
 specify_item            : specparam_declaration
