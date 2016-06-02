@@ -668,6 +668,19 @@ ast_loop_statement * ast_new_repeat_loop_statement(
 @brief 
 */
 
+//! Describes a single exeuctable item in a case statement.
+typedef struct ast_case_item_t{
+    ast_list    * conditions; //!< A list of condtions, one must be met.
+    ast_statement * body;     //!< What to execute if the condition is met.
+} ast_case_item;
+
+
+//! Describes the top level of a case statement in terms of its items.
+typedef struct ast_case_statement_t{
+    ast_expression      * expression;   //!< The thing to be evaluated.
+    ast_list            * items;        //!< Statements, conditionally run.
+    ast_case_statement  * default_item; //!< Default IFF no item matches.
+} ast_case_statement;
 
 
 /*! @} */
