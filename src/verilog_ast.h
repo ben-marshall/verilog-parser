@@ -548,6 +548,33 @@ ast_edge_sensitive_full_path_declaration *
 
 /*! @} */
 
+// -------------------------------- Task Enable Statements -------------------
+
+/*!
+@defgroup ast-node-task-enable-statements Task Enable Statements
+@{
+@ingroup ast-node-procedural
+@brief Describes task enable statements.
+*/
+
+//! Fully describes a task enable statement.
+typedef struct ast_task_enable_statement_t{
+    ast_list        * expressions;  //!< Arguments to the task
+    ast_identifier    identifier;   //!< Task identifier.
+    ast_boolean       is_system;    //!< Is this a system task?
+} ast_task_enable_statement;
+
+/*!
+@brief creates and returns a pointer to a new task-enable statement.
+*/
+ast_task_enable_statement * ast_new_task_enable_statement(
+    ast_list        * expressions,
+    ast_identifier    identifier, 
+    ast_boolean       is_system   
+);
+
+/*! @} */
+
 // -------------------------------- Loop Statements --------------------------
 
 /*!

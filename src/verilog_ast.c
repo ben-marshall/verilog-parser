@@ -541,3 +541,23 @@ ast_edge_sensitive_full_path_declaration *
 
     return tr;
 }
+
+
+/*!
+@brief creates and returns a pointer to a new task-enable statement.
+*/
+ast_task_enable_statement * ast_new_task_enable_statement(
+    ast_list        * expressions,
+    ast_identifier    identifier, 
+    ast_boolean       is_system   
+)
+{
+    ast_task_enable_statement * tr = calloc(1,
+                                        sizeof(ast_task_enable_statement));
+
+    tr -> expressions = expressions;
+    tr -> identifier  = identifier;
+    tr -> is_system   = is_system;
+
+    return tr;
+}

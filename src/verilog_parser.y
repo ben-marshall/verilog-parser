@@ -459,7 +459,7 @@
 %type <node> event_control
 %type <node> event_declaration
 %type <node> event_trigger
-%type <node> expressions_o
+%type <list> expressions_o
 %type <node> file_path_spec
 %type <node> file_path_specs
 %type <node> full_edge_sensitive_path_description
@@ -2111,7 +2111,8 @@ case_items      : case_item
                 | case_items case_item
                 ;
 
-expressions_o   : expressions | ;
+expressions_o   : expressions {$$ = $1;} |{$$=ast_list_new();}
+                ;
 
 
 case_item       : expressions COLON statement_or_null
@@ -2155,9 +2156,15 @@ loop_statement          : KW_FOREVER statement
 
 /* A.6.9 task enable statements */
 
-system_task_enable      : system_task_identifier expressions_o SEMICOLON ;
+system_task_enable      : system_task_identifier expressions_o SEMICOLON {
+                           $$ = ast_new_task_enable_statement($2,$1,AST_TRUE);
+                        }
+;
 
-task_enable             : hierarchical_task_identifier expressions_o SEMICOLON ;
+task_enable             : hierarchical_task_identifier expressions_o SEMICOLON{
+                           $$ = ast_new_task_enable_statement($2,$1,AST_FALSE);
+                        }
+                        ;
 
 /* A.7.1 specify block declaration */
 
