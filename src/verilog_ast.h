@@ -584,6 +584,22 @@ ast_task_enable_statement * ast_new_task_enable_statement(
 @brief Describes for and while loop representation.
 */
 
+//! Describes the different syntactic methods of looping.
+enum ast_loop_type_e{
+    LOOP_FOREVER,
+    LOOP_REPEAT,
+    LOOP_WHILE,
+    LOOP_FOR
+} ast_loop_type;
+
+//! Fully describes a single loop statement.
+typedef struct ast_loop_statement_t{
+    ast_loop_type   type;            //!< The type of loop
+    ast_statement * inner_statement; //!< Loop body.
+    ast_expression * condition;      //!< Condition on which the loop runs.
+    ast_assignment * initial;       //!< Initial condition for for loops.
+    ast_assignment * modify;        //!< Modification assignment for for loop.
+} ast_loop_statement;
 
 
 /*! @} */

@@ -34,6 +34,7 @@
     ast_list             * list;
     ast_concatenation    * concatenation;
     ast_path_declaration * path_declaration; 
+    ast_statement        * statement;
     char                   boolean;
     char                 * string;
     char                 * number;
@@ -2102,10 +2103,11 @@ function_if_else_if_statement : KW_IF OPEN_BRACKET expression CLOSE_BRACKET
 
 /* A.6.7 Case Statements */
 
-case_statement  : KW_CASE OPEN_BRACKET expression CLOSE_BRACKET case_items KW_ENDCASE
-                | KW_CASEZ OPEN_BRACKET expression CLOSE_BRACKET case_items KW_ENDCASE
-                | KW_CASEX OPEN_BRACKET expression CLOSE_BRACKET case_items KW_ENDCASE
-                ;
+case_statement  : 
+  KW_CASE OPEN_BRACKET expression CLOSE_BRACKET case_items KW_ENDCASE
+| KW_CASEZ OPEN_BRACKET expression CLOSE_BRACKET case_items KW_ENDCASE
+| KW_CASEX OPEN_BRACKET expression CLOSE_BRACKET case_items KW_ENDCASE
+;
 
 case_items      : case_item
                 | case_items case_item
@@ -2120,51 +2122,58 @@ case_item       : expressions COLON statement_or_null
                 | KW_DEFAULT COLON statement_or_null
                 ;
 
-function_case_statement : KW_CASE OPEN_BRACKET expression CLOSE_BRACKET  function_case_items 
-                          KW_ENDCASE
-                        | KW_CASEZ OPEN_BRACKET expression CLOSE_BRACKET function_case_items 
-                          KW_ENDCASE
-                        | KW_CASEX OPEN_BRACKET expression CLOSE_BRACKET function_case_items 
-                          KW_ENDCASE
+function_case_statement : 
+  KW_CASE OPEN_BRACKET expression CLOSE_BRACKET  function_case_items 
+  KW_ENDCASE
+| KW_CASEZ OPEN_BRACKET expression CLOSE_BRACKET function_case_items
+  KW_ENDCASE
+| KW_CASEX OPEN_BRACKET expression CLOSE_BRACKET function_case_items 
+  KW_ENDCASE
+;
+
+function_case_items     : 
+  function_case_item
+| function_case_items case_item
                         ;
 
-function_case_items     : function_case_item
-                        | function_case_items case_item
-                        ;
-
-function_case_item      : expressions COLON function_statement_or_null
-                        | KW_DEFAULT function_statement_or_null
-                        | KW_DEFAULT COLON function_statement_or_null
-                        ;
+function_case_item      : 
+  expressions COLON function_statement_or_null
+| KW_DEFAULT function_statement_or_null
+| KW_DEFAULT COLON function_statement_or_null
+;
 
 /* A.6.8 looping statements */
 
-function_loop_statement : KW_FOREVER function_statement
-                        | KW_REPEAT OPEN_BRACKET expression CLOSE_BRACKET function_statement
-                        | KW_WHILE OPEN_BRACKET expression CLOSE_BRACKET function_statement
-                        | KW_FOR OPEN_BRACKET variable_assignment SEMICOLON expression
-                          SEMICOLON variable_assignment  CLOSE_BRACKET function_statement
-                        ;
+function_loop_statement : 
+  KW_FOREVER function_statement
+| KW_REPEAT OPEN_BRACKET expression CLOSE_BRACKET function_statement
+| KW_WHILE OPEN_BRACKET expression CLOSE_BRACKET function_statement
+| KW_FOR OPEN_BRACKET variable_assignment SEMICOLON expression
+  SEMICOLON variable_assignment  CLOSE_BRACKET function_statement
+;
 
-loop_statement          : KW_FOREVER statement
-                        | KW_REPEAT OPEN_BRACKET expression CLOSE_BRACKET statement
-                        | KW_WHILE OPEN_BRACKET expression CLOSE_BRACKET statement
-                        | KW_FOR OPEN_BRACKET variable_assignment SEMICOLON expression
-                          SEMICOLON variable_assignment  CLOSE_BRACKET statement
-                        ;
+loop_statement          : 
+  KW_FOREVER statement
+| KW_REPEAT OPEN_BRACKET expression CLOSE_BRACKET statement
+| KW_WHILE OPEN_BRACKET expression CLOSE_BRACKET statement
+| KW_FOR OPEN_BRACKET variable_assignment SEMICOLON expression SEMICOLON
+  variable_assignment  CLOSE_BRACKET statement
+;
 
 
 /* A.6.9 task enable statements */
 
-system_task_enable      : system_task_identifier expressions_o SEMICOLON {
-                           $$ = ast_new_task_enable_statement($2,$1,AST_TRUE);
-                        }
-;
+system_task_enable      : 
+    system_task_identifier expressions_o SEMICOLON {
+        $$ = ast_new_task_enable_statement($2,$1,AST_TRUE);
+    }
+    ;
 
-task_enable             : hierarchical_task_identifier expressions_o SEMICOLON{
-                           $$ = ast_new_task_enable_statement($2,$1,AST_FALSE);
-                        }
-                        ;
+task_enable             : 
+    hierarchical_task_identifier expressions_o SEMICOLON{
+        $$ = ast_new_task_enable_statement($2,$1,AST_FALSE);
+    }
+    ;
 
 /* A.7.1 specify block declaration */
 
