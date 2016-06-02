@@ -561,3 +561,99 @@ ast_task_enable_statement * ast_new_task_enable_statement(
 
     return tr;
 }
+
+
+/*!
+@brief Creates and returns a new forever loop statement.
+@param inner_statement - Pointer to the inner body of statements which
+make upt the loop body.
+*/
+ast_loop_statement * ast_new_forever_loop_statement(
+    ast_statement * inner_statement
+)
+{
+    ast_loop_statement * tr = calloc(1,sizeof(ast_loop_statement));
+    
+    tr -> type              = LOOP_FOREVER;
+    tr -> inner_statement   = inner_statement;
+    tr -> initial           = NULL;
+    tr -> condition         = NULL;
+    tr -> modify            = NULL;
+
+    return tr;
+}
+
+/*!
+@brief Creates and returns a new for loop statement.
+@param inner_statement - Pointer to the inner body of statements which
+make upt the loop body.
+@param initial_condition - Assignement which sets up the initial condition
+of the iterator.
+@param modify_assignment - How the iterator variable changes with each
+loop iteration.
+@param continue_condition - Expression which governs whether the loop should
+continue or break.
+*/
+ast_loop_statement * ast_new_for_loop_statement(
+    ast_statement  * inner_statement,
+    ast_assignment * initial_condition,
+    ast_assignment * modify_assignment,
+    ast_expression * continue_condition
+)
+{
+    ast_loop_statement * tr = calloc(1,sizeof(ast_loop_statement));
+    
+    tr -> type              = LOOP_FOR;
+    tr -> inner_statement   = inner_statement;
+    tr -> initial           = initial_condition;
+    tr -> condition         = continue_condition;
+    tr -> modify            = modify_assignment;
+
+    return tr;
+}
+
+/*!
+@brief Creates and returns a while loop statement.
+@param inner_statement - Pointer to the inner body of statements which
+make upt the loop body.
+@param continue_condition - Expression which governs whether the loop should
+continue or break.
+*/
+ast_loop_statement * ast_new_while_loop_statement(
+    ast_statement  * inner_statement,
+    ast_expression * continue_condition
+)
+{
+    ast_loop_statement * tr = calloc(1,sizeof(ast_loop_statement));
+    
+    tr -> type              = LOOP_WHILE;
+    tr -> inner_statement   = inner_statement;
+    tr -> initial           = NULL;
+    tr -> condition         = continue_condition;
+    tr -> modify            = NULL;
+
+    return tr;
+}
+
+/*!
+@brief Creates and returns a repeat loop statement.
+@param inner_statement - Pointer to the inner body of statements which
+make upt the loop body.
+@param continue_condition - Expression which governs whether the loop should
+continue or break.
+*/
+ast_loop_statement * ast_new_repeat_loop_statement(
+    ast_statement  * inner_statement,
+    ast_expression * continue_condition
+)
+{
+    ast_loop_statement * tr = calloc(1,sizeof(ast_loop_statement));
+    
+    tr -> type              = LOOP_REPEAT;
+    tr -> inner_statement   = inner_statement;
+    tr -> initial           = NULL;
+    tr -> condition         = continue_condition;
+    tr -> modify            = NULL;
+
+    return tr;
+}

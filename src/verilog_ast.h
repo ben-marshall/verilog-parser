@@ -31,6 +31,9 @@ typedef void * ast_minmax_exp   ;
 typedef void * ast_macro_use    ;
 typedef char * ast_string       ;
 
+typedef void * ast_assignment;
+typedef void * ast_statement;
+
 //! Stores the values of booleans.
 typedef enum  ast_boolean_e
 {
@@ -585,7 +588,7 @@ ast_task_enable_statement * ast_new_task_enable_statement(
 */
 
 //! Describes the different syntactic methods of looping.
-enum ast_loop_type_e{
+typedef enum ast_loop_type_e{
     LOOP_FOREVER,
     LOOP_REPEAT,
     LOOP_WHILE,
@@ -600,6 +603,58 @@ typedef struct ast_loop_statement_t{
     ast_assignment * initial;       //!< Initial condition for for loops.
     ast_assignment * modify;        //!< Modification assignment for for loop.
 } ast_loop_statement;
+
+
+/*!
+@brief Creates and returns a new forever loop statement.
+@param inner_statement - Pointer to the inner body of statements which
+make upt the loop body.
+*/
+ast_loop_statement * ast_new_forever_loop_statement(
+    ast_statement * inner_statement
+);
+
+/*!
+@brief Creates and returns a new for loop statement.
+@param inner_statement - Pointer to the inner body of statements which
+make upt the loop body.
+@param initial_condition - Assignement which sets up the initial condition
+of the iterator.
+@param modify_assignment - How the iterator variable changes with each
+loop iteration.
+@param continue_condition - Expression which governs whether the loop should
+continue or break.
+*/
+ast_loop_statement * ast_new_for_loop_statement(
+    ast_statement  * inner_statement,
+    ast_assignment * initial_condition,
+    ast_assignment * modify_assignment,
+    ast_expression * continue_condition
+);
+
+/*!
+@brief Creates and returns a while loop statement.
+@param inner_statement - Pointer to the inner body of statements which
+make upt the loop body.
+@param continue_condition - Expression which governs whether the loop should
+continue or break.
+*/
+ast_loop_statement * ast_new_while_loop_statement(
+    ast_statement  * inner_statement,
+    ast_expression * continue_condition
+);
+
+/*!
+@brief Creates and returns a repeat loop statement.
+@param inner_statement - Pointer to the inner body of statements which
+make upt the loop body.
+@param continue_condition - Expression which governs whether the loop should
+continue or break.
+*/
+ast_loop_statement * ast_new_repeat_loop_statement(
+    ast_statement  * inner_statement,
+    ast_expression * continue_condition
+);
 
 
 /*! @} */

@@ -2145,19 +2145,35 @@ function_case_item      :
 /* A.6.8 looping statements */
 
 function_loop_statement : 
-  KW_FOREVER function_statement
-| KW_REPEAT OPEN_BRACKET expression CLOSE_BRACKET function_statement
-| KW_WHILE OPEN_BRACKET expression CLOSE_BRACKET function_statement
+  KW_FOREVER function_statement{
+    $$ = ast_new_forever_loop_statement($2);
+  }
+| KW_REPEAT OPEN_BRACKET expression CLOSE_BRACKET function_statement{
+    $$ = ast_new_repeat_loop_statement($5,$3);
+  }
+| KW_WHILE OPEN_BRACKET expression CLOSE_BRACKET function_statement{
+    $$ = ast_new_while_loop_statement($5,$3);
+  }
 | KW_FOR OPEN_BRACKET variable_assignment SEMICOLON expression
-  SEMICOLON variable_assignment  CLOSE_BRACKET function_statement
+  SEMICOLON variable_assignment  CLOSE_BRACKET function_statement{
+    $$ = ast_new_for_loop_statement($9, $3, $7,$5);
+  }
 ;
 
 loop_statement          : 
-  KW_FOREVER statement
-| KW_REPEAT OPEN_BRACKET expression CLOSE_BRACKET statement
-| KW_WHILE OPEN_BRACKET expression CLOSE_BRACKET statement
+  KW_FOREVER statement{
+    $$ = ast_new_forever_loop_statement($2);
+  }
+| KW_REPEAT OPEN_BRACKET expression CLOSE_BRACKET statement{
+    $$ = ast_new_repeat_loop_statement($5,$3);
+  }
+| KW_WHILE OPEN_BRACKET expression CLOSE_BRACKET statement{
+    $$ = ast_new_while_loop_statement($5,$3);
+  }
 | KW_FOR OPEN_BRACKET variable_assignment SEMICOLON expression SEMICOLON
-  variable_assignment  CLOSE_BRACKET statement
+  variable_assignment  CLOSE_BRACKET statement{
+    $$ = ast_new_for_loop_statement($9, $3, $7,$5);
+  }
 ;
 
 
