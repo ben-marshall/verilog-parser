@@ -2247,11 +2247,11 @@ specify_items_o         : specify_items {$$ = $1;}
 
 specify_items           : specify_item{
                             $$ = ast_list_new();
-                            ast_list_append($1);
+                            ast_list_append($$,$1);
                         }
                         | specify_items specify_item{
                             $$ = $1;
-                            ast_list_append($2);
+                            ast_list_append($$,$2);
                         }
                         ;
 
