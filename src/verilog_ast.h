@@ -31,6 +31,9 @@ typedef void * ast_minmax_exp   ;
 typedef void * ast_macro_use    ;
 typedef char * ast_string       ;
 
+typedef void * ast_assignment;
+typedef void * ast_statement;
+
 //! Stores the values of booleans.
 typedef enum  ast_boolean_e
 {
@@ -548,6 +551,33 @@ ast_edge_sensitive_full_path_declaration *
 
 /*! @} */
 
+// -------------------------------- Task Enable Statements -------------------
+
+/*!
+@defgroup ast-node-task-enable-statements Task Enable Statements
+@{
+@ingroup ast-node-procedural
+@brief Describes task enable statements.
+*/
+
+//! Fully describes a task enable statement.
+typedef struct ast_task_enable_statement_t{
+    ast_list        * expressions;  //!< Arguments to the task
+    ast_identifier    identifier;   //!< Task identifier.
+    ast_boolean       is_system;    //!< Is this a system task?
+} ast_task_enable_statement;
+
+/*!
+@brief creates and returns a pointer to a new task-enable statement.
+*/
+ast_task_enable_statement * ast_new_task_enable_statement(
+    ast_list        * expressions,
+    ast_identifier    identifier, 
+    ast_boolean       is_system   
+);
+
+/*! @} */
+
 // -------------------------------- Loop Statements --------------------------
 
 /*!
@@ -557,6 +587,74 @@ ast_edge_sensitive_full_path_declaration *
 @brief Describes for and while loop representation.
 */
 
+//! Describes the different syntactic methods of looping.
+typedef enum ast_loop_type_e{
+    LOOP_FOREVER,
+    LOOP_REPEAT,
+    LOOP_WHILE,
+    LOOP_FOR
+} ast_loop_type;
+
+//! Fully describes a single loop statement.
+typedef struct ast_loop_statement_t{
+    ast_loop_type   type;            //!< The type of loop
+    ast_statement * inner_statement; //!< Loop body.
+    ast_expression * condition;      //!< Condition on which the loop runs.
+    ast_assignment * initial;       //!< Initial condition for for loops.
+    ast_assignment * modify;        //!< Modification assignment for for loop.
+} ast_loop_statement;
+
+
+/*!
+@brief Creates and returns a new forever loop statement.
+@param inner_statement - Pointer to the inner body of statements which
+make upt the loop body.
+*/
+ast_loop_statement * ast_new_forever_loop_statement(
+    ast_statement * inner_statement
+);
+
+/*!
+@brief Creates and returns a new for loop statement.
+@param inner_statement - Pointer to the inner body of statements which
+make upt the loop body.
+@param initial_condition - Assignement which sets up the initial condition
+of the iterator.
+@param modify_assignment - How the iterator variable changes with each
+loop iteration.
+@param continue_condition - Expression which governs whether the loop should
+continue or break.
+*/
+ast_loop_statement * ast_new_for_loop_statement(
+    ast_statement  * inner_statement,
+    ast_assignment * initial_condition,
+    ast_assignment * modify_assignment,
+    ast_expression * continue_condition
+);
+
+/*!
+@brief Creates and returns a while loop statement.
+@param inner_statement - Pointer to the inner body of statements which
+make upt the loop body.
+@param continue_condition - Expression which governs whether the loop should
+continue or break.
+*/
+ast_loop_statement * ast_new_while_loop_statement(
+    ast_statement  * inner_statement,
+    ast_expression * continue_condition
+);
+
+/*!
+@brief Creates and returns a repeat loop statement.
+@param inner_statement - Pointer to the inner body of statements which
+make upt the loop body.
+@param continue_condition - Expression which governs whether the loop should
+continue or break.
+*/
+ast_loop_statement * ast_new_repeat_loop_statement(
+    ast_statement  * inner_statement,
+    ast_expression * continue_condition
+);
 
 
 /*! @} */
@@ -570,6 +668,46 @@ ast_edge_sensitive_full_path_declaration *
 @brief 
 */
 
+//! Records the three different types of case statement Verilog has.
+typedef enum ast_case_statement_type_e{
+    CASE,
+    CASEX,
+    CASEZ
+} ast_case_statement_type;
+
+//! Describes a single exeuctable item in a case statement.
+typedef struct ast_case_item_t{
+    ast_list    * conditions; //!< A list of condtions, one must be met.
+    ast_statement * body;     //!< What to execute if the condition is met.
+    ast_boolean     is_default; //!< This is the default item.
+} ast_case_item;
+
+//! Describes the top level of a case statement in terms of its items.
+typedef struct ast_case_statement_t{
+    ast_expression  * expression;   //!< The thing to be evaluated.
+    ast_list        * cases;        //!< Statements, conditionally run.
+    ast_statement   * default_item; //!< Default IFF no item matches.
+    ast_case_statement_type type;   //!< CASE, CASEX or CASEZ.
+    ast_boolean       is_function;  //!< Is this a function_case_statement?
+} ast_case_statement;
+
+/*!
+@brief Create and return a new item in a cast statement.
+@param conditions - The conditions on which the item is executed.
+@param body - Executes when any of the conditions are met.
+*/
+ast_case_item * ast_new_case_item(ast_list      * conditions,
+                                  ast_statement * body);
+
+
+/*!
+@brief Creates and returns a new case statement.
+@param expression - The expression evaluated to select a case.
+@param cases - list of possible cases.
+*/
+ast_case_statement * ast_new_case_statement(ast_expression * expression,
+                                            ast_list       * cases,
+                                            ast_case_statement_type type);
 
 
 /*! @} */

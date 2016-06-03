@@ -541,3 +541,172 @@ ast_edge_sensitive_full_path_declaration *
 
     return tr;
 }
+
+
+/*!
+@brief creates and returns a pointer to a new task-enable statement.
+*/
+ast_task_enable_statement * ast_new_task_enable_statement(
+    ast_list        * expressions,
+    ast_identifier    identifier, 
+    ast_boolean       is_system   
+)
+{
+    ast_task_enable_statement * tr = calloc(1,
+                                        sizeof(ast_task_enable_statement));
+
+    tr -> expressions = expressions;
+    tr -> identifier  = identifier;
+    tr -> is_system   = is_system;
+
+    return tr;
+}
+
+
+/*!
+@brief Creates and returns a new forever loop statement.
+@param inner_statement - Pointer to the inner body of statements which
+make upt the loop body.
+*/
+ast_loop_statement * ast_new_forever_loop_statement(
+    ast_statement * inner_statement
+)
+{
+    ast_loop_statement * tr = calloc(1,sizeof(ast_loop_statement));
+    
+    tr -> type              = LOOP_FOREVER;
+    tr -> inner_statement   = inner_statement;
+    tr -> initial           = NULL;
+    tr -> condition         = NULL;
+    tr -> modify            = NULL;
+
+    return tr;
+}
+
+/*!
+@brief Creates and returns a new for loop statement.
+@param inner_statement - Pointer to the inner body of statements which
+make upt the loop body.
+@param initial_condition - Assignement which sets up the initial condition
+of the iterator.
+@param modify_assignment - How the iterator variable changes with each
+loop iteration.
+@param continue_condition - Expression which governs whether the loop should
+continue or break.
+*/
+ast_loop_statement * ast_new_for_loop_statement(
+    ast_statement  * inner_statement,
+    ast_assignment * initial_condition,
+    ast_assignment * modify_assignment,
+    ast_expression * continue_condition
+)
+{
+    ast_loop_statement * tr = calloc(1,sizeof(ast_loop_statement));
+    
+    tr -> type              = LOOP_FOR;
+    tr -> inner_statement   = inner_statement;
+    tr -> initial           = initial_condition;
+    tr -> condition         = continue_condition;
+    tr -> modify            = modify_assignment;
+
+    return tr;
+}
+
+/*!
+@brief Creates and returns a while loop statement.
+@param inner_statement - Pointer to the inner body of statements which
+make upt the loop body.
+@param continue_condition - Expression which governs whether the loop should
+continue or break.
+*/
+ast_loop_statement * ast_new_while_loop_statement(
+    ast_statement  * inner_statement,
+    ast_expression * continue_condition
+)
+{
+    ast_loop_statement * tr = calloc(1,sizeof(ast_loop_statement));
+    
+    tr -> type              = LOOP_WHILE;
+    tr -> inner_statement   = inner_statement;
+    tr -> initial           = NULL;
+    tr -> condition         = continue_condition;
+    tr -> modify            = NULL;
+
+    return tr;
+}
+
+/*!
+@brief Creates and returns a repeat loop statement.
+@param inner_statement - Pointer to the inner body of statements which
+make upt the loop body.
+@param continue_condition - Expression which governs whether the loop should
+continue or break.
+*/
+ast_loop_statement * ast_new_repeat_loop_statement(
+    ast_statement  * inner_statement,
+    ast_expression * continue_condition
+)
+{
+    ast_loop_statement * tr = calloc(1,sizeof(ast_loop_statement));
+    
+    tr -> type              = LOOP_REPEAT;
+    tr -> inner_statement   = inner_statement;
+    tr -> initial           = NULL;
+    tr -> condition         = continue_condition;
+    tr -> modify            = NULL;
+
+    return tr;
+}
+
+
+/*!
+@brief Create and return a new item in a cast statement.
+@param conditions - The conditions on which the item is executed.
+@param body - Executes when any of the conditions are met.
+*/
+ast_case_item * ast_new_case_item(ast_list      * conditions,
+                                  ast_statement * body)
+{
+    ast_case_item * tr = calloc(1,sizeof(ast_case_item));
+    
+    tr -> conditions = conditions;
+    tr -> body       = body;
+    tr -> is_default = AST_FALSE;
+
+    return tr;
+}
+
+
+/*!
+@brief Creates and returns a new case statement.
+@param expression - The expression evaluated to select a case.
+@param cases - list of possible cases.
+*/
+ast_case_statement * ast_new_case_statement(ast_expression * expression,
+                                            ast_list       * cases,
+                                            ast_case_statement_type type)
+{
+    ast_case_statement * tr = calloc(1,sizeof(ast_case_statement));
+
+    tr -> expression = expression;
+    tr -> cases      = cases;
+    tr -> type       = type;
+    tr -> is_function = AST_FALSE;
+
+    int i;
+    for(i = 0; i < tr -> cases -> items; i ++)
+    {
+        ast_case_item * the_case = (ast_case_item*)ast_list_get(tr->cases,i);
+
+        if(the_case == NULL)
+            break;
+
+        if(the_case -> is_default == AST_TRUE)
+        {
+            tr -> default_item = ast_list_get(tr -> cases, i);
+            break;
+        }
+    }
+
+    return tr;
+}

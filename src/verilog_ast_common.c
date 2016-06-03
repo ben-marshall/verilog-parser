@@ -105,3 +105,32 @@ void       ast_list_preappend(ast_list * list, void * data)
         list -> current_item += 1;
     }
 }
+
+/*!
+@brief Finds and returns the i'th item in the linked list.
+@details Returns a void* pointer. The programmer must be sure to cast this
+as the correct type.
+*/
+void *    ast_list_get(ast_list * list, int item)
+{
+    if(item > list -> items - 1)
+    {
+        return NULL;
+    }
+    else
+    {
+        if(item < list -> current_item)
+        {
+            list -> current_item = 0;
+            list -> walker = list -> head;
+        }
+
+        while(list -> current_item != item && list -> walker != NULL)
+        {
+            list -> walker = list -> walker -> next;
+            list -> current_item += 1;
+        }
+
+        return list -> walker -> data;
+    }
+}
