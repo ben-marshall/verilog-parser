@@ -4,7 +4,7 @@
 ![Build Status](https://travis-ci.org/ben-marshall/verilog-parser.svg?branch=master) [Build & CI Information](https://travis-ci.org/ben-marshall/verilog-parser)
 
 This repository contains a flex / bison parser for the IEEE 1364-2001 Verilog
-Standandard.
+Standard.
 
 - [Getting Started](#getting-started)
 - [Testing](#testing)
