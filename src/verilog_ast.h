@@ -668,19 +668,46 @@ ast_loop_statement * ast_new_repeat_loop_statement(
 @brief 
 */
 
+//! Records the three different types of case statement Verilog has.
+typedef enum ast_case_statement_type_e{
+    CASE,
+    CASEX,
+    CASEZ
+} ast_case_statement_type;
+
 //! Describes a single exeuctable item in a case statement.
 typedef struct ast_case_item_t{
     ast_list    * conditions; //!< A list of condtions, one must be met.
     ast_statement * body;     //!< What to execute if the condition is met.
+    ast_boolean     is_default; //!< This is the default item.
 } ast_case_item;
-
 
 //! Describes the top level of a case statement in terms of its items.
 typedef struct ast_case_statement_t{
-    ast_expression      * expression;   //!< The thing to be evaluated.
-    ast_list            * items;        //!< Statements, conditionally run.
-    ast_case_statement  * default_item; //!< Default IFF no item matches.
+    ast_expression  * expression;   //!< The thing to be evaluated.
+    ast_list        * cases;        //!< Statements, conditionally run.
+    ast_statement   * default_item; //!< Default IFF no item matches.
+    ast_case_statement_type type;   //!< CASE, CASEX or CASEZ.
+    ast_boolean       is_function;  //!< Is this a function_case_statement?
 } ast_case_statement;
+
+/*!
+@brief Create and return a new item in a cast statement.
+@param conditions - The conditions on which the item is executed.
+@param body - Executes when any of the conditions are met.
+*/
+ast_case_item * ast_new_case_item(ast_list      * conditions,
+                                  ast_statement * body);
+
+
+/*!
+@brief Creates and returns a new case statement.
+@param expression - The expression evaluated to select a case.
+@param cases - list of possible cases.
+*/
+ast_case_statement * ast_new_case_statement(ast_expression * expression,
+                                            ast_list       * cases,
+                                            ast_case_statement_type type);
 
 
 /*! @} */

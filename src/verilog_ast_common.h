@@ -67,6 +67,13 @@ void       ast_list_append(ast_list * list, void * data);
 */
 void       ast_list_preappend(ast_list * list, void * data);
 
+/*!
+@brief Finds and returns the i'th item in the linked list.
+@details Returns a void* pointer. The programmer must be sure to cast this
+as the correct type.
+*/
+void *    ast_list_get(ast_list * list, int item);
+
 /*! @} */
 
 #endif

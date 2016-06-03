@@ -35,6 +35,8 @@
     ast_concatenation    * concatenation;
     ast_path_declaration * path_declaration; 
     ast_statement        * statement;
+    ast_case_item        * case_item;
+    ast_case_statement   * case_statement;
     char                   boolean;
     char                 * string;
     char                 * number;
@@ -407,9 +409,9 @@
 %type <node> block_reg_declaration
 %type <node> block_variable_type
 %type <node> blocking_assignment
-%type <node> case_item
-%type <node> case_items
-%type <node> case_statement
+%type <case_item> case_item
+%type <list> case_items
+%type <case_statement> case_statement
 %type <node> cell_clause
 %type <node> charge_strength
 %type <node> cmos_switch_instance
@@ -463,11 +465,10 @@
 %type <list> expressions_o
 %type <node> file_path_spec
 %type <node> file_path_specs
-%type <node> full_edge_sensitive_path_description
 %type <node> function_blocking_assignment
-%type <node> function_case_item
-%type <node> function_case_items
-%type <node> function_case_statement
+%type <case_item> function_case_item
+%type <list> function_case_items
+%type <case_statement> function_case_statement
 %type <node> function_conditional_statement
 %type <node> function_declaration
 %type <node> function_else_if_statements
@@ -583,7 +584,6 @@
 %type <node> output_variable_type
 %type <node> output_variable_type_o
 %type <node> par_block
-%type <node> parallel_edge_sensitive_path_description
 %type <node> param_assignment
 %type <node> parameter_declaration
 %type <node> parameter_override
@@ -2104,42 +2104,87 @@ function_if_else_if_statement : KW_IF OPEN_BRACKET expression CLOSE_BRACKET
 /* A.6.7 Case Statements */
 
 case_statement  : 
-  KW_CASE OPEN_BRACKET expression CLOSE_BRACKET case_items KW_ENDCASE
-| KW_CASEZ OPEN_BRACKET expression CLOSE_BRACKET case_items KW_ENDCASE
-| KW_CASEX OPEN_BRACKET expression CLOSE_BRACKET case_items KW_ENDCASE
+  KW_CASE OPEN_BRACKET expression CLOSE_BRACKET case_items KW_ENDCASE{
+    $$ = ast_new_case_statement($3, $5, CASE);
+  }
+| KW_CASEZ OPEN_BRACKET expression CLOSE_BRACKET case_items KW_ENDCASE{
+    $$ = ast_new_case_statement($3, $5, CASEZ);
+  }
+| KW_CASEX OPEN_BRACKET expression CLOSE_BRACKET case_items KW_ENDCASE{
+    $$ = ast_new_case_statement($3, $5, CASEX);
+  }
 ;
 
-case_items      : case_item
-                | case_items case_item
+case_items      : 
+  case_item{
+    $$ = ast_list_new();
+    ast_list_append($$, $1);
+  }
+| case_items case_item{
+    $$ = $1;
+    ast_list_append($$, $1);
+  }
                 ;
 
 expressions_o   : expressions {$$ = $1;} |{$$=ast_list_new();}
                 ;
 
 
-case_item       : expressions COLON statement_or_null
-                | KW_DEFAULT statement_or_null
-                | KW_DEFAULT COLON statement_or_null
-                ;
+case_item       : 
+  expressions COLON statement_or_null{
+    $$ = ast_new_case_item($1,$3);
+  }
+| KW_DEFAULT statement_or_null{
+    $$ = ast_new_case_item(NULL,$2);
+    $$ -> is_default = AST_TRUE;
+  }
+| KW_DEFAULT COLON statement_or_null{
+    $$ = ast_new_case_item(NULL,$3);
+    $$ -> is_default = AST_TRUE;
+  }
+;
 
 function_case_statement : 
   KW_CASE OPEN_BRACKET expression CLOSE_BRACKET  function_case_items 
-  KW_ENDCASE
+  KW_ENDCASE{
+    $$ = ast_new_case_statement($3, $5, CASE);
+    $$ -> is_function = AST_TRUE;
+  }
 | KW_CASEZ OPEN_BRACKET expression CLOSE_BRACKET function_case_items
-  KW_ENDCASE
-| KW_CASEX OPEN_BRACKET expression CLOSE_BRACKET function_case_items 
-  KW_ENDCASE
+  KW_ENDCASE{
+    $$ = ast_new_case_statement($3, $5, CASEZ);
+    $$ -> is_function = AST_TRUE;
+  }
+| KW_CASEX OPEN_BRACKET expression CLOSE_BRACKET function_case_items
+  KW_ENDCASE{
+    $$ = ast_new_case_statement($3, $5, CASEX);
+    $$ -> is_function = AST_TRUE;
+  }
 ;
 
 function_case_items     : 
-  function_case_item
-| function_case_items case_item
-                        ;
+  function_case_item {
+    $$ = ast_list_new();
+    ast_list_append($$, $1);
+  }
+| function_case_items case_item{
+    $$ = $1;
+    ast_list_append($$, $1);
+  }
+;
 
 function_case_item      : 
-  expressions COLON function_statement_or_null
-| KW_DEFAULT function_statement_or_null
-| KW_DEFAULT COLON function_statement_or_null
+  expressions COLON function_statement_or_null{
+    $$ = ast_new_case_item($1, $3);
+  }
+| KW_DEFAULT function_statement_or_null{
+    $$ = ast_new_case_item(NULL, $2);
+    $$ -> is_default = AST_TRUE;
+  }
+| KW_DEFAULT COLON function_statement_or_null{
+    $$ = ast_new_case_item(NULL, $3);
+    $$ -> is_default = AST_TRUE;
+  }
 ;
 
 /* A.6.8 looping statements */
