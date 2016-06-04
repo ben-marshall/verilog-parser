@@ -710,3 +710,66 @@ ast_case_statement * ast_new_case_statement(ast_expression * expression,
 
     return tr;
 }
+
+
+/*!
+@brief Creates and returns a new conditional statement.
+@param statement - what to run if the condition holds true.
+@param condtion  - the condition on which statement is run.
+*/
+ast_conditional_statement * ast_new_conditional_statement(
+    ast_statement * statement,
+    ast_expression * condition
+)
+{
+    ast_conditional_statement * tr = 
+        calloc(1,sizeof(ast_conditional_statement));
+
+    tr -> statement = statement;
+    tr -> condition = condition;
+
+    return tr;
+}
+
+
+/*!
+@brief Creates a new if-then-else-then statement.
+@param if_condition - the conditional statement.
+@param else_condition - What to do if no conditional statements are executed.
+This can be NULL.
+@details This node also supports "if then elseif then else then" statements,
+and uses the ast_extend_if_else function to append a new 
+ast_conditional_statement to the end of a list of if-else conditions.
+Priority of exectuion is given to items added first.
+*/
+ast_if_else * ast_new_if_else(
+    ast_conditional_statement * if_condition,
+    ast_statement             * else_condition
+)
+{
+    ast_if_else * tr = calloc(1, sizeof(ast_if_else));
+
+    tr -> else_condition         = else_condition;
+    tr -> conditional_statements = ast_list_new();
+
+    ast_list_append(tr -> conditional_statements, if_condition);
+
+    return tr;
+}
+
+
+/*!
+@brief Adds an additional conditional (ha..) to an existing if-else
+statement.
+@param conditional_statements - the existing if-else tree.
+@param new_statement - The new statement to add at the end of the existing
+if-then conditions, but before any else_condtion.
+*/
+void  * ast_extend_if_else(
+    ast_if_else                 * conditional_statements,
+    ast_conditional_statement   * new_statement
+)
+{
+    ast_list_append(conditional_statements->conditional_statements, 
+        new_statement);
+}

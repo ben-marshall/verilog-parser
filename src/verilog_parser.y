@@ -478,10 +478,10 @@
 %type <node> function_loop_statement
 %type <node> function_port_list
 %type <node> function_seq_block
-%type <node> function_statement
-%type <node> function_statement_or_null
-%type <node> function_statements
-%type <node> function_statements_o
+%type <statement> function_statement
+%type <statement> function_statement_or_null
+%type <list> function_statements
+%type <list> function_statements_o
 %type <node> gate_enable
 %type <node> gate_instantiation
 %type <node> gate_n_input
@@ -637,8 +637,8 @@
 %type <node> source_text
 %type <list> specify_block
 %type <node> specify_item
-%type <node> specify_items
-%type <node> specify_items_o
+%type <list> specify_items
+%type <list> specify_items_o
 %type <identifier> specify_output_terminal_descriptor
 %type <node> specparam_assignment
 %type <node> specparam_declaration
@@ -2096,7 +2096,10 @@ function_if_else_if_statement :
   KW_IF OPEN_BRACKET expression CLOSE_BRACKET function_statement_or_null
   function_else_if_statements
 | KW_IF OPEN_BRACKET expression CLOSE_BRACKET function_statement_or_null
-  function_else_if_statements KW_ELSE function_statement_or_null
+  function_else_if_statements KW_ELSE function_statement_or_null{
+    ast_conditional_statement * first = ast_new_conditional_statement($5,$3);
+    $$ = ast_new_if_else(first, $8);
+  }
 ;
 
 /* A.6.7 Case Statements */

@@ -721,6 +721,56 @@ ast_case_statement * ast_new_case_statement(ast_expression * expression,
 @brief 
 */
 
+//! Describes a single if-then-do statement.
+typedef struct ast_conditional_statement_t {
+    ast_statement   * statement; //!< What should be executed.
+    ast_expression  * condition; //!< Execute iff true.
+} ast_conditional_statement;
+
+//! Describes a complete set of if-elseif-else statements
+typedef struct ast_if_else_t{
+    ast_list * conditional_statements; //!< Ordered list of if-elseifs
+    ast_statement * else_condition;    //!< Execute iff no conditonals are met.
+} ast_if_else;
+
+
+/*!
+@brief Creates and returns a new conditional statement.
+@param statement - what to run if the condition holds true.
+@param condtion  - the condition on which statement is run.
+*/
+ast_conditional_statement * ast_new_conditional_statement(
+    ast_statement * statement,
+    ast_expression * condition
+);
+
+/*!
+@brief Creates a new if-then-else-then statement.
+@param if_condition - the conditional statement.
+@param else_condition - What to do if no conditional statements are executed.
+This can be NULL.
+@details This node also supports "if then elseif then else then" statements,
+and uses the ast_extend_if_else function to append a new 
+ast_conditional_statement to the end of a list of if-else conditions.
+Priority of exectuion is given to items added first.
+*/
+ast_if_else * ast_new_if_else(
+    ast_conditional_statement * if_condition,
+    ast_statement             * else_condition
+);
+
+
+/*!
+@brief Adds an additional conditional (ha..) to an existing if-else
+statement.
+@param conditional_statements - the existing if-else tree.
+@param new_statement - The new statement to add at the end of the existing
+if-then conditions, but before any else_condtion.
+*/
+void  * ast_extend_if_else(
+    ast_if_else                 * conditional_statements,
+    ast_conditional_statement   * new_statement
+);
 
 
 /*! @} */
