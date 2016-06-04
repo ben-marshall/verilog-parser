@@ -74,6 +74,16 @@ as the correct type.
 */
 void *    ast_list_get(ast_list * list, int item);
 
+/*!
+@brief concatenates the two supplied lists into one.
+@param head - This will form the "front" of the new list.
+@param tail - This will form the "end" of the new list.
+@details This function takes all the elements in tail and appends them
+to those in head. The tail argument is then released from memory, and the
+original head pointer is returned, with all data items still in tact.
+*/
+ast_list *    ast_list_concat(ast_list * head, ast_list * tail);
+
 /*! @} */
 
 #endif

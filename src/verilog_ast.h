@@ -769,7 +769,7 @@ if-then conditions, but before any else_condtion.
 */
 void  * ast_extend_if_else(
     ast_if_else                 * conditional_statements,
-    ast_conditional_statement   * new_statement
+    ast_list                    * new_statement
 );
 
 

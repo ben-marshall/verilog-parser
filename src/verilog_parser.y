@@ -37,6 +37,7 @@
     ast_statement        * statement;
     ast_case_item        * case_item;
     ast_case_statement   * case_statement;
+    ast_if_else          * ifelse;
     char                   boolean;
     char                 * string;
     char                 * number;
@@ -471,8 +472,8 @@
 %type <case_statement> function_case_statement
 %type <node> function_conditional_statement
 %type <node> function_declaration
-%type <node> function_else_if_statements
-%type <node> function_if_else_if_statement
+%type <list> function_else_if_statements
+%type <ifelse> function_if_else_if_statement
 %type <node> function_item_declaration
 %type <node> function_item_declarations
 %type <node> function_loop_statement
@@ -2058,47 +2059,85 @@ wait_statement : KW_WAIT OPEN_BRACKET expression CLOSE_BRACKET statement_or_null
 /* A.6.6 Conditional Statemnets */
 
 conditional_statement : 
-  if_else_if_statement
-| KW_IF OPEN_BRACKET expression CLOSE_BRACKET statement_or_null
+  if_else_if_statement {$$ = $1;}
+| KW_IF OPEN_BRACKET expression CLOSE_BRACKET statement_or_null{
+    ast_conditional_statement * first = ast_new_conditional_statement($5,$3);
+    $$ = ast_new_if_else(first,NULL);
+   }
 | KW_IF OPEN_BRACKET expression CLOSE_BRACKET statement_or_null KW_ELSE 
-  statement_or_null
+  statement_or_null{
+    ast_conditional_statement * first = ast_new_conditional_statement($5,$3);
+    $$ = ast_new_if_else(first,$7);
+   }
 ;
 
 if_else_if_statement : 
   KW_IF OPEN_BRACKET expression CLOSE_BRACKET statement_or_null 
-  else_if_statements
+  else_if_statements{
+    ast_conditional_statement * first = ast_new_conditional_statement($5,$3);
+    $$ = ast_new_if_else(first, NULL);
+    ast_extend_if_else($$,$6);
+  }
 | KW_IF OPEN_BRACKET expression CLOSE_BRACKET statement_or_null 
-  else_if_statements
-  KW_ELSE statement_or_null
+  else_if_statements KW_ELSE statement_or_null{
+    ast_conditional_statement * first = ast_new_conditional_statement($5,$3);
+    $$ = ast_new_if_else(first, $8);
+    ast_extend_if_else($$,$6);
+  }
 ;
 
 else_if_statements : 
-  KW_ELSE KW_IF OPEN_BRACKET expression CLOSE_BRACKET statement_or_null
+  KW_ELSE KW_IF OPEN_BRACKET expression CLOSE_BRACKET statement_or_null{
+    $$ = ast_list_new();
+    ast_list_append($$, ast_new_conditional_statement($6,$4));
+  }
 | else_if_statements KW_ELSE KW_IF OPEN_BRACKET expression
-  CLOSE_BRACKET statement_or_null
+  CLOSE_BRACKET statement_or_null{
+    $$ = $1;
+    ast_list_append($$,ast_new_conditional_statement($7,$5));
+  }
 ;
 
 function_conditional_statement : 
-   KW_IF OPEN_BRACKET expression CLOSE_BRACKET function_statement_or_null
+   KW_IF OPEN_BRACKET expression CLOSE_BRACKET function_statement_or_null{
+    ast_conditional_statement * first = ast_new_conditional_statement($5,$3);
+    $$ = ast_new_if_else(first,NULL);
+   }
  | KW_IF OPEN_BRACKET expression CLOSE_BRACKET function_statement_or_null 
-   KW_ELSE function_statement_or_null
- | function_if_else_if_statement
+   KW_ELSE function_statement_or_null{
+    ast_conditional_statement * first = ast_new_conditional_statement($5,$3);
+    $$ = ast_new_if_else(first,$7);
+   }
+ | function_if_else_if_statement{
+    $$ = $1;
+ }
  ;
 
 function_else_if_statements   : 
   KW_ELSE KW_IF OPEN_BRACKET expression CLOSE_BRACKET 
-  function_statement_or_null 
+  function_statement_or_null{
+    $$ = ast_list_new();
+    ast_list_append($$, ast_new_conditional_statement($6,$4));
+  }
 | function_else_if_statements KW_ELSE KW_IF OPEN_BRACKET expression 
-  CLOSE_BRACKET function_statement_or_null
+  CLOSE_BRACKET function_statement_or_null{
+    $$ = $1;
+    ast_list_append($$,ast_new_conditional_statement($7,$5));
+  }
 ;
 
 function_if_else_if_statement : 
   KW_IF OPEN_BRACKET expression CLOSE_BRACKET function_statement_or_null
-  function_else_if_statements
+  function_else_if_statements{
+    ast_conditional_statement * first = ast_new_conditional_statement($5,$3);
+    $$ = ast_new_if_else(first, NULL);
+    ast_extend_if_else($$,$6);
+  }
 | KW_IF OPEN_BRACKET expression CLOSE_BRACKET function_statement_or_null
   function_else_if_statements KW_ELSE function_statement_or_null{
     ast_conditional_statement * first = ast_new_conditional_statement($5,$3);
     $$ = ast_new_if_else(first, $8);
+    ast_extend_if_else($$,$6);
   }
 ;
 

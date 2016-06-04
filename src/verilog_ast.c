@@ -766,10 +766,13 @@ statement.
 if-then conditions, but before any else_condtion.
 */
 void  * ast_extend_if_else(
-    ast_if_else                 * conditional_statements,
-    ast_conditional_statement   * new_statement
+    ast_if_else     * conditional_statements,
+    ast_list        * new_statements
 )
 {
-    ast_list_append(conditional_statements->conditional_statements, 
-        new_statement);
+    if(new_statements != NULL)
+    {
+        ast_list_concat(conditional_statements -> conditional_statements,
+                        new_statements);
+    }
 }

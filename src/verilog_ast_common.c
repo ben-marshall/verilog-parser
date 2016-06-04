@@ -134,3 +134,27 @@ void *    ast_list_get(ast_list * list, int item)
         return list -> walker -> data;
     }
 }
+
+/*!
+@brief concatenates the two supplied lists into one.
+@param head - This will form the "front" of the new list.
+@param tail - This will form the "end" of the new list.
+@details This function takes all the elements in tail and appends them
+to those in head. The tail argument is then released from memory, and the
+original head pointer is returned, with all data items still in tact.
+*/
+ast_list *    ast_list_concat(ast_list * head, ast_list * tail)
+{
+    // Perform the concatenation.
+    if(tail -> head != NULL)
+    {
+        head -> tail -> next = tail -> head;
+        head -> items        = head -> items + tail -> items;
+    }
+
+    // Free only the tail data-structure, not it's elements.
+    free(tail);
+
+    // return the new list.
+    return head;
+}
