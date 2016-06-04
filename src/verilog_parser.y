@@ -462,7 +462,7 @@
 %type <node> error_limit_value_o
 %type <node> event_control
 %type <node> event_declaration
-%type <node> event_trigger
+%type <identifier> event_trigger
 %type <list> expressions_o
 %type <node> file_path_spec
 %type <node> file_path_specs
@@ -2023,38 +2023,53 @@ function_statement : attribute_instances function_blocking_assignment SEMICOLON
 
 /* A.6.5 Timing control statements */
 
-delay_control : HASH delay_value
-              | HASH OPEN_BRACKET mintypmax_expression CLOSE_BRACKET
-              ;
 
-delay_or_event_control : delay_control
-                       | event_control
-                       | KW_REPEAT OPEN_BRACKET expression CLOSE_BRACKET event_control
-                       ;
+procedural_timing_control_statement : 
+  delay_or_event_control statement_or_null
+;
 
-disable_statement : KW_DISABLE hierarchical_task_identifier SEMICOLON
-                  | KW_DISABLE hierarchical_block_identifier SEMICOLON
-                  ;
+delay_or_event_control : 
+  delay_control
+| event_control
+| KW_REPEAT OPEN_BRACKET expression CLOSE_BRACKET event_control
+;
 
-event_control : AT  event_identifier
-              | AT  OPEN_BRACKET event_expression CLOSE_BRACKET
-              | AT STAR
-              | AT  ATTRIBUTE_START CLOSE_BRACKET /* Add attribute_start here since the tokeniser may return it an it still be valid.*/
-              | AT  OPEN_BRACKET STAR CLOSE_BRACKET
-              ;
+delay_control : 
+  HASH delay_value
+| HASH OPEN_BRACKET mintypmax_expression CLOSE_BRACKET
+;
 
-event_trigger : MINUS GT hierarchical_event_identifier ;
 
-event_expression : expression
-                 | hierarchical_identifier
-                 | KW_POSEDGE expression
-                 | KW_NEGEDGE expression
-                 | event_expression KW_OR event_expression
-                 | event_expression COMMA event_expression
+disable_statement : 
+  KW_DISABLE hierarchical_task_identifier SEMICOLON
+| KW_DISABLE hierarchical_block_identifier SEMICOLON
+;
 
-procedural_timing_control_statement : delay_or_event_control statement_or_null
+event_control : 
+  AT event_identifier
+| AT OPEN_BRACKET event_expression CLOSE_BRACKET
+| AT STAR
+/* Add attribute_start here since the tokeniser may return it an it still be
+ * valid.*/
+| AT ATTRIBUTE_START CLOSE_BRACKET 
+| AT OPEN_BRACKET STAR CLOSE_BRACKET
+;
 
-wait_statement : KW_WAIT OPEN_BRACKET expression CLOSE_BRACKET statement_or_null;
+event_trigger : 
+  MINUS GT hierarchical_event_identifier {$$=$3;}
+;
+
+event_expression : 
+  expression
+| KW_POSEDGE expression
+| KW_NEGEDGE expression
+| event_expression KW_OR event_expression
+| event_expression COMMA event_expression
+;
+
+wait_statement : 
+  KW_WAIT OPEN_BRACKET expression CLOSE_BRACKET statement_or_null
+;
 
 /* A.6.6 Conditional Statemnets */
 

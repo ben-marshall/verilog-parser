@@ -30,6 +30,7 @@ typedef char * ast_operator     ;
 typedef void * ast_minmax_exp   ;
 typedef void * ast_macro_use    ;
 typedef char * ast_string       ;
+typedef void * ast_delay_value  ;
 
 typedef void * ast_assignment;
 typedef void * ast_statement;
@@ -784,7 +785,77 @@ void  * ast_extend_if_else(
 @brief 
 */
 
+//! Describes a single wait statement.
+typedef struct ast_wait_statement_t{
+    ast_expression * expression; //!< How long to wait for.
+    ast_statement  * statement;  //!< What to execute after waiting.
+} ast_wait_statement;
 
+typedef enum ast_event_expression_type_e{
+    EVENT_EXPRESSION,   //!< Goes to a single expression
+    EVENT_POSEDGE,      //!< on posedge
+    EVENT_NEGEDGE,      //!< on negedge
+    EVENT_SEQUENCE      //!< Covers event_expression COMMA event_expression
+} ast_event_expression_type;
+
+//! Describes a single event expression
+typedef struct ast_event_expression_t ast_event_expression;
+struct ast_event_expression_t {
+    ast_event_expression_type type;
+    union{
+        ast_expression * expression; //!< Single event expressions.
+        ast_list       * sequence;   //!< Used for CSV lists of events
+    };
+};
+
+//! Whether an event control struct contains a list of triggers, no triggers
+// or triggers on anything.
+typedef enum ast_event_control_type_e{
+    EVENT_CTRL_NONE,
+    EVENT_CTRL_ANY,
+    EVENT_CTRL_TRIGGERS
+
+} ast_event_control_type;
+
+//! Describes the type of event triggers.
+typedef struct ast_event_control_t{
+    ast_event_control_type type;
+    ast_event_expression * expression;
+} ast_event_control;
+
+//! What sort of procedural timing control statement is this?
+typedef enum ast_timing_control_statement_type_e{
+    TIMING_CTRL_DELAY_CONTROL_VALUE,
+    TIMING_CTRL_DELAY_CONTROL_MINTYPEMAX,
+    TIMING_CTRL_EVENT_CONTROL,
+    TIMING_CTRL_EVENT_CONTROL_REPEAT
+} ast_timing_control_statement_type;
+
+//! Denotes whether a delay control expression is a single value or a range
+typedef enum ast_delay_ctrl_type_e{
+    DELAY_CTRL_VALUE,
+    DELAY_CTRL_MINTYPMAX
+} ast_delay_ctrl_type;
+
+//! Describes a single delay control statement
+typedef struct ast_delay_ctrl_t{
+    ast_delay_ctrl_type type;
+    union{
+        ast_delay_value * value;
+        ast_minmax_exp  * mintypmax;
+    };
+} ast_delay_ctrl;
+
+//! Describes a single procedural timing control statement.
+typedef struct ast_timing_control_statement_t{
+    ast_timing_control_statement_type type;
+    union{
+        ast_delay_ctrl    * delay;
+        ast_event_control * event_ctrl;
+    };
+    ast_expression    * repeat;     //! NULL unless part of repeat statement.
+    ast_statement     * statement;  //! What to execute after the control.
+} ast_timing_control_statement;
 
 /*! @} */
 
