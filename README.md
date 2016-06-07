@@ -100,3 +100,22 @@ There are some things that the parser does not support:
   omits. It hopefully won't be long before I get round to adding it though.
 - Abstract Syntax Trees. This is a work in progress, but it will be in there
   eventually.
+
+## Wishlist
+
+This is a wishlists of tools that I would like to use the parser in. If
+anyone else would like to use the parser as the basis for their own tools
+like this, I am morew than happy to help!
+
+- A code indenter / style format checker.
+- A pre-processed source checker (expand macros and parameters, etc) for easy
+  browsing of generic logic blocks and cores.
+- Something to highlight when signals cross clock domains.
+- - Critical path identifier (something which doesn't take 20 minuets to run on 
+  a grid engine) 
+- A switching probability analysis tool. 
+- This could even feed into a rough power & energy estimation tool. 
+- A simple hierarchy visualiser, which you can feed all your project files into 
+  and which will spit out a digested view of the module hierarchy. 
+- Proper Doxygen support for Verilog. This will be the first thing I try after 
+  the parser is finished. 

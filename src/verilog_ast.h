@@ -857,6 +857,33 @@ typedef struct ast_timing_control_statement_t{
     ast_statement     * statement;  //! What to execute after the control.
 } ast_timing_control_statement;
 
+/*!
+@brief Creates and returns a new wait statement.
+*/
+ast_wait_statement * ast_new_wait_statement(
+    ast_expression * wait_for,
+    ast_statement  * statement
+);
+
+/*!
+@brief Creates a new event expression node
+@param trigger_edge - the edge on which the trigger is activated.
+@param expression - the expression to monitor the waveforms of.
+*/
+ast_event_expression * ast_new_event_expression(
+    ast_edge trigger_edge,
+    ast_expression * expression
+);
+
+/*!
+@brief Creates a new event expression node, which is itself a sequence of
+sub-expressions.
+*/
+ast_event_expression * ast_new_event_expression_sequence(
+    ast_expression * left,
+    ast_expression * right
+);
+
 /*! @} */
 
 // -------------------------------- Fork Join Sequential ---------------------
