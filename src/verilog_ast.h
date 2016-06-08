@@ -31,8 +31,10 @@ typedef void * ast_minmax_exp   ;
 typedef void * ast_macro_use    ;
 typedef char * ast_string       ;
 typedef void * ast_delay_value  ;
+typedef void * ast_delay3       ;
+typedef void * ast_drive_strength;
+typedef struct ast_assignment_t ast_assignment;
 
-typedef void * ast_assignment;
 typedef void * ast_statement;
 
 //! Stores the values of booleans.
@@ -935,7 +937,6 @@ ast_timing_control_statement * ast_new_timing_control_statement_event(
 */
 
 
-
 /*! @} */
 
 // -------------------------------- Procedural Blocks and Assignments --------
@@ -945,9 +946,47 @@ ast_timing_control_statement * ast_new_timing_control_statement_event(
 @{
 @ingroup ast-node-module-items
 @brief Describes items found inside procedural blocks.
+@details 
+TODO - Anexes 6.2, 6.3, 6.4
 */
 
+typedef enum ast_assignment_type_e{
+    ASSIGNMENT_CONTINUOUS,
+    ASSIGNMENT_BLOCKING,
+    ASSIGNMENT_NONBLOCKING
+} ast_assignment_type;
 
+/*!
+@brief encodes a single assignment.
+*/
+struct ast_assignment_t{
+    ast_assignment_type type;
+    ast_lvalue      * lval;
+    ast_expression  * expression;
+};
+
+/*!
+@brief Creates and returns a new continuous assignment.
+*/
+ast_assignment * ast_new_assignment(
+    ast_lvalue * lval,
+    ast_expression * expression
+);
+
+/*!
+@brief Describes a set of assignments with the same drive strength and delay.
+*/
+typedef struct ast_continuous_assignment_t{
+    ast_list            * assignments;
+    ast_drive_strength  * drive_strength;
+    ast_delay3          * delay;
+} ast_continuous_assignment;
+
+ast_continuous_assignment * ast_new_continuous_assignment(
+    ast_list * assignments,
+    ast_drive_strength * strength,
+    ast_delay3 * delay
+);
 
 /*! @} */
 

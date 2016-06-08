@@ -1919,15 +1919,26 @@ name_of_udp_instance : udp_instance_identifier range_o SEMICOLON ;
 
 /* A.6.1 Continuous assignment statements */
 
-continuous_assign : KW_ASSIGN drive_strength_o delay3_o 
-                    list_of_net_assignments SEMICOLON
-                  ;
+continuous_assign : 
+    KW_ASSIGN drive_strength_o delay3_o list_of_net_assignments SEMICOLON{
+      $$ = ast_new_continuous_assignment($4,$2,$3);
+    }
+;
 
-list_of_net_assignments : net_assignment
-                        | list_of_net_assignments COMMA net_assignment
-                        ;
+list_of_net_assignments : 
+  net_assignment{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| list_of_net_assignments COMMA net_assignment{
+    $$ = $1;
+    ast_list_append($$,$3);
+  }
+;
 
-net_assignment : net_lvalue EQ expression;
+net_assignment : net_lvalue EQ expression{
+    $$ = ast_new_assignment($1,$3);   
+};
 
 /* A.6.2 Procedural blocks and assignments */
 

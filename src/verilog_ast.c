@@ -941,7 +941,33 @@ ast_timing_control_statement * ast_new_timing_control_statement_event(
     return tr;
 }
 
+/*!
+@brief Creates and returns a new assignment.
+*/
+ast_assignment * ast_new_assignment(
+    ast_lvalue * lval,
+    ast_expression * expression
+)
+{
+    ast_assignment * tr = calloc(1,sizeof(ast_assignment));
+    tr -> lval = lval;
+    tr -> expression = expression;
+    tr -> type = ASSIGNMENT_CONTINUOUS;
+    return tr;
+}
 
-
+ast_continuous_assignment * ast_new_continuous_assignment(
+    ast_list * assignments,
+    ast_drive_strength * strength,
+    ast_delay3 * delay
+)
+{
+    ast_continuous_assignment * tr = calloc(1,
+                sizeof(ast_continuous_assignment));
+    tr -> assignments = assignments;
+    tr -> drive_strength = strength;
+    tr -> delay = delay;
+    return tr;
+}
 
 

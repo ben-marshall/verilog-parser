@@ -14,13 +14,13 @@ structures that have yet to be written and integrated.
     - Proper Number Representation
     - Function Calls [DONE]
     - Concatenations [DONE]
-    - Path Delays
+    - Path Delays [DONE]
     - Specify Blocks
     - Statements
      - Loops
      - Case
-     - If Else
-     - Timing Control
+     - If Else [DONE]
+     - Timing Control [DONE]
     - Fork Join
     - Procedural Blocks
     - Continous assignments
