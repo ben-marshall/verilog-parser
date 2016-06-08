@@ -1937,7 +1937,7 @@ list_of_net_assignments :
 ;
 
 net_assignment : net_lvalue EQ expression{
-    $$ = ast_new_assignment($1,$3);   
+    $$ = ast_new_single_assignment($1,$3);   
 };
 
 /* A.6.2 Procedural blocks and assignments */
@@ -1946,12 +1946,12 @@ initial_construct   : KW_INITIAL statement;
 always_construct    : KW_ALWAYS statement ;
 
 blocking_assignment : variable_lvalue EQ delay_or_event_control_o expression{
-  $$ = ast_new_blocking_assignment($1,$4,$3);  
+    $$ = ast_new_blocking_assignment($1,$4,$3);   
 };
 
 nonblocking_assignment : variable_lvalue LTE delay_or_event_control_o 
                       expression{
-  $$ = ast_new_blocking_assignment($1,$4,$3);  
+    $$ = ast_new_nonblocking_assignment($1,$4,$3);   
 };
 
 delay_or_event_control_o : delay_or_event_control{$$=$1;} | {$$=NULL;};
@@ -1964,11 +1964,12 @@ procedural_continuous_assignments : KW_ASSIGN variable_assignment
                                   | KW_RELEASE net_lvalue
                                   ;
 
-function_blocking_assignment : variable_lvalue SEMICOLON expression
-                             ;
+function_blocking_assignment : variable_lvalue SEMICOLON expression{
+    $$ = ast_new_single_assignment($1,$3);
+};
 
-function_statement_or_null : function_statement
-                           | attribute_instances SEMICOLON
+function_statement_or_null : function_statement {$$ =$1;}
+                           | attribute_instances SEMICOLON {$$=NULL;}
                            ;
 
 /* A.6.3 Parallel and sequential blocks */

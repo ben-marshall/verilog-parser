@@ -34,6 +34,7 @@ typedef void * ast_delay_value  ;
 typedef void * ast_delay3       ;
 typedef void * ast_drive_strength;
 typedef struct ast_assignment_t ast_assignment;
+typedef struct ast_single_assignment_t ast_single_assignment;
 
 typedef void * ast_statement;
 
@@ -959,37 +960,17 @@ typedef enum ast_assignment_type_e{
 /*!
 @brief encodes a single assignment.
 */
-struct ast_assignment_t{
-    ast_assignment_type type;
+struct ast_single_assignment_t{
     ast_lvalue      * lval;
     ast_expression  * expression;
-    ast_timing_control_statement * delay_or_event; //!< Not used for continuous.
 };
 
 /*!
 @brief Creates and returns a new continuous assignment.
 */
-ast_assignment * ast_new_assignment(
+ast_single_assignment * ast_new_single_assignment(
     ast_lvalue * lval,
     ast_expression * expression
-);
-
-/*!
-@brief Creates and returns a new procedural nonblocking assignment.
-*/
-ast_assignment * ast_new_blocking_assignment(
-    ast_lvalue * lval,
-    ast_expression * expression,
-    ast_timing_control_statement * delay_or_event
-);
-
-/*!
-@brief Creates and returns a new procedural nonblocking assignment.
-*/
-ast_assignment * ast_new_nonblocking_assignment(
-    ast_lvalue * lval,
-    ast_expression * expression,
-    ast_timing_control_statement * delay_or_event
 );
 
 /*!
@@ -1001,7 +982,47 @@ typedef struct ast_continuous_assignment_t{
     ast_delay3          * delay;
 } ast_continuous_assignment;
 
-ast_continuous_assignment * ast_new_continuous_assignment(
+/*!
+@brief Describes a single procedural assignment, can be blocking or nonblocking.
+*/
+typedef struct ast_procedural_assignment_t{
+    ast_lvalue      * lval;
+    ast_expression  * expression;
+    ast_timing_control_statement * delay_or_event;
+} ast_procedural_assignment;
+
+//! Top level descriptor for an assignment.
+struct ast_assignment_t{
+    ast_assignment_type type;
+    union{
+        ast_continuous_assignment * continuous;
+        ast_procedural_assignment * procedural;
+    };
+};
+
+/*!
+@brief Creates and returns a new blocking procedural assignment object.
+*/
+ast_assignment * ast_new_blocking_assignment(
+    ast_lvalue * lval,
+    ast_expression  * expression,
+    ast_timing_control_statement* delay_or_event
+);
+
+/*!
+@brief Creates and returns a new nonblocking procedural assignment object.
+*/
+ast_assignment * ast_new_nonblocking_assignment(
+    ast_lvalue * lval,
+    ast_expression  * expression,
+    ast_timing_control_statement * delay_or_event
+);
+
+
+/*!
+@brief Creates and returns a new continuous assignment object.
+*/
+ast_assignment * ast_new_continuous_assignment(
     ast_list * assignments,
     ast_drive_strength * strength,
     ast_delay3 * delay

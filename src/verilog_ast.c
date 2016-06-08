@@ -944,72 +944,81 @@ ast_timing_control_statement * ast_new_timing_control_statement_event(
 /*!
 @brief Creates and returns a new assignment.
 */
-ast_assignment * ast_new_assignment(
+ast_single_assignment * ast_new_single_assignment(
     ast_lvalue * lval,
     ast_expression * expression
 )
 {
-    ast_assignment * tr = calloc(1,sizeof(ast_assignment));
+    ast_single_assignment * tr = calloc(1,sizeof(ast_single_assignment));
 
     tr -> lval = lval;
     tr -> expression = expression;
-    tr -> type = ASSIGNMENT_CONTINUOUS;
-    tr -> delay_or_event = NULL;
 
     return tr;
 }
 
 
 /*!
-@brief Creates and returns a new procedural nonblocking assignment.
+@brief Creates and returns a new blocking procedural assignment object.
 */
 ast_assignment * ast_new_blocking_assignment(
     ast_lvalue * lval,
-    ast_expression * expression,
-    ast_timing_control_statement * delay_or_event
+    ast_expression  * expression,
+    ast_timing_control_statement* delay_or_event
 )
 {
     ast_assignment * tr = calloc(1,sizeof(ast_assignment));
+    tr -> type          = ASSIGNMENT_BLOCKING;
 
-    tr -> lval = lval;
-    tr -> expression = expression;
-    tr -> type = ASSIGNMENT_BLOCKING;
-    tr -> delay_or_event = delay_or_event;
+    tr -> procedural    =  calloc(1,sizeof(ast_procedural_assignment));
+    tr -> procedural    -> lval = lval;
+    tr -> procedural    -> expression = expression;
+    tr -> procedural    -> delay_or_event = delay_or_event;
 
     return tr;
 }
 
 /*!
-@brief Creates and returns a new procedural nonblocking assignment.
+@brief Creates and returns a new nonblocking procedural assignment object.
 */
 ast_assignment * ast_new_nonblocking_assignment(
     ast_lvalue * lval,
-    ast_expression * expression,
+    ast_expression  * expression,
     ast_timing_control_statement * delay_or_event
 )
 {
     ast_assignment * tr = calloc(1,sizeof(ast_assignment));
+    tr -> type          = ASSIGNMENT_NONBLOCKING;
 
-    tr -> lval = lval;
-    tr -> expression = expression;
-    tr -> type = ASSIGNMENT_NONBLOCKING;
-    tr -> delay_or_event = delay_or_event;
+    tr -> procedural    =  calloc(1,sizeof(ast_procedural_assignment));
+    tr -> procedural    -> lval = lval;
+    tr -> procedural    -> expression = expression;
+    tr -> procedural    -> delay_or_event = delay_or_event;
 
     return tr;
 }
 
 
-ast_continuous_assignment * ast_new_continuous_assignment(
+/*!
+@brief Creates and returns a new continuous assignment object.
+*/
+ast_assignment * ast_new_continuous_assignment(
     ast_list * assignments,
     ast_drive_strength * strength,
     ast_delay3 * delay
 )
 {
-    ast_continuous_assignment * tr = calloc(1,
+    ast_continuous_assignment * trc = calloc(1,
                 sizeof(ast_continuous_assignment));
-    tr -> assignments = assignments;
-    tr -> drive_strength = strength;
-    tr -> delay = delay;
+    trc -> assignments = assignments;
+    trc -> drive_strength = strength;
+    trc -> delay = delay;
+
+    ast_assignment * tr = calloc(1, sizeof(ast_assignment));
+
+    tr -> type = ASSIGNMENT_CONTINUOUS;
+    tr -> continuous = trc;
+
     return tr;
 }
 
