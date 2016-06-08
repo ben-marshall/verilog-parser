@@ -1061,3 +1061,32 @@ ast_statement_block * ast_new_statement_block(
     return tr;
 }
 
+//! Creates and returns a pointer to a new disable statement.
+ast_disable_statement * ast_new_disable_statement(ast_identifier * id)
+{
+    ast_disable_statement * tr = calloc(1, sizeof(ast_disable_statement));
+    tr -> id = id;
+    return tr;
+}
+
+
+/*!
+@brief Creates a new AST statement and returns it.
+@note Requires the data field of the union to be filled out manually.
+*/
+ast_statement * ast_new_statement(
+    ast_node_attributes * attr,
+    ast_boolean         is_function_statement,
+    void             *  data,
+    ast_statement_type  type
+)
+{
+    ast_statement * tr = calloc(1,sizeof(ast_statement));
+
+    tr -> type = type;
+    tr -> is_function_statement = is_function_statement;
+    tr -> data = data;
+    tr -> attributes = attr;
+
+    return tr;
+}

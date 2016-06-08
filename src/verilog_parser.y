@@ -1917,6 +1917,7 @@ udp_instance : name_of_udp_instance OPEN_BRACKET output_terminal COMMA input_ter
              ;
 name_of_udp_instance : udp_instance_identifier range_o SEMICOLON ;
 
+
 /* A.6.1 Continuous assignment statements */
 
 continuous_assign : 
@@ -2058,36 +2059,84 @@ statement{
 }
              ;
 
-statement : attribute_instances blocking_assignment SEMICOLON
-          | attribute_instances nonblocking_assignment SEMICOLON
-          | attribute_instances case_statement
-          | attribute_instances conditional_statement
-          | attribute_instances disable_statement
-          | attribute_instances event_trigger
-          | attribute_instances loop_statement
-          | attribute_instances par_block
-          | attribute_instances procedural_continuous_assignments SEMICOLON
-          | attribute_instances procedural_timing_control_statement
-          | attribute_instances seq_block
-          | attribute_instances system_function_call SEMICOLON
-          | attribute_instances system_task_enable
-          | attribute_instances task_enable
-          | attribute_instances wait_statement
-          ;
+statement : 
+  attribute_instances blocking_assignment SEMICOLON{
+    $$ = ast_new_statement($1,AST_FALSE, $2, STM_ASSIGNMENT);
+  }
+| attribute_instances nonblocking_assignment SEMICOLON{
+    $$ = ast_new_statement($1,AST_FALSE, $2, STM_ASSIGNMENT);
+  }
+| attribute_instances case_statement{
+    $$ = ast_new_statement($1,AST_FALSE, $2, STM_CASE);
+  }
+| attribute_instances conditional_statement{
+    $$ = ast_new_statement($1,AST_FALSE, $2, STM_CONDITIONAL);
+  }
+| attribute_instances disable_statement{
+    $$ = ast_new_statement($1,AST_FALSE, $2, STM_DISABLE);
+  }
+| attribute_instances event_trigger{
+    $$ = ast_new_statement($1,AST_FALSE, $2, STM_EVENT_TRIGGER);
+  }
+| attribute_instances loop_statement{
+    $$ = ast_new_statement($1,AST_FALSE, $2, STM_LOOP);
+  }
+| attribute_instances par_block{
+    $$ = ast_new_statement($1,AST_FALSE, $2, STM_BLOCK);
+  }
+| attribute_instances procedural_continuous_assignments SEMICOLON{
+    $$ = ast_new_statement($1,AST_FALSE, $2, STM_ASSIGNMENT);
+  }
+| attribute_instances procedural_timing_control_statement{
+    $$ = ast_new_statement($1,AST_FALSE, $2, STM_TIMING_CONTROL);
+  }
+| attribute_instances seq_block{
+    $$ = ast_new_statement($1,AST_FALSE, $2, STM_BLOCK);
+  }
+| attribute_instances system_function_call SEMICOLON{
+    $$ = ast_new_statement($1,AST_FALSE, $2, STM_FUNCTION_CALL);
+  }
+| attribute_instances system_task_enable{
+    $$ = ast_new_statement($1,AST_FALSE, $2, STM_TASK_ENABLE);
+  }
+| attribute_instances task_enable{
+    $$ = ast_new_statement($1,AST_FALSE, $2, STM_TASK_ENABLE);
+  }
+| attribute_instances wait_statement{
+    $$ = ast_new_statement($1,AST_FALSE, $2, STM_WAIT);
+  }
+;
 
 statement_or_null : statement {$$=$1;}
                   | attribute_instances SEMICOLON{$$=NULL;}
                   ;
                   
-function_statement : attribute_instances function_blocking_assignment SEMICOLON
-                   | attribute_instances function_case_statement
-                   | attribute_instances function_conditional_statement
-                   | attribute_instances function_loop_statement
-                   | attribute_instances function_seq_block
-                   | attribute_instances disable_statement
-                   | attribute_instances system_function_call SEMICOLON
-                   | attribute_instances system_task_enable
-                   ;
+function_statement : 
+  attribute_instances function_blocking_assignment SEMICOLON{
+    $$ = ast_new_statement($1,AST_TRUE, $2, STM_ASSIGNMENT);
+  }
+| attribute_instances function_case_statement{
+    $$ = ast_new_statement($1,AST_TRUE, $2, STM_CASE);
+  }
+| attribute_instances function_conditional_statement{
+    $$ = ast_new_statement($1,AST_TRUE, $2, STM_CONDITIONAL);
+  }
+| attribute_instances function_loop_statement{
+    $$ = ast_new_statement($1,AST_TRUE, $2, STM_LOOP);
+  }
+| attribute_instances function_seq_block{
+    $$ = ast_new_statement($1,AST_TRUE, $2, STM_BLOCK);
+  }
+| attribute_instances disable_statement{
+    $$ = ast_new_statement($1,AST_TRUE, $2, STM_DISABLE);
+  }
+| attribute_instances system_function_call SEMICOLON{
+    $$ = ast_new_statement($1,AST_TRUE, $2, STM_FUNCTION_CALL);
+  }
+| attribute_instances system_task_enable{
+    $$ = ast_new_statement($1,AST_TRUE, $2, STM_TASK_ENABLE);
+  }
+;
 
 /* A.6.5 Timing control statements */
 
@@ -2136,8 +2185,12 @@ delay_control :
 
 
 disable_statement : 
-  KW_DISABLE hierarchical_task_identifier SEMICOLON
-| KW_DISABLE hierarchical_block_identifier SEMICOLON
+  KW_DISABLE hierarchical_task_identifier SEMICOLON{
+      $$ = ast_new_disable_statement($2);
+  }
+| KW_DISABLE hierarchical_block_identifier SEMICOLON{
+      $$ = ast_new_disable_statement($2);
+  }
 ;
 
 event_control : 

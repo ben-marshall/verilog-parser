@@ -25,18 +25,18 @@ typedef struct ast_concatenation_t ast_concatenation;
 typedef struct ast_expression_t ast_expression;
 typedef struct ast_function_call_t ast_function_call;
     
-typedef void * ast_number       ;
 typedef char * ast_operator     ;
-typedef void * ast_minmax_exp   ;
-typedef void * ast_macro_use    ;
 typedef char * ast_string       ;
-typedef void * ast_delay_value  ;
-typedef void * ast_delay3       ;
-typedef void * ast_drive_strength;
 typedef struct ast_assignment_t ast_assignment;
 typedef struct ast_single_assignment_t ast_single_assignment;
+typedef void * ast_delay3       ;
+typedef void * ast_delay_value  ;
+typedef void * ast_drive_strength;
+typedef void * ast_macro_use    ;
+typedef void * ast_minmax_exp   ;
+typedef void * ast_number       ;
 
-typedef void * ast_statement;
+typedef struct ast_statement_t ast_statement;
 
 //! Stores the values of booleans.
 typedef enum  ast_boolean_e
@@ -934,8 +934,17 @@ ast_timing_control_statement * ast_new_timing_control_statement_event(
 @defgroup ast-node-fork-join Fork Join and Sequential Blocks
 @{
 @ingroup ast-node-module-items
-@brief Fork join and sequential stamemen blocks.
+@brief Fork join and sequential stamement blocks.
 */
+
+//! Contains the identifier from a disable statement.
+typedef struct ast_disable_statement_t{
+    ast_identifier * id;
+} ast_disable_statement;
+
+//! Creates and returns a pointer to a new disable statement.
+ast_disable_statement * ast_new_disable_statement(ast_identifier * id);
+
 
 //! Describes the type of a block of statements.
 typedef enum ast_block_type_e{
@@ -1082,6 +1091,65 @@ ast_assignment * ast_new_continuous_assignment(
     ast_drive_strength * strength,
     ast_delay3 * delay
 );
+
+
+//! Describes the kind of statement in a statement struct.
+typedef enum ast_statement_type_e{
+    STM_ASSIGNMENT,         //!< Blocking, non-blocking, continuous
+    STM_CASE,
+    STM_CONDITIONAL,        //!< if/if-else/if-elseif-else
+    STM_DISABLE,
+    STM_EVENT_TRIGGER,
+    STM_LOOP,               //!< While, for, repeat
+    STM_BLOCK,              //!< Par, sequential
+    STM_TIMING_CONTROL,
+    STM_FUNCTION_CALL,
+    STM_TASK_ENABLE,        //!< System, user
+    STM_WAIT
+} ast_statement_type;
+
+
+/*! 
+@brief Describes a single statement, and can contain sequential statement 
+    blocks.
+@warning The data member of the union should *never* be accessed except
+when first instantiating the structure. It is used to set the data content
+and nothing more. This is *very* bad practice and knowing this code is here
+pains me dearly.
+@todo Write 10 functions which set the correct type of the statement and
+accept only corresponding valid types as the data argument.
+*/
+struct ast_statement_t{
+    ast_statement_type      type;
+    ast_boolean             is_function_statement;
+    ast_node_attributes   * attributes;
+    union{
+        ast_wait_statement              * wait;
+        ast_task_enable_statement       * task_enable;
+        ast_function_call               * function_call;
+        ast_timing_control_statement    * timing_control;
+        ast_statement_block             * block;
+        ast_loop_statement              * loop;
+        ast_event_expression            * event;
+        ast_disable_statement           * disable;
+        ast_conditional_statement       * conditional;
+        ast_case_statement              * case_statement;
+        ast_assignment                  * assignment;
+        void                            * data;
+    };
+};
+
+/*!
+@brief Creates a new AST statement and returns it.
+@note Requires the data field of the union to be filled out manually.
+*/
+ast_statement * ast_new_statement(
+    ast_node_attributes * attr,
+    ast_boolean         is_function_statement,
+    void             *  data,
+    ast_statement_type  type
+);
+
 
 /*! @} */
 
