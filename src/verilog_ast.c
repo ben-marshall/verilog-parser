@@ -957,6 +957,24 @@ ast_single_assignment * ast_new_single_assignment(
     return tr;
 }
 
+/*!
+@brief Creates a new hybrid assignment of the specified type.
+*/
+ast_assignment * ast_new_hybrid_assignment(
+    ast_hybrid_assignment_type type,
+    ast_single_assignment * assignment
+)
+{
+    ast_assignment * tr = calloc(1,sizeof(ast_assignment));
+
+    tr -> type = ASSIGNMENT_HYBRID;
+    tr -> hybrid = calloc(1,sizeof(ast_hybrid_assignment));
+    tr -> hybrid -> type = type;
+    tr -> hybrid -> assignment = assignment;
+
+    return tr;
+}
+
 
 /*!
 @brief Creates and returns a new blocking procedural assignment object.

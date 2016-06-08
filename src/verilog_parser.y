@@ -1956,13 +1956,26 @@ nonblocking_assignment : variable_lvalue LTE delay_or_event_control_o
 
 delay_or_event_control_o : delay_or_event_control{$$=$1;} | {$$=NULL;};
 
-procedural_continuous_assignments : KW_ASSIGN variable_assignment
-                                  | KW_DEASSIGN variable_lvalue
-                                  | KW_FORCE variable_assignment
-                                  | KW_FORCE net_assignment
-                                  | KW_RELEASE variable_lvalue
-                                  | KW_RELEASE net_lvalue
-                                  ;
+procedural_continuous_assignments : 
+  KW_ASSIGN variable_assignment{
+      $$ = ast_new_hybrid_assignment(HYBRID_ASSIGNMENT_ASSIGN, $2);
+  }
+| KW_DEASSIGN variable_lvalue{
+      $$ = ast_new_hybrid_assignment(HYBRID_ASSIGNMENT_DEASSIGN, $2);
+  }
+| KW_FORCE variable_assignment{
+      $$ = ast_new_hybrid_assignment(HYBRID_ASSIGNMENT_FORCE_VAR, $2);
+  }
+| KW_FORCE net_assignment{
+      $$ = ast_new_hybrid_assignment(HYBRID_ASSIGNMENT_FORCE_NET, $2);
+  }
+| KW_RELEASE variable_lvalue{
+      $$ = ast_new_hybrid_assignment(HYBRID_ASSIGNMENT_RELEASE_VAR, $2);
+  }
+| KW_RELEASE net_lvalue{
+      $$ = ast_new_hybrid_assignment(HYBRID_ASSIGNMENT_RELEASE_NET, $2);
+  }
+;
 
 function_blocking_assignment : variable_lvalue SEMICOLON expression{
     $$ = ast_new_single_assignment($1,$3);

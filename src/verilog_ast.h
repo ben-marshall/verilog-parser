@@ -948,13 +948,13 @@ ast_timing_control_statement * ast_new_timing_control_statement_event(
 @ingroup ast-node-module-items
 @brief Describes items found inside procedural blocks.
 @details 
-TODO - Anexes 6.2, 6.3, 6.4
 */
 
 typedef enum ast_assignment_type_e{
     ASSIGNMENT_CONTINUOUS,
     ASSIGNMENT_BLOCKING,
-    ASSIGNMENT_NONBLOCKING
+    ASSIGNMENT_NONBLOCKING,
+    ASSIGNMENT_HYBRID, //!< @see ast_hybrid_assignment
 } ast_assignment_type;
 
 /*!
@@ -991,14 +991,45 @@ typedef struct ast_procedural_assignment_t{
     ast_timing_control_statement * delay_or_event;
 } ast_procedural_assignment;
 
+//! Describes the different types of procedural continuous assignments.
+typedef enum ast_hybrid_assignment_type_e{
+    HYBRID_ASSIGNMENT_ASSIGN,
+    HYBRID_ASSIGNMENT_DEASSIGN,
+    HYBRID_ASSIGNMENT_FORCE_NET,
+    HYBRID_ASSIGNMENT_FORCE_VAR,
+    HYBRID_ASSIGNMENT_RELEASE_VAR,
+    HYBRID_ASSIGNMENT_RELEASE_NET,
+}ast_hybrid_assignment_type;
+
+/*!
+@brief caters for procedural_continuous_assignments in Annex A.6.2 of spec.
+@details this is needed because the spec describes something it calls
+procedural continuous assignments. I think these are procedural in the
+programatic / statement sense, but are continous in the time domain during a
+simulation.
+*/
+typedef struct ast_hybrid_assignment_t{
+    ast_single_assignment * assignment;
+    ast_hybrid_assignment_type type;
+} ast_hybrid_assignment;
+
 //! Top level descriptor for an assignment.
 struct ast_assignment_t{
     ast_assignment_type type;
     union{
         ast_continuous_assignment * continuous;
         ast_procedural_assignment * procedural;
+        ast_hybrid_assignment     * hybrid;
     };
 };
+
+/*!
+@brief Creates a new hybrid assignment of the specified type.
+*/
+ast_assignment * ast_new_hybrid_assignment(
+    ast_hybrid_assignment_type type,
+    ast_single_assignment * assignment
+);
 
 /*!
 @brief Creates and returns a new blocking procedural assignment object.
