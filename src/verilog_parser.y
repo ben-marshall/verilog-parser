@@ -29,6 +29,7 @@
     ast_lvalue           * lvalue;
     ast_primary          * primary;
     ast_expression       * expression;
+    ast_event_expression * event_expression;
     ast_operator           operator;
     ast_function_call    * call_function;
     ast_list             * list;
@@ -38,6 +39,7 @@
     ast_case_item        * case_item;
     ast_case_statement   * case_statement;
     ast_if_else          * ifelse;
+    ast_timing_control_statement * timing_control_statement;
     char                   boolean;
     char                 * string;
     char                 * number;
@@ -288,6 +290,10 @@
 %type <call_function> constant_function_call_pid
 %type <call_function> function_call
 %type <call_function> system_function_call
+%type <case_item> case_item
+%type <case_item> function_case_item
+%type <case_statement> case_statement
+%type <case_statement> function_case_statement
 %type <concatenation> concatenation
 %type <concatenation> concatenation_cont
 %type <concatenation> constant_concatenation
@@ -303,12 +309,14 @@
 %type <concatenation> variable_concatenation
 %type <concatenation> variable_concatenation_cont
 %type <concatenation> variable_concatenation_value
+%type <edge> edge_identifier
+%type <edge> edge_identifier_o
+%type <event_expression> event_expression
 %type <expression> conditional_expression
 %type <expression> constant_expression
 %type <expression> constant_mintypmax_expression
 %type <expression> constant_range_expression
 %type <expression> data_source_expression
-%type <expression> event_expression
 %type <expression> expression
 %type <expression> expression_o
 %type <expression> mintypmax_expression
@@ -323,14 +331,13 @@
 %type <identifier> block_identifier
 %type <identifier> cell_identifier
 %type <identifier> config_identifier
-%type <edge> edge_identifier
-%type <edge> edge_identifier_o
 %type <identifier> escaped_arrayed_identifier
 %type <identifier> escaped_hierarchical_branch
 %type <identifier> escaped_hierarchical_identifier
 %type <identifier> escaped_hierarchical_identifiers
 %type <identifier> escaped_identifier
 %type <identifier> event_identifier
+%type <identifier> event_trigger
 %type <identifier> function_identifier
 %type <identifier> gate_instance_identifier
 %type <identifier> generate_block_identifier
@@ -375,6 +382,7 @@
 %type <identifier> simple_hierarchical_identifier
 %type <identifier> simple_identifier
 %type <identifier> specify_input_terminal_descriptor
+%type <identifier> specify_output_terminal_descriptor
 %type <identifier> specparam_identifier
 %type <identifier> system_function_identifier
 %type <identifier> system_task_identifier
@@ -385,8 +393,15 @@
 %type <identifier> udp_identifier
 %type <identifier> udp_instance_identifier
 %type <identifier> variable_identifier
+%type <ifelse> function_if_else_if_statement
+%type <list> case_items
 %type <list> constant_expressions
 %type <list> expressions
+%type <list> expressions_o
+%type <list> function_case_items
+%type <list> function_else_if_statements
+%type <list> function_statements
+%type <list> function_statements_o
 %type <list> list_of_actual_arguments
 %type <list> list_of_attribute_instances
 %type <list> list_of_formal_arguments
@@ -400,6 +415,10 @@
 %type <list> list_of_port_declarations
 %type <list> list_of_ports
 %type <list> list_of_specparam_assignments
+%type <list> path_delay_value
+%type <list> specify_block
+%type <list> specify_items
+%type <list> specify_items_o
 %type <lvalue> net_lvalue
 %type <lvalue> variable_lvalue
 %type <node> actual_argument
@@ -410,9 +429,6 @@
 %type <node> block_reg_declaration
 %type <node> block_variable_type
 %type <node> blocking_assignment
-%type <case_item> case_item
-%type <list> case_items
-%type <case_statement> case_statement
 %type <node> cell_clause
 %type <node> charge_strength
 %type <node> cmos_switch_instance
@@ -437,8 +453,6 @@
 %type <node> delay3
 %type <node> delay3_o
 %type <node> delay_control
-%type <node> delay_or_event_control
-%type <node> delay_or_event_control_o
 %type <node> delay_value
 %type <node> description
 %type <node> design_statement
@@ -450,7 +464,6 @@
 %type <node> drive_strength_o
 %type <node> edge_indicator
 %type <node> edge_input_list
-%type <path_declaration> edge_sensitive_path_declaration
 %type <node> edge_symbol
 %type <node> else_if_statements
 %type <node> enable_gate_instance
@@ -462,27 +475,16 @@
 %type <node> error_limit_value_o
 %type <node> event_control
 %type <node> event_declaration
-%type <identifier> event_trigger
-%type <list> expressions_o
 %type <node> file_path_spec
 %type <node> file_path_specs
 %type <node> function_blocking_assignment
-%type <case_item> function_case_item
-%type <list> function_case_items
-%type <case_statement> function_case_statement
 %type <node> function_conditional_statement
 %type <node> function_declaration
-%type <list> function_else_if_statements
-%type <ifelse> function_if_else_if_statement
 %type <node> function_item_declaration
 %type <node> function_item_declarations
 %type <node> function_loop_statement
 %type <node> function_port_list
 %type <node> function_seq_block
-%type <statement> function_statement
-%type <statement> function_statement_or_null
-%type <list> function_statements
-%type <list> function_statements_o
 %type <node> gate_enable
 %type <node> gate_instantiation
 %type <node> gate_n_input
@@ -596,11 +598,8 @@
 %type <node> pass_switch_instance
 %type <node> pass_switch_instances
 %type <node> pass_switchtype
-%type <path_declaration> path_declaration
-%type <list> path_delay_value
 %type <node> pcontrol_terminal
 %type <node> polarity_operator
-%type <operator> polarity_operator_o
 %type <node> port
 %type <node> port_declaration
 %type <node> port_declaration_l
@@ -609,7 +608,6 @@
 %type <node> port_reference
 %type <node> ports
 %type <node> procedural_continuous_assignments
-%type <node> procedural_timing_control_statement
 %type <node> pull_gate_instance
 %type <node> pull_gate_instances
 %type <node> pulldown_strength
@@ -634,18 +632,12 @@
 %type <node> sequential_entry
 %type <node> sequential_entrys
 %type <node> showcancelled_declaration
-%type <path_declaration> simple_path_declaration
 %type <node> source_text
-%type <list> specify_block
 %type <node> specify_item
-%type <list> specify_items
-%type <list> specify_items_o
-%type <identifier> specify_output_terminal_descriptor
 %type <node> specparam_assignment
 %type <node> specparam_declaration
 %type <node> sq_bracket_constant_expressions
 %type <node> sq_bracket_expressions
-%type <path_declaration> state_dependent_path_declaration
 %type <node> statement
 %type <node> statement_or_null
 %type <node> statements
@@ -695,11 +687,18 @@
 %type <number> number
 %type <number> unsigned_number
 %type <operator> binary_module_path_operator
+%type <operator> polarity_operator_o
 %type <operator> unary_module_path_operator
 %type <operator> unary_operator
+%type <path_declaration> edge_sensitive_path_declaration
+%type <path_declaration> path_declaration
+%type <path_declaration> simple_path_declaration
+%type <path_declaration> state_dependent_path_declaration
 %type <primary> constant_primary
 %type <primary> module_path_primary
 %type <primary> primary
+%type <statement> function_statement
+%type <statement> function_statement_or_null
 %type <string> CB
 %type <string> OB
 %type <string> anys
@@ -710,6 +709,9 @@
 %type <string> one_line_comment
 %type <string> string
 %type <string> white_space
+%type <timing_control_statement> delay_or_event_control
+%type <timing_control_statement> delay_or_event_control_o
+%type <timing_control_statement> procedural_timing_control_statement
 
 %%
 /* Start variables */
@@ -2025,18 +2027,45 @@ function_statement : attribute_instances function_blocking_assignment SEMICOLON
 
 
 procedural_timing_control_statement : 
-  delay_or_event_control statement_or_null
+  delay_or_event_control statement_or_null{
+    $$ = $1;
+    $$ -> statement = $2;
+  }
 ;
 
 delay_or_event_control : 
-  delay_control
-| event_control
-| KW_REPEAT OPEN_BRACKET expression CLOSE_BRACKET event_control
+  delay_control{
+    $$ = ast_new_timing_control_statement_delay(
+         TIMING_CTRL_DELAY_CONTROL,
+         NULL,
+         $1
+    );
+  }
+| event_control{
+    $$ = ast_new_timing_control_statement_event(
+         TIMING_CTRL_EVENT_CONTROL,
+         NULL,
+         NULL,
+         $1
+    );
+  }
+| KW_REPEAT OPEN_BRACKET expression CLOSE_BRACKET event_control{
+    $$ = ast_new_timing_control_statement_event(
+         TIMING_CTRL_EVENT_CONTROL_REPEAT,
+         $3,
+         NULL,
+         $5
+    );
+}
 ;
 
 delay_control : 
-  HASH delay_value
-| HASH OPEN_BRACKET mintypmax_expression CLOSE_BRACKET
+  HASH delay_value{
+    $$ = ast_new_delay_ctrl_value($2);
+  }
+| HASH OPEN_BRACKET mintypmax_expression CLOSE_BRACKET{
+    $$ = ast_new_delay_ctrl_mintypmax($3);
+  }
 ;
 
 
@@ -2046,13 +2075,26 @@ disable_statement :
 ;
 
 event_control : 
-  AT event_identifier
-| AT OPEN_BRACKET event_expression CLOSE_BRACKET
-| AT STAR
+  AT event_identifier{
+    ast_primary * p = ast_new_primary(PRIMARY_IDENTIFIER);
+    p -> value.identifier = $2;
+    ast_expression * id = ast_new_expression_primary(p);
+    $$ = ast_new_event_control(EVENT_CTRL_TRIGGERS, id);
+  }
+| AT OPEN_BRACKET event_expression CLOSE_BRACKET{
+    $$ = ast_new_event_control(EVENT_CTRL_TRIGGERS, $3);
+  }
+| AT STAR{
+    $$ = ast_new_event_control(EVENT_CTRL_ANY, NULL);
+  }
 /* Add attribute_start here since the tokeniser may return it an it still be
  * valid.*/
-| AT ATTRIBUTE_START CLOSE_BRACKET 
-| AT OPEN_BRACKET STAR CLOSE_BRACKET
+| AT ATTRIBUTE_START CLOSE_BRACKET {
+    $$ = ast_new_event_control(EVENT_CTRL_ANY, NULL);
+  }
+| AT OPEN_BRACKET STAR CLOSE_BRACKET{
+    $$ = ast_new_event_control(EVENT_CTRL_ANY, NULL);
+  }
 ;
 
 event_trigger : 
@@ -2060,15 +2102,27 @@ event_trigger :
 ;
 
 event_expression : 
-  expression
-| KW_POSEDGE expression
-| KW_NEGEDGE expression
-| event_expression KW_OR event_expression
-| event_expression COMMA event_expression
+  expression{
+    $$ = ast_new_event_expression(EDGE_ANY, $1);
+}
+| KW_POSEDGE expression{
+    $$ = ast_new_event_expression(EDGE_POS, $2);
+}
+| KW_NEGEDGE expression{
+    $$ = ast_new_event_expression(EDGE_NEG, $2);
+}
+| event_expression KW_OR event_expression{
+    $$ = ast_new_event_expression_sequence($1,$3);
+}
+| event_expression COMMA event_expression{
+    $$ = ast_new_event_expression_sequence($1,$3);
+}
 ;
 
 wait_statement : 
-  KW_WAIT OPEN_BRACKET expression CLOSE_BRACKET statement_or_null
+  KW_WAIT OPEN_BRACKET expression CLOSE_BRACKET statement_or_null{
+    $$ = ast_new_wait_statement($3,$5);
+  }
 ;
 
 /* A.6.6 Conditional Statemnets */

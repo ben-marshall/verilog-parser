@@ -776,3 +776,172 @@ void  * ast_extend_if_else(
                         new_statements);
     }
 }
+
+
+/*!
+@brief Creates and returns a new wait statement.
+*/
+ast_wait_statement * ast_new_wait_statement(
+    ast_expression * wait_for,
+    ast_statement  * statement
+)
+{
+    ast_wait_statement * tr = calloc(1, sizeof(ast_wait_statement));
+    
+    tr -> expression = wait_for;
+    tr -> statement  = statement;
+
+    return tr;
+}
+
+/*!
+@brief Creates a new event expression node
+@param trigger_edge - the edge on which the trigger is activated.
+@param expression - the expression to monitor the waveforms of.
+*/
+ast_event_expression * ast_new_event_expression(
+    ast_edge trigger_edge,
+    ast_expression * expression
+)
+{
+    ast_event_expression * tr = calloc(1,sizeof(ast_event_expression));
+
+    assert(trigger_edge != EDGE_NONE);
+
+    if(trigger_edge == EDGE_POS)
+    {
+        tr -> type = EVENT_POSEDGE;
+        tr -> expression = expression;
+    }
+    else if (trigger_edge == EDGE_NEG)
+    {
+        tr -> type = EVENT_NEGEDGE;
+        tr -> expression = expression;
+    }
+    else if (trigger_edge == EDGE_ANY)
+    {
+        tr -> type = EVENT_EXPRESSION;
+        tr -> expression = expression;
+    }
+
+    return tr;
+}
+
+/*!
+@brief Creates a new event expression node, which is itself a sequence of
+sub-expressions.
+*/
+ast_event_expression * ast_new_event_expression_sequence(
+    ast_expression * left,
+    ast_expression * right
+)
+{
+    ast_event_expression * tr = calloc(1,sizeof(ast_event_expression));
+
+    tr -> type = EVENT_SEQUENCE;
+    tr -> sequence = ast_list_new();
+
+    ast_list_append(tr -> sequence, right);
+    ast_list_append(tr -> sequence, left );
+
+    return tr;
+}
+
+/*!
+@brief Creates and returns a new event control specifier.
+*/
+ast_event_control * ast_new_event_control(
+    ast_event_control_type type,
+    ast_event_expression * expression
+)
+{
+    ast_event_control * tr = calloc(1,sizeof(ast_event_control));
+
+    if(type == EVENT_CTRL_ANY)
+        assert(expression == NULL);
+
+    tr -> type = type;
+    tr -> expression = expression;
+
+    return tr;
+}
+
+/*!
+@brief creates and returns a new delay control statement.
+*/
+ast_delay_ctrl * ast_new_delay_ctrl_value(ast_delay_value * value)
+{
+    ast_delay_ctrl * tr = calloc(1,sizeof(ast_event_control));
+
+    tr -> type = DELAY_CTRL_VALUE;
+    tr -> value = value;
+
+    return tr;
+}
+
+/*!
+@brief creates and returns a new delay control statement.
+*/
+ast_delay_ctrl * ast_new_delay_ctrl_mintypmax(
+    ast_minmax_exp * mintypmax
+)
+{
+    ast_delay_ctrl * tr = calloc(1,sizeof(ast_event_control));
+
+    tr -> type = DELAY_CTRL_MINTYPMAX;
+    tr -> mintypmax = mintypmax;
+
+    return tr;
+}
+
+/*!
+@brief Creates and returns a new timing control statement node.
+*/
+ast_timing_control_statement * ast_new_timing_control_statement_delay(
+    ast_timing_control_statement_type   type,
+    ast_statement                     * statement,
+    ast_delay_ctrl                    * delay_ctrl
+)
+{
+    ast_timing_control_statement * tr = 
+        calloc(1,sizeof(ast_timing_control_statement));
+
+    assert(type == TIMING_CTRL_DELAY_CONTROL);
+
+    tr -> type = type;
+    tr -> delay = delay_ctrl;
+    tr -> statement = statement;
+    tr -> repeat = NULL;
+
+    return tr;
+}
+
+
+/*!
+@brief Creates and returns a new timing control statement node.
+*/
+ast_timing_control_statement * ast_new_timing_control_statement_event(
+    ast_timing_control_statement_type   type,
+    ast_expression                    * repeat,
+    ast_statement                     * statement,
+    ast_event_control                 * event_ctrl
+)
+{
+    ast_timing_control_statement * tr = 
+        calloc(1,sizeof(ast_timing_control_statement));
+
+    assert(type == TIMING_CTRL_EVENT_CONTROL ||
+           type == TIMING_CTRL_EVENT_CONTROL_REPEAT);
+
+    tr -> type = type;
+    tr -> event_ctrl = event_ctrl;
+    tr -> statement = statement;
+    tr -> repeat = repeat;
+
+    return tr;
+}
+
+
+
+
+

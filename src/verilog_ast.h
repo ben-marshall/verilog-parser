@@ -825,8 +825,7 @@ typedef struct ast_event_control_t{
 
 //! What sort of procedural timing control statement is this?
 typedef enum ast_timing_control_statement_type_e{
-    TIMING_CTRL_DELAY_CONTROL_VALUE,
-    TIMING_CTRL_DELAY_CONTROL_MINTYPEMAX,
+    TIMING_CTRL_DELAY_CONTROL,
     TIMING_CTRL_EVENT_CONTROL,
     TIMING_CTRL_EVENT_CONTROL_REPEAT
 } ast_timing_control_statement_type;
@@ -882,6 +881,46 @@ sub-expressions.
 ast_event_expression * ast_new_event_expression_sequence(
     ast_expression * left,
     ast_expression * right
+);
+
+/*!
+@brief Creates and returns a new event control specifier.
+*/
+ast_event_control * ast_new_event_control(
+    ast_event_control_type type,
+    ast_event_expression * expression
+);
+
+/*!
+@brief creates and returns a new delay control statement.
+*/
+ast_delay_ctrl * ast_new_delay_ctrl_value(ast_delay_value * value);
+
+/*!
+@brief creates and returns a new delay control statement.
+*/
+ast_delay_ctrl * ast_new_delay_ctrl_mintypmax(
+    ast_minmax_exp * mintypmax 
+);
+
+/*!
+@brief Creates and returns a new timing control statement node.
+*/
+ast_timing_control_statement * ast_new_timing_control_statement_delay(
+    ast_timing_control_statement_type   type,
+    ast_statement                     * statement,
+    ast_delay_ctrl                    * delay_ctrl
+);
+
+
+/*!
+@brief Creates and returns a new timing control statement node.
+*/
+ast_timing_control_statement * ast_new_timing_control_statement_event(
+    ast_timing_control_statement_type   type,
+    ast_expression                    * repeat,
+    ast_statement                     * statement,
+    ast_event_control                 * event_ctrl
 );
 
 /*! @} */
