@@ -1942,15 +1942,19 @@ net_assignment : net_lvalue EQ expression{
 
 /* A.6.2 Procedural blocks and assignments */
 
-initial_construct   : KW_INITIAL statement ;
+initial_construct   : KW_INITIAL statement;
 always_construct    : KW_ALWAYS statement ;
 
-blocking_assignment : variable_lvalue EQ delay_or_event_control_o expression;
-nonblocking_assignment : variable_lvalue LTE delay_or_event_control_o 
-                      expression
-                    ;
+blocking_assignment : variable_lvalue EQ delay_or_event_control_o expression{
+  $$ = ast_new_blocking_assignment($1,$4,$3);  
+};
 
-delay_or_event_control_o : delay_or_event_control | ;
+nonblocking_assignment : variable_lvalue LTE delay_or_event_control_o 
+                      expression{
+  $$ = ast_new_blocking_assignment($1,$4,$3);  
+};
+
+delay_or_event_control_o : delay_or_event_control{$$=$1;} | {$$=NULL;};
 
 procedural_continuous_assignments : KW_ASSIGN variable_assignment
                                   | KW_DEASSIGN variable_lvalue

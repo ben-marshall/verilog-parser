@@ -963,6 +963,7 @@ struct ast_assignment_t{
     ast_assignment_type type;
     ast_lvalue      * lval;
     ast_expression  * expression;
+    ast_timing_control_statement * delay_or_event; //!< Not used for continuous.
 };
 
 /*!
@@ -971,6 +972,24 @@ struct ast_assignment_t{
 ast_assignment * ast_new_assignment(
     ast_lvalue * lval,
     ast_expression * expression
+);
+
+/*!
+@brief Creates and returns a new procedural nonblocking assignment.
+*/
+ast_assignment * ast_new_blocking_assignment(
+    ast_lvalue * lval,
+    ast_expression * expression,
+    ast_timing_control_statement * delay_or_event
+);
+
+/*!
+@brief Creates and returns a new procedural nonblocking assignment.
+*/
+ast_assignment * ast_new_nonblocking_assignment(
+    ast_lvalue * lval,
+    ast_expression * expression,
+    ast_timing_control_statement * delay_or_event
 );
 
 /*!

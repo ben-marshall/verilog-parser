@@ -950,11 +950,54 @@ ast_assignment * ast_new_assignment(
 )
 {
     ast_assignment * tr = calloc(1,sizeof(ast_assignment));
+
     tr -> lval = lval;
     tr -> expression = expression;
     tr -> type = ASSIGNMENT_CONTINUOUS;
+    tr -> delay_or_event = NULL;
+
     return tr;
 }
+
+
+/*!
+@brief Creates and returns a new procedural nonblocking assignment.
+*/
+ast_assignment * ast_new_blocking_assignment(
+    ast_lvalue * lval,
+    ast_expression * expression,
+    ast_timing_control_statement * delay_or_event
+)
+{
+    ast_assignment * tr = calloc(1,sizeof(ast_assignment));
+
+    tr -> lval = lval;
+    tr -> expression = expression;
+    tr -> type = ASSIGNMENT_BLOCKING;
+    tr -> delay_or_event = delay_or_event;
+
+    return tr;
+}
+
+/*!
+@brief Creates and returns a new procedural nonblocking assignment.
+*/
+ast_assignment * ast_new_nonblocking_assignment(
+    ast_lvalue * lval,
+    ast_expression * expression,
+    ast_timing_control_statement * delay_or_event
+)
+{
+    ast_assignment * tr = calloc(1,sizeof(ast_assignment));
+
+    tr -> lval = lval;
+    tr -> expression = expression;
+    tr -> type = ASSIGNMENT_NONBLOCKING;
+    tr -> delay_or_event = delay_or_event;
+
+    return tr;
+}
+
 
 ast_continuous_assignment * ast_new_continuous_assignment(
     ast_list * assignments,
