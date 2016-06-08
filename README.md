@@ -57,14 +57,14 @@ fixing it!
 
 This comes down to who will use this tool, and who will develop this tool.
 Ideally, these are the same people. The current demographic of people working
-in ASIC / RTL design are (please excuse my generalising) electronic engineers,
-with little experience of recent programming language technologies like
-Haskell (great for parsing and formal/state-based assertions) and Python (perl
-is still king in ASIC design flows, but this is changing).  Further, the size
-and complexity of many RTL designs means you need a language that has lots of
-low-level acceleration potential, as well as being tried-and-tested. C meets
-most of these points, while also being something that eletronics engineers are
-more likely to be familiar with and comfortable using.
+in ASIC / RTL design is that of (please excuse my generalising) electronic
+engineers, with (again, sorry) little experience of recent programming language
+technologies like Haskell (great for parsing and formal/state-based assertions)
+and Python (perl is still king in ASIC design flows, but this is changing).
+Further, the size and complexity of many RTL designs means you need a language
+that has lots of low-level acceleration potential, as well as being
+tried-and-tested. C meets most of these points, while also being something that
+eletronics engineers are more likely to be familiar with and comfortable using.
 
 ### Why flex/bison, why not Boost::Sprint, ANTLR, or something custom?
 
@@ -103,15 +103,15 @@ There are some things that the parser does not support:
 
 ## Wishlist
 
-This is a wishlists of tools that I would like to use the parser in. If
+This is a wishlist of tools that I would like to use the parser in. If
 anyone else would like to use the parser as the basis for their own tools
-like this, I am morew than happy to help!
+like this, I am more than happy to help!
 
 - A code indenter / style format checker.
 - A pre-processed source checker (expand macros and parameters, etc) for easy
   browsing of generic logic blocks and cores.
 - Something to highlight when signals cross clock domains.
-- - Critical path identifier (something which doesn't take 20 minuets to run on 
+- Critical path identifier (something which doesn't take 20 minuets to run on 
   a grid engine) 
 - A switching probability analysis tool. 
 - This could even feed into a rough power & energy estimation tool. 
