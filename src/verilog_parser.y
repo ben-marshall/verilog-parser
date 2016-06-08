@@ -1987,38 +1987,75 @@ function_statement_or_null : function_statement {$$ =$1;}
 
 /* A.6.3 Parallel and sequential blocks */
 
-block_item_declarations     : block_item_declaration
-                            | block_item_declarations block_item_declaration
-                            ;
+block_item_declarations     : 
+  block_item_declaration{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| block_item_declarations block_item_declaration{
+    $$ = $1;
+    ast_list_append($$,$2);
+}
+;
 
-function_statements_o   : function_statements | ;
-function_statements     : function_statement
-                        | function_statements function_statement
-                        ;
+function_statements_o   : function_statements {$$=$1;} | {$$=NULL;};
 
-function_seq_block : KW_BEGIN function_statements_o KW_END
-                   | KW_BEGIN COLON block_identifier block_item_declarations
-                     function_statements_o KW_END
-                   ;
+function_statements     : 
+  function_statement{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| function_statements function_statement{
+    $$ = $1;
+    ast_list_append($$,$2);
+}
+;
 
-variable_assignment : variable_lvalue EQ expression
-                    ;
+function_seq_block : 
+  KW_BEGIN function_statements_o KW_END{
+    $$ = ast_new_statement_block(BLOCK_FUNCTION_SEQUENTIAL,NULL,NULL,$2);
+  }
+| KW_BEGIN COLON block_identifier block_item_declarations
+  function_statements_o KW_END{
+    $$ = ast_new_statement_block(BLOCK_FUNCTION_SEQUENTIAL,$3,$4,$5);
+  }
+;
 
-par_block : KW_FORK statements_o KW_JOIN
-          | KW_FORK COLON block_identifier block_item_declarations statements_o
-            KW_JOIN
-          ;
+variable_assignment : variable_lvalue EQ expression{
+    $$ = ast_new_single_assignment($1,$3);
+};
 
-seq_block : KW_BEGIN statements_o KW_END
-          | KW_BEGIN COLON block_identifier block_item_declarations 
-            statements_o KW_END
-          ;
+par_block : 
+  KW_FORK statements_o KW_JOIN{
+    $$ = ast_new_statement_block(BLOCK_PARALLEL,NULL,NULL,$2);
+  }
+| KW_FORK COLON block_identifier block_item_declarations statements_o KW_JOIN{
+    $$ = ast_new_statement_block(BLOCK_PARALLEL,$3,$4,$5);
+  }
+;
+
+seq_block : 
+  KW_BEGIN statements_o KW_END{
+    $$ = ast_new_statement_block(BLOCK_SEQUENTIAL,NULL,NULL,$2);
+  }
+| KW_BEGIN COLON block_identifier block_item_declarations statements_o KW_END{
+    $$ = ast_new_statement_block(BLOCK_SEQUENTIAL,$3,$4,$5);
+  }
+;
 
 /* A.6.4 Statements */
 
-statements_o : statements | ;
-statements   : statement
-             | statements statement
+statements_o : statements {$$=$1;} | {$$=NULL;} ;
+
+statements   : 
+statement{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| statements statement{
+    $$ = $1;
+    ast_list_append($$,$2);
+}
              ;
 
 statement : attribute_instances blocking_assignment SEMICOLON
@@ -2038,8 +2075,8 @@ statement : attribute_instances blocking_assignment SEMICOLON
           | attribute_instances wait_statement
           ;
 
-statement_or_null : statement
-                  | attribute_instances SEMICOLON
+statement_or_null : statement {$$=$1;}
+                  | attribute_instances SEMICOLON{$$=NULL;}
                   ;
                   
 function_statement : attribute_instances function_blocking_assignment SEMICOLON

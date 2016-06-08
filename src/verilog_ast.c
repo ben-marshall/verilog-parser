@@ -1041,3 +1041,23 @@ ast_assignment * ast_new_continuous_assignment(
 }
 
 
+/*!
+@brief Creates and returns a new statement block of the specified type
+*/
+ast_statement_block * ast_new_statement_block(
+    ast_block_type   type,
+    ast_identifier * block_identifier,
+    ast_list       * declarations,
+    ast_list       * statements
+)
+{
+    ast_statement_block * tr = calloc(1,sizeof(ast_statement_block));
+
+    tr -> type = type;
+    tr -> block_identifier = block_identifier;
+    tr -> declarations = declarations;
+    tr -> statements = statements;
+
+    return tr;
+}
+

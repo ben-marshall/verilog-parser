@@ -931,12 +931,36 @@ ast_timing_control_statement * ast_new_timing_control_statement_event(
 // -------------------------------- Fork Join Sequential ---------------------
 
 /*!
-@defgroup ast-node-fork-join Fork Join
+@defgroup ast-node-fork-join Fork Join and Sequential Blocks
 @{
 @ingroup ast-node-module-items
-@brief Fork join stamements.
+@brief Fork join and sequential stamemen blocks.
 */
 
+//! Describes the type of a block of statements.
+typedef enum ast_block_type_e{
+    BLOCK_SEQUENTIAL,
+    BLOCK_FUNCTION_SEQUENTIAL,
+    BLOCK_PARALLEL,
+} ast_block_type;
+
+//! Fully describes a single block of statements.
+typedef struct ast_statement_block_t{
+    ast_block_type   type;
+    ast_identifier * block_identifier;
+    ast_list       * declarations;
+    ast_list       * statements;
+} ast_statement_block;
+
+/*!
+@brief Creates and returns a new statement block of the specified type
+*/
+ast_statement_block * ast_new_statement_block(
+    ast_block_type   type,
+    ast_identifier * block_identifier,
+    ast_list       * declarations,
+    ast_list       * statements
+);
 
 /*! @} */
 
