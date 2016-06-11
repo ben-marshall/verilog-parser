@@ -36,6 +36,10 @@ BISON_OPTS  = "-d"
 ## C Code source
 ## --------------------------------------------------------
 
+APP_SRC     = main.c
+
+APP_OUT     = verilog-parser
+
 LIB_OBJECTS = verilog_ast.c.o \
               verilog_ast_common.c.o \
               verilog_parser.c.o \
@@ -53,10 +57,11 @@ BISON_SRC   = verilog_scanner.y
 ## Auxiliary Rules and Actions
 ## --------------------------------------------------------
 
-all: parser_lib
+all: parser_lib parser_app
 
 clean:
-	rm $(PARSER_OUT) $(PARSER_HEAD) $(SCANNER_OUT) *.output $(LIB_FILE) *.o
+	rm $(PARSER_OUT) $(PARSER_HEAD) $(SCANNER_OUT) *.output $(LIB_FILE) *.o \
+	   *.out $(APP_OUT)
 
 fromclean: clean parser_app
 
@@ -65,10 +70,13 @@ fromclean: clean parser_app
 ## Compilation Rules and Actions
 ## --------------------------------------------------------
 
+parser_app : parser scanner parser_lib
+	$(CC)  $(CC_OPTS) -static $(APP_SRC) -L. -lverilogparser -o $(APP_OUT)
+
 parser_lib : parser scanner $(LIB_OBJECTS)
 	$(AR) $(AR_OPTS) $(LIB_FILE) $(LIB_OBJECTS)
 
-%.c.o: %.c 
+%.c.o: %.c
 	$(CC) $(CC_OPTS) -o $@ -c $< 
 
 scanner: parser
