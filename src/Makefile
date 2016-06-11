@@ -8,7 +8,9 @@ AR_OPTS     = rcs
 
 CC          = gcc
 
-CC_OPTS     = -O3 -Wall
+CC_OPTS     = -O0 -Wall
+
+LOGFILE     = build.log
 
 
 ## --------------------------------------------------------
@@ -60,10 +62,12 @@ BISON_SRC   = verilog_scanner.y
 all: parser_lib parser_app
 
 clean:
-	rm $(PARSER_OUT) $(PARSER_HEAD) $(SCANNER_OUT) *.output $(LIB_FILE) *.o \
-	   *.out $(APP_OUT)
+	rm -f $(PARSER_OUT) $(PARSER_HEAD) $(SCANNER_OUT) 
+	rm -f *.output 
+	rm -f *.out
+	rm -f *.o
 
-fromclean: clean parser_app
+fromclean: clean all
 
 
 ## --------------------------------------------------------
