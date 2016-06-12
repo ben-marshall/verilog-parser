@@ -7,11 +7,12 @@ cd tests
 source ../bin/download-tests.sh
 cd ../
 
-# Instance CMake
+# Create build directory structure.
 mkdir -p build
-cd build
-cmake ..
-cd ..
+mkdir -p build/obj
+mkdir -p build/gen
+mkdir -p build/lib
+mkdir -p build/bin
 
 echo " "
-echo "CMake and project workspace setup complete."
+echo "Project workspace setup complete."

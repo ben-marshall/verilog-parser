@@ -3,25 +3,23 @@ language:
 
 compiler:
  - gcc
- - clang
 
 os:
  - linux
 
 install:
  - sudo apt-get update -qq
- - sudo apt-get install -qq cmake flex build-essential
+ - sudo apt-get install -qq flex build-essential
  - wget http://mirrors.kernel.org/ubuntu/pool/main/b/bison/bison_3.0.4.dfsg-1_amd64.deb
  - wget http://ftp.us.debian.org/debian/pool/main/b/bison/libbison-dev_3.0.4.dfsg-1_amd64.deb
  - sudo dpkg -i libbison-dev_3.0.4.dfsg-1_amd64.deb
  - sudo dpkg -i bison_3.0.4.dfsg-1_amd64.deb
 
 before_script:
- - bin/project.sh
+ - make setup
 
 script:
- - cd build
- - make
+ - make all
 
 after_script:
  - make test

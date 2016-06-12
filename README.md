@@ -19,16 +19,12 @@ Standard.
 This will get you going.
 
     ```sh
-    $> source bin/project.sh
-    $> cd build
-    $> make docs
-    $> make
-    $> make test
+    $> make setup
+    $> make all
     ```
 
-The `project.sh` script will also call the script which downloads the tests
-from asic-world.com. The project uses CMake as it's build system, and
-CTest for running the various test programs.
+This will download the test suite files, setup the build directory, and
+compile the parser, library and test app.
 
 ## Testing
 
@@ -76,14 +72,6 @@ sugar, and, sadly, ease of use - they make up for in stability and
 likelihood of familiarity for the people I hope will use this project.
 Many of the design decisions around this project have been equal parts
 social and engineering in their justification.
-
-### Why CMake?
-
-Because I am not a total masochist, despite the above. I will probably end up
-creating a pure Make build system though, and adding a minimal CMake wrapper
-around it. This will make building on old systems where a recent CMake version
-doesn't exist easier, while also making integration into other projects
-possible and a little less painful.
 
 
 ---
