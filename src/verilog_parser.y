@@ -757,6 +757,7 @@ timescale_directive : CD_TIMESCALE time DIV time;
 
 time: unsigned_number ANY
     | unsigned_number ANY ANY
+    | unsigned_number SIMPLE_ID
     ;
 
 line_directive  : CD_LINE number string unsigned_number
