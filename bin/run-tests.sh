@@ -1,6 +1,18 @@
 #!/bin/bash
 
+black='\E[30m'
+red='\E[31m'
+green='\E[32m'
+yellow='\E[33m'
+blue='\E[34m'
+magenta='\E[35m'
+cyan='\E[36m'
+white='\E[37m'
+clrc='\E[0m'
+
 echo "------------------------- Running Test Script -------------------------"
+
+rm -rf build/tests.log
 
 EXE=build/bin/verilog-app
 TEST_FILES=`ls tests/ | sort`
@@ -10,16 +22,16 @@ PASSED_TESTS=" "
 
 for FILE in $TEST_FILES
 do
-    printf "%40s \t" "tests/$FILE"
-
     # run the program and store the result.
-    $EXE tests/$FILE
+    $EXE tests/$FILE 2>> build/tests.log 1>> build/tests.log
     RESULT=$?
 
     if [ "0" -eq "$RESULT" ]; then
         PASSED_TESTS="$PASSED_TESTS $FILE"
+        echo -n -e "$green $FILE $clrc"
     else
         FAILED_TESTS="$FAILED_TESTS $FILE"
+        echo -n -e "$red $FILE $clrc"
     fi
 
 
@@ -27,11 +39,18 @@ done
 
 echo " "
 echo " "
-echo "Passing Tests:"
+echo "--------------------------- Testing Complete --------------------------"
+
+echo " "
+echo " "
+echo -e "$green Passing Tests: $clrc"
 printf "%30s  %30s  %30s  %30s\n" $PASSED_TESTS
 
 echo " "
-echo "Failing Tests:"
+echo -e "$red Failing Tests: $clrc"
 printf "%30s  %30s  %30s  %30s\n" $FAILED_TESTS
 
+echo " "
 echo "------------------------- Finished Test Script ------------------------"
+
+exit `echo "$FAILED_TESTS" | wc -w`
