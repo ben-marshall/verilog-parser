@@ -24,7 +24,6 @@ function downloadModelTest {
 }
 echo "Downloading Tests..."
 
-downloadModelTest aFifo.v
 downloadModelTest arbiter_tb.v
 downloadModelTest clk_div_45.v
 downloadModelTest concatenation.v
