@@ -18,6 +18,9 @@ clean:
 docs:
 	$(MAKE) -C docs/ docs
 
+test: app
+	bin/run-tests.sh
+
 setup:
 	bin/project.sh
 
