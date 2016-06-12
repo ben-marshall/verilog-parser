@@ -10,8 +10,10 @@
     #include <stdio.h>
     #include "verilog_ast.h"
 
+    extern int yylineno;
+
     void yyerror(const char *msg){
-    printf("ERROR: %s\n", msg);
+    printf("line %d - ERROR: %s\n", yylineno,msg);
     }
 %}
 
