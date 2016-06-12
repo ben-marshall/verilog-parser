@@ -932,8 +932,7 @@ module_parameter_port_list  :
                             | HASH OPEN_BRACKET module_params CLOSE_BRACKET
                             ;
 
-module_params     : 
-                  | parameter_declaration
+module_params     : parameter_declaration
                   | module_params COMMA parameter_declaration
                   ;
 

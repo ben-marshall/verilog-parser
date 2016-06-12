@@ -68,13 +68,13 @@ APP_OBJ         = $(OBJ_DIR)/main.o
 
 SRC_OBJS        = $(OBJ_DIR)/verilog_ast.o          \
                   $(OBJ_DIR)/verilog_ast_common.o   \
-                  $(OBJ_DIR)/verilog_parser.o
+                  $(OBJ_DIR)/verilog_parser_wrapper.o
 
-GEN_OBJS        = $(OBJ_DIR)/verilog_scanner.o  \
-                  $(OBJ_DIR)/verilog_parser.tab.o
+GEN_OBJS        = $(OBJ_DIR)/verilog_parser.tab.o \
+                  $(OBJ_DIR)/verilog_scanner.o
 
 
-parser-lib : $(FLEX_OUT) $(BISON_OUT) $(SRC_OBJS) $(GEN_OBJS)
+parser-lib :  $(GEN_OBJS) $(FLEX_OUT) $(BISON_OUT) $(SRC_OBJS)
 	$(AR) $(AR_FLAGS) $(LIB_FILE) $(SRC_OBJS) $(GEN_OBJS)
 
 parser-app : parser-lib $(APP_OBJ)
