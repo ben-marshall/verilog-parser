@@ -1,0 +1,68 @@
+/*!
+@page project-organisation Project Organisation
+
+@brief This page descibes how the project file tree and build system are
+organised.
+
+@tableofcontents
+
+@section source-tree Source Tree
+
+The source tree is split into four main sections: documentation tests, tools
+and source code.
+
+- All of the tests live in the `tests/` subfolder. These are tests which
+  have been added in order to highlight bugs, or otherwise make sure that
+  proper test coverage is hit.
+- Tools live in the `bin/` folder. These include project setup scripts, and
+  the script to download the main test source file suite.
+- Source code lives in the `src/` folder. This includes all header files,
+  source files, and flex/bison grammars and token descriptors.
+- Documentation lives in the `docs/` folder. Here is all of the plain text
+  documentation for the project, along with the Doxygen configuration file.
+
+@section build-system Build System
+
+The build system is purely GNU Make. There is a top level Makefile with
+the most common commands needed for the project included. These are:
+
+- `all` - This builds the parser library, tester app and documentation.
+- `app` - Builds the library and test app only.
+- `docs` - Builds the documentation for the project.
+- `setup` - Initialises the project workspace.
+
+The `app` and `docs` commands recurse into the `build/` and `docs/`
+subdirectories respectively.
+
+@subsection build-system-docs Documentation
+
+All documentation is built using Doxygen. The command to do so is
+wrapped in a Makefile with the single command `make docs` in
+`docs/Makefile`.
+
+@subsection build-system-source Compilation
+
+Compilation of the source code is handled by the makefile in the `build/`
+directory. This makefile should be self explanatory, but is essentially
+responsible for generating the flex and bison parsers, compiling object
+code, linking into a static library, and creating the test app which
+uses this library.
+
+The `build/` folder contains five sub-folders (assuming that `make all`
+has been run from the top of the project). These are:
+
+- `bin` - Contains exectuable binaries like the test app.
+- `lib` - Static and dynamic libraries, once compiled.
+- `obj` - All intermediate object files.
+- `gen` - Generated C source code, like the Bison and Flex code.
+- `docs` - Documentation Generator output.
+
+@section ci-tool Continuous Integration
+
+This project uses the Travis-CI tool for continuous integration. This is
+a service that plugs into github, meaning that every commit, fork and
+pull request automatically triggers a build. This build is configured using
+the `.travis.yml` file in the root of the project. As a minium, all builds
+must complete successfully, and tests should also be run.
+
+*/
