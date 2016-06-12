@@ -10,6 +10,8 @@ PASSED_TESTS=" "
 
 for FILE in $TEST_FILES
 do
+    printf "%40s \t" "tests/$FILE"
+
     # run the program and store the result.
     $EXE tests/$FILE
     RESULT=$?

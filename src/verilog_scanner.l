@@ -4,7 +4,6 @@
 %}
 
 %option yylineno
-%option debug 
 %option nodefault 
 %option noyywrap 
 

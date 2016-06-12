@@ -24,18 +24,19 @@ int main(int argc, char ** argv)
 
         // Parse the file and store the result.
         int result = verilog_parse_buffer(parser);
+
+        fclose(fh);
         
-        printf("Parse result: %d\n", result);
         if(result == 0)
         {
             printf("Parse successful\n");
+            return 0;
         }
         else
         {
             printf("Parse failed\n");
+            return 1;
         }
-
-        fclose(fh);
     }
     return 0;
 }

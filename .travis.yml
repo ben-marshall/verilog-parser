@@ -19,7 +19,7 @@ before_script:
  - make setup
 
 script:
- - make all
+ - make app
 
 after_script:
  - make test
