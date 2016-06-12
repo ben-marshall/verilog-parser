@@ -2,6 +2,8 @@
 ## Compiler Variables
 ## --------------------------------------------------------
 
+OBJ_DIR     = ../build/obj
+
 AR          = ar
 
 AR_OPTS     = rcs
@@ -14,7 +16,7 @@ LOGFILE     = build.log
 
 
 ## --------------------------------------------------------
-## FLEX Source, Output and Options
+## BISON & FLEX Source, Output and Options
 ## --------------------------------------------------------
 
 SCANNER_IN  = verilog_scanner.l
@@ -23,16 +25,12 @@ SCANNER_OUT = verilog_scanner.c
 
 FLEX_OPTS   = "--yylineno"
 
-## --------------------------------------------------------
-## BISON Sources, Output and Options
-## --------------------------------------------------------
-
 PARSER_IN   = verilog_parser.y
 
 PARSER_OUT  = verilog_parser.tab.c
 PARSER_HEAD = verilog_parser.tab.h
 
-BISON_OPTS  = "-d"
+BISON_OPTS  = 
 
 ## --------------------------------------------------------
 ## C Code source
@@ -42,11 +40,11 @@ APP_SRC     = main.c
 
 APP_OUT     = verilog-parser
 
-LIB_OBJECTS = verilog_ast.c.o \
-              verilog_ast_common.c.o \
-              verilog_parser.c.o \
-              $(SCANNER_OUT).o \
-              $(PARSER_OUT).o
+LIB_OBJECTS = verilog_ast.o \
+              verilog_ast_common.o \
+              verilog_parser.o \
+              verilog_parser.tab.o \
+              verilog_scanner.o
 
 LIB_FILE    = libverilogparser.a
 
@@ -74,20 +72,19 @@ fromclean: clean all
 ## Compilation Rules and Actions
 ## --------------------------------------------------------
 
-parser_app : parser scanner parser_lib
+parser_app : parser_lib
 	$(CC)  $(CC_OPTS) -static $(APP_SRC) -L. -lverilogparser -o $(APP_OUT)
 
-parser_lib : parser scanner $(LIB_OBJECTS)
+parser_lib : bison_parser $(LIB_OBJECTS)
 	$(AR) $(AR_OPTS) $(LIB_FILE) $(LIB_OBJECTS)
 
-%.c.o: %.c
+%.o : %.c
 	$(CC) $(CC_OPTS) -o $@ -c $< 
 
-scanner: parser
+flex_scanner: bison_parser
 	flex $(FLEX_OPTS) -o $(SCANNER_OUT) $(SCANNER_IN)
 
-parser:
+bison_parser:
 	bison $(BISON_OPTS) -o $(PARSER_OUT) $(PARSER_IN)
-
 
 
