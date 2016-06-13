@@ -1238,9 +1238,10 @@ list_of_event_identifiers : event_identifier dimensions_o
                             dimensions_o
                           ;
 
-list_of_genvar_identifiers: genvar_identifier
-                          : list_of_genvar_identifiers COMMA genvar_identifier
-                          ;
+list_of_genvar_identifiers: 
+  genvar_identifier
+| list_of_genvar_identifiers COMMA genvar_identifier
+;
 
 list_of_net_decl_assignments : net_decl_assignment
                              | list_of_net_decl_assignments COMMA 
@@ -1323,10 +1324,10 @@ range                   : OPEN_SQ_BRACKET constant_expression COLON
 
 automatic_o         : KW_AUTOMATIC | ;
 
-function_declaration : KW_FUNCTION automatic_o signed_o range_or_type
+function_declaration : KW_FUNCTION automatic_o signed_o range_or_type_o
                        function_identifier SEMICOLON function_item_declarations
                        function_statement KW_ENDFUNCTION
-                     | KW_FUNCTION automatic_o signed_o range_or_type
+                     | KW_FUNCTION automatic_o signed_o range_or_type_o
                        function_identifier OPEN_BRACKET function_port_list CLOSE_BRACKET SEMICOLON 
                        block_item_declarations
                        function_statement KW_ENDFUNCTION
@@ -1355,6 +1356,8 @@ tf_input_declarations      :
                            | COMMA attribute_instances tf_input_declaration
                              tf_input_declarations
                            ;
+
+range_or_type_o            : range_or_type | ;
 
 range_or_type              : range
                            | KW_INTEGER
@@ -1786,9 +1789,13 @@ genvar_case_item : constant_expressions COLON
                  | KW_DEFAULT     
                  ;
 
-generate_loop_statement : KW_FOR OPEN_BRACKET genvar_assignment SEMICOLON constant_expression
-                          SEMICOLON genvar_assignment CLOSE_BRACKET KW_BEGIN SEMICOLON
-                          generate_block_identifier generate_items KW_END
+generate_loop_statement : 
+  KW_FOR OPEN_BRACKET genvar_assignment SEMICOLON 
+ constant_expression
+ SEMICOLON genvar_assignment CLOSE_BRACKET KW_BEGIN COLON
+ generate_block_identifier generate_items KW_END
+
+;
 
 genvar_assignment : genvar_identifier EQ constant_expression;
 
@@ -1980,7 +1987,7 @@ procedural_continuous_assignments :
   }
 ;
 
-function_blocking_assignment : variable_lvalue SEMICOLON expression{
+function_blocking_assignment : variable_lvalue EQ expression{
     $$ = ast_new_single_assignment($1,$3);
 };
 
