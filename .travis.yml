@@ -21,6 +21,9 @@ before_script:
 script:
  - make test
 
+after_script:
+ - make coverage-report
+
 after_failure:
  - echo "Failure"
 

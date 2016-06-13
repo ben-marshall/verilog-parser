@@ -12,7 +12,7 @@ EXE=build/bin/verilog-app
 TEST_FILES=tests/*.v
 
 echo "$EXE $TEST_FILES"
-$EXE $TEST_FILES
+$EXE $TEST_FILES &> /dev/null
 
 echo "---------------------- Coverage Results Summary -----------------------"
 
