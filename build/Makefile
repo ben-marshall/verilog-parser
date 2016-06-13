@@ -32,7 +32,8 @@ clean:
 	rm -f $(LIB_DIR)/*
 	rm -f $(BIN_DIR)/*
 	rm -f $(GEN_DIR)/*
-	rm -f *.gcov
+	rm -f *.gcov *.info *.log
+	rm -f ./coverage/*
 
 fromclean: clean all
 

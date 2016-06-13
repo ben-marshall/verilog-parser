@@ -56,6 +56,22 @@ has been run from the top of the project). These are:
 - `obj` - All intermediate object files.
 - `gen` - Generated C source code, like the Bison and Flex code.
 - `docs` - Documentation Generator output.
+- `coverage` - See @ref coverage-info
+
+@subsection coverage-info Coverage
+
+The project uses `gcov` to generate coverage information and `lcov` to
+create html reports. The following `make` commands are useful in this case:
+
+- `make app-with-coverage` - This is infact an alias for the 
+  `make with-coverage` in `build/Makefile`. It simply builds the parser
+  library and test app with the appropriate coverage flags set.
+- `make coverage-report` - This runs the script `bin/test-coverage.sh` which
+  runs all of the available test programs through the test app. The coverage
+  results are then compiled into the `build/coverage` folder, and the
+  html reports are generated with lcov.
+- `make view-coverage-report` - Opens the generated html coverage reports
+  in your default html file viewer.
 
 @section ci-tool Continuous Integration
 

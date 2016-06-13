@@ -17,6 +17,9 @@ app-with-coverage:
 coverage-report:
 	bin/test-coverage.sh
 
+view-coverage-report: coverage-report
+	xdg-open ./build/coverage/report/index.html
+
 clean:
 	$(MAKE) -C build/ clean
 	$(MAKE) -C docs/ clean

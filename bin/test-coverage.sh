@@ -11,6 +11,7 @@ IWD=`pwd`
 EXE=build/bin/verilog-app
 TEST_FILES=tests/*.v
 
+
 echo "$EXE $TEST_FILES"
 $EXE $TEST_FILES &> /dev/null
 
@@ -18,8 +19,28 @@ echo "---------------------- Coverage Results Summary -----------------------"
 
 cd build/
 
+rm -rf coverage/*
+mkdir -p coverage/
+
 gcov -o ./obj -s  ./gen/*.c ./gen/*.tab.c ../src/*.c
 
-echo "-----------------------Coverage Tests Complete ------------------------"
+mv ./obj/*.gcno ./coverage/.
+mv ./obj/*.gcda ./coverage/.
+mv ./*.gcov ./coverage/.
+touch "<stdout>"
+
+cd coverage
+
+lcov  --directory . -c -o coverage.info -t "Verilog Parser"
+genhtml -o ./report -t "Verilog Parser Test Coverage" --num-spaces 4 coverage.info
+
 
 cd $IWD # return to initial working directory.
+rm -f "build/<stdout>"
+
+echo " "
+echo "Coverage Report Written To:"
+echo "    ./build/coverage/report/index.html"
+echo " "
+
+echo "-----------------------Coverage Tests Complete ------------------------"
