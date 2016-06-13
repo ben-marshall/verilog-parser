@@ -3097,6 +3097,12 @@ expression :
 | expression B_XOR attribute_instances expression{
     $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
   }
+| expression B_NOR attribute_instances expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
+  }
+| expression B_NAND attribute_instances expression{
+    $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
+  }
 | expression B_EQU attribute_instances expression{
     $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
   }

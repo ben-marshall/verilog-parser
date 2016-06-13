@@ -33,7 +33,7 @@ clean:
 	rm -f $(BIN_DIR)/*
 	rm -f $(GEN_DIR)/*
 	rm -f *.gcov *.info *.log
-	rm -f ./coverage/*
+	rm -rf ./coverage/*
 
 fromclean: clean all
 
