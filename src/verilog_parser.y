@@ -1802,8 +1802,8 @@ udp_declaration : attribute_instances KW_PRIMITIVE udp_identifier
                   OPEN_BRACKET udp_port_list CLOSE_BRACKET SEMICOLON
                   udp_port_declarations udp_body KW_ENDPRIMITIVE
                 | attribute_instances KW_PRIMITIVE udp_identifier
-                  OPEN_BRACKET udp_declaration_port_list CLOSE_BRACKET SEMICOLON
-                  udp_body KW_ENDPRIMITIVE
+                  OPEN_BRACKET udp_declaration_port_list CLOSE_BRACKET 
+                  SEMICOLON udp_body KW_ENDPRIMITIVE
                 ;
 
 udp_port_declarations : udp_port_declaration

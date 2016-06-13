@@ -30,11 +30,14 @@ typedef char * ast_string       ;
 typedef struct ast_assignment_t ast_assignment;
 typedef struct ast_single_assignment_t ast_single_assignment;
 typedef void * ast_delay3       ;
+typedef void * ast_delay2       ;
 typedef void * ast_delay_value  ;
 typedef void * ast_drive_strength;
 typedef void * ast_macro_use    ;
 typedef void * ast_minmax_exp   ;
 typedef void * ast_number       ;
+typedef void * ast_udp_body     ;
+typedef void * ast_range        ;
 
 typedef struct ast_statement_t ast_statement;
 
@@ -52,6 +55,13 @@ typedef enum ast_edge_e{
     EDGE_NONE,
     EDGE_ANY 
 } ast_edge;
+
+//! Describes the direction of a port
+typedef enum ast_port_direction_e{
+    PORT_INPUT,
+    PORT_OUTPUT,
+    PORT_INOUT
+} ast_port_direction;
 
 //-------------- attributes ------------------------------------
 
@@ -1160,8 +1170,46 @@ ast_statement * ast_new_statement(
 @{
 @ingroup ast-construction
 @brief User defined primitive types.
+@details
+Needs to describe the outer declaration, port lists, body statements and
+instantiations
+@todo Write instance functions for ports, declarations and instantiations.
+Describe UDP bodys.
 */
 
+//! Describes a single port for a user defined primitive.
+typedef struct ast_udp_port_t{
+    ast_port_direction    direction;
+    ast_identifier      * identifer;
+    ast_node_attributes * attributes;
+    ast_boolean           reg;  //!< Is a register or wire?
+    ast_expression      * default_value;
+} ast_udp_port;
+
+
+//! Describes the declaration of a user defined primitive (UDP)
+typedef struct ast_udp_declaration_t{
+    ast_node_attributes * attributes;
+    ast_identifier      * identifier;
+    ast_list            * ports;
+    ast_udp_body        * body;
+} ast_udp_declaration;
+
+//! Describes a single instance of a UDP
+typedef struct ast_udp_instance_t{
+    ast_identifier      * identifier;
+    ast_range           * range;
+    ast_udp_port        * output;
+    ast_list            * inputs;
+} ast_udp_instance;
+
+//! Describes an a list of instances of a particular kind of UDP.
+typedef struct ast_udp_instantiation_t{
+    ast_list            * instances; //!< list of ast_udp_instance
+    ast_identifier      * identifier;
+    ast_drive_strength  * drive_strength;
+    ast_delay2          * delay;
+} ast_udp_instantiation;
 
 
 /*! @} */
