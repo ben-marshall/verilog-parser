@@ -39,7 +39,6 @@ int main(int argc, char ** argv)
             else
             {
                 printf("Parse failed for %s\n",argv[F]);
-                return 1;
             }
         }
     }
