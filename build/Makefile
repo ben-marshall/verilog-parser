@@ -32,6 +32,7 @@ clean:
 	rm -f $(LIB_DIR)/*
 	rm -f $(BIN_DIR)/*
 	rm -f $(GEN_DIR)/*
+	rm -f *.gcov
 
 fromclean: clean all
 

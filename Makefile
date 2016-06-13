@@ -11,6 +11,12 @@ all: app docs
 app:
 	$(MAKE) -C build/ all
 
+app-with-coverage:
+	$(MAKE) -C build/ with-coverage
+
+coverage-report:
+	bin/test-coverage.sh
+
 clean:
 	$(MAKE) -C build/ clean
 	$(MAKE) -C docs/ clean
