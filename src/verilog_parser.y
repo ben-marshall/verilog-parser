@@ -1871,7 +1871,7 @@ sequential_entrys     : sequential_entry
                       | sequential_entrys sequential_entry
                       ;
 
-udp_initial_statement : KW_INITIAL output_port_identifier EQ init_val SEMICOLON;
+udp_initial_statement : KW_INITIAL output_port_identifier EQ init_val SEMICOLON
 
 init_val              : '1' '\'' 'b' '0' 
                       | '1' '\'' 'b' '1' 
@@ -1885,7 +1885,10 @@ init_val              : '1' '\'' 'b' '0'
                       | '0'
                       ;
 
-sequential_entry      : seq_input_list COLON current_state COLON next_state SEMICOLON;
+sequential_entry      : seq_input_list COLON current_state COLON next_state 
+                        SEMICOLON
+                      ;
+
 seq_input_list        : level_input_list | edge_input_list;
 
 level_input_list      : level_symbols;
