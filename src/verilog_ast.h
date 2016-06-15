@@ -949,11 +949,11 @@ ast_timing_control_statement * ast_new_timing_control_statement_event(
 
 //! Contains the identifier from a disable statement.
 typedef struct ast_disable_statement_t{
-    ast_identifier * id;
+    ast_identifier   id;
 } ast_disable_statement;
 
 //! Creates and returns a pointer to a new disable statement.
-ast_disable_statement * ast_new_disable_statement(ast_identifier * id);
+ast_disable_statement * ast_new_disable_statement(ast_identifier   id);
 
 
 //! Describes the type of a block of statements.
@@ -966,7 +966,7 @@ typedef enum ast_block_type_e{
 //! Fully describes a single block of statements.
 typedef struct ast_statement_block_t{
     ast_block_type   type;
-    ast_identifier * block_identifier;
+    ast_identifier   block_identifier;
     ast_list       * declarations;
     ast_list       * statements;
 } ast_statement_block;
@@ -976,7 +976,7 @@ typedef struct ast_statement_block_t{
 */
 ast_statement_block * ast_new_statement_block(
     ast_block_type   type,
-    ast_identifier * block_identifier,
+    ast_identifier   block_identifier,
     ast_list       * declarations,
     ast_list       * statements
 );
@@ -1209,7 +1209,7 @@ typedef enum ast_edge_symbol_e{
 typedef struct ast_udp_port_t{
     ast_port_direction    direction;
     union{
-        ast_identifier      * identifier;  //! IFF direction != input
+        ast_identifier        identifier;  //! IFF direction != input
         ast_list            * identifiers; //! IFF direction = input
     };
     ast_node_attributes * attributes;
@@ -1219,7 +1219,7 @@ typedef struct ast_udp_port_t{
 
 //! Describes the initial statement of a sequential udp body.
 typedef struct ast_udp_initial_statement_t{
-    ast_identifier  * output_port;
+    ast_identifier    output_port;
     ast_number      * initial_value;
 } ast_udp_initial_statement;
 
@@ -1249,14 +1249,14 @@ while the subsequent elements are input terminals.
 */
 typedef struct ast_udp_declaration_t{
     ast_node_attributes * attributes;
-    ast_identifier      * identifier;
+    ast_identifier        identifier;
     ast_list            * ports;
     ast_udp_body        * body;
 } ast_udp_declaration;
 
 //! Describes a single instance of a UDP
 typedef struct ast_udp_instance_t{
-    ast_identifier      * identifier;
+    ast_identifier        identifier;
     ast_range           * range;
     ast_udp_port        * output;
     ast_list            * inputs;
@@ -1265,7 +1265,7 @@ typedef struct ast_udp_instance_t{
 //! Describes an a list of instances of a particular kind of UDP.
 typedef struct ast_udp_instantiation_t{
     ast_list            * instances; //!< list of ast_udp_instance
-    ast_identifier      * identifier;
+    ast_identifier        identifier;
     ast_drive_strength  * drive_strength;
     ast_delay2          * delay;
 } ast_udp_instantiation;
@@ -1273,7 +1273,7 @@ typedef struct ast_udp_instantiation_t{
 
 //! Creates a new initial statement node.
 ast_udp_initial_statement * ast_new_udp_initial_statement(
-    ast_identifier * output_port,
+    ast_identifier   output_port,
     ast_number     * initial_value
 );
 
@@ -1302,7 +1302,7 @@ ast_udp_combinatorial_entry * ast_new_udp_combinatoral_entry(
 */
 ast_udp_port * ast_new_udp_port(
     ast_port_direction    direction,
-    ast_identifier      * identifier, //!< The udp being instanced.
+    ast_identifier        identifier, //!< The udp being instanced.
     ast_node_attributes * attributes,
     ast_boolean           reg,
     ast_expression      * default_value
@@ -1326,7 +1326,7 @@ ast_udp_port * ast_new_udp_input_port(
 */
 ast_udp_declaration * ast_new_udp_declaration(
     ast_node_attributes * attributes,
-    ast_identifier      * identifier,
+    ast_identifier        identifier,
     ast_list            * ports,
     ast_udp_body        * body
 );
@@ -1337,7 +1337,7 @@ ast_udp_declaration * ast_new_udp_declaration(
 @returns A pointer to the new instance.
 */
 ast_udp_instance * ast_new_udp_instance(
-    ast_identifier      * identifier,
+    ast_identifier        identifier,
     ast_range           * range,
     ast_udp_port        * output,
     ast_list            * inputs
@@ -1350,7 +1350,7 @@ ast_udp_instance * ast_new_udp_instance(
 */
 ast_udp_instantiation * ast_new_udp_instantiation(
     ast_list            * instances,
-    ast_identifier      * identifier, //!< The UDP being instanced
+    ast_identifier        identifier, //!< The UDP being instanced
     ast_drive_strength  * drive_strength,
     ast_delay2          * delay
 );

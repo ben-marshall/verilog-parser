@@ -133,6 +133,7 @@ ast_primary * ast_new_constant_primary(ast_primary_value_type type)
 ast_primary * ast_new_primary_function_call(ast_function_call * call)
 {
     ast_primary * tr = calloc(1, sizeof(ast_primary));
+    assert(tr!=NULL);
 
     tr -> primary_type  = PRIMARY;
     tr -> value_type    = PRIMARY_FUNCTION_CALL;
@@ -1046,7 +1047,7 @@ ast_assignment * ast_new_continuous_assignment(
 */
 ast_statement_block * ast_new_statement_block(
     ast_block_type   type,
-    ast_identifier * block_identifier,
+    ast_identifier   block_identifier,
     ast_list       * declarations,
     ast_list       * statements
 )
@@ -1062,7 +1063,7 @@ ast_statement_block * ast_new_statement_block(
 }
 
 //! Creates and returns a pointer to a new disable statement.
-ast_disable_statement * ast_new_disable_statement(ast_identifier * id)
+ast_disable_statement * ast_new_disable_statement(ast_identifier   id)
 {
     ast_disable_statement * tr = calloc(1, sizeof(ast_disable_statement));
     tr -> id = id;
@@ -1099,7 +1100,7 @@ ast_statement * ast_new_statement(
 */
 ast_udp_port * ast_new_udp_port(
     ast_port_direction    direction,
-    ast_identifier      * identifier,
+    ast_identifier        identifier,
     ast_node_attributes * attributes,
     ast_boolean           reg,
     ast_expression      * default_value
@@ -1142,7 +1143,7 @@ ast_udp_port * ast_new_udp_input_port(
 */
 ast_udp_declaration * ast_new_udp_declaration(
     ast_node_attributes * attributes,
-    ast_identifier      * identifier,
+    ast_identifier        identifier,
     ast_list            * ports,
     ast_udp_body        * body
 )
@@ -1163,7 +1164,7 @@ ast_udp_declaration * ast_new_udp_declaration(
 @returns A pointer to the new instance.
 */
 ast_udp_instance * ast_new_udp_instance(
-    ast_identifier      * identifier,
+    ast_identifier        identifier,
     ast_range           * range,
     ast_udp_port        * output,
     ast_list            * inputs
@@ -1185,7 +1186,7 @@ ast_udp_instance * ast_new_udp_instance(
 */
 ast_udp_instantiation * ast_new_udp_instantiation(
     ast_list            * instances,
-    ast_identifier      * identifier,
+    ast_identifier        identifier,
     ast_drive_strength  * drive_strength,
     ast_delay2          * delay
 ){
@@ -1202,7 +1203,7 @@ ast_udp_instantiation * ast_new_udp_instantiation(
 
 //! Creates a new initial statement node.
 ast_udp_initial_statement * ast_new_udp_initial_statement(
-    ast_identifier * output_port,
+    ast_identifier   output_port,
     ast_number     * initial_value
 ){
     ast_udp_initial_statement *tr=calloc(1,sizeof(ast_udp_initial_statement));
