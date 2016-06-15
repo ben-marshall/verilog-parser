@@ -36,7 +36,6 @@ typedef void * ast_drive_strength;
 typedef void * ast_macro_use    ;
 typedef void * ast_minmax_exp   ;
 typedef void * ast_number       ;
-typedef void * ast_udp_body     ;
 typedef void * ast_range        ;
 
 typedef struct ast_statement_t ast_statement;
@@ -782,7 +781,7 @@ statement.
 @param new_statement - The new statement to add at the end of the existing
 if-then conditions, but before any else_condtion.
 */
-void  * ast_extend_if_else(
+void  ast_extend_if_else(
     ast_if_else                 * conditional_statements,
     ast_list                    * new_statement
 );
@@ -1174,8 +1173,37 @@ ast_statement * ast_new_statement(
 @details
 Needs to describe the outer declaration, port lists, body statements and
 instantiations
-@todo UDP Body description
 */
+
+//! Describes the initial value of a UDP output.
+typedef enum ast_udp_init_val_e{
+    UDP_INIT_1,
+    UDP_INIT_0,
+    UDP_INIT_X
+} ast_udp_init_val;
+
+//! Describes a single logic level symbol.
+typedef enum ast_level_symbol_e{
+    LEVEL_0,
+    LEVEL_1,
+    LEVEL_B,
+    LEVEL_X,
+    LEVEL_Q //!< Refers to '?'
+} ast_level_symbol;
+
+//! Is the body of the UDP specified combinatorially or sequentially.
+typedef enum ast_udp_body_type_e{
+    UDP_BODY_SEQUENTIAL,
+    UDP_BODY_COMBINATORIAL
+} ast_udp_body_type;
+
+
+//! Describes a rising/falling/positive/negative edge.
+typedef enum ast_edge_symbol_e{
+    EDGE_RISING, //!< Same as positive edge.
+    EDGE_FALLING //!< Same as negative edge.
+} ast_edge_symbol;
+
 
 //! Describes a single port for a user defined primitive.
 typedef struct ast_udp_port_t{
@@ -1189,6 +1217,29 @@ typedef struct ast_udp_port_t{
     ast_expression      * default_value;
 } ast_udp_port;
 
+//! Describes the initial statement of a sequential udp body.
+typedef struct ast_udp_initial_statement_t{
+    ast_identifier  * output_port;
+    ast_number      * initial_value;
+} ast_udp_initial_statement;
+
+//! Describes a single UDP body sequentially or combinatorially.
+typedef struct ast_udp_body_t{
+    ast_udp_body_type body_type;
+    union{
+        ast_list * combinatorial_entries;
+        struct{
+            ast_udp_initial_statement * initial;
+            ast_list * sequential_entries;
+        };
+    };
+} ast_udp_body;
+
+//! Describes a single combinatorial entry in the UDP ast tree.
+typedef struct ast_udp_combinatorial_entry_t{
+    ast_list * input_levels;
+    ast_number * output_symbol;
+} ast_udp_combinatorial_entry;
 
 /*! 
 @brief Describes the declaration of a user defined primitive (UDP)
@@ -1218,6 +1269,31 @@ typedef struct ast_udp_instantiation_t{
     ast_drive_strength  * drive_strength;
     ast_delay2          * delay;
 } ast_udp_instantiation;
+
+
+//! Creates a new initial statement node.
+ast_udp_initial_statement * ast_new_udp_initial_statement(
+    ast_identifier * output_port,
+    ast_number     * initial_value
+);
+
+
+//! Creates and returns a new sequential UDP body representation.
+ast_udp_body * ast_new_udp_sequential_body(
+    ast_udp_initial_statement * initial_statement,
+    ast_list                  * sequential_entries
+);
+
+//! Creates and returns a new combinatorial UDP body representation.
+ast_udp_body * ast_new_udp_combinatoral_body(
+    ast_list                  * combinatorial_entries
+);
+
+//! Creates a new combinatorial entry for a UDP node.
+ast_udp_combinatorial_entry * ast_new_udp_combinatoral_entry(
+    ast_list * input_levels,
+    ast_number * output_symbol
+);
 
 /*!
 @brief Creates a new UDP port AST node

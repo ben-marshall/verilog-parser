@@ -13,7 +13,7 @@ TEST_FILES=tests/*.v
 
 
 echo "$EXE $TEST_FILES"
-$EXE $TEST_FILES &> /dev/null
+$EXE $TEST_FILES
 
 echo "---------------------- Coverage Results Summary -----------------------"
 

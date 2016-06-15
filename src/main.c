@@ -20,19 +20,21 @@ int main(int argc, char ** argv)
 
         for(F = 1; F < argc; F++)
         {
-            printf("%s", argv[F]);
-            fflush(stdout);
+            printf("%s", argv[F]);fflush(stdout);
 
             // Load the file.
             FILE * fh = fopen(argv[F], "r");
             
             // Instance the parser.
             verilog_parser parser = verilog_file_parse(fh);
+            printf(" parser built ");fflush(stdout);
 
             // Parse the file and store the result.
             int result = verilog_parse_buffer(parser);
+            printf(" parser finished");fflush(stdout);
 
             verilog_free_parser(parser);
+            printf(" parser freed");fflush(stdout);
             fclose(fh);
             
             if(result == 0)

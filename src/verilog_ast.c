@@ -765,7 +765,7 @@ statement.
 @param new_statement - The new statement to add at the end of the existing
 if-then conditions, but before any else_condtion.
 */
-void  * ast_extend_if_else(
+void  ast_extend_if_else(
     ast_if_else     * conditional_statements,
     ast_list        * new_statements
 )
@@ -1195,6 +1195,61 @@ ast_udp_instantiation * ast_new_udp_instantiation(
     tr -> identifier    = identifier;
     tr -> drive_strength= drive_strength;
     tr -> delay         = delay;
+
+    return tr;
+}
+
+
+//! Creates a new initial statement node.
+ast_udp_initial_statement * ast_new_udp_initial_statement(
+    ast_identifier * output_port,
+    ast_number     * initial_value
+){
+    ast_udp_initial_statement *tr=calloc(1,sizeof(ast_udp_initial_statement));
+    
+    tr -> output_port   = output_port;
+    tr -> initial_value = initial_value;
+
+    return tr;
+}
+
+
+//! Creates and returns a new sequential UDP body representation.
+ast_udp_body * ast_new_udp_sequential_body(
+    ast_udp_initial_statement * initial_statement,
+    ast_list                  * sequential_entries
+){
+    ast_udp_body * tr = calloc(1,sizeof(ast_udp_body));
+    
+    tr -> body_type          = UDP_BODY_SEQUENTIAL;
+    tr -> initial            = initial_statement;
+    tr -> sequential_entries = sequential_entries;
+
+    return tr;
+}
+
+//! Creates and returns a new combinatorial UDP body representation.
+ast_udp_body * ast_new_udp_combinatoral_body(
+    ast_list                  * combinatorial_entries
+){
+    ast_udp_body * tr = calloc(1,sizeof(ast_udp_body));
+
+    tr -> body_type = UDP_BODY_COMBINATORIAL;
+    tr -> combinatorial_entries = combinatorial_entries;
+
+    return tr;
+}
+
+//! Creates a new combinatorial entry for a UDP node.
+ast_udp_combinatorial_entry * ast_new_udp_combinatoral_entry(
+    ast_list * input_levels,
+    ast_number * output_symbol
+){
+    ast_udp_combinatorial_entry * tr = 
+        calloc(1,sizeof(ast_udp_combinatorial_entry));
+
+    tr -> input_levels = input_levels;
+    tr -> output_symbol = output_symbol;
 
     return tr;
 }
