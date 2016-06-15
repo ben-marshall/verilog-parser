@@ -20,6 +20,9 @@ int main(int argc, char ** argv)
 
         for(F = 1; F < argc; F++)
         {
+            printf("%s", argv[F]);
+            fflush(stdout);
+
             // Load the file.
             FILE * fh = fopen(argv[F], "r");
             
@@ -34,11 +37,11 @@ int main(int argc, char ** argv)
             
             if(result == 0)
             {
-                printf("Parse successful for %s\n",argv[F]);
+                printf(" - Parse successful\n");
             }
             else
             {
-                printf("Parse failed for %s\n",argv[F]);
+                printf(" - Parse failed for\n");
             }
         }
     }
