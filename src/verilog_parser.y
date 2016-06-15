@@ -38,10 +38,22 @@
     ast_concatenation    * concatenation;
     ast_path_declaration * path_declaration; 
     ast_statement        * statement;
+    ast_loop_statement   * loop_statement;
+    ast_wait_statement   * wait_statement;
     ast_case_item        * case_item;
     ast_case_statement   * case_statement;
     ast_if_else          * ifelse;
     ast_timing_control_statement * timing_control_statement;
+    ast_assignment      * assignment;
+
+    ast_udp_body        * udp_body;
+    ast_udp_declaration * udp_declaration;
+    ast_udp_initial_statement * udp_initial;
+    ast_udp_port        * udp_port;
+    ast_udp_instance    * udp_instance;
+    ast_udp_instantiation * udp_instantiation;
+    ast_udp_combinatorial_entry * udp_combinatorial_entry;
+
     char                   boolean;
     char                 * string;
     char                 * number;
@@ -356,21 +368,21 @@
 %type <identifier> inout_port_identifier
 %type <identifier> input_identifier
 %type <identifier> input_port_identifier
-%type <identifier> input_port_identifiers
+%type <list> input_port_identifiers
 %type <identifier> instance_identifier
 %type <identifier> instance_identifier_os
 %type <identifier> lib_cell_identifier_os
 %type <identifier> library_identifier
 %type <identifier> library_identifier_os
-%type <identifier> list_of_block_variable_identifiers
-%type <identifier> list_of_event_identifiers
-%type <identifier> list_of_genvar_identifiers
-%type <identifier> list_of_net_identifiers
-%type <identifier> list_of_param_assignments
-%type <identifier> list_of_port_identifiers
-%type <identifier> list_of_real_identifiers
-%type <identifier> list_of_variable_identifiers
-%type <identifier> list_of_variable_port_identifiers
+%type <list> list_of_block_variable_identifiers
+%type <list> list_of_event_identifiers
+%type <list> list_of_genvar_identifiers
+%type <list> list_of_net_identifiers
+%type <list> list_of_param_assignments
+%type <list> list_of_port_identifiers
+%type <list> list_of_real_identifiers
+%type <list> list_of_variable_identifiers
+%type <list> list_of_variable_port_identifiers
 %type <identifier> module_identifier
 %type <identifier> module_instance_identifier
 %type <identifier> net_identifier
@@ -421,6 +433,11 @@
 %type <list> specify_block
 %type <list> specify_items
 %type <list> specify_items_o
+%type <list> udp_declaration_port_list
+%type <list> udp_input_declarations
+%type <list> udp_instances
+%type <list> udp_port_declarations
+%type <list> udp_port_list
 %type <lvalue> net_lvalue
 %type <lvalue> variable_lvalue
 %type <node> actual_argument
@@ -436,13 +453,13 @@
 %type <node> cmos_switch_instance
 %type <node> cmos_switch_instances
 %type <node> cmos_switchtype
-%type <node> combinational_body
-%type <node> combinational_entry
-%type <node> combinational_entrys
+%type <udp_body> combinational_body
+%type <udp_combinatorial_entry> combinational_entry
+%type <list> combinational_entrys
 %type <node> compiler_directive
-%type <node> compiler_directives
+%type <list> compiler_directives
 %type <node> conditional_compile_directive
-%type <node> conditional_statement
+%type <statement> conditional_statement
 %type <node> config_declaration
 %type <node> config_rule_statement
 %type <node> config_rule_statement_os
@@ -461,15 +478,15 @@
 %type <node> dimension
 %type <node> dimensions
 %type <node> dimensions_o
-%type <node> disable_statement
+%type <identifier> disable_statement
 %type <node> drive_strength
 %type <node> drive_strength_o
 %type <node> edge_indicator
 %type <node> edge_input_list
 %type <node> edge_symbol
-%type <node> else_if_statements
+%type <ifelse> else_if_statements
 %type <node> enable_gate_instance
-%type <node> enable_gate_instances
+%type <list> enable_gate_instances
 %type <node> enable_gatetype
 %type <node> enable_terminal
 %type <node> eq_const_exp_o
@@ -479,12 +496,12 @@
 %type <node> event_declaration
 %type <node> file_path_spec
 %type <node> file_path_specs
-%type <node> function_blocking_assignment
-%type <node> function_conditional_statement
+%type <assignment> function_blocking_assignment
+%type <statement> function_conditional_statement
 %type <node> function_declaration
 %type <node> function_item_declaration
-%type <node> function_item_declarations
-%type <node> function_loop_statement
+%type <list> function_item_declarations
+%type <statement> function_loop_statement
 %type <node> function_port_list
 %type <node> function_seq_block
 %type <node> gate_enable
@@ -500,19 +517,19 @@
 %type <node> gatetype_n_input
 %type <node> gatetype_n_output
 %type <node> generate_block
-%type <node> generate_case_statement
-%type <node> generate_conditional_statement
+%type <statement> generate_case_statement
+%type <statement> generate_conditional_statement
 %type <node> generate_item
 %type <node> generate_item_or_null
 %type <node> generate_items
-%type <node> generate_loop_statement
+%type <statement> generate_loop_statement
 %type <node> generated_instantiation
-%type <node> genvar_assignment
+%type <assignment> genvar_assignment
 %type <node> genvar_case_item
 %type <node> genvar_case_items
 %type <node> genvar_declaration
 %type <node> grammar_begin
-%type <node> if_else_if_statement
+%type <ifelse> if_else_if_statement
 %type <node> ifdef_directive
 %type <node> ifndef_directive
 %type <node> include_directive
@@ -538,7 +555,7 @@
 %type <node> limit_value
 %type <node> line_directive
 %type <node> local_parameter_declaration
-%type <node> loop_statement
+%type <loop_statement> loop_statement
 %type <node> module_declaration
 %type <node> module_instance
 %type <node> module_instances
@@ -558,11 +575,10 @@
 %type <node> n_output_gate_instances
 %type <node> name_of_gate_instance
 %type <node> name_of_instance
-%type <node> name_of_udp_instance
 %type <node> named_parameter_assignment
-%type <node> named_parameter_assignments
+%type <list> named_parameter_assignments
 %type <node> named_port_connection
-%type <node> named_port_connections
+%type <list> named_port_connections
 %type <node> ncontrol_terminal
 %type <node> net_assignment
 %type <node> net_dec_p_delay
@@ -577,11 +593,11 @@
 %type <node> next_state
 %type <node> non_port_module_item
 %type <node> non_port_module_item_os
-%type <node> nonblocking_assignment
-%type <node> ordered_parameter_assignment
-%type <node> ordered_parameter_assignments
+%type <assignment> nonblocking_assignment
+%type <assignment> ordered_parameter_assignment
+%type <list> ordered_parameter_assignments
 %type <node> ordered_port_connection
-%type <node> ordered_port_connections
+%type <list> ordered_port_connections
 %type <node> output_declaration
 %type <node> output_symbol
 %type <node> output_terminal
@@ -589,7 +605,7 @@
 %type <node> output_variable_type
 %type <node> output_variable_type_o
 %type <node> par_block
-%type <node> param_assignment
+%type <assignment> param_assignment
 %type <node> parameter_declaration
 %type <node> parameter_override
 %type <node> parameter_value_assignment
@@ -608,8 +624,8 @@
 %type <node> port_declarations
 %type <node> port_dir
 %type <node> port_reference
-%type <node> ports
-%type <node> procedural_continuous_assignments
+%type <list> ports
+%type <list> procedural_continuous_assignments
 %type <node> pull_gate_instance
 %type <node> pull_gate_instances
 %type <node> pulldown_strength
@@ -640,10 +656,10 @@
 %type <node> specparam_declaration
 %type <node> sq_bracket_constant_expressions
 %type <node> sq_bracket_expressions
-%type <node> statement
-%type <node> statement_or_null
-%type <node> statements
-%type <node> statements_o
+%type <statement> statement
+%type <statement> statement_or_null
+%type <list> statements
+%type <list> statements_o
 %type <node> strength0
 %type <node> strength1
 %type <node> system_task_enable
@@ -664,25 +680,11 @@
 %type <node> time
 %type <node> time_declaration
 %type <node> timescale_directive
-%type <node> udp_body
-%type <node> udp_declaration
-%type <node> udp_declaration_port_list
-%type <node> udp_initial_statement
-%type <node> udp_input_declaration
-%type <node> udp_input_declarations
-%type <node> udp_instance
-%type <node> udp_instances
-%type <node> udp_instantiation
-%type <node> udp_output_declaration
-%type <node> udp_port_declaration
-%type <node> udp_port_declarations
-%type <node> udp_port_list
-%type <node> udp_reg_declaration
 %type <node> undefine_compiler_directive
 %type <node> use_clause
-%type <node> variable_assignment
+%type <assignment> variable_assignment
 %type <node> variable_type
-%type <node> wait_statement
+%type <wait_statement> wait_statement
 %type <node_attributes> attr_spec
 %type <node_attributes> attr_specs
 %type <node_attributes> attribute_instances
@@ -714,6 +716,15 @@
 %type <timing_control_statement> delay_or_event_control
 %type <timing_control_statement> delay_or_event_control_o
 %type <timing_control_statement> procedural_timing_control_statement
+%type <udp_body> udp_body
+%type <udp_declaration> udp_declaration
+%type <udp_initial> udp_initial_statement
+%type <udp_instance> udp_instance
+%type <udp_instantiation> udp_instantiation
+%type <udp_port> udp_input_declaration
+%type <udp_port> udp_output_declaration
+%type <udp_port> udp_port_declaration
+%type <udp_port> udp_reg_declaration
 
 %%
 /* Start variables */
@@ -1052,7 +1063,7 @@ parameter_override  : KW_DEFPARAM list_of_param_assignments SEMICOLON
 /* A.2.1.1 Module Parameter Declarations */
 
 signed_o : KW_SIGNED {$$=1;}|{$$=0;} ;
-range_o  : range     | ;
+range_o  : range {$$=$1;}    | {$$=NULL;} ;
 
 local_parameter_declaration : KW_LOCALPARAM signed_o range_o
                               list_of_param_assignments SEMICOLON
@@ -3575,13 +3586,12 @@ escaped_hierarchical_identifier : escaped_hierarchical_branch
                                   escaped_hierarchical_identifiers
                                 ;
 
-escaped_hierarchical_identifiers: DOT simple_hierarchical_identifier
-                                | DOT escaped_hierarchical_identifier
-                                | escaped_hierarchical_identifiers
-                                  DOT simple_hierarchical_identifier
-                                | escaped_hierarchical_identifier DOT
-                                  escaped_hierarchical_identifiers
-                                ;
+escaped_hierarchical_identifiers: 
+  DOT simple_hierarchical_identifier {$$=$2;}
+| DOT escaped_hierarchical_identifier {$$=$2;}
+| escaped_hierarchical_identifiers DOT simple_hierarchical_identifier {$$=$3;}
+| escaped_hierarchical_identifier DOT escaped_hierarchical_identifiers {$$=$1;}
+;
 
 
 escaped_identifier              : '\''
