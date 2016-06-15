@@ -43,8 +43,10 @@
     ast_case_item        * case_item;
     ast_case_statement   * case_statement;
     ast_if_else          * ifelse;
+    ast_level_symbol       level_symbol;
     ast_timing_control_statement * timing_control_statement;
     ast_assignment      * assignment;
+    ast_single_assignment      * single_assignment;
 
     ast_udp_body        * udp_body;
     ast_udp_declaration * udp_declaration;
@@ -53,6 +55,12 @@
     ast_udp_instance    * udp_instance;
     ast_udp_instantiation * udp_instantiation;
     ast_udp_combinatorial_entry * udp_combinatorial_entry;
+
+    ast_drive_strength  * drive_strength;
+    ast_delay3          * delay3;
+    ast_delay2          * delay2;
+
+    ast_edge_symbol     * edge_symbol;
 
     char                   boolean;
     char                 * string;
@@ -467,10 +475,10 @@
 %type <node> current_state
 %type <node> default_clause
 %type <node> default_net_type_cd
-%type <node> delay2
-%type <node> delay2_o
-%type <node> delay3
-%type <node> delay3_o
+%type <delay2> delay2
+%type <delay2> delay2_o
+%type <delay3> delay3
+%type <delay3> delay3_o
 %type <node> delay_control
 %type <node> delay_value
 %type <node> description
@@ -479,11 +487,11 @@
 %type <node> dimensions
 %type <node> dimensions_o
 %type <identifier> disable_statement
-%type <node> drive_strength
-%type <node> drive_strength_o
-%type <node> edge_indicator
-%type <node> edge_input_list
-%type <node> edge_symbol
+%type <drive_strength> drive_strength
+%type <drive_strength> drive_strength_o
+%type <edge_symbol> edge_indicator
+%type <list> edge_input_list
+%type <edge_symbol> edge_symbol
 %type <ifelse> else_if_statements
 %type <node> enable_gate_instance
 %type <list> enable_gate_instances
@@ -540,14 +548,14 @@
 %type <node> inout_terminal
 %type <node> input_declaration
 %type <node> input_terminal
-%type <node> input_terminals
+%type <list> input_terminals
 %type <node> inst_clause
 %type <node> inst_name
 %type <node> integer_declaration
-%type <node> level_input_list
-%type <node> level_symbol
-%type <node> level_symbols
-%type <node> level_symbols_o
+%type <list> level_input_list
+%type <level_symbol> level_symbol
+%type <list> level_symbols
+%type <list> level_symbols_o
 %type <node> liblist_clause
 %type <node> library_declaration
 %type <node> library_descriptions
@@ -648,7 +656,7 @@
 %type <node> seq_input_list
 %type <node> sequential_body
 %type <node> sequential_entry
-%type <node> sequential_entrys
+%type <list> sequential_entrys
 %type <node> showcancelled_declaration
 %type <node> source_text
 %type <node> specify_item
@@ -682,7 +690,7 @@
 %type <node> timescale_directive
 %type <node> undefine_compiler_directive
 %type <node> use_clause
-%type <assignment> variable_assignment
+%type <single_assignment> variable_assignment
 %type <node> variable_type
 %type <wait_statement> wait_statement
 %type <node_attributes> attr_spec
@@ -1932,7 +1940,7 @@ sequential_body :
     $$ = ast_new_udp_sequential_body($1,$3);
   }
 | KW_TABLE sequential_entrys KW_ENDTABLE{
-    $$ = ast_new_udp_sequential_body(NULL,$3);
+    $$ = ast_new_udp_sequential_body(NULL,$2);
   }
 ;
 
