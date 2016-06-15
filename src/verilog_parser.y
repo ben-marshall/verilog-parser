@@ -24,6 +24,7 @@
 
 /* token types */
 %union {
+    ast_task_enable_statement * task_enable_statement;
     ast_assignment      * assignment;
     ast_case_item        * case_item;
     ast_case_statement   * case_statement;
@@ -41,6 +42,7 @@
     ast_level_symbol       level_symbol;
     ast_list             * list;
     ast_loop_statement   * loop_statement;
+    ast_statement_block  * statement_block;
     ast_lvalue           * lvalue;
     ast_node             * node;
     ast_node_attributes  * node_attributes;
@@ -50,6 +52,7 @@
     ast_single_assignment      * single_assignment;
     ast_statement        * statement;
     ast_timing_control_statement * timing_control_statement;
+    ast_event_control   * event_control;
     ast_udp_body        * udp_body;
     ast_udp_combinatorial_entry * udp_combinatorial_entry;
     ast_udp_sequential_entry * udp_seqential_entry;
@@ -60,6 +63,7 @@
     ast_udp_port        * udp_port;
     ast_wait_statement   * wait_statement;
     ast_range            * range;
+    ast_delay_ctrl       * delay_control;
 
     char                   boolean;
     char                 * string;
@@ -424,7 +428,7 @@
 %type <list> function_statements
 %type <list> function_statements_o
 %type <list> list_of_actual_arguments
-%type <list> list_of_attribute_instances
+%type <node_attributes> list_of_attribute_instances
 %type <list> list_of_formal_arguments
 %type <list> list_of_net_assignments
 %type <list> list_of_net_decl_assignments
@@ -451,14 +455,14 @@
 %type <node> always_construct
 %type <node> automatic_o
 %type <node> block_item_declaration
-%type <node> block_item_declarations
+%type <list> block_item_declarations
 %type <node> block_reg_declaration
 %type <node> block_variable_type
-%type <node> blocking_assignment
+%type <assignment> blocking_assignment
 %type <node> cell_clause
 %type <node> charge_strength
 %type <node> cmos_switch_instance
-%type <node> cmos_switch_instances
+%type <list> cmos_switch_instances
 %type <node> cmos_switchtype
 %type <udp_body> combinational_body
 %type <udp_combinatorial_entry> combinational_entry
@@ -466,11 +470,11 @@
 %type <node> compiler_directive
 %type <list> compiler_directives
 %type <node> conditional_compile_directive
-%type <statement> conditional_statement
+%type <ifelse> conditional_statement
 %type <node> config_declaration
 %type <node> config_rule_statement
 %type <node> config_rule_statement_os
-%type <node> continuous_assign
+%type <assignment> continuous_assign
 %type <node> current_state
 %type <node> default_clause
 %type <node> default_net_type_cd
@@ -478,7 +482,7 @@
 %type <delay2> delay2_o
 %type <delay3> delay3
 %type <delay3> delay3_o
-%type <node> delay_control
+%type <delay_control> delay_control
 %type <node> delay_value
 %type <node> description
 %type <node> design_statement
@@ -491,7 +495,7 @@
 %type <edge_symbol> edge_indicator
 %type <list> edge_input_list
 %type <edge_symbol> edge_symbol
-%type <ifelse> else_if_statements
+%type <list> else_if_statements
 %type <node> enable_gate_instance
 %type <list> enable_gate_instances
 %type <node> enable_gatetype
@@ -499,18 +503,18 @@
 %type <node> eq_const_exp_o
 %type <node> error_limit_value
 %type <node> error_limit_value_o
-%type <node> event_control
+%type <event_control> event_control
 %type <node> event_declaration
 %type <node> file_path_spec
 %type <node> file_path_specs
-%type <assignment> function_blocking_assignment
-%type <statement> function_conditional_statement
+%type <single_assignment> function_blocking_assignment
+%type <ifelse> function_conditional_statement
 %type <node> function_declaration
 %type <node> function_item_declaration
 %type <list> function_item_declarations
-%type <statement> function_loop_statement
+%type <loop_statement> function_loop_statement
 %type <node> function_port_list
-%type <node> function_seq_block
+%type <statement_block> function_seq_block
 %type <node> gate_enable
 %type <node> gate_instantiation
 %type <node> gate_n_input
@@ -587,7 +591,7 @@
 %type <node> named_port_connection
 %type <list> named_port_connections
 %type <node> ncontrol_terminal
-%type <node> net_assignment
+%type <single_assignment> net_assignment
 %type <node> net_dec_p_delay
 %type <node> net_dec_p_ds
 %type <node> net_dec_p_range
@@ -611,7 +615,7 @@
 %type <list> output_terminals
 %type <node> output_variable_type
 %type <node> output_variable_type_o
-%type <node> par_block
+%type <statement_block> par_block
 %type <assignment> param_assignment
 %type <node> parameter_declaration
 %type <node> parameter_override
@@ -624,7 +628,7 @@
 %type <node> pass_switch_instances
 %type <node> pass_switchtype
 %type <node> pcontrol_terminal
-%type <node> polarity_operator
+%type <operator> polarity_operator
 %type <node> port
 %type <node> port_declaration
 %type <node> port_declaration_l
@@ -632,7 +636,7 @@
 %type <node> port_dir
 %type <node> port_reference
 %type <list> ports
-%type <list> procedural_continuous_assignments
+%type <assignment> procedural_continuous_assignments
 %type <node> pull_gate_instance
 %type <node> pull_gate_instances
 %type <node> pulldown_strength
@@ -651,7 +655,7 @@
 %type <node> reg_dec_p_signed
 %type <node> reg_declaration
 %type <node> reject_limit_value
-%type <node> seq_block
+%type <statement_block> seq_block
 %type <list> seq_input_list
 %type <udp_body> sequential_body
 %type <udp_seqential_entry> sequential_entry
@@ -662,17 +666,17 @@
 %type <node> specparam_assignment
 %type <node> specparam_declaration
 %type <node> sq_bracket_constant_expressions
-%type <node> sq_bracket_expressions
+%type <list> sq_bracket_expressions
 %type <statement> statement
 %type <statement> statement_or_null
 %type <list> statements
 %type <list> statements_o
 %type <node> strength0
 %type <node> strength1
-%type <node> system_task_enable
+%type <task_enable_statement> system_task_enable
 %type <node> system_timing_check
 %type <node> task_declaration
-%type <node> task_enable
+%type <task_enable_statement> task_enable
 %type <node> task_item_declaration
 %type <list> task_item_declarations
 %type <node> task_port_item
@@ -2918,30 +2922,33 @@ net_concatenation_cont :
   }
 ;
 
-sq_bracket_expressions :/* TODO - fix types. */
+sq_bracket_expressions :
   OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET{
-      $$ = $2;
+      $$ = ast_list_new();
+      ast_list_append($$,$2);
   }
 | OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET{
-      $$ = $2;
+      $$ = ast_list_new();
+      ast_list_append($$,$2);
   }
 | OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET sq_bracket_expressions{
-      $$ = $2;
+      $$ = $4;
+      ast_list_preappend($$,$2);
   }
 ;
 
 net_concatenation_value : /* TODO - fix proper identifier stuff. */
   hierarchical_net_identifier {
-      $$ = $1;
+      $$ = ast_new_concatenation(CONCATENATION_NET,NULL,$1);
   }
 | hierarchical_net_identifier sq_bracket_expressions {
-      $$ = $1;
+      $$ = ast_new_concatenation(CONCATENATION_NET,NULL,$1);
   }
 | hierarchical_net_identifier sq_bracket_expressions range_expression {
-      $$ = $1;
+      $$ = ast_new_concatenation(CONCATENATION_NET,NULL,$1);
   }
 | hierarchical_net_identifier range_expression {
-      $$ = $1;
+      $$ = ast_new_concatenation(CONCATENATION_NET,NULL,$1);
   }
 | net_concatenation {
       $$ = $1;
@@ -2967,16 +2974,16 @@ variable_concatenation_cont :
 
 variable_concatenation_value : /* TODO - fix proper identifier stuff. */
   hierarchical_variable_identifier {
-      $$ = $1;
+      $$ = ast_new_concatenation(CONCATENATION_NET,NULL,$1);
   }
 | hierarchical_variable_identifier sq_bracket_expressions {
-      $$ = $1;
+      $$ = ast_new_concatenation(CONCATENATION_NET,NULL,$1);
   }
 | hierarchical_variable_identifier sq_bracket_expressions range_expression {
-      $$ = $1;
+      $$ = ast_new_concatenation(CONCATENATION_NET,NULL,$1);
   }
 | hierarchical_variable_identifier range_expression {
-      $$ = $1;
+      $$ = ast_new_concatenation(CONCATENATION_NET,NULL,$1);
   }
 | variable_concatenation {
       $$ = $1;
