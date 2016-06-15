@@ -884,7 +884,7 @@ ast_delay_ctrl * ast_new_delay_ctrl_value(ast_delay_value * value)
 @brief creates and returns a new delay control statement.
 */
 ast_delay_ctrl * ast_new_delay_ctrl_mintypmax(
-    ast_minmax_exp * mintypmax
+    ast_expression * mintypmax
 )
 {
     ast_delay_ctrl * tr = calloc(1,sizeof(ast_event_control));
@@ -976,6 +976,24 @@ ast_assignment * ast_new_hybrid_assignment(
     return tr;
 }
 
+
+/*!
+@brief Creates a new hybrid assignment of the specified type.
+*/
+ast_assignment * ast_new_hybrid_lval_assignment(
+    ast_hybrid_assignment_type type,
+    ast_lvalue *lval 
+)
+{
+    ast_assignment * tr = calloc(1,sizeof(ast_assignment));
+
+    tr -> type = ASSIGNMENT_HYBRID;
+    tr -> hybrid = calloc(1,sizeof(ast_hybrid_assignment));
+    tr -> hybrid -> type = type;
+    tr -> hybrid -> lval = lval;
+
+    return tr;
+}
 
 /*!
 @brief Creates and returns a new blocking procedural assignment object.

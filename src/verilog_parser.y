@@ -24,47 +24,46 @@
 
 /* token types */
 %union {
-    ast_edge              edge;
-    ast_node             * node;
-    ast_node_attributes  * node_attributes;
-    ast_identifier         identifier;
-    ast_lvalue           * lvalue;
-    ast_primary          * primary;
-    ast_expression       * expression;
-    ast_event_expression * event_expression;
-    ast_operator           operator;
-    ast_function_call    * call_function;
-    ast_list             * list;
-    ast_concatenation    * concatenation;
-    ast_path_declaration * path_declaration; 
-    ast_statement        * statement;
-    ast_loop_statement   * loop_statement;
-    ast_wait_statement   * wait_statement;
+    ast_assignment      * assignment;
     ast_case_item        * case_item;
     ast_case_statement   * case_statement;
+    ast_concatenation    * concatenation;
+    ast_delay2          * delay2;
+    ast_delay3          * delay3;
+    ast_drive_strength  * drive_strength;
+    ast_edge              edge;
+    ast_edge_symbol     * edge_symbol;
+    ast_event_expression * event_expression;
+    ast_expression       * expression;
+    ast_function_call    * call_function;
+    ast_identifier         identifier;
     ast_if_else          * ifelse;
     ast_level_symbol       level_symbol;
-    ast_timing_control_statement * timing_control_statement;
-    ast_assignment      * assignment;
+    ast_list             * list;
+    ast_loop_statement   * loop_statement;
+    ast_lvalue           * lvalue;
+    ast_node             * node;
+    ast_node_attributes  * node_attributes;
+    ast_operator           operator;
+    ast_path_declaration * path_declaration; 
+    ast_primary          * primary;
     ast_single_assignment      * single_assignment;
-
+    ast_statement        * statement;
+    ast_timing_control_statement * timing_control_statement;
     ast_udp_body        * udp_body;
+    ast_udp_combinatorial_entry * udp_combinatorial_entry;
+    ast_udp_sequential_entry * udp_seqential_entry;
     ast_udp_declaration * udp_declaration;
     ast_udp_initial_statement * udp_initial;
-    ast_udp_port        * udp_port;
     ast_udp_instance    * udp_instance;
     ast_udp_instantiation * udp_instantiation;
-    ast_udp_combinatorial_entry * udp_combinatorial_entry;
-
-    ast_drive_strength  * drive_strength;
-    ast_delay3          * delay3;
-    ast_delay2          * delay2;
-
-    ast_edge_symbol     * edge_symbol;
+    ast_udp_port        * udp_port;
+    ast_wait_statement   * wait_statement;
+    ast_range            * range;
 
     char                   boolean;
     char                 * string;
-    char                 * number;
+    ast_number           * number;
     char                 * term;
     char                 * keyword;
 }
@@ -542,7 +541,7 @@
 %type <node> ifndef_directive
 %type <node> include_directive
 %type <node> include_statement
-%type <node> init_val
+%type <number> init_val
 %type <node> initial_construct
 %type <node> inout_declaration
 %type <node> inout_terminal
@@ -607,9 +606,9 @@
 %type <node> ordered_port_connection
 %type <list> ordered_port_connections
 %type <node> output_declaration
-%type <node> output_symbol
-%type <node> output_terminal
-%type <node> output_terminals
+%type <number> output_symbol
+%type <lvalue> output_terminal
+%type <list> output_terminals
 %type <node> output_variable_type
 %type <node> output_variable_type_o
 %type <node> par_block
@@ -642,8 +641,8 @@
 %type <node> pullup_strength_o
 %type <node> pulse_control_specparam
 %type <node> pulsestyle_declaration
-%type <node> range
-%type <node> range_o
+%type <range> range
+%type <range> range_o
 %type <node> range_or_type
 %type <node> real_declaration
 %type <node> real_type
@@ -653,9 +652,9 @@
 %type <node> reg_declaration
 %type <node> reject_limit_value
 %type <node> seq_block
-%type <node> seq_input_list
-%type <node> sequential_body
-%type <node> sequential_entry
+%type <list> seq_input_list
+%type <udp_body> sequential_body
+%type <udp_seqential_entry> sequential_entry
 %type <list> sequential_entrys
 %type <node> showcancelled_declaration
 %type <node> source_text
@@ -675,15 +674,15 @@
 %type <node> task_declaration
 %type <node> task_enable
 %type <node> task_item_declaration
-%type <node> task_item_declarations
+%type <list> task_item_declarations
 %type <node> task_port_item
-%type <node> task_port_list
+%type <list> task_port_list
 %type <node> task_port_type
 %type <node> task_port_type_o
 %type <node> text_macro_definition
 %type <node> tf_inout_declaration
 %type <node> tf_input_declaration
-%type <node> tf_input_declarations
+%type <list> tf_input_declarations
 %type <node> tf_output_declaration
 %type <node> time
 %type <node> time_declaration
@@ -2089,7 +2088,7 @@ procedural_continuous_assignments :
       $$ = ast_new_hybrid_assignment(HYBRID_ASSIGNMENT_ASSIGN, $2);
   }
 | KW_DEASSIGN variable_lvalue{
-      $$ = ast_new_hybrid_assignment(HYBRID_ASSIGNMENT_DEASSIGN, $2);
+      $$ = ast_new_hybrid_lval_assignment(HYBRID_ASSIGNMENT_DEASSIGN, $2);
   }
 | KW_FORCE variable_assignment{
       $$ = ast_new_hybrid_assignment(HYBRID_ASSIGNMENT_FORCE_VAR, $2);
@@ -2098,10 +2097,10 @@ procedural_continuous_assignments :
       $$ = ast_new_hybrid_assignment(HYBRID_ASSIGNMENT_FORCE_NET, $2);
   }
 | KW_RELEASE variable_lvalue{
-      $$ = ast_new_hybrid_assignment(HYBRID_ASSIGNMENT_RELEASE_VAR, $2);
+      $$ = ast_new_hybrid_lval_assignment(HYBRID_ASSIGNMENT_RELEASE_VAR, $2);
   }
 | KW_RELEASE net_lvalue{
-      $$ = ast_new_hybrid_assignment(HYBRID_ASSIGNMENT_RELEASE_NET, $2);
+      $$ = ast_new_hybrid_lval_assignment(HYBRID_ASSIGNMENT_RELEASE_NET, $2);
   }
 ;
 

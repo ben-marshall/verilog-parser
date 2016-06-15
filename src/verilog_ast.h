@@ -37,6 +37,7 @@ typedef void * ast_macro_use    ;
 typedef void * ast_minmax_exp   ;
 typedef void * ast_number       ;
 typedef void * ast_range        ;
+typedef void * ast_output_symbol;
 
 typedef struct ast_statement_t ast_statement;
 
@@ -854,7 +855,7 @@ typedef struct ast_delay_ctrl_t{
     ast_delay_ctrl_type type;
     union{
         ast_delay_value * value;
-        ast_minmax_exp  * mintypmax;
+        ast_expression  * mintypmax;
     };
 } ast_delay_ctrl;
 
@@ -913,7 +914,7 @@ ast_delay_ctrl * ast_new_delay_ctrl_value(ast_delay_value * value);
 @brief creates and returns a new delay control statement.
 */
 ast_delay_ctrl * ast_new_delay_ctrl_mintypmax(
-    ast_minmax_exp * mintypmax 
+    ast_expression * mintypmax 
 );
 
 /*!
@@ -1052,7 +1053,11 @@ programatic / statement sense, but are continous in the time domain during a
 simulation.
 */
 typedef struct ast_hybrid_assignment_t{
-    ast_single_assignment * assignment;
+    union
+    {
+        ast_single_assignment * assignment;
+        ast_lvalue            * lval;
+    };
     ast_hybrid_assignment_type type;
 } ast_hybrid_assignment;
 
@@ -1072,6 +1077,14 @@ struct ast_assignment_t{
 ast_assignment * ast_new_hybrid_assignment(
     ast_hybrid_assignment_type type,
     ast_single_assignment * assignment
+);
+
+/*!
+@brief Creates a new hybrid assignment of the specified type.
+*/
+ast_assignment * ast_new_hybrid_lval_assignment(
+    ast_hybrid_assignment_type type,
+    ast_lvalue * lval
 );
 
 /*!
@@ -1240,6 +1253,13 @@ typedef struct ast_udp_combinatorial_entry_t{
     ast_list * input_levels;
     ast_number * output_symbol;
 } ast_udp_combinatorial_entry;
+
+//! describes a sequential entry in a udp body.
+typedef struct ast_udp_sequential_entry_t{
+    ast_list * inputs;
+    ast_level_symbol current_state;
+    ast_output_symbol output;
+} ast_udp_sequential_entry;
 
 /*! 
 @brief Describes the declaration of a user defined primitive (UDP)
