@@ -1894,49 +1894,69 @@ udp_reg_declaration : attribute_instances KW_REG variable_identifier{
 
 /* A.5.3 UDP body */
 
-udp_body            : combinational_body 
-                    | sequential_body
+udp_body            : combinational_body {$$=$1;}
+                    | sequential_body{$$=$1;}
                     ;
 
-combinational_body  : KW_TABLE combinational_entrys KW_ENDTABLE;
+combinational_body  : KW_TABLE combinational_entrys KW_ENDTABLE{
+    $$ = ast_new_udp_combinatoral_body($2);
+};
 
-combinational_entrys : combinational_entry
-                     | combinational_entrys combinational_entry
-                     ;
+combinational_entrys : combinational_entry{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+}
+| combinational_entrys combinational_entry{
+    $$ = $1;
+    ast_list_append($$,$2);
+}
+;
 
-combinational_entry : level_input_list COLON output_symbol SEMICOLON ;
+combinational_entry : level_input_list COLON output_symbol SEMICOLON{
+    $$ = ast_new_udp_combinatoral_entry($1,$3);   
+};
 
-sequential_body : udp_initial_statement KW_TABLE sequential_entrys KW_ENDTABLE
-                | KW_TABLE sequential_entrys KW_ENDTABLE
-                ;
+sequential_body : 
+  udp_initial_statement KW_TABLE sequential_entrys KW_ENDTABLE{
+    $$ = ast_new_udp_sequential_body($1,$3);
+  }
+| KW_TABLE sequential_entrys KW_ENDTABLE{
+    $$ = ast_new_udp_sequential_body(NULL,$3);
+  }
+;
 
-sequential_entrys     : sequential_entry
-                      | sequential_entrys sequential_entry
-                      ;
+sequential_entrys     : sequential_entry{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+}
+| sequential_entrys sequential_entry{
+    $$ = $1;
+    ast_list_append($$,$2);
+};
 
-udp_initial_statement : KW_INITIAL output_port_identifier EQ init_val SEMICOLON
+udp_initial_statement : 
+    KW_INITIAL output_port_identifier EQ init_val SEMICOLON{
+        $$ = ast_new_udp_initial_statement($2,$4);
+    }
+;
 
-init_val              : '1' '\'' 'b' '0' 
-                      | '1' '\'' 'b' '1' 
-                      | '1' '\'' 'b' 'x' 
-                      | '1' '\'' 'b' 'X' 
-                      | '1' '\'' 'B' '0' 
-                      | '1' '\'' 'B' '1' 
-                      | '1' '\'' 'B' 'x' 
-                      | '1' '\'' 'B' 'X' 
-                      | '1'    
-                      | '0'
-                      ;
+init_val              : unsigned_number{ $$ = $1; };
 
-sequential_entry      : seq_input_list COLON current_state COLON next_state 
-                        SEMICOLON
-                      ;
+sequential_entry      : 
+  seq_input_list COLON current_state COLON next_state SEMICOLON{
+
+  }
+;
 
 seq_input_list        : level_input_list | edge_input_list;
 
 level_input_list      : level_symbols;
 
-level_symbols_o       : level_symbols | ;
+level_symbols_o       : 
+  level_symbols 
+| 
+;
+
 level_symbols         : level_symbol
                       | level_symbols level_symbol
                       ;
@@ -1949,14 +1969,32 @@ edge_indicator        : OPEN_BRACKET level_symbol level_symbol CLOSE_BRACKET
 
 current_state         : level_symbol;
 
-next_state            : output_symbol | '-'
+next_state            : output_symbol 
+                      | MINUS
                       ;
 
-output_symbol : '0' | '1' | 'x' | 'X';
+output_symbol : 
+    UNSIGNED_NUMBER{
+        // Must be 0,1 or X
+    }
+;
 
-level_symbol :'0'|'1'|'x'|'X'|'?'|'b'|'B';
+level_symbol :
+  UNSIGNED_NUMBER  /* Must be 1,0 or X */
+| TERNARY 
+| SIMPLE_ID /* must be b or B*/
+;
 
-edge_symbol :'r'|'R'|'f'|'F'|'p'|'P'|'n'|'N'|STAR;
+edge_symbol : /* can be r,f,p,n or star in any case. */
+  'r'
+| 'R'
+| 'f'
+| 'F'
+| 'p'
+| 'P'
+| 'n'
+| 'N'
+| STAR;
 
 /* A.5.4 UDP instantiation */
 

@@ -11,7 +11,7 @@ GEN_DIR         = ./gen
 SRC_DIR         = ../src
 
 CC              = gcc
-CC_FLAGS        = -Wall -I$(SRC_DIR) -I$(GEN_DIR)
+CC_FLAGS        = -Wall -I$(SRC_DIR) -I$(GEN_DIR) -O0
 
 COVERAGE_FLAGS  = -fprofile-arcs -ftest-coverage --coverage
 
@@ -24,7 +24,7 @@ AR_FLAGS        = rcs
 
 all: parser-app parser-lib
 
-with-coverage: CC_FLAGS += -DDEBUG -g -O0 $(COVERAGE_FLAGS)
+with-coverage: CC_FLAGS += -DDEBUG -g $(COVERAGE_FLAGS)
 with-coverage: parser-app parser-lib
 
 clean:
