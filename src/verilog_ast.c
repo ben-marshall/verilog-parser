@@ -597,8 +597,8 @@ continue or break.
 */
 ast_loop_statement * ast_new_for_loop_statement(
     ast_statement  * inner_statement,
-    ast_assignment * initial_condition,
-    ast_assignment * modify_assignment,
+    ast_single_assignment * initial_condition,
+    ast_single_assignment * modify_assignment,
     ast_expression * continue_condition
 )
 {
@@ -833,8 +833,8 @@ ast_event_expression * ast_new_event_expression(
 sub-expressions.
 */
 ast_event_expression * ast_new_event_expression_sequence(
-    ast_expression * left,
-    ast_expression * right
+    ast_event_expression * left,
+    ast_event_expression * right
 )
 {
     ast_event_expression * tr = calloc(1,sizeof(ast_event_expression));
@@ -1184,7 +1184,7 @@ ast_udp_declaration * ast_new_udp_declaration(
 ast_udp_instance * ast_new_udp_instance(
     ast_identifier        identifier,
     ast_range           * range,
-    ast_udp_port        * output,
+    ast_lvalue          * output,
     ast_list            * inputs
 ){
     ast_udp_instance * tr = calloc(1,sizeof(ast_udp_instance));

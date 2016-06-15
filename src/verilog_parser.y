@@ -49,21 +49,23 @@
     ast_operator           operator;
     ast_path_declaration * path_declaration; 
     ast_primary          * primary;
-    ast_single_assignment      * single_assignment;
+    ast_single_assignment* single_assignment;
     ast_statement        * statement;
     ast_timing_control_statement * timing_control_statement;
-    ast_event_control   * event_control;
-    ast_udp_body        * udp_body;
+    ast_event_control    * event_control;
+    ast_udp_body         * udp_body;
     ast_udp_combinatorial_entry * udp_combinatorial_entry;
     ast_udp_sequential_entry * udp_seqential_entry;
-    ast_udp_declaration * udp_declaration;
+    ast_udp_declaration  * udp_declaration;
     ast_udp_initial_statement * udp_initial;
-    ast_udp_instance    * udp_instance;
+    ast_udp_instance     * udp_instance;
     ast_udp_instantiation * udp_instantiation;
-    ast_udp_port        * udp_port;
+    ast_udp_port         * udp_port;
     ast_wait_statement   * wait_statement;
     ast_range            * range;
     ast_delay_ctrl       * delay_control;
+    ast_delay_value      * delay_value;
+    ast_disable_statement * disable_statement;
 
     char                   boolean;
     char                 * string;
@@ -483,13 +485,13 @@
 %type <delay3> delay3
 %type <delay3> delay3_o
 %type <delay_control> delay_control
-%type <node> delay_value
+%type <delay_value> delay_value
 %type <node> description
 %type <node> design_statement
 %type <node> dimension
 %type <node> dimensions
 %type <node> dimensions_o
-%type <identifier> disable_statement
+%type <disable_statement> disable_statement
 %type <drive_strength> drive_strength
 %type <drive_strength> drive_strength_o
 %type <edge_symbol> edge_indicator
@@ -1685,7 +1687,7 @@ enable_terminal     : expression;
 inout_terminal      : net_lvalue;
 input_terminal      : expression;
 ncontrol_terminal   : expression;
-output_terminal     : expression; /* Deliberate bug. should be net_lvalue, implement with semantic checking later. */
+output_terminal     : net_lvalue; 
 pcontrol_terminal   : expression;
 
 /* A.3.4 primitive gate and switch types */
@@ -2328,7 +2330,9 @@ event_control :
     ast_primary * p = ast_new_primary(PRIMARY_IDENTIFIER);
     p -> value.identifier = $2;
     ast_expression * id = ast_new_expression_primary(p);
-    $$ = ast_new_event_control(EVENT_CTRL_TRIGGERS, id);
+    ast_event_expression * ct = ast_new_event_expression(EVENT_CTRL_TRIGGERS,
+        id);
+    $$ = ast_new_event_control(EVENT_CTRL_TRIGGERS, ct);
   }
 | AT OPEN_BRACKET event_expression CLOSE_BRACKET{
     $$ = ast_new_event_control(EVENT_CTRL_TRIGGERS, $3);
