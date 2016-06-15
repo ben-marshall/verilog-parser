@@ -18,7 +18,7 @@ coverage-report:
 	bin/test-coverage.sh
 
 view-coverage-report: coverage-report
-	xdg-open ./build/coverage/report/index.html
+	xdg-open ./build/cov-report/index.html
 
 clean:
 	$(MAKE) -C build/ clean

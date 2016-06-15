@@ -32,7 +32,7 @@ touch "<stdout>"
 cd coverage
 
 lcov  --directory . -c -o coverage.info -t "Verilog Parser"
-genhtml -o ./report -t "Verilog Parser Test Coverage" --num-spaces 4 coverage.info
+genhtml -o ../cov-report -t "Verilog Parser Test Coverage" --num-spaces 4 coverage.info
 
 
 cd $IWD # return to initial working directory.
