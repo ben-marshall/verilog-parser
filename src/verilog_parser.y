@@ -1805,49 +1805,92 @@ generate_block : KW_BEGIN generate_items KW_END
 
 /* A.5.1 UDP Declaration */
 
-udp_declaration : attribute_instances KW_PRIMITIVE udp_identifier
-                  OPEN_BRACKET udp_port_list CLOSE_BRACKET SEMICOLON
-                  udp_port_declarations udp_body KW_ENDPRIMITIVE
-                | attribute_instances KW_PRIMITIVE udp_identifier
-                  OPEN_BRACKET udp_declaration_port_list CLOSE_BRACKET 
-                  SEMICOLON udp_body KW_ENDPRIMITIVE
-                ;
+udp_declaration : 
+  attribute_instances KW_PRIMITIVE udp_identifier OPEN_BRACKET udp_port_list
+  CLOSE_BRACKET SEMICOLON udp_port_declarations udp_body KW_ENDPRIMITIVE{
+    $$ = ast_new_udp_declaration($1,$3,$8,$9);
+  }
+| attribute_instances KW_PRIMITIVE udp_identifier OPEN_BRACKET
+  udp_declaration_port_list CLOSE_BRACKET SEMICOLON udp_body KW_ENDPRIMITIVE{
+    $$ = ast_new_udp_declaration($1,$3,$5,$8);
+  }
+;
 
-udp_port_declarations : udp_port_declaration
-                      | udp_port_declarations udp_port_declaration
-                      ;
+udp_port_declarations : 
+  udp_port_declaration{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| udp_port_declarations udp_port_declaration{
+    $$ = $1;
+    ast_list_append($$,$1);
+  }
+;
 
 /* A.5.2 UDP Ports */
 
-udp_port_list : output_port_identifier COMMA input_port_identifiers;
+udp_port_list : output_port_identifier COMMA input_port_identifiers{
+    $$ = $3;
+    ast_list_preappend($$,$1);
+};
 
-input_port_identifiers : input_port_identifier
-                       | input_port_identifiers COMMA input_port_identifier
-                       ;
+input_port_identifiers : 
+  input_port_identifier{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| input_port_identifiers COMMA input_port_identifier{
+    $$ = $1;
+    ast_list_append($$,$1);
+  }
+;
 
-udp_declaration_port_list : udp_output_declaration COMMA udp_input_declarations;
+udp_declaration_port_list :
+  udp_output_declaration COMMA udp_input_declarations{
+    $$ = $3;
+    ast_list_preappend($$,$1);
+  }
+;
 
-udp_input_declarations  : udp_input_declaration
-                        | udp_input_declarations udp_input_declaration
-                        ;
+udp_input_declarations  : 
+  udp_input_declaration{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| udp_input_declarations udp_input_declaration{
+    $$ = $1;
+    ast_list_append($$,$1);
+  }
+;
 
-udp_port_declaration : udp_output_declaration SEMICOLON
-                     | udp_input_declaration SEMICOLON
-                     | udp_reg_declaration SEMICOLON
-                     ;
+udp_port_declaration : 
+  udp_output_declaration SEMICOLON {$$=$1;}
+| udp_input_declaration SEMICOLON {$$=$1;}
+| udp_reg_declaration SEMICOLON {$$=$1;}
+;
 
-udp_output_declaration : attribute_instances KW_OUTPUT port_identifier
-                       | attribute_instances KW_OUTPUT KW_REG 
-                         port_identifier
-                       | attribute_instances KW_OUTPUT KW_REG 
-                         port_identifier EQ constant_expression
-                       ;
+udp_output_declaration : 
+  attribute_instances KW_OUTPUT port_identifier{
+    $$ = ast_new_udp_port(PORT_OUTPUT, $3,$1,AST_FALSE, NULL);
+  }
+| attribute_instances KW_OUTPUT KW_REG port_identifier{
+    $$ = ast_new_udp_port(PORT_OUTPUT, $4,$1,AST_TRUE, NULL);
+  }
+|attribute_instances KW_OUTPUT KW_REG port_identifier EQ constant_expression{
+    $$ = ast_new_udp_port(PORT_OUTPUT, $4,$1,AST_TRUE, $6);
+  }
+;
 
-udp_input_declaration : attribute_instances KW_INPUT list_of_port_identifiers
-                      ;
+udp_input_declaration : 
+    attribute_instances KW_INPUT list_of_port_identifiers{
+        $$ = ast_new_udp_input_port($3,$1);
+    }
+;
 
-udp_reg_declaration : attribute_instances KW_REG variable_identifier
-                    ;
+udp_reg_declaration : attribute_instances KW_REG variable_identifier{
+        $$ = ast_new_udp_port(PORT_NONE,$3,$1,AST_TRUE,NULL);
+    }
+;
 
 /* A.5.3 UDP body */
 
@@ -1917,17 +1960,32 @@ edge_symbol :'r'|'R'|'f'|'F'|'p'|'P'|'n'|'N'|STAR;
 
 /* A.5.4 UDP instantiation */
 
-udp_instantiation : udp_identifier drive_strength_o delay2_o udp_instances SEMICOLON
-                  ;
+udp_instantiation : 
+  udp_identifier drive_strength_o delay2_o udp_instances SEMICOLON{
+    $$ = ast_new_udp_instantiation($4,$1,$2,$3);
+  }
+;
 
-udp_instances : udp_instance
-              | udp_instances COMMA udp_instance
-              ;
+udp_instances : 
+  udp_instance{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| udp_instances COMMA udp_instance{
+    $$ = $1;
+    ast_list_append($$,$3);
+}
+;
 
-udp_instance : name_of_udp_instance OPEN_BRACKET output_terminal COMMA input_terminals CLOSE_BRACKET
-             | OPEN_BRACKET output_terminal COMMA input_terminals CLOSE_BRACKET
-             ;
-name_of_udp_instance : udp_instance_identifier range_o SEMICOLON ;
+udp_instance : 
+  udp_instance_identifier range_o OPEN_BRACKET output_terminal COMMA
+  input_terminals CLOSE_BRACKET{
+    $$ = ast_new_udp_instance($1,$2,$4,$6);
+  }
+ | OPEN_BRACKET output_terminal COMMA input_terminals CLOSE_BRACKET{
+    $$ = ast_new_udp_instance(NULL,NULL,$2,$4);
+  }
+ ;
 
 
 /* A.6.1 Continuous assignment statements */

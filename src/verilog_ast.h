@@ -60,7 +60,8 @@ typedef enum ast_edge_e{
 typedef enum ast_port_direction_e{
     PORT_INPUT,
     PORT_OUTPUT,
-    PORT_INOUT
+    PORT_INOUT,
+    PORT_NONE,  //!< Used for when we don't know at declaration time.
 } ast_port_direction;
 
 //-------------- attributes ------------------------------------
@@ -1173,21 +1174,28 @@ ast_statement * ast_new_statement(
 @details
 Needs to describe the outer declaration, port lists, body statements and
 instantiations
-@todo Write instance functions for ports, declarations and instantiations.
-Describe UDP bodys.
+@todo UDP Body description
 */
 
 //! Describes a single port for a user defined primitive.
 typedef struct ast_udp_port_t{
     ast_port_direction    direction;
-    ast_identifier      * identifer;
+    union{
+        ast_identifier      * identifier;  //! IFF direction != input
+        ast_list            * identifiers; //! IFF direction = input
+    };
     ast_node_attributes * attributes;
     ast_boolean           reg;  //!< Is a register or wire?
     ast_expression      * default_value;
 } ast_udp_port;
 
 
-//! Describes the declaration of a user defined primitive (UDP)
+/*! 
+@brief Describes the declaration of a user defined primitive (UDP)
+@note The ports member can represent the udp_port_list non-terminal
+in the grammar. This means that the first element is the output terminal,
+while the subsequent elements are input terminals.
+*/
 typedef struct ast_udp_declaration_t{
     ast_node_attributes * attributes;
     ast_identifier      * identifier;
@@ -1210,6 +1218,66 @@ typedef struct ast_udp_instantiation_t{
     ast_drive_strength  * drive_strength;
     ast_delay2          * delay;
 } ast_udp_instantiation;
+
+/*!
+@brief Creates a new UDP port AST node
+@details
+@returns A pointer to the new port
+*/
+ast_udp_port * ast_new_udp_port(
+    ast_port_direction    direction,
+    ast_identifier      * identifier, //!< The udp being instanced.
+    ast_node_attributes * attributes,
+    ast_boolean           reg,
+    ast_expression      * default_value
+);
+
+/*!
+@brief Creates a new UDP input port AST node
+@details
+@returns A pointer to the new port
+*/
+ast_udp_port * ast_new_udp_input_port(
+    ast_list            * identifiers,
+    ast_node_attributes * attributes
+);
+
+/*!
+@brief Creates a new UDP declaration node
+@details
+@note the first element of the ports list should be the output terminal.
+@returns A pointer to the new node.
+*/
+ast_udp_declaration * ast_new_udp_declaration(
+    ast_node_attributes * attributes,
+    ast_identifier      * identifier,
+    ast_list            * ports,
+    ast_udp_body        * body
+);
+
+/*!
+@brief Creates a new instance of a UDP.
+@details
+@returns A pointer to the new instance.
+*/
+ast_udp_instance * ast_new_udp_instance(
+    ast_identifier      * identifier,
+    ast_range           * range,
+    ast_udp_port        * output,
+    ast_list            * inputs
+);
+
+/*!
+@brief Creates a new list of UDP instances with shared properties.
+@details 
+@returns A pointer to the new list.
+*/
+ast_udp_instantiation * ast_new_udp_instantiation(
+    ast_list            * instances,
+    ast_identifier      * identifier, //!< The UDP being instanced
+    ast_drive_strength  * drive_strength,
+    ast_delay2          * delay
+);
 
 
 /*! @} */

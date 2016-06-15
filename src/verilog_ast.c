@@ -1090,3 +1090,111 @@ ast_statement * ast_new_statement(
 
     return tr;
 }
+
+
+/*!
+@brief Creates a new UDP port AST node
+@details
+@returns A pointer to the new port
+*/
+ast_udp_port * ast_new_udp_port(
+    ast_port_direction    direction,
+    ast_identifier      * identifier,
+    ast_node_attributes * attributes,
+    ast_boolean           reg,
+    ast_expression      * default_value
+)
+{
+    ast_udp_port * tr = calloc(1,sizeof(ast_udp_port));
+    tr -> direction     = direction;
+    assert(direction != PORT_INPUT);
+    tr -> identifier    = identifier;
+    tr -> attributes    = attributes;
+    tr -> reg           = reg;
+    tr -> default_value = default_value;
+    return tr;
+}
+
+
+/*!
+@brief Creates a new UDP port AST node
+@details
+@returns A pointer to the new port
+*/
+ast_udp_port * ast_new_udp_input_port(
+    ast_list            * identifiers,
+    ast_node_attributes * attributes
+)
+{
+    ast_udp_port * tr = calloc(1,sizeof(ast_udp_port));
+    tr -> direction     = PORT_INPUT;
+    tr -> identifiers   = identifiers;
+    tr -> attributes    = attributes;
+    tr -> reg           = AST_FALSE;
+    tr -> default_value = NULL;
+    return tr;
+}
+
+/*!
+@brief Creates a new UDP declaration node
+@details
+@returns A pointer to the new node.
+*/
+ast_udp_declaration * ast_new_udp_declaration(
+    ast_node_attributes * attributes,
+    ast_identifier      * identifier,
+    ast_list            * ports,
+    ast_udp_body        * body
+)
+{
+    ast_udp_declaration * tr = calloc(1,sizeof(ast_new_udp_declaration));
+
+    tr -> attributes    = attributes;
+    tr -> identifier    = identifier;
+    tr -> ports         = ports;
+    tr -> body          = body;
+
+    return tr;
+}
+
+/*!
+@brief Creates a new instance of a UDP.
+@details
+@returns A pointer to the new instance.
+*/
+ast_udp_instance * ast_new_udp_instance(
+    ast_identifier      * identifier,
+    ast_range           * range,
+    ast_udp_port        * output,
+    ast_list            * inputs
+){
+    ast_udp_instance * tr = calloc(1,sizeof(ast_udp_instance));
+
+    tr -> identifier    = identifier;
+    tr -> range         = range;
+    tr -> output        = output;
+    tr -> inputs        = inputs;
+
+    return tr;
+}
+
+/*!
+@brief Creates a new list of UDP instances with shared properties.
+@details 
+@returns A pointer to the new list.
+*/
+ast_udp_instantiation * ast_new_udp_instantiation(
+    ast_list            * instances,
+    ast_identifier      * identifier,
+    ast_drive_strength  * drive_strength,
+    ast_delay2          * delay
+){
+    ast_udp_instantiation * tr = calloc(1,sizeof(ast_udp_instantiation));
+
+    tr -> instances     = instances;
+    tr -> identifier    = identifier;
+    tr -> drive_strength= drive_strength;
+    tr -> delay         = delay;
+
+    return tr;
+}

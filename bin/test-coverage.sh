@@ -22,7 +22,7 @@ cd build/
 rm -rf coverage/*
 mkdir -p coverage/
 
-gcov -o ./obj -s  ./gen/*.c ./gen/*.tab.c ../src/*.c
+gcov -f -b -c -o ./obj -s  ./gen/*.c ./gen/*.tab.c ../src/*.c
 
 mv ./obj/*.gcno ./coverage/.
 mv ./obj/*.gcda ./coverage/.
