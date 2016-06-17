@@ -557,7 +557,6 @@
 %type <node> inst_clause
 %type <node> inst_name
 %type <node> integer_declaration
-%type <list> level_input_list
 %type <level_symbol> level_symbol
 %type <list> level_symbols
 %type <list> level_symbols_o
@@ -1918,36 +1917,32 @@ udp_reg_declaration : attribute_instances KW_REG variable_identifier{
 
 /* A.5.3 UDP body */
 
-udp_body            : combinational_body {$$=$1;}
-                    | sequential_body{$$=$1;}
-                    ;
-
-combinational_body  : KW_TABLE combinational_entrys KW_ENDTABLE{
+udp_body            : 
+  KW_TABLE combinational_entrys KW_ENDTABLE{
     $$ = ast_new_udp_combinatoral_body($2);
-};
-
-combinational_entrys : combinational_entry{
-    $$ = ast_list_new();
-    ast_list_append($$,$1);
-}
-| combinational_entrys combinational_entry{
-    $$ = $1;
-    ast_list_append($$,$2);
-}
-;
-
-combinational_entry : level_input_list COLON output_symbol SEMICOLON{
-    $$ = ast_new_udp_combinatoral_entry($1,$3);   
-};
-
-sequential_body : 
-  udp_initial_statement KW_TABLE sequential_entrys KW_ENDTABLE{
+  }
+| udp_initial_statement KW_TABLE sequential_entrys KW_ENDTABLE{
     $$ = ast_new_udp_sequential_body($1,$3);
   }
 | KW_TABLE sequential_entrys KW_ENDTABLE{
     $$ = ast_new_udp_sequential_body(NULL,$2);
   }
 ;
+
+combinational_entrys : 
+  combinational_entry{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| combinational_entrys combinational_entry{
+    $$ = $1;
+    ast_list_append($$,$2);
+  }
+;
+
+combinational_entry : level_symbols COLON output_symbol SEMICOLON{
+    $$ = ast_new_udp_combinatoral_entry($1,$3);   
+};
 
 sequential_entrys     : sequential_entry{
     $$ = ast_list_new();
@@ -1967,19 +1962,12 @@ udp_initial_statement :
 init_val              : unsigned_number{ $$ = $1; };
 
 sequential_entry      : 
-  seq_input_list COLON current_state COLON next_state SEMICOLON{
-
-  }
+  seq_input_list COLON current_state COLON next_state SEMICOLON
 ;
 
-seq_input_list        : level_input_list | edge_input_list;
+seq_input_list        : level_symbols | edge_input_list;
 
-level_input_list      : level_symbols;
-
-level_symbols_o       : 
-  level_symbols 
-| 
-;
+level_symbols_o       : level_symbols | ;
 
 level_symbols         : level_symbol
                       | level_symbols level_symbol
@@ -1998,15 +1986,21 @@ next_state            : output_symbol
                       ;
 
 output_symbol : 
-    UNSIGNED_NUMBER{
-        // Must be 0,1 or X
-    }
+  UNSIGNED_NUMBER
+| 'X'
+| 'x'
+| TERNARY
+| SIMPLE_ID
 ;
 
 level_symbol :
-  UNSIGNED_NUMBER  /* Must be 1,0 or X */
-| TERNARY 
-| SIMPLE_ID /* must be b or B*/
+  UNSIGNED_NUMBER
+| 'X'
+| 'x'
+| TERNARY
+| 'B'
+| 'b'
+| SIMPLE_ID
 ;
 
 edge_symbol : /* can be r,f,p,n or star in any case. */
@@ -2018,7 +2012,9 @@ edge_symbol : /* can be r,f,p,n or star in any case. */
 | 'P'
 | 'n'
 | 'N'
-| STAR;
+| SIMPLE_ID
+| STAR
+;
 
 /* A.5.4 UDP instantiation */
 
