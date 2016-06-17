@@ -1964,7 +1964,9 @@ udp_initial_statement :
     }
 ;
 
-init_val              : unsigned_number{ $$ = $1; };
+init_val              : unsigned_number { $$ = $1; }
+                      | number          { $$ = $1; }
+                      ;
 
 level_symbols_o       : level_symbols | ;
 
