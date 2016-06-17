@@ -1929,6 +1929,15 @@ udp_body            :
   }
 ;
 
+sequential_entrys     : sequential_entry{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+}
+| sequential_entrys sequential_entry{
+    $$ = $1;
+    ast_list_append($$,$2);
+};
+
 combinational_entrys : 
   combinational_entry{
     $$ = ast_list_new();
@@ -1944,14 +1953,10 @@ combinational_entry : level_symbols COLON output_symbol SEMICOLON{
     $$ = ast_new_udp_combinatoral_entry($1,$3);   
 };
 
-sequential_entrys     : sequential_entry{
-    $$ = ast_list_new();
-    ast_list_append($$,$1);
-}
-| sequential_entrys sequential_entry{
-    $$ = $1;
-    ast_list_append($$,$2);
-};
+sequential_entry      : 
+  level_symbols   COLON current_state COLON next_state SEMICOLON
+| edge_input_list COLON current_state COLON next_state SEMICOLON
+;
 
 udp_initial_statement : 
     KW_INITIAL output_port_identifier EQ init_val SEMICOLON{
@@ -1960,12 +1965,6 @@ udp_initial_statement :
 ;
 
 init_val              : unsigned_number{ $$ = $1; };
-
-sequential_entry      : 
-  seq_input_list COLON current_state COLON next_state SEMICOLON
-;
-
-seq_input_list        : level_symbols | edge_input_list;
 
 level_symbols_o       : level_symbols | ;
 
