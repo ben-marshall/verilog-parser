@@ -1864,7 +1864,7 @@ input_port_identifiers :
   }
 | input_port_identifiers COMMA input_port_identifier{
     $$ = $1;
-    ast_list_append($$,$1);
+    ast_list_append($$,$3);
   }
 ;
 
