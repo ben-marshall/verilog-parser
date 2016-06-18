@@ -14,6 +14,7 @@ install:
  - wget http://ftp.us.debian.org/debian/pool/main/b/bison/libbison-dev_3.0.4.dfsg-1_amd64.deb
  - sudo dpkg -i libbison-dev_3.0.4.dfsg-1_amd64.deb
  - sudo dpkg -i bison_3.0.4.dfsg-1_amd64.deb
+ - sudo pip install cpp-coveralls
 
 before_script:
  - make setup
@@ -21,8 +22,9 @@ before_script:
 script:
  - make test
 
-after_script:
+after_success:
  - make coverage-report
+ - coveralls -b build/ -e build/bin -e build/lib -i build/coverage -i build/gen -i src/ --gcov-options "-f -b -c"
 
 after_failure:
  - echo "Failure"
