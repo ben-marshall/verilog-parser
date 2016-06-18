@@ -191,6 +191,7 @@ ast_expression * ast_new_expression_primary(ast_primary * p)
     tr -> primary       = p;
     tr -> constant      = p -> primary_type == CONSTANT_PRIMARY ? AST_TRUE 
                                                                 : AST_FALSE;
+    printf("F\n");fflush(stdout);
 
     return tr;
 }
