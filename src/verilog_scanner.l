@@ -471,7 +471,7 @@ TERNARY             "?"
 {XOR}                  {return KW_XOR                ;} 
 
 {SYSTEM_ID}            {return SYSTEM_ID             ;}
-{SIMPLE_ID}            {return SIMPLE_ID             ;}
+{SIMPLE_ID}            {yylval.identifier = yytext; return SIMPLE_ID ;}
 {MACRO_IDENTIFIER}     {return MACRO_IDENTIFIER      ;}
 
 {STRING}               {return STRING;                 }

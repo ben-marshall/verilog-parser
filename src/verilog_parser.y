@@ -8,6 +8,8 @@
 
 %{
     #include <stdio.h>
+    #include <string.h>
+
     #include "verilog_ast.h"
 
     extern int yylineno;
@@ -33,7 +35,6 @@
     ast_delay3          * delay3;
     ast_drive_strength  * drive_strength;
     ast_edge              edge;
-    ast_edge_symbol     * edge_symbol;
     ast_event_expression * event_expression;
     ast_expression       * expression;
     ast_function_call    * call_function;
@@ -66,6 +67,7 @@
     ast_delay_ctrl       * delay_control;
     ast_delay_value      * delay_value;
     ast_disable_statement * disable_statement;
+    ast_udp_next_state     udp_next_state;
 
     char                   boolean;
     char                 * string;
@@ -466,7 +468,6 @@
 %type <node> cmos_switch_instance
 %type <list> cmos_switch_instances
 %type <node> cmos_switchtype
-%type <udp_body> combinational_body
 %type <udp_combinatorial_entry> combinational_entry
 %type <list> combinational_entrys
 %type <node> compiler_directive
@@ -477,7 +478,6 @@
 %type <node> config_rule_statement
 %type <node> config_rule_statement_os
 %type <assignment> continuous_assign
-%type <node> current_state
 %type <node> default_clause
 %type <node> default_net_type_cd
 %type <delay2> delay2
@@ -494,9 +494,9 @@
 %type <disable_statement> disable_statement
 %type <drive_strength> drive_strength
 %type <drive_strength> drive_strength_o
-%type <edge_symbol> edge_indicator
+%type <edge> edge_indicator
 %type <list> edge_input_list
-%type <edge_symbol> edge_symbol
+%type <edge> edge_symbol
 %type <list> else_if_statements
 %type <node> enable_gate_instance
 %type <list> enable_gate_instances
@@ -602,7 +602,7 @@
 %type <node> net_declaration
 %type <node> net_type
 %type <node> net_type_o
-%type <node> next_state
+%type <udp_next_state> next_state
 %type <node> non_port_module_item
 %type <node> non_port_module_item_os
 %type <assignment> nonblocking_assignment
@@ -611,7 +611,7 @@
 %type <node> ordered_port_connection
 %type <list> ordered_port_connections
 %type <node> output_declaration
-%type <number> output_symbol
+%type <udp_next_state> output_symbol
 %type <lvalue> output_terminal
 %type <list> output_terminals
 %type <node> output_variable_type
@@ -1954,8 +1954,12 @@ combinational_entry : level_symbols COLON output_symbol SEMICOLON{
 };
 
 sequential_entry      : 
-  level_symbols   COLON current_state COLON next_state SEMICOLON
-| edge_input_list COLON current_state COLON next_state SEMICOLON
+  level_symbols   COLON level_symbol COLON next_state SEMICOLON{
+    $$ = ast_new_udp_sequential_entry(PREFIX_LEVELS, $1, $3, $5);
+  }
+| edge_input_list COLON level_symbol COLON next_state SEMICOLON{
+    $$ = ast_new_udp_sequential_entry(PREFIX_EDGES, $1, $3, $5);
+  }
 ;
 
 udp_initial_statement : 
@@ -1968,53 +1972,73 @@ init_val              : unsigned_number { $$ = $1; }
                       | number          { $$ = $1; }
                       ;
 
-level_symbols_o       : level_symbols | ;
+level_symbols_o       : level_symbols {$$=$1;} | {$$=NULL;} ;
 
-level_symbols         : level_symbol
-                      | level_symbols level_symbol
-                      ;
+level_symbols         : 
+  level_symbol {
+    $$ = ast_list_new();
+    ast_list_append($$,&$1);
+  }
+| level_symbols level_symbol{
+    $$= $1;
+    ast_list_append($$,&$2);
+  }
+;
 
-edge_input_list       :  level_symbols_o edge_indicator level_symbols_o;
+edge_input_list       :  level_symbols_o edge_indicator level_symbols_o{
+    $$ = ast_list_new(); /** TODO FIX THIS */
+};
 
-edge_indicator        : OPEN_BRACKET level_symbol level_symbol CLOSE_BRACKET 
-                      | edge_symbol
-                      ;
+edge_indicator        : 
+  OPEN_BRACKET level_symbol level_symbol CLOSE_BRACKET {
+    $2 == LEVEL_0 && $3 == LEVEL_1 ? $$ = EDGE_POS:
+    $2 == LEVEL_1 && $3 == LEVEL_0 ? $$ = EDGE_NEG:
+                                          EDGE_ANY     ;
+  }
+ | edge_symbol {$$ = $1;}
+ ;
 
-current_state         : level_symbol;
-
-next_state            : output_symbol 
-                      | MINUS
+next_state            : output_symbol  {$$=$1;}
+                      | MINUS {$$=UDP_NEXT_STATE_DC;}
                       ;
 
 output_symbol : 
-  UNSIGNED_NUMBER
-| 'X'
-| 'x'
-| TERNARY
-| SIMPLE_ID
+  UNSIGNED_NUMBER {$$ = UDP_NEXT_STATE_X; /*TODO FIX THIS*/}
+| 'X' {$$ = UDP_NEXT_STATE_X;}
+| 'x' {$$ = UDP_NEXT_STATE_X;}
+| TERNARY {$$ = UDP_NEXT_STATE_QM;}
+| SIMPLE_ID {$$ = UDP_NEXT_STATE_X;}
 ;
 
 level_symbol :
-  UNSIGNED_NUMBER
-| 'X'
-| 'x'
-| TERNARY
-| 'B'
-| 'b'
-| SIMPLE_ID
+  UNSIGNED_NUMBER {$$ = LEVEL_X;}
+| 'X'             {$$ = LEVEL_X;}
+| 'x'             {$$ = LEVEL_X;}
+| TERNARY         {$$ = LEVEL_Q;}
+| 'B'             {$$ = LEVEL_B;}
+| 'b'             {$$ = LEVEL_B;}
+| SIMPLE_ID       {$$ = LEVEL_X;}
 ;
 
 edge_symbol : /* can be r,f,p,n or star in any case. */
-  'r'
-| 'R'
-| 'f'
-| 'F'
-| 'p'
-| 'P'
-| 'n'
-| 'N'
-| SIMPLE_ID
-| STAR
+  'r'   {$$ = EDGE_POS;}
+| 'R'   {$$ = EDGE_POS;}
+| 'f'   {$$ = EDGE_NEG;}
+| 'F'   {$$ = EDGE_NEG;}
+| 'p'   {$$ = EDGE_POS;}
+| 'P'   {$$ = EDGE_POS;}
+| 'n'   {$$ = EDGE_NEG;}
+| 'N'   {$$ = EDGE_NEG;}
+| SIMPLE_ID {      if (strcmp(yylval.identifier,"r") == 0) $$ = EDGE_POS ;
+              else if (strcmp(yylval.identifier,"R") == 0) $$ = EDGE_POS ;
+              else if (strcmp(yylval.identifier,"f") == 0) $$ = EDGE_NEG ;
+              else if (strcmp(yylval.identifier,"F") == 0) $$ = EDGE_NEG ;
+              else if (strcmp(yylval.identifier,"p") == 0) $$ = EDGE_POS ;
+              else if (strcmp(yylval.identifier,"P") == 0) $$ = EDGE_POS ;
+              else if (strcmp(yylval.identifier,"n") == 0) $$ = EDGE_NEG ;
+              else                                         $$ = EDGE_NEG ;
+  }
+| STAR {$$ = EDGE_ANY;}
 ;
 
 /* A.5.4 UDP instantiation */

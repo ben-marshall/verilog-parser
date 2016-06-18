@@ -1262,13 +1262,35 @@ ast_udp_body * ast_new_udp_combinatoral_body(
 //! Creates a new combinatorial entry for a UDP node.
 ast_udp_combinatorial_entry * ast_new_udp_combinatoral_entry(
     ast_list * input_levels,
-    ast_number * output_symbol
+    ast_udp_next_state output_symbol
 ){
     ast_udp_combinatorial_entry * tr = 
         calloc(1,sizeof(ast_udp_combinatorial_entry));
 
     tr -> input_levels = input_levels;
     tr -> output_symbol = output_symbol;
+
+    return tr;
+}
+
+//! Creates a new sequntial body entry for a UDP node.
+ast_udp_sequential_entry * ast_new_udp_sequential_entry(
+    ast_udp_seqential_entry_prefix prefix_type,
+    ast_list    *                  levels_or_edges,
+    ast_level_symbol               current_state,
+    ast_udp_next_state             output
+){
+    ast_udp_sequential_entry * tr = calloc(1,sizeof(ast_udp_sequential_entry));
+
+    tr -> entry_prefix = prefix_type;
+
+    if(prefix_type == PREFIX_EDGES)
+        tr -> edges = levels_or_edges;
+    else
+        tr -> levels = levels_or_edges;
+
+    tr -> current_state = current_state;
+    tr -> output        = output;
 
     return tr;
 }

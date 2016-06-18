@@ -1211,12 +1211,20 @@ typedef enum ast_udp_body_type_e{
 } ast_udp_body_type;
 
 
-//! Describes a rising/falling/positive/negative edge.
-typedef enum ast_edge_symbol_e{
-    EDGE_RISING, //!< Same as positive edge.
-    EDGE_FALLING //!< Same as negative edge.
-} ast_edge_symbol;
+//! Whether a sequential body entry starts with level or edge symbols.
+typedef enum ast_udp_seqential_entry_prefix_e{
+    PREFIX_EDGES,
+    PREFIX_LEVELS
+} ast_udp_seqential_entry_prefix;
 
+//! Describes the possible output values for a UDP element.
+typedef enum ast_udp_next_state_e{
+    UDP_NEXT_STATE_X,
+    UDP_NEXT_STATE_0,
+    UDP_NEXT_STATE_1,
+    UDP_NEXT_STATE_DC, //!< Don't care.
+    UDP_NEXT_STATE_QM  //!< Question mark.
+} ast_udp_next_state;
 
 //! Describes a single port for a user defined primitive.
 typedef struct ast_udp_port_t{
@@ -1251,14 +1259,18 @@ typedef struct ast_udp_body_t{
 //! Describes a single combinatorial entry in the UDP ast tree.
 typedef struct ast_udp_combinatorial_entry_t{
     ast_list * input_levels;
-    ast_number * output_symbol;
+    ast_udp_next_state  output_symbol;
 } ast_udp_combinatorial_entry;
 
 //! describes a sequential entry in a udp body.
 typedef struct ast_udp_sequential_entry_t{
-    ast_list * inputs;
-    ast_level_symbol current_state;
-    ast_output_symbol output;
+    ast_udp_seqential_entry_prefix entry_prefix;
+    union {
+        ast_list * edges; //!< iff entry_prefix == PREFIX_EDGES
+        ast_list * levels;  //!< iff entry_prefix == PREFIX_LEVELS
+    };
+    ast_level_symbol   current_state;
+    ast_udp_next_state output;
 } ast_udp_sequential_entry;
 
 /*! 
@@ -1312,7 +1324,15 @@ ast_udp_body * ast_new_udp_combinatoral_body(
 //! Creates a new combinatorial entry for a UDP node.
 ast_udp_combinatorial_entry * ast_new_udp_combinatoral_entry(
     ast_list * input_levels,
-    ast_number * output_symbol
+    ast_udp_next_state output_symbol
+);
+
+//! Creates a new sequntial body entry for a UDP node.
+ast_udp_sequential_entry * ast_new_udp_sequential_entry(
+    ast_udp_seqential_entry_prefix prefix_type,
+    ast_list    *                  levels_or_edges,
+    ast_level_symbol               current_state,
+    ast_udp_next_state             output
 );
 
 /*!
