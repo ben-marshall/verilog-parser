@@ -11,7 +11,7 @@ GEN_DIR         = ./gen
 SRC_DIR         = ../src
 
 CC              = gcc
-CC_FLAGS        = -Wall -I$(SRC_DIR) -I$(GEN_DIR) -O0
+CC_FLAGS        = -g -Wall -I$(SRC_DIR) -I$(GEN_DIR) -O0
 
 COVERAGE_FLAGS  = -fprofile-arcs -ftest-coverage --coverage
 

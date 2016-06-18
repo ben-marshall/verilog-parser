@@ -33,6 +33,8 @@ int main(int argc, char ** argv)
 
             // Close the file handle
             fclose(fh);
+
+            ast_free_all();
             
             if(result == 0)
             {

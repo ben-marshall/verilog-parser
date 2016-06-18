@@ -12,6 +12,10 @@
 #ifndef VERILOG_AST_H
 #define VERILOG_AST_H
 
+//! Iterates over all allocated memory and frees it.
+void ast_free_all();
+
+
 //! Forward declare. Defines the core node type for the AST.
 typedef struct ast_node_t ast_node;
 
@@ -364,13 +368,13 @@ struct ast_expression_t
 {
     ast_expression_type type;           //!< What sort of expression is this?
     ast_node_attributes * attributes;   //!< Additional expression attributes.
-    ast_operator     operation;         //!< What are we doing?
     ast_expression * left;              //!< LHS of operation
     ast_expression * right;             //!< RHS of operation
     ast_expression * aux;               //!< Optional auxiliary/predicate.
+    ast_primary    * primary;           //!< Valid IFF type == PRIMARY_EXPRESSION.
+    ast_operator     operation;         //!< What are we doing?
     ast_boolean      constant;          //!< True iff constant_expression.
     ast_string       string;            //!< The string constant. Valid IFF type == STRING_EXPRESSION.
-    ast_primary    * primary;           //!< Valid IFF type == PRIMARY_EXPRESSION.
 };
 
 /*!
