@@ -1831,7 +1831,7 @@ generate_block : KW_BEGIN generate_items KW_END
 udp_declaration : 
   attribute_instances KW_PRIMITIVE udp_identifier OPEN_BRACKET udp_port_list
   CLOSE_BRACKET SEMICOLON udp_port_declarations udp_body KW_ENDPRIMITIVE{
-    $$ = ast_new_udp_declaration($1,$3,$8,$9);
+    //$$ = ast_new_udp_declaration($1,$3,$8,$9);
   }
 | attribute_instances KW_PRIMITIVE udp_identifier OPEN_BRACKET
   udp_declaration_port_list CLOSE_BRACKET SEMICOLON udp_body KW_ENDPRIMITIVE{
