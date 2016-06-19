@@ -84,7 +84,8 @@ ast_node * ast_new_identifier_node(ast_identifier identifier)
 /*!
 @brief Creates and returns as a pointer a new attribute descriptor.
 */
-ast_node_attributes * ast_new_attributes(ast_identifier name, ast_node * value)
+ast_node_attributes * ast_new_attributes(ast_identifier name, 
+                                         ast_expression * value)
 {
     ast_node_attributes * tr = ast_calloc(1, sizeof(ast_node_attributes));
     tr->attr_name   = name;

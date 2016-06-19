@@ -85,7 +85,7 @@ typedef struct ast_node_attributes_t ast_node_attributes;
 struct ast_node_attributes_t
 {
     char                * attr_name;    //!< Name of the attribute
-    ast_node            * attr_value;   //!< Value of the attribute.
+    ast_expression      * attr_value;   //!< Value of the attribute.
 
     ast_node_attributes * next;         //!< Next one in a linked list.
 };
@@ -96,6 +96,14 @@ struct ast_node_attributes_t
        and name.
 */
 ast_node * ast_new_attribute_node( ast_node_attributes* value);
+
+/*!
+@brief Creates and returns as a pointer a new attribute descriptor.
+*/
+ast_node_attributes * ast_new_attributes(
+    ast_identifier name, 
+    ast_expression * value
+);
 
 /*!
 @brief Creates and returns a new attribute node with the specified value
