@@ -69,6 +69,9 @@
     ast_udp_sequential_entry     * udp_seqential_entry;
     ast_wait_statement           * wait_statement;
 
+    ast_generate_block           * generate_block;
+    ast_statement                * generate_item;
+
     char                   boolean;
     char                 * string;
     ast_number           * number;
@@ -315,7 +318,7 @@
 
 %type   <assignment>                 blocking_assignment
 %type   <assignment>                 continuous_assign
-%type   <assignment>                 genvar_assignment
+%type   <single_assignment>          genvar_assignment
 %type   <assignment>                 nonblocking_assignment
 %type   <assignment>                 ordered_parameter_assignment
 %type   <assignment>                 param_assignment
@@ -551,13 +554,13 @@
 %type   <node>                       gate_pass_en_switch
 %type   <node>                       gatetype_n_input
 %type   <node>                       gatetype_n_output
-%type   <node>                       generate_block
-%type   <node>                       generate_item
-%type   <node>                       generate_item_or_null
-%type   <node>                       generate_items
+%type   <generate_block>             generate_block
+%type   <generate_item>              generate_item
+%type   <generate_item>              generate_item_or_null
+%type   <list>                       generate_items
 %type   <node>                       generated_instantiation
-%type   <node>                       genvar_case_item
-%type   <node>                       genvar_case_items
+%type   <case_item>                  genvar_case_item
+%type   <list>                       genvar_case_items
 %type   <node>                       genvar_declaration
 %type   <node>                       grammar_begin
 %type   <node>                       ifdef_directive
@@ -585,7 +588,7 @@
 %type   <node>                       module_instantiation
 %type   <node>                       module_item
 %type   <node>                       module_item_os
-%type   <node>                       module_or_generate_item
+%type   <statement>                  module_or_generate_item
 %type   <node>                       module_or_generate_item_declaration
 %type   <node>                       module_parameter_port_list
 %type   <node>                       module_params
@@ -1776,55 +1779,114 @@ expression_o : expression  | ;
 
 /* A.4.2 Generated instantiation */
 
-generated_instantiation : KW_GENERATE generate_items KW_ENDGENERATE ;
+generated_instantiation : KW_GENERATE generate_items KW_ENDGENERATE {
+    ast_identifier new_id = calloc(25,sizeof(char));
+    sprintf(new_id,"gen_%d",yylineno);
+    $$ = ast_new_generate_block(new_id,$2);
+};
 
-generate_items : generate_item
-               | generate_items generate_item
-               ;
-
-generate_item_or_null: generate_item | ;
-
-generate_item : generate_conditional_statement
-              | generate_case_statement
-              | generate_loop_statement
-              | generate_block
-              | module_or_generate_item
-              ;
-
-generate_conditional_statement : KW_IF OPEN_BRACKET constant_expression CLOSE_BRACKET
-                                 generate_item_or_null KW_ELSE
-                                 generate_item_or_null
-                               | KW_IF OPEN_BRACKET constant_expression CLOSE_BRACKET
-                                 generate_item_or_null
-                               ;
-
-generate_case_statement : KW_CASE OPEN_BRACKET constant_expression CLOSE_BRACKET
-                          genvar_case_items KW_ENDCASE
-                        ;
-
-genvar_case_items : genvar_case_item
-                  | genvar_case_items genvar_case_item
-                  |
-                  ;
-
-genvar_case_item : constant_expressions COLON 
-                 | KW_DEFAULT COLON 
-                 | KW_DEFAULT     
-                 ;
-
-generate_loop_statement : 
-  KW_FOR OPEN_BRACKET genvar_assignment SEMICOLON 
- constant_expression
- SEMICOLON genvar_assignment CLOSE_BRACKET KW_BEGIN COLON
- generate_block_identifier generate_items KW_END
-
+generate_items : 
+  generate_item{
+      $$ = ast_list_new();
+      ast_list_append($$,$1);
+  }
+| generate_items generate_item{
+    $$ = $1;
+    ast_list_append($$,$2);
+  }
 ;
 
-genvar_assignment : genvar_identifier EQ constant_expression;
+generate_item_or_null: generate_item {$$=$1;}| {$$=NULL;};
 
-generate_block : KW_BEGIN generate_items KW_END
-               | KW_BEGIN COLON generate_block_identifier generate_items KW_END
-               ;
+generate_item : 
+  generate_conditional_statement{
+    $$ = ast_new_generate_item(STM_CONDITIONAL,$1);
+  }
+| generate_case_statement{
+    $$ = ast_new_generate_item(STM_CASE,$1);
+  }
+| generate_loop_statement{
+    $$ = ast_new_generate_item(STM_LOOP,$1);
+  }
+| generate_block{
+    $$ = ast_new_generate_item(STM_GENERATE,$1);
+  }
+| module_or_generate_item{
+    $$ = $1;
+    if($$ != NULL){
+        $$ -> is_generate_statement = AST_TRUE;
+    }
+  }
+;
+
+generate_conditional_statement : 
+  KW_IF OPEN_BRACKET constant_expression CLOSE_BRACKET generate_item_or_null
+  KW_ELSE generate_item_or_null{
+    ast_conditional_statement * c1 = ast_new_conditional_statement($5,$3);
+    $$ = ast_new_if_else(c1,$7);
+  }
+| KW_IF OPEN_BRACKET constant_expression CLOSE_BRACKET generate_item_or_null{
+    $$ = ast_new_conditional_statement($5,$3);
+  }
+;
+
+generate_case_statement : 
+KW_CASE OPEN_BRACKET constant_expression CLOSE_BRACKET genvar_case_items 
+KW_ENDCASE{
+    $$ = ast_new_case_statement($3,$5,CASE);
+}
+;
+
+genvar_case_items : 
+  genvar_case_item{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| genvar_case_items genvar_case_item{
+    $$ = $1;
+    ast_list_append($$,$2);
+  }
+| {$$=NULL;}
+;
+
+genvar_case_item : 
+  constant_expressions COLON generate_item_or_null{
+    $$ = ast_new_case_item($1,$3);
+  }
+| KW_DEFAULT COLON generate_item_or_null{
+    $$ = ast_new_case_item(NULL,$3);
+    $$ -> is_default = AST_TRUE;
+  }
+| KW_DEFAULT generate_item_or_null{
+    $$ = ast_new_case_item(NULL,$2);
+    $$ -> is_default = AST_TRUE;
+  }
+;
+
+generate_loop_statement : 
+ KW_FOR OPEN_BRACKET genvar_assignment SEMICOLON 
+ constant_expression
+ SEMICOLON genvar_assignment CLOSE_BRACKET KW_BEGIN COLON
+ generate_block_identifier generate_items KW_END{
+    $$ = ast_new_for_loop_statement($12, $3,$7,$5);
+ }
+;
+
+genvar_assignment : genvar_identifier EQ constant_expression{
+    ast_lvalue * lv = ast_new_lvalue_id(GENVAR_IDENTIFIER,$1);
+    $$ = ast_new_single_assignment(lv, $3);
+};
+
+generate_block : 
+  KW_BEGIN generate_items KW_END{
+    ast_identifier new_id = calloc(25,sizeof(char));
+    sprintf(new_id,"gen_%d",yylineno);
+    $$ = ast_new_generate_block(new_id, $2);
+  }
+| KW_BEGIN COLON generate_block_identifier generate_items KW_END{
+    $$ = ast_new_generate_block($3, $4);
+  }
+;
 
 /* A.5.1 UDP Declaration */
 

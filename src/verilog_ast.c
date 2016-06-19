@@ -134,7 +134,9 @@ void ast_append_attribute(ast_node_attributes * parent,
 */
 ast_lvalue * ast_new_lvalue_id(ast_lvalue_type type, ast_identifier id)
 {
-    assert(type == NET_IDENTIFIER || type == VAR_IDENTIFIER);
+    assert(type == NET_IDENTIFIER 
+        || type == VAR_IDENTIFIER
+        || type == GENVAR_IDENTIFIER);
     ast_lvalue * tr = ast_calloc(1, sizeof(ast_lvalue));
     tr -> type = type;
     tr -> data.identifier = id;
@@ -149,7 +151,8 @@ ast_lvalue * ast_new_lvalue_id(ast_lvalue_type type, ast_identifier id)
 ast_lvalue * ast_new_lvalue_concat(ast_lvalue_type type, 
                                    ast_concatenation*concat)
 {
-    assert(type == NET_CONCATENATION || type == VAR_CONCATENATION);
+    assert(type == NET_CONCATENATION 
+        || type == VAR_CONCATENATION);
     ast_lvalue * tr = ast_calloc(1, sizeof(ast_lvalue));
     tr -> type = type;
     tr -> data.concatenation = concat;
@@ -1150,6 +1153,7 @@ ast_statement * ast_new_statement(
 
     tr -> type = type;
     tr -> is_function_statement = is_function_statement;
+    tr -> is_generate_statement = AST_FALSE;
     tr -> data = data;
     tr -> attributes = attr;
 
@@ -1330,7 +1334,8 @@ ast_udp_sequential_entry * ast_new_udp_sequential_entry(
     ast_level_symbol               current_state,
     ast_udp_next_state             output
 ){
-    ast_udp_sequential_entry * tr = ast_calloc(1,sizeof(ast_udp_sequential_entry));
+    ast_udp_sequential_entry * tr = ast_calloc(1,
+                                        sizeof(ast_udp_sequential_entry));
 
     tr -> entry_prefix = prefix_type;
 
@@ -1341,6 +1346,40 @@ ast_udp_sequential_entry * ast_new_udp_sequential_entry(
 
     tr -> current_state = current_state;
     tr -> output        = output;
+
+    return tr;
+}
+
+
+/*!
+@brief Creates and returns a new item which exists inside a generate statement.
+@details Wraps around ast_new_statement and sets appropriate internal flags
+to represent this as a statment in a generate block.
+@note the void* type of the construct parameter allows for a single
+constructor function rather than one per member of the union inside the
+ast_generate_item structure.
+*/
+ast_statement * ast_new_generate_item(
+    ast_statement_type type,
+    void    *          construct
+){
+    ast_statement * tr = ast_new_statement(NULL, AST_FALSE, construct,type);
+
+    tr -> is_generate_statement = AST_TRUE;
+
+    return tr;
+}
+
+
+//! Creates and returns a new block of generate items.
+ast_generate_block * ast_new_generate_block(
+    ast_identifier   identifier,
+    ast_list       * generate_items
+){
+    ast_generate_block * tr = ast_calloc(1,sizeof(ast_generate_block));
+
+    tr -> generate_items = generate_items;
+    tr -> identifier     = identifier;
 
     return tr;
 }

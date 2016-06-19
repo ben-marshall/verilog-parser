@@ -33,6 +33,7 @@ typedef char * ast_operator     ;
 typedef char * ast_string       ;
 typedef struct ast_assignment_t ast_assignment;
 typedef struct ast_single_assignment_t ast_single_assignment;
+typedef struct ast_generate_block_t ast_generate_block;
 typedef void * ast_delay3       ;
 typedef void * ast_delay2       ;
 typedef void * ast_delay_value  ;
@@ -42,6 +43,7 @@ typedef void * ast_minmax_exp   ;
 typedef void * ast_number       ;
 typedef void * ast_range        ;
 typedef void * ast_output_symbol;
+typedef void * ast_module_or_generate_item;
 
 typedef struct ast_statement_t ast_statement;
 
@@ -192,6 +194,7 @@ typedef enum ast_lvalue_type_e
 {
     NET_IDENTIFIER,
     VAR_IDENTIFIER,
+    GENVAR_IDENTIFIER,
     NET_CONCATENATION,
     VAR_CONCATENATION
 } ast_lvalue_type;
@@ -1130,6 +1133,7 @@ ast_assignment * ast_new_continuous_assignment(
 
 //! Describes the kind of statement in a statement struct.
 typedef enum ast_statement_type_e{
+    STM_GENERATE,
     STM_ASSIGNMENT,         //!< Blocking, non-blocking, continuous
     STM_CASE,
     STM_CONDITIONAL,        //!< if/if-else/if-elseif-else
@@ -1158,6 +1162,7 @@ struct ast_statement_t{
     ast_statement_type      type;
     ast_boolean             is_function_statement;
     ast_node_attributes   * attributes;
+    ast_boolean             is_generate_statement;
     union{
         ast_wait_statement              * wait;
         ast_task_enable_statement       * task_enable;
@@ -1170,6 +1175,7 @@ struct ast_statement_t{
         ast_conditional_statement       * conditional;
         ast_case_statement              * case_statement;
         ast_assignment                  * assignment;
+        ast_generate_block              * generate_block;
         void                            * data;
     };
 };
@@ -1416,7 +1422,28 @@ ast_udp_instantiation * ast_new_udp_instantiation(
 @brief Represents generate loops.
 */
 
+//! Simple wrapper and placeholder for generate associated meta-data.
+struct ast_generate_block_t{
+    ast_identifier   identifier;
+    ast_list       * generate_items;
+};
 
+//! Creates and returns a new block of generate items.
+ast_generate_block * ast_new_generate_block(
+    ast_identifier   identifier,
+    ast_list       * generate_items
+);
+
+/*!
+@brief Creates and returns a new item which exists inside a generate statement.
+@note the void* type of the construct parameter allows for a single
+constructor function rather than one per member of the union inside the
+ast_generate_item structure.
+*/
+ast_statement * ast_new_generate_item(
+    ast_statement_type type,
+    void    *          construct
+);
 
 /*! @} */
 
