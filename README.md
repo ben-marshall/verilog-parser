@@ -1,7 +1,8 @@
 
 # Verilog Parser
 
-![Build Status](https://travis-ci.org/ben-marshall/verilog-parser.svg?branch=master) [Build & CI Information](https://travis-ci.org/ben-marshall/verilog-parser)
+[![Build Status](https://travis-ci.org/ben-marshall/verilog-parser.svg?branch=master)](https://travis-ci.org/ben-marshall/verilog-parser)
+[![Coverage Status](https://coveralls.io/repos/github/ben-marshall/verilog-parser/badge.svg?branch=master)](https://coveralls.io/github/ben-marshall/verilog-parser?branch=master)
 
 This repository contains a flex / bison parser for the IEEE 1364-2001 Verilog
 Standard.
