@@ -1258,14 +1258,9 @@ typedef struct ast_udp_initial_statement_t{
 
 //! Describes a single UDP body sequentially or combinatorially.
 typedef struct ast_udp_body_t{
+    ast_list *        entries;    
+    ast_udp_initial_statement * initial; //!< IFF body_type = sequential
     ast_udp_body_type body_type;
-    union{
-        ast_list * combinatorial_entries;
-        struct{
-            ast_udp_initial_statement * initial;
-            ast_list * sequential_entries;
-        };
-    };
 } ast_udp_body;
 
 //! Describes a single combinatorial entry in the UDP ast tree.
@@ -1292,10 +1287,12 @@ in the grammar. This means that the first element is the output terminal,
 while the subsequent elements are input terminals.
 */
 typedef struct ast_udp_declaration_t{
-    ast_node_attributes * attributes;
     ast_identifier        identifier;
+    ast_node_attributes * attributes;
     ast_list            * ports;
-    ast_udp_body        * body;
+    ast_list            * body_entries;    
+    ast_udp_initial_statement * initial; //!< IFF body_type = sequential
+    ast_udp_body_type     body_type;
 } ast_udp_declaration;
 
 //! Describes a single instance of a UDP

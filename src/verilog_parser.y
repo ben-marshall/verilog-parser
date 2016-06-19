@@ -1831,7 +1831,15 @@ generate_block : KW_BEGIN generate_items KW_END
 udp_declaration : 
   attribute_instances KW_PRIMITIVE udp_identifier OPEN_BRACKET udp_port_list
   CLOSE_BRACKET SEMICOLON udp_port_declarations udp_body KW_ENDPRIMITIVE{
-    //$$ = ast_new_udp_declaration($1,$3,$8,$9);
+    printf("%d %s Need to re-write this rule.\n",__LINE__,__FILE__);
+
+    ast_node_attributes * attrs      = $1;
+    ast_identifier        id         = $3;
+    ast_list            * ports      = $8;
+    ast_udp_body        * body       = $9;
+
+    $$ = ast_new_udp_declaration(attrs,id,ports,body);
+
   }
 | attribute_instances KW_PRIMITIVE udp_identifier OPEN_BRACKET
   udp_declaration_port_list CLOSE_BRACKET SEMICOLON udp_body KW_ENDPRIMITIVE{

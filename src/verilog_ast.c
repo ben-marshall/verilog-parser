@@ -1212,12 +1212,16 @@ ast_udp_declaration * ast_new_udp_declaration(
     ast_udp_body        * body
 )
 {
-    ast_udp_declaration * tr = ast_calloc(1,sizeof(ast_new_udp_declaration));
+    ast_udp_declaration * tr = ast_calloc(1,sizeof(ast_udp_declaration));
 
     tr -> attributes    = attributes;
     tr -> identifier    = identifier;
     tr -> ports         = ports;
-    tr -> body          = body;
+    tr -> body_entries  = body -> entries;
+    tr -> initial       = body -> initial;
+    tr -> body_type     = body -> body_type;
+
+    free(body);
 
     return tr;
 }
@@ -1286,9 +1290,9 @@ ast_udp_body * ast_new_udp_sequential_body(
 ){
     ast_udp_body * tr = ast_calloc(1,sizeof(ast_udp_body));
     
-    tr -> body_type          = UDP_BODY_SEQUENTIAL;
-    tr -> initial            = initial_statement;
-    tr -> sequential_entries = sequential_entries;
+    tr -> body_type = UDP_BODY_SEQUENTIAL;
+    tr -> initial   = initial_statement;
+    tr -> entries   = sequential_entries;
 
     return tr;
 }
@@ -1300,7 +1304,7 @@ ast_udp_body * ast_new_udp_combinatoral_body(
     ast_udp_body * tr = ast_calloc(1,sizeof(ast_udp_body));
 
     tr -> body_type = UDP_BODY_COMBINATORIAL;
-    tr -> combinatorial_entries = combinatorial_entries;
+    tr -> entries = combinatorial_entries;
 
     return tr;
 }
