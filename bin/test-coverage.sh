@@ -40,7 +40,7 @@ rm -f "build/<stdout>"
 
 echo " "
 echo "Coverage Report Written To:"
-echo "    ./build/coverage/report/index.html"
+echo "    ./build/cov-report/index.html"
 echo " "
 
 echo "-----------------------Coverage Tests Complete ------------------------"
