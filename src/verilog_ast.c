@@ -1383,3 +1383,56 @@ ast_generate_block * ast_new_generate_block(
 
     return tr;
 }
+
+
+/*!
+@brief Creates and returns a new set of module instances with shared
+parameters.
+*/
+ast_module_instantiation * ast_new_module_instantiation(
+    ast_identifier          module_identifer,
+    ast_list              * module_parameters,
+    ast_list              * module_instances
+){
+    ast_module_instantiation * tr = 
+        ast_calloc(1,sizeof(ast_module_instantiation));
+    
+    tr -> module_identifer  = module_identifer;
+    tr -> module_parameters = module_parameters;
+    tr -> module_instances  = module_instances;
+
+    return tr;
+}
+
+/*!
+@brief Creates and returns a new instance of a module with a given identifer
+and set of port connections.
+*/
+ast_module_instance * ast_new_module_instance(
+    ast_identifier          instance_identifier,
+    ast_list              * port_connections
+){
+    ast_module_instance * tr = calloc(1,sizeof(ast_module_instance));
+
+    tr -> instance_identifier = instance_identifier;
+    tr -> port_connections    = port_connections;
+
+    return tr;
+}
+
+/*!
+@brief Creates and returns a new port connection representation.
+@param port_name - The port being assigned to.
+@param expression - The thing inside the module the port connects to.
+*/
+ast_port_connection * ast_new_named_port_connection(
+    ast_identifier   port_name,
+    ast_expression * expression
+){
+    ast_port_connection * tr = calloc(1,sizeof(ast_port_connection));
+
+    tr -> port_name = port_name;
+    tr -> expression = expression;
+
+    return tr;
+}

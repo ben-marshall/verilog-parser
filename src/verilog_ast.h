@@ -1456,7 +1456,65 @@ ast_statement * ast_new_generate_item(
 @brief Describes the instantiation of a module, as opposed to it's declaration.
 */
 
+/*! 
+@brief Describes the instantiation of one or more modules of the same type with
+the same parameters.
+*/
+typedef struct ast_module_instantiation_t {
+    ast_identifier          module_identifer; //!< The module being instanced.
+    ast_list              * module_parameters;
+    ast_list              * module_instances;
+} ast_module_instantiation;
 
+/*!
+@brief Creates and returns a new set of module instances with shared
+parameters.
+*/
+ast_module_instantiation * ast_new_module_instantiation(
+    ast_identifier          module_identifer,
+    ast_list              * module_parameters,
+    ast_list              * module_instances
+);
+
+/*!
+@brief A single instance of a defined module.
+@warning Don't confuse this with @ref ast_module_instantiation which is a
+collection of ast_module_instance with the same parameters.
+*/
+typedef struct ast_module_instance_t{
+    ast_identifier          instance_identifier;
+    ast_list              * port_connections;
+} ast_module_instance;
+
+
+/*!
+@brief Creates and returns a new instance of a module with a given identifer
+and set of port connections.
+*/
+ast_module_instance * ast_new_module_instance(
+    ast_identifier          instance_identifier,
+    ast_list              * port_connections
+);
+
+/*! 
+@brief Decribes a single port connection in a module instance.
+@note This is also used to represent parameter assignments.
+*/
+typedef struct ast_port_connection_t{
+    ast_identifier   port_name;
+    ast_expression * expression;
+} ast_port_connection;
+
+/*!
+@brief Creates and returns a new port connection representation.
+@param port_name - The port being assigned to.
+@param expression - The thing inside the module the port connects to.
+@note This is also used for module parameter assignments.
+*/
+ast_port_connection * ast_new_named_port_connection(
+    ast_identifier   port_name,
+    ast_expression * expression
+);
 
 /*! @} */
 

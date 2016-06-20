@@ -68,7 +68,7 @@
     ast_udp_port                 * udp_port;
     ast_udp_sequential_entry     * udp_seqential_entry;
     ast_wait_statement           * wait_statement;
-
+    ast_port_connection          * port_connection;
     ast_generate_block           * generate_block;
     ast_statement                * generate_item;
 
@@ -320,7 +320,7 @@
 %type   <assignment>                 continuous_assign
 %type   <single_assignment>          genvar_assignment
 %type   <assignment>                 nonblocking_assignment
-%type   <assignment>                 ordered_parameter_assignment
+%type   <expression>                 ordered_parameter_assignment
 %type   <assignment>                 param_assignment
 %type   <assignment>                 procedural_continuous_assignments
 %type   <boolean>                    reg_o
@@ -487,7 +487,6 @@
 %type   <list>                       output_terminals
 %type   <list>                       path_delay_value
 %type   <list>                       ports
-%type   <list>                       seq_input_list
 %type   <list>                       sequential_entrys
 %type   <list>                       specify_block
 %type   <list>                       specify_items
@@ -602,7 +601,7 @@
 %type   <node>                       name_of_gate_instance
 %type   <node>                       name_of_instance
 %type   <node>                       named_parameter_assignment
-%type   <node>                       named_port_connection
+%type   <port_connection>            named_port_connection
 %type   <node>                       ncontrol_terminal
 %type   <node>                       net_dec_p_delay
 %type   <node>                       net_dec_p_ds
@@ -621,8 +620,8 @@
 %type   <node>                       output_variable_type_o
 %type   <node>                       parameter_declaration
 %type   <node>                       parameter_override
-%type   <node>                       parameter_value_assignment
-%type   <node>                       parameter_value_assignment_o
+%type   <list>                       parameter_value_assignment
+%type   <list>                       parameter_value_assignment_o
 %type   <node>                       pass_en_switchtype
 %type   <node>                       pass_enable_switch_instance
 %type   <node>                       pass_enable_switch_instances
@@ -1709,72 +1708,116 @@ pass_switchtype     : KW_TRAN  delay2
 
 /* A.4.1 module instantiation */
 
-module_instantiation: module_identifier parameter_value_assignment_o
-                      module_instances SEMICOLON
-                    ;
+module_instantiation: 
+  module_identifier parameter_value_assignment_o module_instances SEMICOLON{
+    $$ = ast_new_module_instantiation($1,$2,$3);
+  }
+;
 
-parameter_value_assignment_o : parameter_value_assignment | ;
+parameter_value_assignment_o : parameter_value_assignment {$$=$1;} 
+                             | {$$=NULL;};
 
-parameter_value_assignment : HASH OPEN_BRACKET list_of_parameter_assignments
-                             CLOSE_BRACKET
-                           ;
+parameter_value_assignment : 
+HASH OPEN_BRACKET list_of_parameter_assignments CLOSE_BRACKET {$$=$3;}
+;
 
-list_of_parameter_assignments : ordered_parameter_assignments
-                              | named_parameter_assignments
-                              ;
+list_of_parameter_assignments : 
+   ordered_parameter_assignments {$$=$1;}
+ | named_parameter_assignments {$$=$1;}
+ ;
 
-ordered_parameter_assignments : ordered_parameter_assignment
-                              | ordered_parameter_assignments COMMA
-                                ordered_parameter_assignment
-                              ;
-named_parameter_assignments   : named_parameter_assignment
-                              | named_parameter_assignments COMMA
-                                named_parameter_assignment
-                              ;
+ordered_parameter_assignments : 
+  ordered_parameter_assignment{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| ordered_parameter_assignments COMMA ordered_parameter_assignment{
+    $$ = $1;
+    ast_list_append($$,$3);
+  }
+;
+named_parameter_assignments   : 
+  named_parameter_assignment{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| named_parameter_assignments COMMA named_parameter_assignment{
+    $$ = $1;
+    ast_list_append($$,$3);
+  }
+;
 
-module_instances : module_instance
-                 | module_instances COMMA module_instance
+module_instances : module_instance{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| module_instances COMMA module_instance{
+    $$ = $1;
+    ast_list_append($$,$3);
+  }
+;
+
+ordered_parameter_assignment : expression{$$=$1;};
+
+named_parameter_assignment : 
+DOT parameter_identifier OPEN_BRACKET expression_o CLOSE_BRACKET {
+    $$ = ast_new_named_port_connection($2,$4);
+}
+;
+
+module_instance : 
+  name_of_instance OPEN_BRACKET list_of_port_connections CLOSE_BRACKET{
+    $$ = ast_new_module_instance($1,$3);
+  }
+;
+
+name_of_instance : module_instance_identifier range_o {$$=$1;}
                  ;
 
-ordered_parameter_assignment : expression;
-
-named_parameter_assignment : DOT parameter_identifier OPEN_BRACKET 
-                             expression_o CLOSE_BRACKET 
-                           ;
-
-module_instance : name_of_instance OPEN_BRACKET 
-                  list_of_port_connections 
-                  CLOSE_BRACKET
-                ;
-
-name_of_instance : module_instance_identifier range_o 
-                 ;
-
-list_of_port_connections :
-                         | ordered_port_connections
-                         | named_port_connections
+list_of_port_connections : {$$=NULL;}
+                         | ordered_port_connections {$$=$1;}
+                         | named_port_connections {$$=$1;}
                          ;
 
-ordered_port_connections : ordered_port_connection
-                         | ordered_port_connections
-                           COMMA
-                           ordered_port_connection
-                         ;
+ordered_port_connections : 
+  ordered_port_connection{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| ordered_port_connections COMMA ordered_port_connection{
+    $$ = $1;
+    ast_list_append($$,$3);
+  }
+;
 
-named_port_connections   : named_port_connection 
-                         | named_port_connections COMMA
-                           named_port_connection
-                         ;
+named_port_connections   : 
+  named_port_connection {
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| named_port_connections COMMA named_port_connection{
+    $$ = $1;
+    ast_list_append($$,$3);
+}
+;
 
-ordered_port_connection : attribute_instances 
-                          expression_o
-                        ;
+ordered_port_connection : attribute_instances expression_o{
+    if($2 == NULL){ return NULL;}
+    else{
+        $2 -> attributes = $1;
+        $$ = $2;
+    }
+}
+;
 
-named_port_connection : DOT port_identifier
-                        OPEN_BRACKET expression_o CLOSE_BRACKET
-                      ;
+named_port_connection : 
+  DOT port_identifier OPEN_BRACKET expression_o CLOSE_BRACKET {
+    $$ = ast_new_named_port_connection($2,$4);
+  }
+;
 
-expression_o : expression  | ;
+expression_o : expression {$$=$1;}  
+             | {$$=NULL;};
 
 /* A.4.2 Generated instantiation */
 
