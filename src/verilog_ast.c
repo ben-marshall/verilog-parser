@@ -1465,3 +1465,19 @@ ast_switch_gate * ast_new_switch_gate_d2(
 
     return tr;
 }
+
+//! Creates and returns a new structure describing primitive net strength.
+ast_primitive_pull_strength * ast_new_primitive_pull_strength(
+    ast_pull_direction       direction,
+    ast_primitive_strength   strength_1,
+    ast_primitive_strength   strength_0
+){
+    ast_primitive_pull_strength * tr = 
+        calloc(1,sizeof(ast_primitive_pull_strength));
+
+    tr -> direction  = direction;
+    tr -> strength_1 = strength_1;
+    tr -> strength_0 = strength_0;
+
+    return tr;
+}

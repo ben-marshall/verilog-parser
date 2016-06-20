@@ -72,6 +72,8 @@
     ast_generate_block           * generate_block;
     ast_statement                * generate_item;
     ast_switch_gate              * switch_gate;
+    ast_primitive_pull_strength  * primitive_pull;
+    ast_primitive_strength         primitive_strength;
 
     char                   boolean;
     char                 * string;
@@ -638,10 +640,10 @@
 %type   <node>                       port_reference
 %type   <node>                       pull_gate_instance
 %type   <node>                       pull_gate_instances
-%type   <node>                       pulldown_strength
-%type   <node>                       pulldown_strength_o
-%type   <node>                       pullup_strength
-%type   <node>                       pullup_strength_o
+%type   <primitive_pull>             pulldown_strength
+%type   <primitive_pull>             pulldown_strength_o
+%type   <primitive_pull>             pullup_strength
+%type   <primitive_pull>             pullup_strength_o
 %type   <node>                       pulse_control_specparam
 %type   <node>                       pulsestyle_declaration
 %type   <node>                       range_or_type
@@ -658,8 +660,8 @@
 %type   <node>                       specparam_assignment
 %type   <node>                       specparam_declaration
 %type   <node>                       sq_bracket_constant_expressions
-%type   <node>                       strength0
-%type   <node>                       strength1
+%type   <primitive_strength>         strength0
+%type   <primitive_strength>         strength1
 %type   <node>                       system_timing_check
 %type   <node>                       task_declaration
 %type   <node>                       task_item_declaration
@@ -1665,22 +1667,45 @@ input_terminals              : input_terminal
 
 /* A.3.2 primitive strengths */
 
-pulldown_strength_o : pulldown_strength | ;
-pulldown_strength           : OPEN_BRACKET strength0 COMMA strength1 CLOSE_BRACKET
-                            | OPEN_BRACKET strength1 COMMA strength0 CLOSE_BRACKET
-                            | OPEN_BRACKET strength1 CLOSE_BRACKET
-                            ;
+pulldown_strength_o : pulldown_strength {$$=$1;}
+| { 
+$$ = ast_new_primitive_pull_strength(PULL_NONE,STRENGTH_NONE,STRENGTH_NONE); 
+};
 
-pullup_strength_o : pullup_strength | ;
-pullup_strength             : OPEN_BRACKET strength0 COMMA strength1 CLOSE_BRACKET
-                            | OPEN_BRACKET strength1 COMMA strength0 CLOSE_BRACKET
-                            | OPEN_BRACKET strength1 CLOSE_BRACKET
-                            ;
+pulldown_strength           : 
+   OPEN_BRACKET strength0 COMMA strength1 CLOSE_BRACKET{
+    $$ = ast_new_primitive_pull_strength(PULL_DOWN,$2,$4);
+ }
+ | OPEN_BRACKET strength1 COMMA strength0 CLOSE_BRACKET{
+    $$ = ast_new_primitive_pull_strength(PULL_DOWN,$2,$4);
+ }
+ | OPEN_BRACKET strength1 CLOSE_BRACKET{
+    $$ = ast_new_primitive_pull_strength(PULL_DOWN,$2,$2);
+ }
+ ;
+
+pullup_strength_o : pullup_strength {$$=$1;}
+| { 
+$$ = ast_new_primitive_pull_strength(PULL_NONE,STRENGTH_NONE,STRENGTH_NONE); 
+};
+
+pullup_strength             : 
+   OPEN_BRACKET strength0 COMMA strength1 CLOSE_BRACKET{
+    $$ = ast_new_primitive_pull_strength(PULL_UP,$2,$4);
+ }
+ | OPEN_BRACKET strength1 COMMA strength0 CLOSE_BRACKET{
+    $$ = ast_new_primitive_pull_strength(PULL_UP,$2,$4);
+ }
+ | OPEN_BRACKET strength1 CLOSE_BRACKET{
+    $$ = ast_new_primitive_pull_strength(PULL_UP,$2,$2);
+ }
+ ;
 
 
 name_of_gate_instance   : 
-                        | gate_instance_identifier range_o
-                        ;
+  gate_instance_identifier range_o {$$ = $1;}
+| {$$ = "un-named gate instance";}
+;
 
 /* A.3.3 primitive terminals */
 

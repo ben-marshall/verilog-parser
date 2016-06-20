@@ -1561,6 +1561,41 @@ ast_switch_gate * ast_new_switch_gate_d2(
     ast_delay2     delay
 );
 
+//! Describes the drive strength of a single primitive.
+typedef enum ast_primitive_strength_e{
+    STRENGTH_HIGHZ0,
+    STRENGTH_HIGHZ1,
+    STRENGTH_SUPPLY0,
+    STRENGTH_STRONG0,
+    STRENGTH_PULL0,
+    STRENGTH_WEAK0,
+    STRENGTH_SUPPLY1,
+    STRENGTH_STRONG1,
+    STRENGTH_PULL1,
+    STRENGTH_WEAK1,
+    STRENGTH_NONE
+} ast_primitive_strength;
+
+//! Describes pull direction.
+typedef enum ast_pull_direction_e{
+    PULL_UP,
+    PULL_DOWN,
+    PULL_NONE
+ }ast_pull_direction;
+
+//! Describes the pull strength and direction of a primitive.
+typedef struct ast_primitive_pull_strength_t{
+    ast_pull_direction       direction;
+    ast_primitive_strength   strength_1;
+    ast_primitive_strength   strength_0;
+} ast_primitive_pull_strength;
+
+//! Creates and returns a new structure describing primitive net strength.
+ast_primitive_pull_strength * ast_new_primitive_pull_strength(
+    ast_pull_direction       direction,
+    ast_primitive_strength   strength_1,
+    ast_primitive_strength   strength_0
+);
 
 /*! @} */
 
