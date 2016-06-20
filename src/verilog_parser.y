@@ -1472,19 +1472,17 @@ block_variable_type : variable_identifier
 
 delay2_o : delay2 | ;
 
-gate_instantiation      : cmos_switchtype cmos_switch_instances SEMICOLON
-                        | gate_enable SEMICOLON
-                        | mos_switchtype mos_switch_instances SEMICOLON
-                        | gate_n_output SEMICOLON /* TESTING */
-                        | gate_pass_en_switch SEMICOLON
-                        | gate_n_input SEMICOLON
-                        | pass_switchtype 
-                          pass_switch_instances SEMICOLON
-                        | KW_PULLDOWN pulldown_strength_o pull_gate_instances 
-                          SEMICOLON
-                        | KW_PULLUP pullup_strength_o pull_gate_instances 
-                          SEMICOLON
-                        ;
+gate_instantiation      : 
+  cmos_switchtype cmos_switch_instances SEMICOLON
+| gate_enable SEMICOLON
+| mos_switchtype mos_switch_instances SEMICOLON
+| gate_n_output SEMICOLON 
+| gate_pass_en_switch SEMICOLON
+| gate_n_input SEMICOLON
+| pass_switchtype pass_switch_instances SEMICOLON
+| KW_PULLDOWN pulldown_strength_o pull_gate_instances SEMICOLON
+| KW_PULLUP pullup_strength_o pull_gate_instances SEMICOLON
+;
 
 /* -------------------------------------------------------------------------*/
 
@@ -1550,10 +1548,11 @@ enable_gatetype     : KW_BUFIF0
 
 /* -------------------------------------------------------------------------*/
 
-gate_n_input : gatetype_n_input n_input_gate_instances
-             | gatetype_n_input OB drive_strength gate_n_input_a_ds
-             | gatetype_n_input OB input_terminals COMMA input_terminal CB gate_n_input_a_id
-             | gatetype_n_input delay2 n_input_gate_instances 
+gate_n_input : 
+  gatetype_n_input n_input_gate_instances
+| gatetype_n_input OB drive_strength gate_n_input_a_ds
+| gatetype_n_input OB input_terminals COMMA input_terminal CB gate_n_input_a_id
+| gatetype_n_input delay3 n_input_gate_instances 
              ;
 
 gate_n_input_a_ds  : delay2 n_input_gate_instances
