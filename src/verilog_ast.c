@@ -1436,3 +1436,32 @@ ast_port_connection * ast_new_named_port_connection(
 
     return tr;
 }
+
+
+//! Instances a new switch type with a delay3.
+ast_switch_gate * ast_new_switch_gate_d3(
+    ast_switchtype type,
+    ast_delay3     delay
+){
+    assert(type != SWITCH_TRAN && type != SWITCH_RTRAN);
+    ast_switch_gate * tr = calloc(1,sizeof(ast_switch_gate));
+
+    tr -> type   = type;
+    tr -> delay3 = delay;
+
+    return tr;
+}
+
+//! Instances a new switch type with a delay2.
+ast_switch_gate * ast_new_switch_gate_d2(
+    ast_switchtype type,
+    ast_delay2     delay
+){
+    assert(type == SWITCH_TRAN || type == SWITCH_RTRAN);
+    ast_switch_gate * tr = calloc(1,sizeof(ast_switch_gate));
+
+    tr -> type   = type;
+    tr -> delay2 = delay;
+
+    return tr;
+}

@@ -71,6 +71,7 @@
     ast_port_connection          * port_connection;
     ast_generate_block           * generate_block;
     ast_statement                * generate_item;
+    ast_switch_gate              * switch_gate;
 
     char                   boolean;
     char                 * string;
@@ -516,7 +517,7 @@
 %type   <node>                       cell_clause
 %type   <node>                       charge_strength
 %type   <node>                       cmos_switch_instance
-%type   <node>                       cmos_switchtype
+%type   <switch_gate>                cmos_switchtype
 %type   <node>                       compiler_directive
 %type   <node>                       conditional_compile_directive
 %type   <node>                       config_declaration
@@ -531,7 +532,7 @@
 %type   <node>                       dimensions_o
 %type   <node>                       enable_gate_instance
 %type   <node>                       enable_gatetype
-%type   <node>                       enable_terminal
+%type   <expression>                 enable_terminal
 %type   <node>                       eq_const_exp_o
 %type   <node>                       error_limit_value
 %type   <node>                       error_limit_value_o
@@ -568,9 +569,9 @@
 %type   <node>                       include_statement
 %type   <node>                       initial_construct
 %type   <node>                       inout_declaration
-%type   <node>                       inout_terminal
+%type   <lvalue>                     inout_terminal
 %type   <node>                       input_declaration
-%type   <node>                       input_terminal
+%type   <expression>                 input_terminal
 %type   <node>                       inst_clause
 %type   <node>                       inst_name
 %type   <node>                       integer_declaration
@@ -593,7 +594,7 @@
 %type   <node>                       module_params
 %type   <node>                       mos_switch_instance
 %type   <node>                       mos_switch_instances
-%type   <node>                       mos_switchtype
+%type   <switch_gate>                mos_switchtype
 %type   <node>                       n_input_gate_instance
 %type   <node>                       n_input_gate_instances
 %type   <node>                       n_output_gate_instance
@@ -602,7 +603,7 @@
 %type   <node>                       name_of_instance
 %type   <node>                       named_parameter_assignment
 %type   <port_connection>            named_port_connection
-%type   <node>                       ncontrol_terminal
+%type   <expression>                 ncontrol_terminal
 %type   <node>                       net_dec_p_delay
 %type   <node>                       net_dec_p_ds
 %type   <node>                       net_dec_p_range
@@ -627,8 +628,8 @@
 %type   <node>                       pass_enable_switch_instances
 %type   <node>                       pass_switch_instance
 %type   <node>                       pass_switch_instances
-%type   <node>                       pass_switchtype
-%type   <node>                       pcontrol_terminal
+%type   <switch_gate>                pass_switchtype
+%type   <expression>                 pcontrol_terminal
 %type   <node>                       port
 %type   <node>                       port_declaration
 %type   <node>                       port_declaration_l
@@ -1683,28 +1684,31 @@ name_of_gate_instance   :
 
 /* A.3.3 primitive terminals */
 
-enable_terminal     : expression;
-inout_terminal      : net_lvalue;
-input_terminal      : expression;
-ncontrol_terminal   : expression;
-output_terminal     : net_lvalue; 
-pcontrol_terminal   : expression;
+enable_terminal     : expression {$$=$1;};
+inout_terminal      : net_lvalue {$$=$1;};
+input_terminal      : expression {$$=$1;};
+ncontrol_terminal   : expression {$$=$1;};
+output_terminal     : net_lvalue {$$=$1;}; 
+pcontrol_terminal   : expression {$$=$1;};
 
 /* A.3.4 primitive gate and switch types */
 
-cmos_switchtype     : KW_CMOS  delay3
-                    | KW_RCMOS delay3
-                    ;
+cmos_switchtype     : 
+  KW_CMOS  delay3 {$$ = ast_new_switch_gate_d3(SWITCH_CMOS ,$2);}
+| KW_RCMOS delay3 {$$ = ast_new_switch_gate_d3(SWITCH_RCMOS,$2);}
+;
 
-mos_switchtype      : KW_NMOS  delay3
-                    | KW_PMOS  delay3
-                    | KW_RNMOS delay3 
-                    | KW_RPMOS delay3
-                    ;
+mos_switchtype      : 
+  KW_NMOS  delay3 {$$ = ast_new_switch_gate_d3(SWITCH_NMOS ,$2);}
+| KW_PMOS  delay3 {$$ = ast_new_switch_gate_d3(SWITCH_PMOS ,$2);}
+| KW_RNMOS delay3 {$$ = ast_new_switch_gate_d3(SWITCH_RNMOS,$2);}
+| KW_RPMOS delay3 {$$ = ast_new_switch_gate_d3(SWITCH_RPMOS,$2);}
+;
 
-pass_switchtype     : KW_TRAN  delay2
-                    | KW_RTRAN delay2
-                    ;
+pass_switchtype     : 
+  KW_TRAN  delay2 {$$ = ast_new_switch_gate_d2(SWITCH_TRAN ,$2);}
+| KW_RTRAN delay2 {$$ = ast_new_switch_gate_d2(SWITCH_RTRAN,$2);}
+;
 
 /* A.4.1 module instantiation */
 

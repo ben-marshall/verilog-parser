@@ -1528,6 +1528,38 @@ ast_port_connection * ast_new_named_port_connection(
 gates, etc.
 */
 
+//! describes the type of a single MOS switch.
+typedef enum ast_switchtype_e{
+    SWITCH_CMOS,
+    SWITCH_RCMOS,
+    SWITCH_NMOS,
+    SWITCH_PMOS,
+    SWITCH_RNMOS,
+    SWITCH_RPMOS,
+    SWITCH_TRAN,
+    SWITCH_RTRAN
+} ast_switchtype;
+
+//! Describes a single gate type along with it's delay properties.
+typedef struct ast_switch_gate_t{
+    ast_switchtype type;
+    union {
+        ast_delay3 delay3;
+        ast_delay2 delay2; //!< IFF type == TRAN or RTRAN
+    };
+} ast_switch_gate;
+
+//! Instances a new switch type with a delay3.
+ast_switch_gate * ast_new_switch_gate_d3(
+    ast_switchtype type,
+    ast_delay3     delay
+);
+
+//! Instances a new switch type with a delay2.
+ast_switch_gate * ast_new_switch_gate_d2(
+    ast_switchtype type,
+    ast_delay2     delay
+);
 
 
 /*! @} */
