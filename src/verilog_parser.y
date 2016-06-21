@@ -321,9 +321,7 @@
 
 %type   <assignment>                 blocking_assignment
 %type   <assignment>                 continuous_assign
-%type   <single_assignment>          genvar_assignment
 %type   <assignment>                 nonblocking_assignment
-%type   <expression>                 ordered_parameter_assignment
 %type   <assignment>                 param_assignment
 %type   <assignment>                 procedural_continuous_assignments
 %type   <boolean>                    reg_o
@@ -334,6 +332,7 @@
 %type   <call_function>              system_function_call
 %type   <case_item>                  case_item
 %type   <case_item>                  function_case_item
+%type   <case_item>                  genvar_case_item
 %type   <case_statement>             case_statement
 %type   <case_statement>             function_case_statement
 %type   <concatenation>              concatenation
@@ -371,15 +370,23 @@
 %type   <expression>                 constant_mintypmax_expression
 %type   <expression>                 constant_range_expression
 %type   <expression>                 data_source_expression
+%type   <expression>                 enable_terminal
 %type   <expression>                 expression
 %type   <expression>                 expression_o
+%type   <expression>                 input_terminal
 %type   <expression>                 mintypmax_expression
 %type   <expression>                 module_path_conditional_expression
 %type   <expression>                 module_path_expression
 %type   <expression>                 module_path_mintypemax_expression
+%type   <expression>                 ncontrol_terminal
+%type   <expression>                 ordered_parameter_assignment
 %type   <expression>                 path_delay_expression
+%type   <expression>                 pcontrol_terminal
 %type   <expression>                 port_expression
 %type   <expression>                 range_expression
+%type   <generate_block>             generate_block
+%type   <generate_item>              generate_item
+%type   <generate_item>              generate_item_or_null
 %type   <identifier>                 arrayed_identifier
 %type   <identifier>                 attr_name
 %type   <identifier>                 block_identifier
@@ -458,6 +465,8 @@
 %type   <list>                       function_item_declarations
 %type   <list>                       function_statements
 %type   <list>                       function_statements_o
+%type   <list>                       generate_items
+%type   <list>                       genvar_case_items
 %type   <list>                       input_port_identifiers
 %type   <list>                       input_terminals
 %type   <list>                       level_symbols
@@ -488,6 +497,8 @@
 %type   <list>                       ordered_parameter_assignments
 %type   <list>                       ordered_port_connections
 %type   <list>                       output_terminals
+%type   <list>                       parameter_value_assignment
+%type   <list>                       parameter_value_assignment_o
 %type   <list>                       path_delay_value
 %type   <list>                       ports
 %type   <list>                       sequential_entrys
@@ -507,6 +518,7 @@
 %type   <list>                       udp_port_list
 %type   <loop_statement>             function_loop_statement
 %type   <loop_statement>             loop_statement
+%type   <lvalue>                     inout_terminal
 %type   <lvalue>                     net_lvalue
 %type   <lvalue>                     output_terminal
 %type   <lvalue>                     variable_lvalue
@@ -519,7 +531,6 @@
 %type   <node>                       cell_clause
 %type   <node>                       charge_strength
 %type   <node>                       cmos_switch_instance
-%type   <switch_gate>                cmos_switchtype
 %type   <node>                       compiler_directive
 %type   <node>                       conditional_compile_directive
 %type   <node>                       config_declaration
@@ -534,7 +545,6 @@
 %type   <node>                       dimensions_o
 %type   <node>                       enable_gate_instance
 %type   <node>                       enable_gatetype
-%type   <expression>                 enable_terminal
 %type   <node>                       eq_const_exp_o
 %type   <node>                       error_limit_value
 %type   <node>                       error_limit_value_o
@@ -556,13 +566,7 @@
 %type   <node>                       gate_pass_en_switch
 %type   <node>                       gatetype_n_input
 %type   <node>                       gatetype_n_output
-%type   <generate_block>             generate_block
-%type   <generate_item>              generate_item
-%type   <generate_item>              generate_item_or_null
-%type   <list>                       generate_items
 %type   <node>                       generated_instantiation
-%type   <case_item>                  genvar_case_item
-%type   <list>                       genvar_case_items
 %type   <node>                       genvar_declaration
 %type   <node>                       grammar_begin
 %type   <node>                       ifdef_directive
@@ -571,9 +575,7 @@
 %type   <node>                       include_statement
 %type   <node>                       initial_construct
 %type   <node>                       inout_declaration
-%type   <lvalue>                     inout_terminal
 %type   <node>                       input_declaration
-%type   <expression>                 input_terminal
 %type   <node>                       inst_clause
 %type   <node>                       inst_name
 %type   <node>                       integer_declaration
@@ -590,13 +592,11 @@
 %type   <node>                       module_instantiation
 %type   <node>                       module_item
 %type   <node>                       module_item_os
-%type   <statement>                  module_or_generate_item
 %type   <node>                       module_or_generate_item_declaration
 %type   <node>                       module_parameter_port_list
 %type   <node>                       module_params
 %type   <node>                       mos_switch_instance
 %type   <node>                       mos_switch_instances
-%type   <switch_gate>                mos_switchtype
 %type   <node>                       n_input_gate_instance
 %type   <node>                       n_input_gate_instances
 %type   <node>                       n_output_gate_instance
@@ -604,8 +604,6 @@
 %type   <node>                       name_of_gate_instance
 %type   <node>                       name_of_instance
 %type   <node>                       named_parameter_assignment
-%type   <port_connection>            named_port_connection
-%type   <expression>                 ncontrol_terminal
 %type   <node>                       net_dec_p_delay
 %type   <node>                       net_dec_p_ds
 %type   <node>                       net_dec_p_range
@@ -623,15 +621,11 @@
 %type   <node>                       output_variable_type_o
 %type   <node>                       parameter_declaration
 %type   <node>                       parameter_override
-%type   <list>                       parameter_value_assignment
-%type   <list>                       parameter_value_assignment_o
 %type   <node>                       pass_en_switchtype
 %type   <node>                       pass_enable_switch_instance
 %type   <node>                       pass_enable_switch_instances
 %type   <node>                       pass_switch_instance
 %type   <node>                       pass_switch_instances
-%type   <switch_gate>                pass_switchtype
-%type   <expression>                 pcontrol_terminal
 %type   <node>                       port
 %type   <node>                       port_declaration
 %type   <node>                       port_declaration_l
@@ -640,10 +634,6 @@
 %type   <node>                       port_reference
 %type   <node>                       pull_gate_instance
 %type   <node>                       pull_gate_instances
-%type   <primitive_pull>             pulldown_strength
-%type   <primitive_pull>             pulldown_strength_o
-%type   <primitive_pull>             pullup_strength
-%type   <primitive_pull>             pullup_strength_o
 %type   <node>                       pulse_control_specparam
 %type   <node>                       pulsestyle_declaration
 %type   <node>                       range_or_type
@@ -660,8 +650,6 @@
 %type   <node>                       specparam_assignment
 %type   <node>                       specparam_declaration
 %type   <node>                       sq_bracket_constant_expressions
-%type   <primitive_strength>         strength0
-%type   <primitive_strength>         strength1
 %type   <node>                       system_timing_check
 %type   <node>                       task_declaration
 %type   <node>                       task_item_declaration
@@ -694,12 +682,20 @@
 %type   <path_declaration>           path_declaration
 %type   <path_declaration>           simple_path_declaration
 %type   <path_declaration>           state_dependent_path_declaration
+%type   <port_connection>            named_port_connection
 %type   <primary>                    constant_primary
 %type   <primary>                    module_path_primary
 %type   <primary>                    primary
+%type   <primitive_pull>             pulldown_strength
+%type   <primitive_pull>             pulldown_strength_o
+%type   <primitive_pull>             pullup_strength
+%type   <primitive_pull>             pullup_strength_o
+%type   <primitive_strength>         strength0
+%type   <primitive_strength>         strength1
 %type   <range>                      range
 %type   <range>                      range_o
 %type   <single_assignment>          function_blocking_assignment
+%type   <single_assignment>          genvar_assignment
 %type   <single_assignment>          net_assignment
 %type   <single_assignment>          variable_assignment
 %type   <statement>                  function_statement
@@ -707,6 +703,7 @@
 %type   <statement>                  generate_case_statement
 %type   <statement>                  generate_conditional_statement
 %type   <statement>                  generate_loop_statement
+%type   <statement>                  module_or_generate_item
 %type   <statement>                  statement
 %type   <statement>                  statement_or_null
 %type   <statement_block>            function_seq_block
@@ -722,6 +719,9 @@
 %type   <string>                     one_line_comment
 %type   <string>                     string
 %type   <string>                     white_space
+%type   <switch_gate>                cmos_switchtype
+%type   <switch_gate>                mos_switchtype
+%type   <switch_gate>                pass_switchtype
 %type   <task_enable_statement>      system_task_enable
 %type   <task_enable_statement>      task_enable
 %type   <timing_control_statement>   delay_or_event_control
@@ -1588,10 +1588,16 @@ gatetype_n_input    : KW_AND
 gate_pass_en_switch : pass_en_switchtype pass_enable_switch_instances
                     ;
 
-pass_enable_switch_instances : pass_enable_switch_instance
-                             | pass_enable_switch_instances COMMA 
-                               pass_enable_switch_instance
-                             ;
+pass_enable_switch_instances : 
+  pass_enable_switch_instance{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| pass_enable_switch_instances COMMA pass_enable_switch_instance{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+;
 
 pass_en_switchtype  : KW_TRANIF0  delay2
                     | KW_TRANIF1  delay2
@@ -1607,27 +1613,60 @@ pass_enable_switch_instance  : name_of_gate_instance OPEN_BRACKET inout_terminal
 
 /* -------------------------------------------------------------------------*/
 
-pull_gate_instances : pull_gate_instance
-                    | pull_gate_instances COMMA 
-                      pull_gate_instance
-                    ;
+pull_gate_instances : 
+  pull_gate_instance{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| pull_gate_instances COMMA pull_gate_instance{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+;
 
-pass_switch_instances : pass_switch_instance
-                      | pass_switch_instances COMMA 
-                        pass_switch_instance
-                      ;
+pass_switch_instances : 
+  pass_switch_instance{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| pass_switch_instances COMMA pass_switch_instance{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+;
 
-n_input_gate_instances : n_input_gate_instance
-                       | n_input_gate_instances COMMA n_input_gate_instance
-                       ;
+n_input_gate_instances : 
+   n_input_gate_instance{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+ | n_input_gate_instances COMMA n_input_gate_instance{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+ ;
 
-mos_switch_instances : mos_switch_instance
-                     | mos_switch_instances COMMA mos_switch_instance
-                     ;
+mos_switch_instances : 
+  mos_switch_instance{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| mos_switch_instances COMMA mos_switch_instance{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+;
 
-cmos_switch_instances : cmos_switch_instance
-                      | cmos_switch_instances COMMA cmos_switch_instance
-                      ;
+cmos_switch_instances : 
+  cmos_switch_instance{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| cmos_switch_instances COMMA cmos_switch_instance{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+;
 
 
 pull_gate_instance           : name_of_gate_instance OPEN_BRACKET 
@@ -1657,13 +1696,27 @@ cmos_switch_instance         : name_of_gate_instance OPEN_BRACKET
                                pcontrol_terminal CLOSE_BRACKET
                              ;
 
-output_terminals             : output_terminals COMMA output_terminal
-                             | output_terminal
-                             ;
+output_terminals             : 
+  output_terminals COMMA output_terminal{
+    $$ = $1;
+    ast_list_append($$,$3);
+  }
+ | output_terminal{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+ ;
 
-input_terminals              : input_terminal
-                             | input_terminals COMMA input_terminal
-                             ;
+input_terminals              : 
+input_terminal{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| input_terminals COMMA input_terminal{
+    $$ = $1;
+    ast_list_append($$,$3);
+  }
+;
 
 /* A.3.2 primitive strengths */
 
