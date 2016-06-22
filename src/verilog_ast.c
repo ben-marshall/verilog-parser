@@ -1700,3 +1700,41 @@ ast_n_output_gate_instances * ast_new_n_output_gate_instances(
 
     return tr;
 }
+
+/*!
+@brief creat and return a new collection of AST switches.
+*/
+ast_switches * ast_new_switches(ast_switch_gate * type, ast_list * switches)
+{
+    ast_switches * tr = calloc(1,sizeof(ast_switches));
+
+    tr -> type = type;
+    tr -> switches = switches;
+
+    return tr;
+}
+
+//! Create and return a new pull strength indicator for 1 and 0.
+ast_pull_strength * ast_new_pull_stregth(
+    ast_primitive_strength strength_1,
+    ast_primitive_strength strength_2
+){
+    ast_pull_strength * tr = calloc(1,sizeof(ast_pull_strength));
+
+    tr -> strength_1 = strength_1;
+    tr -> strength_2 = strength_2;
+
+    return tr;
+}
+
+/*!
+@brief Creates and returns a new gate instantiation descriptor.
+@details Expects the data fields to be filled out manually after the structure
+is returned.
+*/
+ast_gate_instantiation * ast_new_gate_instantiation(ast_gate_type type)
+{
+    ast_gate_instantiation * tr = calloc(1,sizeof(ast_gate_instantiation));
+    tr -> type = type;
+    return tr;
+}

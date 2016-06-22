@@ -83,15 +83,14 @@
     ast_mos_switch_instance      * mos_switch_instance  ;
     ast_cmos_switch_instance     * cmos_switch_instance ;
     ast_enable_gate_instance     * enable_gate;
-
     ast_gatetype_n_input           n_input_gatetype;
     ast_enable_gatetype            enable_gatetype;
     ast_enable_gate_instances    * enable_gates;
-
     ast_n_output_gatetype          n_output_gatetype;
     ast_n_output_gate_instance   * n_output_gate_instance;
     ast_n_output_gate_instances  * n_output_gate_instances;
     ast_n_input_gate_instances   * n_input_gate_instances;
+    ast_gate_instantiation       * gate_instantiation;
 
     char                   boolean;
     char                 * string;
@@ -583,7 +582,7 @@
 %type   <node>                       function_declaration
 %type   <node>                       function_item_declaration
 %type   <node>                       function_port_list
-%type   <node>                       gate_instantiation
+%type   <gate_instantiation>         gate_instantiation
 %type   <n_input_gate_instances>     gate_n_input
 %type   <n_output_gate_instances>    gate_n_output
 %type   <n_output_gatetype>          gatetype_n_output
@@ -1482,18 +1481,47 @@ block_variable_type : variable_identifier
 
 /* A.3.1 primitive instantiation and instances */
 
-delay2_o : delay2 | ;
+delay2_o : delay2 {$$=$1;}| {$$=NULL;};
 
 gate_instantiation      : 
-  cmos_switchtype cmos_switch_instances SEMICOLON
-| gate_enable SEMICOLON
-| mos_switchtype mos_switch_instances SEMICOLON
-| gate_n_output SEMICOLON 
-| gate_pass_en_switch SEMICOLON
-| gate_n_input SEMICOLON
-| pass_switchtype pass_switch_instances SEMICOLON
-| KW_PULLDOWN pulldown_strength_o pull_gate_instances SEMICOLON
-| KW_PULLUP pullup_strength_o pull_gate_instances SEMICOLON
+  cmos_switchtype cmos_switch_instances SEMICOLON{
+    $$ = ast_new_gate_instantiation(GATE_CMOS);
+    $$ -> switches = ast_new_switches($1,$2);
+  }
+| mos_switchtype mos_switch_instances SEMICOLON{
+    $$ = ast_new_gate_instantiation(GATE_MOS);
+    $$ -> switches = ast_new_switches($1,$2);
+  }
+| pass_switchtype pass_switch_instances SEMICOLON{
+    $$ = ast_new_gate_instantiation(GATE_PASS);
+    $$ -> switches = ast_new_switches($1,$2);
+  }
+| gate_enable SEMICOLON{
+    $$ = ast_new_gate_instantiation(GATE_ENABLE);
+    $$ -> enable = $1;
+  }
+| gate_n_output SEMICOLON {
+    $$ = ast_new_gate_instantiation(GATE_N_OUT);
+    $$ -> n_out = $1;
+  }
+| gate_pass_en_switch SEMICOLON{
+    $$ = ast_new_gate_instantiation(GATE_PASS_EN);
+    $$ -> pass_en = $1;
+  }
+| gate_n_input SEMICOLON{
+    $$ = ast_new_gate_instantiation(GATE_N_IN);
+    $$ -> n_in = $1;
+  }
+| KW_PULLDOWN pulldown_strength_o pull_gate_instances SEMICOLON{
+    $$ = ast_new_gate_instantiation(GATE_PULL_UP);
+    $$ -> pull_strength  = $2;
+    $$ -> pull_gates     = $3;
+  }
+| KW_PULLUP pullup_strength_o pull_gate_instances SEMICOLON{
+    $$ = ast_new_gate_instantiation(GATE_PULL_DOWN);
+    $$ -> pull_strength  = $2;
+    $$ -> pull_gates     = $3;
+  }
 ;
 
 /* -------------------------------------------------------------------------*/

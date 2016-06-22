@@ -1583,6 +1583,18 @@ typedef enum ast_pull_direction_e{
     PULL_NONE
  }ast_pull_direction;
 
+//! Fully describes the pull's of a net going up and down.
+ typedef struct ast_pull_strength_t{
+    ast_primitive_strength strength_1;
+    ast_primitive_strength strength_2;
+ } ast_pull_strength;
+
+//! Create and return a new pull strength indicator for 1 and 0.
+ast_pull_strength * ast_new_pull_stregth(
+    ast_primitive_strength strength_1,
+    ast_primitive_strength strength_2
+);
+
 //! Describes the pull strength and direction of a primitive.
 typedef struct ast_primitive_pull_strength_t{
     ast_pull_direction       direction;
@@ -1822,6 +1834,55 @@ ast_cmos_switch_instance * ast_new_cmos_switch_instance(
     ast_expression    * input_terminal
 );
 
+//! A collection of CMOS, MOS or PASS switches of the same type.
+typedef struct ast_switches_t{
+    ast_switch_gate * type;
+    ast_list        * switches;
+} ast_switches;
+
+/*!
+@brief creates and returns a new collection of AST switches.
+*/
+ast_switches * ast_new_switches(ast_switch_gate * type, ast_list * switches);
+
+//! Describes a kind of gate primitive.
+typedef enum ast_gate_type_e{
+    GATE_CMOS,      //!< Complementary metal oxide semiconductor.
+    GATE_MOS,       //!< Metal oxide Semiconductor.
+    GATE_PASS,      //!< Pass Transistor
+    GATE_ENABLE,    //!< Enable Gate
+    GATE_N_OUT,     //!< N output gates - buffers & Inverters.
+    GATE_N_IN,      //!< N input gates - AND,NAND,OR etc
+    GATE_PASS_EN,   //!< Pass transistor enable gate.
+    GATE_PULL_UP,   //!< Pull up resistor.
+    GATE_PULL_DOWN  //!< Pull down resistor.
+} ast_gate_type;
+
+
+/*!
+@brief Fully describes the instantiation of one or more gate level primitives.
+*/
+typedef struct ast_gate_instantiation_t{
+    ast_gate_type type;
+    union{
+        ast_switches * switches;
+        ast_pass_enable_switches * pass_en;
+        ast_enable_gate_instances * enable;
+        ast_n_input_gate_instances * n_in;
+        ast_n_output_gate_instances * n_out;
+        struct{
+            ast_pull_strength   * pull_strength;
+            ast_list            * pull_gates;
+        };
+    };
+} ast_gate_instantiation;
+
+/*!
+@brief Creates and returns a new gate instantiation descriptor.
+@details Expects the data fields to be filled out manually after the structure
+is returned.
+*/
+ast_gate_instantiation * ast_new_gate_instantiation(ast_gate_type type);
 
 /*! @} */
 
