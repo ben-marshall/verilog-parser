@@ -43,7 +43,7 @@ DISTRIBUTE_GROUP_DOC   = YES
 SUBGROUPING            = YES
 INLINE_GROUPED_CLASSES = NO
 INLINE_SIMPLE_STRUCTS  = YES
-TYPEDEF_HIDES_STRUCT   = NO
+TYPEDEF_HIDES_STRUCT   = YES
 LOOKUP_CACHE_SIZE      = 0
 #---------------------------------------------------------------------------
 # Build related configuration options
@@ -87,13 +87,13 @@ CITE_BIB_FILES         =
 #---------------------------------------------------------------------------
 # Configuration options related to warning and progress messages
 #---------------------------------------------------------------------------
-QUIET                  = YES
-WARNINGS               = YES
-WARN_IF_UNDOCUMENTED   = YES
-WARN_IF_DOC_ERROR      = YES
+QUIET                  = NO 
+WARNINGS               = 
+WARN_IF_UNDOCUMENTED   = 
+WARN_IF_DOC_ERROR      = 
 WARN_NO_PARAMDOC       = YES
 WARN_FORMAT            = "$file:$line: $text"
-WARN_LOGFILE           = ../build/doxygen-warnings.log
+WARN_LOGFILE           = 
 #---------------------------------------------------------------------------
 # Configuration options related to the input files
 #---------------------------------------------------------------------------
