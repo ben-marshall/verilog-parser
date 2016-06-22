@@ -1,0 +1,7 @@
+
+#
+# Configuration file for codedocs.xyz
+#
+
+DOXYFILE = docs/Doxyfile
+
