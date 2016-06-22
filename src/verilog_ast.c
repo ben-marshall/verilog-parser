@@ -1598,3 +1598,24 @@ ast_pass_enable_switches * ast_new_pass_enable_switches(
 
     return tr;
 }
+
+
+/*! 
+@brief Creates collection of n-input gates with the same type and properties.
+*/
+ast_n_input_gate_instances * ast_new_n_input_gate_instances(
+    ast_gatetype_n_input    type,
+    ast_delay3            * delay,
+    ast_drive_strength    * drive_strength,
+    ast_list              * instances
+){
+    ast_n_input_gate_instances * tr = 
+                                calloc(1,sizeof(ast_n_input_gate_instances));
+
+    tr -> type = type;
+    tr -> delay = delay;
+    tr -> drive_strength = drive_strength;
+    tr -> instances = instances;
+
+    return tr;
+}

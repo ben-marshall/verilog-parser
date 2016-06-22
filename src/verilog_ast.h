@@ -1610,6 +1610,32 @@ typedef struct ast_pass_switch_instance_t{
     ast_lvalue        * terminal_2;
 } ast_pass_switch_instance;
 
+//! Describes the logical function performed by a builtin n-input gate.
+typedef enum ast_gatetype_n_input_e{
+    N_IN_AND,
+    N_IN_NAND,
+    N_IN_NOR,
+    N_IN_OR ,
+    N_IN_XOR,
+    N_IN_XNOR
+} ast_gatetype_n_input;
+
+//! A collection of n-input gates with the same type and delay properties.
+typedef struct ast_n_input_gate_instances_t{
+    ast_gatetype_n_input    type;
+    ast_delay3            * delay;
+    ast_drive_strength    * drive_strength;
+    ast_list              * instances;
+} ast_n_input_gate_instances;
+
+//! Creates collection of n-input gates with the same type and properties.
+ast_n_input_gate_instances * ast_new_n_input_gate_instances(
+    ast_gatetype_n_input    type,
+    ast_delay3            * delay,
+    ast_drive_strength    * drive_strength,
+    ast_list              * instances
+);
+
 //! An N-input gate instance. e.g. 3-to-1 NAND.
 typedef struct ast_n_input_gate_instance_t{
     ast_identifier      name;

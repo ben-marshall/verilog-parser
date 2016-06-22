@@ -83,6 +83,8 @@
     ast_mos_switch_instance      * mos_switch_instance  ;
     ast_cmos_switch_instance     * cmos_switch_instance ;
 
+    ast_gatetype_n_input           n_input_gatetype;
+
     char                   boolean;
     char                 * string;
     ast_number           * number;
@@ -580,7 +582,7 @@
 %type   <node>                       gate_n_output_a_id
 %type   <node>                       gate_n_output_a_ot
 %type   <pass_enable_switches>       gate_pass_en_switch
-%type   <node>                       gatetype_n_input
+%type   <n_input_gatetype>           gatetype_n_input
 %type   <node>                       gatetype_n_output
 %type   <node>                       generated_instantiation
 %type   <node>                       genvar_declaration
@@ -1559,26 +1561,42 @@ enable_gatetype     : KW_BUFIF0
 /* -------------------------------------------------------------------------*/
 
 gate_n_input : 
-  gatetype_n_input n_input_gate_instances
-| gatetype_n_input OB drive_strength gate_n_input_a_ds
-| gatetype_n_input OB input_terminals COMMA input_terminal CB gate_n_input_a_id
-| gatetype_n_input delay3 n_input_gate_instances 
+  gatetype_n_input n_input_gate_instances{
+    $$ = ast_new_n_input_gate_instances($1,NULL,NULL,$2);
+  }
+| gatetype_n_input OB drive_strength delay2 n_input_gate_instances{
+    $$ = ast_new_n_input_gate_instances($1,NULL,$3,$5);
+  }
+| gatetype_n_input OB drive_strength n_input_gate_instances {
+    $$ = ast_new_n_input_gate_instances($1,NULL,$3,$4);
+  }
+| gatetype_n_input OB output_terminal COMMA input_terminals CB {
+    ast_n_input_gate_instance * gate = ast_new_n_input_gate_instance(
+        "un-named gate", $3,$5);
+    ast_list * list = ast_list_new();
+    ast_list_append(list,gate);
+    $$ = ast_new_n_input_gate_instances($1,NULL,NULL,list);
+  }
+| gatetype_n_input OB output_terminal COMMA input_terminals CB 
+  COMMA n_input_gate_instances{
+    ast_n_input_gate_instance * gate = ast_new_n_input_gate_instance(
+        "un-named gate", $3,$5);
+    ast_list * list = $8;
+    ast_list_preappend(list,gate);
+    $$ = ast_new_n_input_gate_instances($1,NULL,NULL,list);
+  }
+| gatetype_n_input delay3 n_input_gate_instances{
+    $$ = ast_new_n_input_gate_instances($1,$2,NULL,$3);
+}
              ;
 
-gate_n_input_a_ds  : delay2 n_input_gate_instances
-                   | n_input_gate_instances
-                   ;
 
-gate_n_input_a_id  : 
-                   | COMMA n_input_gate_instances
-                   ;
-
-gatetype_n_input    : KW_AND  
-                    | KW_NAND  
-                    | KW_OR   
-                    | KW_NOR  
-                    | KW_XOR  
-                    | KW_XNOR 
+gatetype_n_input    : KW_AND  { $$ = N_IN_AND ;}
+                    | KW_NAND { $$ = N_IN_NAND;}
+                    | KW_OR   { $$ = N_IN_OR  ;}
+                    | KW_NOR  { $$ = N_IN_NOR ;}
+                    | KW_XOR  { $$ = N_IN_XOR ;}
+                    | KW_XNOR { $$ = N_IN_XNOR;}
                     ;
 
 /* -------------------------------------------------------------------------*/
