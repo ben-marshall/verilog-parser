@@ -88,6 +88,11 @@
     ast_enable_gatetype            enable_gatetype;
     ast_enable_gate_instances    * enable_gates;
 
+    ast_n_output_gatetype          n_output_gatetype;
+    ast_n_output_gate_instance   * n_output_gate_instance;
+    ast_n_output_gate_instances  * n_output_gate_instances;
+    ast_n_input_gate_instances   * n_input_gate_instances;
+
     char                   boolean;
     char                 * string;
     ast_number           * number;
@@ -377,6 +382,9 @@
 %type   <edge>                       edge_identifier_o
 %type   <edge>                       edge_indicator
 %type   <edge>                       edge_symbol
+%type   <enable_gate>                enable_gate_instance
+%type   <enable_gates>               gate_enable
+%type   <enable_gatetype>            enable_gatetype
 %type   <event_control>              event_control
 %type   <event_expression>           event_expression
 %type   <expression>                 conditional_expression
@@ -479,6 +487,7 @@
 %type   <list>                       function_item_declarations
 %type   <list>                       function_statements
 %type   <list>                       function_statements_o
+%type   <list>                       gate_n_output_a_id
 %type   <list>                       generate_items
 %type   <list>                       genvar_case_items
 %type   <list>                       input_port_identifiers
@@ -544,6 +553,7 @@
 %type   <lvalue>                     variable_lvalue
 %type   <mos_switch_instance>        mos_switch_instance
 %type   <n_input_gate_instance>      n_input_gate_instance
+%type   <n_input_gatetype>           gatetype_n_input
 %type   <node>                       actual_argument
 %type   <node>                       always_construct
 %type   <node>                       automatic_o
@@ -564,8 +574,6 @@
 %type   <node>                       dimension
 %type   <node>                       dimensions
 %type   <node>                       dimensions_o
-%type   <enable_gate>                enable_gate_instance
-%type   <enable_gatetype>            enable_gatetype
 %type   <node>                       eq_const_exp_o
 %type   <node>                       error_limit_value
 %type   <node>                       error_limit_value_o
@@ -575,16 +583,10 @@
 %type   <node>                       function_declaration
 %type   <node>                       function_item_declaration
 %type   <node>                       function_port_list
-%type   <enable_gates>               gate_enable
 %type   <node>                       gate_instantiation
-%type   <node>                       gate_n_input
-%type   <node>                       gate_n_output
-%type   <node>                       gate_n_output_a_ds
-%type   <node>                       gate_n_output_a_id
-%type   <node>                       gate_n_output_a_ot
-%type   <pass_enable_switches>       gate_pass_en_switch
-%type   <n_input_gatetype>           gatetype_n_input
-%type   <node>                       gatetype_n_output
+%type   <n_input_gate_instances>     gate_n_input
+%type   <n_output_gate_instances>    gate_n_output
+%type   <n_output_gatetype>          gatetype_n_output
 %type   <node>                       generated_instantiation
 %type   <node>                       genvar_declaration
 %type   <node>                       grammar_begin
@@ -614,7 +616,7 @@
 %type   <node>                       module_or_generate_item_declaration
 %type   <node>                       module_parameter_port_list
 %type   <node>                       module_params
-%type   <node>                       n_output_gate_instance
+%type   <n_output_gate_instance>     n_output_gate_instance
 %type   <node>                       name_of_gate_instance
 %type   <node>                       name_of_instance
 %type   <node>                       named_parameter_assignment
@@ -635,7 +637,6 @@
 %type   <node>                       output_variable_type_o
 %type   <node>                       parameter_declaration
 %type   <node>                       parameter_override
-%type   <node>                       pass_en_switchtype
 %type   <node>                       port
 %type   <node>                       port_declaration
 %type   <node>                       port_declaration_l
@@ -687,6 +688,7 @@
 %type   <operator>                   unary_module_path_operator
 %type   <operator>                   unary_operator
 %type   <pass_enable_switch>         pass_enable_switch_instance
+%type   <pass_enable_switches>       gate_pass_en_switch
 %type   <pass_switch_instance>       pass_switch_instance
 %type   <path_declaration>           edge_sensitive_path_declaration
 %type   <path_declaration>           path_declaration
@@ -720,8 +722,6 @@
 %type   <statement_block>            function_seq_block
 %type   <statement_block>            par_block
 %type   <statement_block>            seq_block
-%type   <string>                     CB
-%type   <string>                     OB
 %type   <string>                     anys
 %type   <string>                     block_comment
 %type   <string>                     comment
@@ -738,7 +738,6 @@
 %type   <timing_control_statement>   delay_or_event_control
 %type   <timing_control_statement>   delay_or_event_control_o
 %type   <timing_control_statement>   procedural_timing_control_statement
-%type   <udp_body>                   sequential_body
 %type   <udp_body>                   udp_body
 %type   <udp_combinatorial_entry>    combinational_entry
 %type   <udp_declaration>            udp_declaration
@@ -1502,37 +1501,51 @@ gate_instantiation      :
 OB : OPEN_BRACKET;
 CB : CLOSE_BRACKET;
 
-gate_n_output : gatetype_n_output n_output_gate_instances
-              | gatetype_n_output OB drive_strength gate_n_output_a_ds
-              | gatetype_n_output OB output_terminal COMMA gate_n_output_a_ot
-              | gatetype_n_output delay2 n_output_gate_instances 
-              ;
+gate_n_output : 
+  gatetype_n_output n_output_gate_instances{
+    $$ = ast_new_n_output_gate_instances($1,NULL,NULL,$2);
+  }
+| gatetype_n_output OB drive_strength delay2 n_output_gate_instances{
+    $$ = ast_new_n_output_gate_instances($1,$4,$3,$5);
+  }
+| gatetype_n_output OB drive_strength n_output_gate_instances{
+    $$ = ast_new_n_output_gate_instances($1,NULL,$3,$4);
+  }
+| gatetype_n_output delay2 n_output_gate_instances {
+    $$ = ast_new_n_output_gate_instances($1,$2,NULL,$3);
+  }
+| gatetype_n_output OB output_terminal COMMA input_terminal CB
+  gate_n_output_a_id{
+    $$ = ast_new_n_output_gate_instances($1,NULL,NULL,$7);
+  }
+;
 
-gate_n_output_a_ds  : delay2 n_output_gate_instances
-                    | n_output_gate_instances
+gate_n_output_a_id  : {$$ = NULL;}
+                    | COMMA n_output_gate_instances {$$=$2;}
                     ;
 
-gate_n_output_a_id  : 
-                    | COMMA n_output_gate_instances
-                    ;
-
-gate_n_output_a_ot  : input_terminal CB gate_n_output_a_id
-                    | output_terminals COMMA input_terminal CB gate_n_output_a_id
-                    ;
-
-gatetype_n_output       : KW_BUF
-                        | KW_NOT
+gatetype_n_output       : KW_BUF {$$ = N_OUT_BUF;}
+                        | KW_NOT {$$ = N_OUT_NOT;}
                         ;
 
-n_output_gate_instances : n_output_gate_instance
-                        | n_output_gate_instances COMMA 
-                          n_output_gate_instance
-                        ;
+n_output_gate_instances : 
+  n_output_gate_instance{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| n_output_gate_instances COMMA 
+  n_output_gate_instance{
+    $$ = $1;
+    ast_list_append($$,$3);
+  }
+;
 
-n_output_gate_instance  : name_of_gate_instance OPEN_BRACKET 
-                          output_terminals COMMA
-                          input_terminal CLOSE_BRACKET
-                        ;
+n_output_gate_instance  : 
+  name_of_gate_instance OPEN_BRACKET output_terminals COMMA
+  input_terminal CLOSE_BRACKET{
+    $$ = ast_new_n_output_gate_instance($1,$3,$5);
+  }
+;
 
 /* -------------------------------------------------------------------------*/
 

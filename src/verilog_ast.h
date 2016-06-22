@@ -1718,6 +1718,46 @@ typedef struct ast_pass_enable_switches_t{
     ast_list                    * switches;
 } ast_pass_enable_switches;
 
+//! Describes the type of an n_output gate.
+typedef enum ast_n_output_gatetype_e{
+    N_OUT_BUF,
+    N_OUT_NOT
+} ast_n_output_gatetype;
+
+//! Describes a single gate with one input and several outputs.
+typedef struct ast_n_output_gate_instance_t{
+    ast_identifier              * name;
+    ast_list                    * outputs;
+    ast_expression              * input;
+} ast_n_output_gate_instance;
+
+typedef struct ast_n_output_gate_instances_t{
+    ast_n_output_gatetype         type;
+    ast_delay2                  * delay;
+    ast_drive_strength          * drive_strength;
+    ast_list                    * instances;
+} ast_n_output_gate_instances;
+
+/*!
+@brief Creates and returns a new n_output gate instance.
+@see ast_n_output_gate_instances
+*/
+ast_n_output_gate_instance * ast_new_n_output_gate_instance(
+    ast_identifier              * name,
+    ast_list                    * outputs,
+    ast_expression              * input
+);
+
+/*!
+@brief Creates and returns a set of n_output gates with the same properties.
+*/
+ast_n_output_gate_instances * ast_new_n_output_gate_instances(
+    ast_n_output_gatetype         type,
+    ast_delay2                  * delay,
+    ast_drive_strength          * drive_strength,
+    ast_list                    * instances
+);
+
 /*!
 @brief Creates and returns a collection of pass enable switches.
 */

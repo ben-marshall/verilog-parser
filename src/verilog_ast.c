@@ -1412,7 +1412,7 @@ ast_module_instance * ast_new_module_instance(
     ast_identifier          instance_identifier,
     ast_list              * port_connections
 ){
-    ast_module_instance * tr = calloc(1,sizeof(ast_module_instance));
+    ast_module_instance * tr = ast_calloc(1,sizeof(ast_module_instance));
 
     tr -> instance_identifier = instance_identifier;
     tr -> port_connections    = port_connections;
@@ -1429,7 +1429,7 @@ ast_port_connection * ast_new_named_port_connection(
     ast_identifier   port_name,
     ast_expression * expression
 ){
-    ast_port_connection * tr = calloc(1,sizeof(ast_port_connection));
+    ast_port_connection * tr = ast_calloc(1,sizeof(ast_port_connection));
 
     tr -> port_name = port_name;
     tr -> expression = expression;
@@ -1444,7 +1444,7 @@ ast_switch_gate * ast_new_switch_gate_d3(
     ast_delay3     delay
 ){
     assert(type != SWITCH_TRAN && type != SWITCH_RTRAN);
-    ast_switch_gate * tr = calloc(1,sizeof(ast_switch_gate));
+    ast_switch_gate * tr = ast_calloc(1,sizeof(ast_switch_gate));
 
     tr -> type   = type;
     tr -> delay3 = delay;
@@ -1458,7 +1458,7 @@ ast_switch_gate * ast_new_switch_gate_d2(
     ast_delay2     delay
 ){
     assert(type == SWITCH_TRAN || type == SWITCH_RTRAN);
-    ast_switch_gate * tr = calloc(1,sizeof(ast_switch_gate));
+    ast_switch_gate * tr = ast_calloc(1,sizeof(ast_switch_gate));
 
     tr -> type   = type;
     tr -> delay2 = delay;
@@ -1473,7 +1473,7 @@ ast_primitive_pull_strength * ast_new_primitive_pull_strength(
     ast_primitive_strength   strength_0
 ){
     ast_primitive_pull_strength * tr = 
-        calloc(1,sizeof(ast_primitive_pull_strength));
+        ast_calloc(1,sizeof(ast_primitive_pull_strength));
 
     tr -> direction  = direction;
     tr -> strength_1 = strength_1;
@@ -1487,7 +1487,7 @@ ast_pull_gate_instance * ast_new_pull_gate_instance(
     ast_identifier      name,
     ast_lvalue        * output_terminal
 ){
-    ast_pull_gate_instance * tr = calloc(1,sizeof(ast_pull_gate_instance));
+    ast_pull_gate_instance * tr = ast_calloc(1,sizeof(ast_pull_gate_instance));
 
     tr -> name = name;
     tr -> output_terminal = output_terminal;
@@ -1501,7 +1501,8 @@ ast_pass_switch_instance * ast_new_pass_switch_instance(
     ast_lvalue        * terminal_1,
     ast_lvalue        * terminal_2
 ){
-    ast_pass_switch_instance * tr = calloc(1,sizeof(ast_pass_switch_instance));
+    ast_pass_switch_instance * tr = 
+                        ast_calloc(1,sizeof(ast_pass_switch_instance));
 
     tr -> name = name;
     tr -> terminal_1 = terminal_1;
@@ -1517,7 +1518,7 @@ ast_n_input_gate_instance * ast_new_n_input_gate_instance(
     ast_lvalue        * output_terminal
 ){
     ast_n_input_gate_instance * tr =
-                            calloc(1,sizeof(ast_n_input_gate_instance));
+                        ast_calloc(1,sizeof(ast_n_input_gate_instance));
 
     tr -> name = name;
     tr -> input_terminals = input_terminals;
@@ -1533,7 +1534,8 @@ ast_enable_gate_instance * ast_new_enable_gate_instance(
     ast_expression    * enable_terminal,
     ast_expression    * input_terminal
 ){
-    ast_mos_switch_instance * tr = calloc(1,sizeof(ast_mos_switch_instance));
+    ast_enable_gate_instance * tr = 
+        ast_calloc(1,sizeof(ast_enable_gate_instance));
 
     tr -> name = name;
     tr -> output_terminal = output_terminal;
@@ -1550,7 +1552,8 @@ ast_mos_switch_instance * ast_new_mos_switch_instance(
     ast_expression    * enable_terminal,
     ast_expression    * input_terminal
 ){
-    ast_mos_switch_instance * tr = calloc(1,sizeof(ast_mos_switch_instance));
+    ast_mos_switch_instance * tr = 
+        ast_calloc(1,sizeof(ast_mos_switch_instance));
 
     tr -> name = name;
     tr -> output_terminal = output_terminal;
@@ -1568,7 +1571,8 @@ ast_cmos_switch_instance * ast_new_cmos_switch_instance(
     ast_expression    * pcontrol_terminal,
     ast_expression    * input_terminal
 ){
-    ast_cmos_switch_instance * tr = calloc(1,sizeof(ast_cmos_switch_instance));
+    ast_cmos_switch_instance * tr = 
+        ast_calloc(1,sizeof(ast_cmos_switch_instance));
 
     tr -> name = name;
     tr -> output_terminal = output_terminal;
@@ -1588,7 +1592,8 @@ ast_pass_enable_switch * ast_new_pass_enable_switch(
     ast_lvalue        * terminal_2,
     ast_expression    * enable
 ){
-    ast_pass_enable_switch * tr = calloc(1,sizeof(ast_pass_enable_switch));
+    ast_pass_enable_switch * tr = 
+        ast_calloc(1,sizeof(ast_pass_enable_switch));
 
     tr -> name = name;
     tr -> terminal_1 = terminal_1;
@@ -1607,7 +1612,8 @@ ast_pass_enable_switches * ast_new_pass_enable_switches(
     ast_delay2                    delay,
     ast_list                    * switches 
 ){
-    ast_pass_enable_switches * tr = calloc(1,sizeof(ast_pass_enable_switches));
+    ast_pass_enable_switches * tr = 
+                              ast_calloc(1,sizeof(ast_pass_enable_switches));
 
     tr -> type = type;
     tr -> delay = delay;
@@ -1627,7 +1633,7 @@ ast_n_input_gate_instances * ast_new_n_input_gate_instances(
     ast_list              * instances
 ){
     ast_n_input_gate_instances * tr = 
-                                calloc(1,sizeof(ast_n_input_gate_instances));
+                            ast_calloc(1,sizeof(ast_n_input_gate_instances));
 
     tr -> type = type;
     tr -> delay = delay;
@@ -1645,7 +1651,47 @@ ast_enable_gate_instances * ast_new_enable_gate_instances(
     ast_list              * instances
 ){
     ast_enable_gate_instances * tr = 
-                                calloc(1,sizeof(ast_enable_gate_instances));
+                            ast_calloc(1,sizeof(ast_enable_gate_instances));
+
+    tr -> type = type;
+    tr -> delay = delay;
+    tr -> drive_strength = drive_strength;
+    tr -> instances = instances;
+
+    return tr;
+}
+
+
+/*!
+@brief Creates and returns a new n_output gate instance.
+@see ast_n_output_gate_instances
+*/
+ast_n_output_gate_instance * ast_new_n_output_gate_instance(
+    ast_identifier              * name,
+    ast_list                    * outputs,
+    ast_expression              * input
+){
+    ast_n_output_gate_instance * tr =
+                            ast_calloc(1,sizeof(ast_n_output_gate_instance));
+
+    tr -> name = name;
+    tr -> outputs = outputs;
+    tr -> input = input;
+
+    return tr;
+}
+
+/*!
+@brief Creates and returns a set of n_output gates with the same properties.
+*/
+ast_n_output_gate_instances * ast_new_n_output_gate_instances(
+    ast_n_output_gatetype         type,
+    ast_delay2                  * delay,
+    ast_drive_strength          * drive_strength,
+    ast_list                    * instances
+){
+    ast_n_output_gate_instances * tr = 
+                          ast_calloc(1,sizeof(ast_n_output_gate_instances));
 
     tr -> type = type;
     tr -> delay = delay;
