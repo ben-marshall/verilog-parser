@@ -75,6 +75,14 @@
     ast_primitive_pull_strength  * primitive_pull;
     ast_primitive_strength         primitive_strength;
 
+    ast_pull_gate_instance       * pull_gate_instance   ;
+    ast_pass_switch_instance     * pass_switch_instance ;
+    ast_pass_enable_switch       * pass_enable_switch   ;
+    ast_pass_enable_switches     * pass_enable_switches;
+    ast_n_input_gate_instance    * n_input_gate_instance;
+    ast_mos_switch_instance      * mos_switch_instance  ;
+    ast_cmos_switch_instance     * cmos_switch_instance ;
+
     char                   boolean;
     char                 * string;
     ast_number           * number;
@@ -335,6 +343,7 @@
 %type   <case_item>                  genvar_case_item
 %type   <case_statement>             case_statement
 %type   <case_statement>             function_case_statement
+%type   <cmos_switch_instance>       cmos_switch_instance
 %type   <concatenation>              concatenation
 %type   <concatenation>              concatenation_cont
 %type   <concatenation>              constant_concatenation
@@ -492,6 +501,9 @@
 %type   <list>                       list_of_specparam_assignments
 %type   <list>                       list_of_variable_identifiers
 %type   <list>                       list_of_variable_port_identifiers
+%type   <list>                       mos_switch_instances
+%type   <list>                       n_input_gate_instances
+%type   <list>                       n_output_gate_instances
 %type   <list>                       named_parameter_assignments
 %type   <list>                       named_port_connections
 %type   <list>                       ordered_parameter_assignments
@@ -499,8 +511,11 @@
 %type   <list>                       output_terminals
 %type   <list>                       parameter_value_assignment
 %type   <list>                       parameter_value_assignment_o
+%type   <list>                       pass_enable_switch_instances
+%type   <list>                       pass_switch_instances
 %type   <list>                       path_delay_value
 %type   <list>                       ports
+%type   <list>                       pull_gate_instances
 %type   <list>                       sequential_entrys
 %type   <list>                       specify_block
 %type   <list>                       specify_items
@@ -522,6 +537,8 @@
 %type   <lvalue>                     net_lvalue
 %type   <lvalue>                     output_terminal
 %type   <lvalue>                     variable_lvalue
+%type   <mos_switch_instance>        mos_switch_instance
+%type   <n_input_gate_instance>      n_input_gate_instance
 %type   <node>                       actual_argument
 %type   <node>                       always_construct
 %type   <node>                       automatic_o
@@ -530,7 +547,6 @@
 %type   <node>                       block_variable_type
 %type   <node>                       cell_clause
 %type   <node>                       charge_strength
-%type   <node>                       cmos_switch_instance
 %type   <node>                       compiler_directive
 %type   <node>                       conditional_compile_directive
 %type   <node>                       config_declaration
@@ -563,7 +579,7 @@
 %type   <node>                       gate_n_output_a_ds
 %type   <node>                       gate_n_output_a_id
 %type   <node>                       gate_n_output_a_ot
-%type   <node>                       gate_pass_en_switch
+%type   <pass_enable_switches>       gate_pass_en_switch
 %type   <node>                       gatetype_n_input
 %type   <node>                       gatetype_n_output
 %type   <node>                       generated_instantiation
@@ -595,12 +611,7 @@
 %type   <node>                       module_or_generate_item_declaration
 %type   <node>                       module_parameter_port_list
 %type   <node>                       module_params
-%type   <node>                       mos_switch_instance
-%type   <node>                       mos_switch_instances
-%type   <node>                       n_input_gate_instance
-%type   <node>                       n_input_gate_instances
 %type   <node>                       n_output_gate_instance
-%type   <node>                       n_output_gate_instances
 %type   <node>                       name_of_gate_instance
 %type   <node>                       name_of_instance
 %type   <node>                       named_parameter_assignment
@@ -622,18 +633,12 @@
 %type   <node>                       parameter_declaration
 %type   <node>                       parameter_override
 %type   <node>                       pass_en_switchtype
-%type   <node>                       pass_enable_switch_instance
-%type   <node>                       pass_enable_switch_instances
-%type   <node>                       pass_switch_instance
-%type   <node>                       pass_switch_instances
 %type   <node>                       port
 %type   <node>                       port_declaration
 %type   <node>                       port_declaration_l
 %type   <node>                       port_declarations
 %type   <node>                       port_dir
 %type   <node>                       port_reference
-%type   <node>                       pull_gate_instance
-%type   <node>                       pull_gate_instances
 %type   <node>                       pulse_control_specparam
 %type   <node>                       pulsestyle_declaration
 %type   <node>                       range_or_type
@@ -678,6 +683,8 @@
 %type   <operator>                   polarity_operator_o
 %type   <operator>                   unary_module_path_operator
 %type   <operator>                   unary_operator
+%type   <pass_enable_switch>         pass_enable_switch_instance
+%type   <pass_switch_instance>       pass_switch_instance
 %type   <path_declaration>           edge_sensitive_path_declaration
 %type   <path_declaration>           path_declaration
 %type   <path_declaration>           simple_path_declaration
@@ -692,6 +699,7 @@
 %type   <primitive_pull>             pullup_strength_o
 %type   <primitive_strength>         strength0
 %type   <primitive_strength>         strength1
+%type   <pull_gate_instance>         pull_gate_instance
 %type   <range>                      range
 %type   <range>                      range_o
 %type   <single_assignment>          function_blocking_assignment
@@ -1565,16 +1573,6 @@ gate_n_input_a_id  :
                    | COMMA n_input_gate_instances
                    ;
 
-n_input_gate_instances : n_input_gate_instance
-                       | n_input_gate_instances COMMA 
-                         n_input_gate_instance
-                       ;
-
-n_input_gate_instance  : name_of_gate_instance OPEN_BRACKET 
-                         output_terminal COMMA
-                         input_terminals CLOSE_BRACKET
-                       ;
-
 gatetype_n_input    : KW_AND  
                     | KW_NAND  
                     | KW_OR   
@@ -1585,8 +1583,20 @@ gatetype_n_input    : KW_AND
 
 /* -------------------------------------------------------------------------*/
 
-gate_pass_en_switch : pass_en_switchtype pass_enable_switch_instances
-                    ;
+gate_pass_en_switch : 
+  KW_TRANIF0  delay2 pass_enable_switch_instances{
+      $$ = ast_new_pass_enable_switches(PASS_EN_TRANIF0,$2,$3);
+  }
+| KW_TRANIF1  delay2 pass_enable_switch_instances{
+      $$ = ast_new_pass_enable_switches(PASS_EN_TRANIF1,$2,$3);
+  }
+| KW_RTRANIF1 delay2 pass_enable_switch_instances{
+      $$ = ast_new_pass_enable_switches(PASS_EN_RTRANIF0,$2,$3);
+  }
+| KW_RTRANIF0 delay2 pass_enable_switch_instances{
+      $$ = ast_new_pass_enable_switches(PASS_EN_RTRANIF1,$2,$3);
+  }
+;
 
 pass_enable_switch_instances : 
   pass_enable_switch_instance{
@@ -1599,16 +1609,13 @@ pass_enable_switch_instances :
   }
 ;
 
-pass_en_switchtype  : KW_TRANIF0  delay2
-                    | KW_TRANIF1  delay2
-                    | KW_RTRANIF1 delay2 
-                    | KW_RTRANIF0 delay2
-                    ;
 
-
-pass_enable_switch_instance  : name_of_gate_instance OPEN_BRACKET inout_terminal COMMA
-                               inout_terminal COMMA enable_terminal CLOSE_BRACKET
-                             ;
+pass_enable_switch_instance  : 
+ name_of_gate_instance OPEN_BRACKET inout_terminal COMMA inout_terminal COMMA
+ enable_terminal CLOSE_BRACKET{
+    $$ = ast_new_pass_enable_switch($1,$3,$5,$7);
+ }
+;
 
 
 /* -------------------------------------------------------------------------*/
@@ -1669,32 +1676,40 @@ cmos_switch_instances :
 ;
 
 
-pull_gate_instance           : name_of_gate_instance OPEN_BRACKET 
-                               output_terminal CLOSE_BRACKET
-                             ;
+pull_gate_instance           : 
+  name_of_gate_instance OPEN_BRACKET output_terminal CLOSE_BRACKET{
+    $$ = ast_new_pull_gate_instance($1,$3);
+  }
+;
 
-pass_switch_instance         : name_of_gate_instance OPEN_BRACKET 
-                               inout_terminal COMMA
-                               inout_terminal CLOSE_BRACKET
-                             ;
+pass_switch_instance         : 
+  name_of_gate_instance OPEN_BRACKET inout_terminal COMMA inout_terminal 
+  CLOSE_BRACKET{
+    $$ = ast_new_pass_switch_instance($1,$3,$5);
+  }
+;
 
 
-n_input_gate_instance        : name_of_gate_instance OPEN_BRACKET 
-                               output_terminal COMMA
-                               input_terminals CLOSE_BRACKET
-                             ;
+n_input_gate_instance        : 
+  name_of_gate_instance OPEN_BRACKET output_terminal COMMA input_terminals 
+  CLOSE_BRACKET{
+    $$ = ast_new_n_input_gate_instance($1,$5,$3);
+  }
+;
 
-mos_switch_instance          : name_of_gate_instance OPEN_BRACKET 
-                               output_terminal COMMA
-                               input_terminal COMMA enable_terminal 
-                               CLOSE_BRACKET       
-                             ;
+mos_switch_instance          : 
+  name_of_gate_instance OPEN_BRACKET output_terminal COMMA input_terminal 
+  COMMA enable_terminal CLOSE_BRACKET {
+    $$ = ast_new_mos_switch_instance($1,$3,$7,$5);
+  }
+;
 
-cmos_switch_instance         : name_of_gate_instance OPEN_BRACKET 
-                               output_terminal COMMA
-                               input_terminal COMMA ncontrol_terminal COMMA
-                               pcontrol_terminal CLOSE_BRACKET
-                             ;
+cmos_switch_instance         : 
+  name_of_gate_instance OPEN_BRACKET output_terminal COMMA input_terminal
+  COMMA ncontrol_terminal COMMA pcontrol_terminal CLOSE_BRACKET{
+    $$ = ast_new_cmos_switch_instance($1,$3,$7,$9,$5);
+  }
+;
 
 output_terminals             : 
   output_terminals COMMA output_terminal{
@@ -1763,11 +1778,11 @@ name_of_gate_instance   :
 /* A.3.3 primitive terminals */
 
 enable_terminal     : expression {$$=$1;};
-inout_terminal      : net_lvalue {$$=$1;};
 input_terminal      : expression {$$=$1;};
 ncontrol_terminal   : expression {$$=$1;};
-output_terminal     : net_lvalue {$$=$1;}; 
 pcontrol_terminal   : expression {$$=$1;};
+inout_terminal      : net_lvalue {$$=$1;};
+output_terminal     : net_lvalue {$$=$1;}; 
 
 /* A.3.4 primitive gate and switch types */
 

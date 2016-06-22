@@ -1597,6 +1597,126 @@ ast_primitive_pull_strength * ast_new_primitive_pull_strength(
     ast_primitive_strength   strength_0
 );
 
+//! Describes a single pull gate instance.
+typedef struct ast_pull_gate_instance_t{
+    ast_identifier      name;
+    ast_lvalue        * output_terminal;
+} ast_pull_gate_instance;
+
+//! A single pass transistor instance.
+typedef struct ast_pass_switch_instance_t{
+    ast_identifier      name;
+    ast_lvalue        * terminal_1;
+    ast_lvalue        * terminal_2;
+} ast_pass_switch_instance;
+
+//! An N-input gate instance. e.g. 3-to-1 NAND.
+typedef struct ast_n_input_gate_instance_t{
+    ast_identifier      name;
+    ast_list          * input_terminals;
+    ast_lvalue        * output_terminal;
+} ast_n_input_gate_instance;
+
+//! A single MOS switch (transistor) instance.
+typedef struct ast_mos_switch_instance_t{
+    ast_identifier      name;
+    ast_lvalue        * output_terminal;
+    ast_expression    * enable_terminal;
+    ast_expression    * input_terminal;
+} ast_mos_switch_instance;
+
+//! A single CMOS switch (transistor) instance.
+typedef struct ast_cmos_switch_instance_t{
+    ast_identifier      name;
+    ast_lvalue        * output_terminal;
+    ast_expression    * ncontrol_terminal;
+    ast_expression    * pcontrol_terminal;
+    ast_expression    * input_terminal;
+} ast_cmos_switch_instance;
+
+//! A single pass enable switch with pass and enable terminals.
+typedef struct ast_pass_enable_switch_t{
+    ast_identifier    * name;
+    ast_lvalue        * terminal_1;
+    ast_lvalue        * terminal_2;
+    ast_expression    * enable;
+} ast_pass_enable_switch;
+
+//! Describes a particular type of pass enable switch.
+typedef enum ast_pass_enable_switchtype_e{
+    PASS_EN_TRANIF0,
+    PASS_EN_TRANIF1,
+    PASS_EN_RTRANIF0,
+    PASS_EN_RTRANIF1 
+} ast_pass_enable_switchtype;
+
+/*!
+@brief Describes a collection of pass enable switches withe the same type and
+delay characteristics.
+*/
+typedef struct ast_pass_enable_switches_t{
+    ast_pass_enable_switchtype    type;
+    ast_delay2                    delay;
+    ast_list                    * switches;
+} ast_pass_enable_switches;
+
+/*!
+@brief Creates and returns a collection of pass enable switches.
+*/
+ast_pass_enable_switches * ast_new_pass_enable_switches(
+    ast_pass_enable_switchtype    type,
+    ast_delay2                    delay,
+    ast_list                    * switches 
+);
+
+/*!
+@brief Creates and returns a new pass enable switch instance.
+*/
+ast_pass_enable_switch * ast_new_pass_enable_switch(
+    ast_identifier    * name,
+    ast_lvalue        * terminal_1,
+    ast_lvalue        * terminal_2,
+    ast_expression    * enable
+);
+
+/*! @brief Describes a single pull gate instance.*/
+ast_pull_gate_instance * ast_new_pull_gate_instance(
+    ast_identifier      name,
+    ast_lvalue        * output_terminal
+);
+
+/*! @brief A single pass transistor instance.*/
+ast_pass_switch_instance * ast_new_pass_switch_instance(
+    ast_identifier      name,
+    ast_lvalue        * terminal_1,
+    ast_lvalue        * terminal_2
+);
+
+/*! @brief An N-input gate instance. e.g. 3-to-1 NAND.*/
+ast_n_input_gate_instance * ast_new_n_input_gate_instance(
+    ast_identifier      name,
+    ast_list          * input_terminals,
+    ast_lvalue        * output_terminal
+);
+
+/*! @brief A single MOS switch (transistor) instance.*/
+ast_mos_switch_instance * ast_new_mos_switch_instance(
+    ast_identifier      name,
+    ast_lvalue        * output_terminal,
+    ast_expression    * enable_terminal,
+    ast_expression    * input_terminal
+);
+
+/*! @brief A single CMOS switch (transistor) instance.*/
+ast_cmos_switch_instance * ast_new_cmos_switch_instance(
+    ast_identifier      name,
+    ast_lvalue        * output_terminal,
+    ast_expression    * ncontrol_terminal,
+    ast_expression    * pcontrol_terminal,
+    ast_expression    * input_terminal
+);
+
+
 /*! @} */
 
 // -------------------------------- Task Declaration -------------------------

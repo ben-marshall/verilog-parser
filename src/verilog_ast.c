@@ -1481,3 +1481,120 @@ ast_primitive_pull_strength * ast_new_primitive_pull_strength(
 
     return tr;
 }
+
+/*! @brief Describes a single pull gate instance.*/
+ast_pull_gate_instance * ast_new_pull_gate_instance(
+    ast_identifier      name,
+    ast_lvalue        * output_terminal
+){
+    ast_pull_gate_instance * tr = calloc(1,sizeof(ast_pull_gate_instance));
+
+    tr -> name = name;
+    tr -> output_terminal = output_terminal;
+
+    return tr;
+}
+
+/*! @brief A single pass transistor instance.*/
+ast_pass_switch_instance * ast_new_pass_switch_instance(
+    ast_identifier      name,
+    ast_lvalue        * terminal_1,
+    ast_lvalue        * terminal_2
+){
+    ast_pass_switch_instance * tr = calloc(1,sizeof(ast_pass_switch_instance));
+
+    tr -> name = name;
+    tr -> terminal_1 = terminal_1;
+    tr -> terminal_2 = terminal_2;
+
+    return tr;
+}
+
+/*! @brief An N-input gate instance. e.g. 3-to-1 NAND.*/
+ast_n_input_gate_instance * ast_new_n_input_gate_instance(
+    ast_identifier      name,
+    ast_list          * input_terminals,
+    ast_lvalue        * output_terminal
+){
+    ast_n_input_gate_instance * tr =
+                            calloc(1,sizeof(ast_n_input_gate_instance));
+
+    tr -> name = name;
+    tr -> input_terminals = input_terminals;
+    tr -> output_terminal = output_terminal;
+
+    return tr;
+}
+
+/*! @brief A single MOS switch (transistor) instance.*/
+ast_mos_switch_instance * ast_new_mos_switch_instance(
+    ast_identifier      name,
+    ast_lvalue        * output_terminal,
+    ast_expression    * enable_terminal,
+    ast_expression    * input_terminal
+){
+    ast_mos_switch_instance * tr = calloc(1,sizeof(ast_mos_switch_instance));
+
+    tr -> name = name;
+    tr -> output_terminal = output_terminal;
+    tr -> enable_terminal = enable_terminal;
+    tr -> input_terminal  = input_terminal;
+
+    return tr;
+}
+
+/*! @brief A single CMOS switch (transistor) instance.*/
+ast_cmos_switch_instance * ast_new_cmos_switch_instance(
+    ast_identifier      name,
+    ast_lvalue        * output_terminal,
+    ast_expression    * ncontrol_terminal,
+    ast_expression    * pcontrol_terminal,
+    ast_expression    * input_terminal
+){
+    ast_cmos_switch_instance * tr = calloc(1,sizeof(ast_cmos_switch_instance));
+
+    tr -> name = name;
+    tr -> output_terminal = output_terminal;
+    tr -> ncontrol_terminal = ncontrol_terminal;
+    tr -> pcontrol_terminal = pcontrol_terminal;
+    tr -> input_terminal = input_terminal;
+
+    return tr;
+}
+
+/*!
+@brief Creates and returns a new pass enable switch instance.
+*/
+ast_pass_enable_switch * ast_new_pass_enable_switch(
+    ast_identifier    * name,
+    ast_lvalue        * terminal_1,
+    ast_lvalue        * terminal_2,
+    ast_expression    * enable
+){
+    ast_pass_enable_switch * tr = calloc(1,sizeof(ast_pass_enable_switch));
+
+    tr -> name = name;
+    tr -> terminal_1 = terminal_1;
+    tr -> terminal_2 = terminal_2;
+    tr -> enable = enable;
+
+    return tr;
+}
+
+
+/*!
+@brief Creates and returns a collection of pass enable switches.
+*/
+ast_pass_enable_switches * ast_new_pass_enable_switches(
+    ast_pass_enable_switchtype    type,
+    ast_delay2                    delay,
+    ast_list                    * switches 
+){
+    ast_pass_enable_switches * tr = calloc(1,sizeof(ast_pass_enable_switches));
+
+    tr -> type = type;
+    tr -> delay = delay;
+    tr -> switches = switches;
+
+    return tr;
+}
