@@ -82,8 +82,11 @@
     ast_n_input_gate_instance    * n_input_gate_instance;
     ast_mos_switch_instance      * mos_switch_instance  ;
     ast_cmos_switch_instance     * cmos_switch_instance ;
+    ast_enable_gate_instance     * enable_gate;
 
     ast_gatetype_n_input           n_input_gatetype;
+    ast_enable_gatetype            enable_gatetype;
+    ast_enable_gate_instances    * enable_gates;
 
     char                   boolean;
     char                 * string;
@@ -561,8 +564,8 @@
 %type   <node>                       dimension
 %type   <node>                       dimensions
 %type   <node>                       dimensions_o
-%type   <node>                       enable_gate_instance
-%type   <node>                       enable_gatetype
+%type   <enable_gate>                enable_gate_instance
+%type   <enable_gatetype>            enable_gatetype
 %type   <node>                       eq_const_exp_o
 %type   <node>                       error_limit_value
 %type   <node>                       error_limit_value_o
@@ -572,11 +575,9 @@
 %type   <node>                       function_declaration
 %type   <node>                       function_item_declaration
 %type   <node>                       function_port_list
-%type   <node>                       gate_enable
+%type   <enable_gates>               gate_enable
 %type   <node>                       gate_instantiation
 %type   <node>                       gate_n_input
-%type   <node>                       gate_n_input_a_ds
-%type   <node>                       gate_n_input_a_id
 %type   <node>                       gate_n_output
 %type   <node>                       gate_n_output_a_ds
 %type   <node>                       gate_n_output_a_id
@@ -1503,7 +1504,7 @@ CB : CLOSE_BRACKET;
 
 gate_n_output : gatetype_n_output n_output_gate_instances
               | gatetype_n_output OB drive_strength gate_n_output_a_ds
-              | gatetype_n_output OB output_terminal COMMA gate_n_output_a_ot 
+              | gatetype_n_output OB output_terminal COMMA gate_n_output_a_ot
               | gatetype_n_output delay2 n_output_gate_instances 
               ;
 
@@ -1535,27 +1536,58 @@ n_output_gate_instance  : name_of_gate_instance OPEN_BRACKET
 
 /* -------------------------------------------------------------------------*/
 
-gate_enable : enable_gatetype enable_gate_instances
-            | enable_gatetype OB drive_strength gate_n_output_a_ds
-            | enable_gatetype OB output_terminal COMMA input_terminal COMMA 
-              enable_terminal CB gate_n_output_a_id
-            | enable_gatetype delay3 enable_gate_instances
-            ;
+gate_enable : 
+  enable_gatetype enable_gate_instances{
+    $$ = ast_new_enable_gate_instances($1,NULL,NULL,$2);
+}
+| enable_gatetype OB drive_strength delay2 enable_gate_instances{
+    $$ = ast_new_enable_gate_instances($1,NULL,NULL,$5);
+}
+| enable_gatetype OB drive_strength enable_gate_instances{
+    $$ = ast_new_enable_gate_instances($1,NULL,$3,$4);
+}
+| enable_gatetype OB output_terminal COMMA input_terminal COMMA 
+  enable_terminal CB COMMA n_output_gate_instances{
+    ast_enable_gate_instance * gate = ast_new_enable_gate_instance(
+        "unnamed enable gate", $3,$7,$5);
+    ast_list_preappend($10,gate);
+    $$ = ast_new_enable_gate_instances($1,NULL,NULL,$10);
+}
+| enable_gatetype OB output_terminal COMMA input_terminal COMMA 
+  enable_terminal CB{
+    ast_enable_gate_instance * gate = ast_new_enable_gate_instance(
+        "unnamed enable gate", $3,$7,$5);
+    ast_list * list = ast_list_new();
+    ast_list_append(list,gate);
+    $$ = ast_new_enable_gate_instances($1,NULL,NULL,list);
+}
+| enable_gatetype delay3 enable_gate_instances{
+    $$ = ast_new_enable_gate_instances($1,$2,NULL,$3);
+}
+;
 
-enable_gate_instances : enable_gate_instance
-                      | enable_gate_instances COMMA enable_gate_instance 
-                      ;
+enable_gate_instances : 
+  enable_gate_instance{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| enable_gate_instances COMMA enable_gate_instance {
+    $$ = $1;
+    ast_list_append($$,$3);
+}
+;
 
-enable_gate_instance  : name_of_gate_instance OPEN_BRACKET 
-                        output_terminal COMMA
-                        input_terminal COMMA enable_terminal 
-                        CLOSE_BRACKET
-                      ;
+enable_gate_instance  : 
+name_of_gate_instance OPEN_BRACKET output_terminal COMMA
+input_terminal COMMA enable_terminal CLOSE_BRACKET{
+    $$ = ast_new_enable_gate_instance($1,$3,$7,$5);
+}
+;
 
-enable_gatetype     : KW_BUFIF0 
-                    | KW_BUFIF1 
-                    | KW_NOTIF0 
-                    | KW_NOTIF1 
+enable_gatetype     : KW_BUFIF0 {$$ = EN_BUFIF0;}
+                    | KW_BUFIF1 {$$ = EN_BUFIF1;}
+                    | KW_NOTIF0 {$$ = EN_NOTIF0;}
+                    | KW_NOTIF1 {$$ = EN_NOTIF1;}
                     ;
 
 /* -------------------------------------------------------------------------*/

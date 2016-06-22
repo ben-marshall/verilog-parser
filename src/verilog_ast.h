@@ -1643,6 +1643,38 @@ typedef struct ast_n_input_gate_instance_t{
     ast_lvalue        * output_terminal;
 } ast_n_input_gate_instance;
 
+//! Describes a variety of enable gate type.
+typedef enum ast_enable_gatetype_e{
+    EN_BUFIF0,
+    EN_BUFIF1,
+    EN_NOTIF0,
+    EN_NOTIF1 
+} ast_enable_gatetype;
+
+//! A collection of enable gates with the same type and delay properties.
+typedef struct ast_enable_gate_instances{
+    ast_enable_gatetype     type;
+    ast_delay3            * delay;
+    ast_drive_strength    * drive_strength;
+    ast_list              * instances;
+} ast_enable_gate_instances;
+
+//! Creates collection of enable gates with the same type and properties.
+ast_enable_gate_instances * ast_new_enable_gate_instances(
+    ast_gatetype_n_input    type,
+    ast_delay3            * delay,
+    ast_drive_strength    * drive_strength,
+    ast_list              * instances
+);
+
+//! A single enable gate
+typedef struct ast_enable_gate_instance_t{
+    ast_identifier      name;
+    ast_lvalue        * output_terminal;
+    ast_expression    * enable_terminal;
+    ast_expression    * input_terminal;
+} ast_enable_gate_instance;
+
 //! A single MOS switch (transistor) instance.
 typedef struct ast_mos_switch_instance_t{
     ast_identifier      name;
@@ -1723,6 +1755,14 @@ ast_n_input_gate_instance * ast_new_n_input_gate_instance(
     ast_identifier      name,
     ast_list          * input_terminals,
     ast_lvalue        * output_terminal
+);
+
+/*! @brief A single Enable gate instance.*/
+ast_enable_gate_instance * ast_new_enable_gate_instance(
+    ast_identifier      name,
+    ast_lvalue        * output_terminal,
+    ast_expression    * enable_terminal,
+    ast_expression    * input_terminal
 );
 
 /*! @brief A single MOS switch (transistor) instance.*/

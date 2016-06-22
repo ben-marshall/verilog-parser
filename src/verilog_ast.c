@@ -1526,6 +1526,23 @@ ast_n_input_gate_instance * ast_new_n_input_gate_instance(
     return tr;
 }
 
+/*! @brief A single Enable gate instance.*/
+ast_enable_gate_instance * ast_new_enable_gate_instance(
+    ast_identifier      name,
+    ast_lvalue        * output_terminal,
+    ast_expression    * enable_terminal,
+    ast_expression    * input_terminal
+){
+    ast_mos_switch_instance * tr = calloc(1,sizeof(ast_mos_switch_instance));
+
+    tr -> name = name;
+    tr -> output_terminal = output_terminal;
+    tr -> enable_terminal = enable_terminal;
+    tr -> input_terminal  = input_terminal;
+
+    return tr;
+}
+
 /*! @brief A single MOS switch (transistor) instance.*/
 ast_mos_switch_instance * ast_new_mos_switch_instance(
     ast_identifier      name,
@@ -1611,6 +1628,24 @@ ast_n_input_gate_instances * ast_new_n_input_gate_instances(
 ){
     ast_n_input_gate_instances * tr = 
                                 calloc(1,sizeof(ast_n_input_gate_instances));
+
+    tr -> type = type;
+    tr -> delay = delay;
+    tr -> drive_strength = drive_strength;
+    tr -> instances = instances;
+
+    return tr;
+}
+
+//! Creates collection of enable gates with the same type and properties.
+ast_enable_gate_instances * ast_new_enable_gate_instances(
+    ast_gatetype_n_input    type,
+    ast_delay3            * delay,
+    ast_drive_strength    * drive_strength,
+    ast_list              * instances
+){
+    ast_enable_gate_instances * tr = 
+                                calloc(1,sizeof(ast_enable_gate_instances));
 
     tr -> type = type;
     tr -> delay = delay;
