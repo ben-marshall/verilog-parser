@@ -1770,3 +1770,60 @@ ast_gate_instantiation * ast_new_gate_instantiation(ast_gate_type type)
     tr -> type = type;
     return tr;
 }
+
+/*!
+@brief creates and returns a new set of parameter declarations of the same type
+@param [in] assignments - The list of individual assignments.
+@param [in] signed_values - are the bit vectors signed?
+@param [in] range - Bit range
+@param [in] type - type of the parameters.
+*/
+ast_parameter_declarations * ast_new_parameter_declarations(
+    ast_list        * assignments,
+    ast_boolean       signed_values,
+    ast_boolean       local,
+    ast_range       * range,
+    ast_parameter_type  type 
+){
+    ast_parameter_declarations * tr = 
+            ast_calloc(1,sizeof(ast_parameter_declarations));
+
+
+    tr -> assignments = assignments;
+    tr -> signed_values = signed_values;
+    tr -> range = range;
+    tr -> type = type;
+    tr -> local = local;
+
+    if(type != PARAM_GENERIC){
+        tr -> range = NULL;
+        tr -> signed_values = AST_FALSE;
+    }
+
+    return tr;
+}
+
+/*!
+@brief Creates and returns a new port declaration representation.
+*/
+ast_port_declaration * ast_new_port_declaration(
+    ast_port_direction  direction,      //!< [in] Input / output / inout etc.
+    ast_net_type        net_type,       //!< [in] Wire/reg etc
+    ast_boolean         net_signed,     //!< [in] Signed value?
+    ast_boolean         is_reg,         //!< [in] Is explicitly a "reg"
+    ast_boolean         is_variable,    //!< [in] Variable or net?
+    ast_range         * range,          //!< [in] Bus width.
+    ast_list          * port_names      //!< [in] The names of the ports.
+){
+    ast_port_declaration * tr = ast_calloc(1,sizeof(ast_port_declaration));
+    
+    tr -> direction   =  direction  ;
+    tr -> net_type    =  net_type   ;
+    tr -> net_signed  =  net_signed ;
+    tr -> is_reg      =  is_reg     ;
+    tr -> is_variable =  is_variable;
+    tr -> range       =  range      ;
+    tr -> port_names  = port_names  ;
+    
+    return tr;
+}

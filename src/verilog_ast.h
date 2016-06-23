@@ -1987,12 +1987,25 @@ ast_gate_instantiation * ast_new_gate_instantiation(ast_gate_type type);
 
 /*! @} */
 
+// --------------------------- Block Item Declaration ------------------------
+
+/*!
+@defgroup ast-node-declaration Declarations
+@{
+@ingroup ast-node-module-items
+@brief Blocks of definitions
+*/
+
+
+
+/*! @} */
+
 // -------------------------------- Task Declaration -------------------------
 
 /*!
 @defgroup ast-node-task-declaration Task Declaration
 @{
-@ingroup ast-node-module-items
+@ingroup ast-node-declaration
 @brief User task (procedure) definition.
 */
 
@@ -2005,7 +2018,7 @@ ast_gate_instantiation * ast_new_gate_instantiation(ast_gate_type type);
 /*!
 @defgroup ast-node-function-declaration Function Declaration
 @{
-@ingroup ast-node-module-items
+@ingroup ast-node-declaration
 @brief Describes a declaration of a user function.
 */
 
@@ -2018,7 +2031,7 @@ ast_gate_instantiation * ast_new_gate_instantiation(ast_gate_type type);
 /*!
 @defgroup ast-node-declaration-lists Declaration Lists
 @{
-@ingroup ast-construction
+@ingroup ast-node-declaration
 @brief 
 */
 
@@ -2087,7 +2100,42 @@ ast_gate_instantiation * ast_new_gate_instantiation(ast_gate_type type);
 @brief 
 */
 
+//! Describes the type of a net in Verilog.
+typedef enum ast_net_type_e{
+    NET_TYPE_SUPPLY0,
+    NET_TYPE_SUPPLY1,
+    NET_TYPE_TRI,
+    NET_TYPE_TRIAND,
+    NET_TYPE_TRIOR,
+    NET_TYPE_WIRE,
+    NET_TYPE_WAND,
+    NET_TYPE_WOR,
+    NET_TYPE_NONE       //!< Use only when not specified!
+} ast_net_type;
 
+//! Fully describes a single port declaration
+typedef struct ast_port_declaration_t{
+    ast_port_direction  direction;      //!< Input / output / inout etc.
+    ast_net_type        net_type;       //!< Wire/reg etc
+    ast_boolean         net_signed;     //!< Signed value?
+    ast_boolean         is_reg;         //!< Is explicitly a "reg"
+    ast_boolean         is_variable;    //!< Variable or net?
+    ast_range         * range;          //!< Bus width.
+    ast_list          * port_names;     //!< The names of the ports.
+} ast_port_declaration;
+
+/*!
+@brief Creates and returns a new port declaration representation.
+*/
+ast_port_declaration * ast_new_port_declaration(
+    ast_port_direction  direction,      //!< [in] Input / output / inout etc.
+    ast_net_type        net_type,       //!< [in] Wire/reg etc
+    ast_boolean         net_signed,     //!< [in] Signed value?
+    ast_boolean         is_reg,         //!< [in] Is explicitly a "reg"
+    ast_boolean         is_variable,    //!< [in] Variable or net?
+    ast_range         * range,          //!< [in] Bus width.
+    ast_list          * port_names      //!< [in] The names of the ports.
+);
 
 /*! @} */
 
@@ -2100,7 +2148,39 @@ ast_gate_instantiation * ast_new_gate_instantiation(ast_gate_type type);
 @brief 
 */
 
+//! Data value types that a module parameter can take on.
+typedef enum ast_parameter_type_e{
+    PARAM_INTEGER,
+    PARAM_REAL,
+    PARAM_REALTIME,
+    PARAM_TIME,
+    PARAM_GENERIC,  //!< used when no type keywork is used in the declaration.
+    PARAM_SPECPARAM
+} ast_parameter_type;
 
+//! Stores the type and characteristics of one or more parameter declarations.
+typedef struct ast_parameter_declarations_t{
+    ast_list        * assignments;
+    ast_boolean       signed_values; //!< Valid IFF type==PARAM_GENERIC
+    ast_boolean       local;        //!< Local parameter or global.
+    ast_range       * range; //!< Valid IFF type==PARAM_GENERIC
+    ast_parameter_type  type;
+} ast_parameter_declarations;
+
+/*!
+@brief creates and returns a new set of parameter declarations of the same type
+@param [in] assignments - The list of individual assignments.
+@param [in] signed_values - are the bit vectors signed?
+@param [in] range - Bit range
+@param [in] type - type of the parameters.
+*/
+ast_parameter_declarations * ast_new_parameter_declarations(
+    ast_list        * assignments,
+    ast_boolean       signed_values,
+    ast_boolean       local,
+    ast_range       * range,
+    ast_parameter_type  type 
+);
 
 /*! @} */
 

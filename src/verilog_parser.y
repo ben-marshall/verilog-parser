@@ -93,6 +93,9 @@
 
     ast_module_instance          * module_instance;
     ast_module_instantiation     * module_instantiation;
+    ast_parameter_declarations   * parameter_declaration;
+    ast_port_declaration         * port_declaration;
+    ast_net_type                   net_type;
 
     char                   boolean;
     char                 * string;
@@ -596,8 +599,8 @@
 %type   <node>                       include_directive
 %type   <node>                       include_statement
 %type   <node>                       initial_construct
-%type   <node>                       inout_declaration
-%type   <node>                       input_declaration
+%type   <port_declaration>           inout_declaration
+%type   <port_declaration>           input_declaration
 %type   <node>                       inst_clause
 %type   <node>                       inst_name
 %type   <node>                       integer_declaration
@@ -607,7 +610,7 @@
 %type   <node>                       library_text
 %type   <node>                       limit_value
 %type   <node>                       line_directive
-%type   <node>                       local_parameter_declaration
+%type   <parameter_declaration>      local_parameter_declaration
 %type   <node>                       module_declaration
 %type   <module_instance>            module_instance
 %type   <list>                       module_instances
@@ -628,15 +631,15 @@
 %type   <node>                       net_dec_p_vs
 %type   <node>                       net_decl_assignment
 %type   <node>                       net_declaration
-%type   <node>                       net_type
-%type   <node>                       net_type_o
+%type   <net_type>                   net_type
+%type   <net_type>                   net_type_o
 %type   <node>                       non_port_module_item
 %type   <node>                       non_port_module_item_os
 %type   <expression>                 ordered_port_connection
-%type   <node>                       output_declaration
+%type   <port_declaration>           output_declaration
 %type   <node>                       output_variable_type
 %type   <node>                       output_variable_type_o
-%type   <node>                       parameter_declaration
+%type   <parameter_declaration>      parameter_declaration
 %type   <node>                       parameter_override
 %type   <node>                       port
 %type   <node>                       port_declaration
@@ -658,7 +661,7 @@
 %type   <node>                       source_text
 %type   <node>                       specify_item
 %type   <node>                       specparam_assignment
-%type   <node>                       specparam_declaration
+%type   <parameter_declaration>      specparam_declaration
 %type   <node>                       sq_bracket_constant_expressions
 %type   <node>                       system_timing_check
 %type   <node>                       task_declaration
@@ -1093,50 +1096,82 @@ parameter_override  : KW_DEFPARAM list_of_param_assignments SEMICOLON
 signed_o : KW_SIGNED {$$=1;}|{$$=0;} ;
 range_o  : range {$$=$1;}    | {$$=NULL;} ;
 
-local_parameter_declaration : KW_LOCALPARAM signed_o range_o
-                              list_of_param_assignments SEMICOLON
-                            | KW_LOCALPARAM KW_INTEGER 
-                              list_of_param_assignments SEMICOLON
-                            | KW_LOCALPARAM KW_REAL list_of_param_assignments
-                              SEMICOLON
-                            | KW_LOCALPARAM KW_REALTIME 
-                              list_of_param_assignments SEMICOLON
-                            | KW_LOCALPARAM KW_TIME list_of_param_assignments
-                              SEMICOLON
-                            ;
+local_parameter_declaration : 
+  KW_LOCALPARAM signed_o range_o list_of_param_assignments SEMICOLON{
+    $$ = ast_new_parameter_declarations($4,$2,AST_TRUE,$3,PARAM_GENERIC);
+  }
+| KW_LOCALPARAM KW_INTEGER       list_of_param_assignments SEMICOLON{
+    $$ = ast_new_parameter_declarations($3,AST_FALSE,AST_TRUE,NULL,
+        PARAM_INTEGER);
+  }
+| KW_LOCALPARAM KW_REAL          list_of_param_assignments SEMICOLON{
+    $$ = ast_new_parameter_declarations($3,AST_FALSE,AST_TRUE,NULL,
+        PARAM_REAL);
+  }
+| KW_LOCALPARAM KW_REALTIME      list_of_param_assignments SEMICOLON{
+    $$ = ast_new_parameter_declarations($3,AST_FALSE,AST_TRUE,NULL,
+        PARAM_REALTIME);
+  }
+| KW_LOCALPARAM KW_TIME          list_of_param_assignments SEMICOLON{
+    $$ = ast_new_parameter_declarations($3,AST_FALSE,AST_TRUE,NULL,
+        PARAM_TIME);
+  }
+;
 
-parameter_declaration : KW_PARAMETER signed_o range_o 
-                        list_of_param_assignments SEMICOLON
-                      | KW_PARAMETER KW_INTEGER list_of_param_assignments
-                        SEMICOLON
-                      | KW_PARAMETER KW_REAL list_of_param_assignments
-                        SEMICOLON
-                      | KW_PARAMETER KW_REALTIME list_of_param_assignments
-                        SEMICOLON
-                      | KW_PARAMETER KW_TIME list_of_param_assignments
-                        SEMICOLON
-                      ;
+parameter_declaration : 
+  KW_PARAMETER signed_o range_o list_of_param_assignments SEMICOLON{
+    $$ = ast_new_parameter_declarations($4,$2,AST_FALSE,$3,PARAM_GENERIC);
+  }
+| KW_PARAMETER KW_INTEGER       list_of_param_assignments SEMICOLON{
+    $$ = ast_new_parameter_declarations($3,AST_FALSE,AST_FALSE,NULL,
+        PARAM_INTEGER);
+  }
+| KW_PARAMETER KW_REAL          list_of_param_assignments SEMICOLON{
+    $$ = ast_new_parameter_declarations($3,AST_FALSE,AST_FALSE,NULL,
+        PARAM_REAL);
+  }
+| KW_PARAMETER KW_REALTIME      list_of_param_assignments SEMICOLON{
+    $$ = ast_new_parameter_declarations($3,AST_FALSE,AST_FALSE,NULL,
+        PARAM_REALTIME);
+  }
+| KW_PARAMETER KW_TIME          list_of_param_assignments SEMICOLON{
+    $$ = ast_new_parameter_declarations($3,AST_FALSE,AST_FALSE,NULL,
+        PARAM_TIME);
+  }
+;
 
-specparam_declaration : KW_SPECPARAM range_o list_of_specparam_assignments
-                        SEMICOLON
-                      ;
+specparam_declaration : 
+  KW_SPECPARAM range_o list_of_specparam_assignments SEMICOLON{
+    $$ = ast_new_parameter_declarations($3,AST_FALSE,AST_FALSE,$2,
+        PARAM_SPECPARAM);
+  } 
+;
 
 /* A.2.1.2 Port declarations */
 
-net_type_o  : net_type | ;
+net_type_o  : net_type {$$=$1;} | {$$ = NET_TYPE_NONE;} ;
 reg_o       : KW_REG   {$$=1;}| {$$=0;};
 
-inout_declaration : KW_INOUT net_type_o signed_o range_o 
-                    list_of_port_identifiers
-                  ;
+inout_declaration : 
+  KW_INOUT net_type_o signed_o range_o list_of_port_identifiers{
+$$ = ast_new_port_declaration(PORT_INOUT, $2,$3,AST_FALSE,AST_FALSE,$4,$5);
+  }
+;
 
-input_declaration : KW_INPUT net_type_o signed_o range_o 
-                    list_of_port_identifiers
-                  ;
+input_declaration : 
+  KW_INPUT net_type_o signed_o range_o list_of_port_identifiers{
+$$ = ast_new_port_declaration(PORT_INPUT, $2,$3,AST_FALSE,AST_FALSE,$4,$5);
+  }
+;
 
 output_declaration: 
-  KW_OUTPUT net_type_o signed_o range_o list_of_port_identifiers
-| KW_OUTPUT reg_o signed_o range_o list_of_port_identifiers
+  KW_OUTPUT net_type_o signed_o range_o list_of_port_identifiers{
+$$ = ast_new_port_declaration(PORT_OUTPUT, $2,$3,AST_FALSE,AST_FALSE,$4,$5);
+  }
+| KW_OUTPUT reg_o signed_o range_o list_of_port_identifiers{
+$$ = ast_new_port_declaration(PORT_OUTPUT,
+NET_TYPE_NONE,$3,$2,AST_FALSE,$4,$5);
+  }
 | KW_OUTPUT output_variable_type_o list_of_port_identifiers
 | KW_OUTPUT output_variable_type list_of_variable_port_identifiers
 | KW_OUTPUT KW_REG signed_o range_o list_of_variable_port_identifiers
