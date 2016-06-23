@@ -1107,10 +1107,11 @@ ast_statement_block * ast_new_statement_block(
 @details 
 */
 
+//! Describes the type (and implicitly, the location) of an assignment.
 typedef enum ast_assignment_type_e{
-    ASSIGNMENT_CONTINUOUS,
-    ASSIGNMENT_BLOCKING,
-    ASSIGNMENT_NONBLOCKING,
+    ASSIGNMENT_CONTINUOUS,  //!< Continuous (combinatorial) assignment.
+    ASSIGNMENT_BLOCKING,    //!< Procedural, blocking assignment.
+    ASSIGNMENT_NONBLOCKING, //!< Procedural, non-blocking assignment.
     ASSIGNMENT_HYBRID, //!< @see ast_hybrid_assignment
 } ast_assignment_type;
 
@@ -1118,25 +1119,25 @@ typedef enum ast_assignment_type_e{
 @brief encodes a single assignment.
 */
 struct ast_single_assignment_t{
-    ast_lvalue      * lval;
-    ast_expression  * expression;
+    ast_lvalue      * lval;         //!< The thing being assigned to.
+    ast_expression  * expression;   //!< The value it takes on.
 };
 
 /*!
 @brief Creates and returns a new continuous assignment.
 */
 ast_single_assignment * ast_new_single_assignment(
-    ast_lvalue * lval,
-    ast_expression * expression
+    ast_lvalue * lval,          //!< The thing being assigned to.
+    ast_expression * expression //!< The value it takes on.
 );
 
 /*!
 @brief Describes a set of assignments with the same drive strength and delay.
 */
 typedef struct ast_continuous_assignment_t{
-    ast_list            * assignments;
-    ast_drive_strength  * drive_strength;
-    ast_delay3          * delay;
+    ast_list           * assignments; //!< A list of @ref ast_single_assignment.
+    ast_drive_strength * drive_strength; //!< Drive strength of the assignment.
+    ast_delay3         * delay; //!< Signal propagation delay in the assignment.
 } ast_continuous_assignment;
 
 /*!
@@ -1168,19 +1169,19 @@ simulation.
 typedef struct ast_hybrid_assignment_t{
     union
     {
-        ast_single_assignment * assignment;
-        ast_lvalue            * lval;
+        ast_single_assignment * assignment; //!< The assignment being made.
+        ast_lvalue            * lval; //!< lvalue being assigned / deassigned.
     };
-    ast_hybrid_assignment_type type;
+    ast_hybrid_assignment_type type; //!< Type of hybrid assignment.
 } ast_hybrid_assignment;
 
 //! Top level descriptor for an assignment.
 struct ast_assignment_t{
-    ast_assignment_type type;
+    ast_assignment_type type;   //!< Which element of the internal union to use.
     union{
-        ast_continuous_assignment * continuous;
-        ast_procedural_assignment * procedural;
-        ast_hybrid_assignment     * hybrid;
+        ast_continuous_assignment * continuous; //!< The continuous assignment.
+        ast_procedural_assignment * procedural; //!< The procedural assignment.
+        ast_hybrid_assignment     * hybrid; //!< The hybrid special assignment.
     };
 };
 
@@ -1188,44 +1189,46 @@ struct ast_assignment_t{
 @brief Creates a new hybrid assignment of the specified type.
 */
 ast_assignment * ast_new_hybrid_assignment(
-    ast_hybrid_assignment_type type,
-    ast_single_assignment * assignment
+    ast_hybrid_assignment_type type,    //!< The assignment type.
+    ast_single_assignment * assignment  //!< The things being assigned.
 );
 
 /*!
 @brief Creates a new hybrid assignment of the specified type.
 */
 ast_assignment * ast_new_hybrid_lval_assignment(
-    ast_hybrid_assignment_type type,
-    ast_lvalue * lval
+    ast_hybrid_assignment_type type, //!< FORCE or (DE)ASSIGN.
+    ast_lvalue * lval   //!< The thing to change.
 );
 
 /*!
 @brief Creates and returns a new blocking procedural assignment object.
 */
 ast_assignment * ast_new_blocking_assignment(
-    ast_lvalue * lval,
-    ast_expression  * expression,
-    ast_timing_control_statement* delay_or_event
+    ast_lvalue * lval, //!< The net/variable being assigned to.
+    ast_expression  * expression,   //!< Assign it this value.
+    ast_timing_control_statement* delay_or_event //!< The timing module
 );
 
 /*!
 @brief Creates and returns a new nonblocking procedural assignment object.
 */
 ast_assignment * ast_new_nonblocking_assignment(
-    ast_lvalue * lval,
-    ast_expression  * expression,
-    ast_timing_control_statement * delay_or_event
+    ast_lvalue * lval,  //!< The net/variable being assigned to.
+    ast_expression  * expression,   //!< The value it will take.
+    ast_timing_control_statement * delay_or_event //!< Timing model.
 );
 
 
 /*!
 @brief Creates and returns a new continuous assignment object.
+@brief All of the assignments will have the same drive strength and
+signal delay properties.
 */
 ast_assignment * ast_new_continuous_assignment(
-    ast_list * assignments,
-    ast_drive_strength * strength,
-    ast_delay3 * delay
+    ast_list * assignments, //!< The list of assignments to make.
+    ast_drive_strength * strength, //!< The drive strength
+    ast_delay3 * delay  //!< Delay in making the assignment.
 );
 
 
