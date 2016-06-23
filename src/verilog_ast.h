@@ -307,7 +307,10 @@ ast_function_call * ast_new_function_call(ast_identifier  id,
 numbers, identifiers etc.
 */
 
-//! Describes the kind of expression primary being represented.
+/*!
+@brief Describes the kind of expression primary being represented, and hence
+the sort of expression we are dealing with.
+*/
 typedef enum ast_primary_type_e
 {
     CONSTANT_PRIMARY,
@@ -330,43 +333,59 @@ typedef enum ast_primary_value_type_e
 //! The expression primary can produce several different sub-expressions:
 typedef union ast_primary_value_e
 {
-    ast_number          number;
-    ast_identifier      identifier;
-    ast_concatenation * concatenation;
-    ast_function_call * function_call;
+    ast_number          number;         //!< A single constant number
+    ast_identifier      identifier;     //!< Net or variable identifier.
+    ast_concatenation * concatenation;  //!< Concatenation of expressions.
+    ast_function_call * function_call;  //!< Call to a function.
     ast_minmax_exp      minmax;
-    ast_macro_use       macro;
+    ast_macro_use       macro;          //!< A MACRO expansion.
 } ast_primary_value;
 
-//! Stores the type and value of an AST primary expression.
+/*!
+@brief Stores the type and value of an AST primary expression.
+@details The following AST_PRIMARY_VALUE_TYPE values map to the following
+ast_primary_value_members:
+
+  - PRIMARY_NUMBER          : use value.number       
+  - PRIMARY_IDENTIFIER      : use value.identifier
+  - PRIMARY_CONCATENATION   : use value.concatenation
+  - PRIMARY_FUNCTION_CALL   : use value.function_call
+  - PRIMARY_MINMAX_EXP      : use value.minmax
+  - PRIMARY_MACRO_USAGE     : use value.macro        
+
+*/
 typedef struct ast_primary_t
 {
-    ast_primary_type        primary_type;
-    ast_primary_value_type  value_type;
-    ast_primary_value       value;
+    ast_primary_type        primary_type;   //!< @see ast_primary_type
+    ast_primary_value_type  value_type;     //!< @see ast_primary_value_type
+    ast_primary_value       value;          //!< @see ast_primary_value
 } ast_primary;
 
 
 /*!
 @brief Creates a new ast primary which is part of a constant expression tree
        with the supplied type and value.
+@param [in] type - Self explanatory
 */
 ast_primary * ast_new_constant_primary(ast_primary_value_type type);
 
 /*!
 @brief Creates a new AST primary wrapper around a function call.
+@param [in] call - The AST node representing a function call.
 */
 ast_primary * ast_new_primary_function_call(ast_function_call * call);
 
 /*!
 @brief Creates a new ast primary which is part of an expression tree
        with the supplied type and value.
+@param [in] type - Self explanatory
 */
 ast_primary * ast_new_primary(ast_primary_value_type type);
 
 /*!
 @brief Creates a new ast primary which is part of a constant expression tree
        with the supplied type and value.
+@param [in] type - Self explanatory
 */
 ast_primary * ast_new_module_path_primary(ast_primary_value_type type);
 
@@ -396,12 +415,20 @@ typedef enum ast_expression_type_e
     MODULE_PATH_UNARY_EXPRESSION,
     MODULE_PATH_CONDITIONAL_EXPRESSION,
     MODULE_PATH_MINTYPMAX_EXPRESSION,
-    STRING_EXPRESSION
+    STRING_EXPRESSION                 //!< Just a normal string. No operations.
 } ast_expression_type;
 
 
 /*! 
 @brief Storage type for an entire expression / subexpression tree.
+@details Each expression node has left and right children (unless it is a
+leaf) and an operation. The idea being that if the children are primaries,
+then we extract their value, perform the operation described in this node,
+and return up the expression tree, or recurse into a child expression as
+appropriate.
+@todo This part of the tree (and sub parts) is currently quite messy.
+When I come to actually using this for something practicle, I may end up
+re-writing it. That will be post the first "release" though.
 */
 struct ast_expression_t
 {
@@ -422,11 +449,17 @@ struct ast_expression_t
 primary instance for the purposes of mirroring the expression tree gramamr.
 Whether or not the expression is constant is denoted by the type member
 of the passed primary.
+@param [in] p - The primary to insert into the expression.
 */
 ast_expression * ast_new_expression_primary(ast_primary * p);
 
 /*!
 @brief Creates a new binary infix expression with the supplied operands.
+@param [in] left - LHS of the infix operation.
+@param [in] right - RHS of the infix operation.
+@param [in] operation - What do we do?!
+@param [in] attr - Attributes applied to the expression.
+@param [in] constant - Is this a constant expression we can simplify?
 */
 ast_expression * ast_new_binary_expression(ast_expression * left,
                                            ast_expression * right,
@@ -436,6 +469,10 @@ ast_expression * ast_new_binary_expression(ast_expression * left,
 
 /*!
 @brief Creates a new unary expression with the supplied operation.
+@param [in] operand - The thing to operate on.
+@param [in] operation - What do we do?!
+@param [in] attr - Expression attributes.
+@param [in] constant - Is this a constant expression we can simplify?
 */
 ast_expression * ast_new_unary_expression(ast_expression * operand,
                                           ast_operator     operation,
@@ -444,25 +481,55 @@ ast_expression * ast_new_unary_expression(ast_expression * operand,
 
 /*!
 @brief Creates a new range expression with the supplied operands.
+@param [in] left - The Upper range of the expression
+@param [in] right - The lower range of the expression.
+@details
+For example, when specifying a simple bus in verilog:
+
+@code
+wire [31:0] bus_data;
+@endcode
+
+Then the `31` would go into left, and the `0` into the right.
 */
 ast_expression * ast_new_range_expression(ast_expression * left,
                                           ast_expression * right);
 
 /*!
 @brief Creates a new range index expression with the supplied operands.
+@param [in] left - The single expression index into an array.
+@details Used to represent code like...
+
+@code
+wire [32:0] adder_result;
+assign overflow = adder_result[32];
+@endcode
+
+Here, accessing the 32nd bit of `adder_result` is an index expression.
 */
 ast_expression * ast_new_index_expression(ast_expression * left);
 
 /*!
 @brief Creates a new string expression.
+@param [in] string - The string. Duh.
 */
 ast_expression * ast_new_string_expression(ast_string string);
 
 
 /*!
 @brief Creates a new conditional expression node. 
+@param [in] condition - Decides which result expression is presented.
+@param [in] if_true - executed if condition == true (!0)
+@param [in] if_false - executed if condition == false (0).
+@param [in] attr - Attributes
 @note The condition is stored in the aux member, if_true in left, and if_false
 on the right.
+@details Can be used to represent ternary operations:
+
+@code
+assign stall = mem_error || mem_stall ? 1'b0 : global_stall;
+@endcode
+
 */
 ast_expression * ast_new_conditional_expression(ast_expression * condition,
                                                 ast_expression * if_true,
@@ -472,7 +539,10 @@ ast_expression * ast_new_conditional_expression(ast_expression * condition,
 /*!
 @brief Creates a new (min,typical,maximum) expression.
 @details If the mintypmax expression only specifies a typical value,
-then the min and max arguments should be NULL, and only typ set. 
+then the min and max arguments should be NULL, and only typ set.
+@param [in] min - Minimum value in the distribution.
+@param [in] typ - Typical / average.
+@param [in] max - Maximum value in the distribution.
 */
 ast_expression * ast_new_mintypmax_expression(ast_expression * min,
                                               ast_expression * typ,
