@@ -29,6 +29,7 @@
     ast_assignment               * assignment;
     ast_case_item                * case_item;
     ast_case_statement           * case_statement;
+    ast_cmos_switch_instance     * cmos_switch_instance ;
     ast_concatenation            * concatenation;
     ast_delay2                   * delay2;
     ast_delay3                   * delay3;
@@ -37,25 +38,46 @@
     ast_disable_statement        * disable_statement;
     ast_drive_strength           * drive_strength;
     ast_edge                       edge;
+    ast_enable_gate_instance     * enable_gate;
+    ast_enable_gate_instances    * enable_gates;
+    ast_enable_gatetype            enable_gatetype;
     ast_event_control            * event_control;
     ast_event_expression         * event_expression;
     ast_expression               * expression;
     ast_function_call            * call_function;
+    ast_gate_instantiation       * gate_instantiation;
+    ast_gatetype_n_input           n_input_gatetype;
+    ast_generate_block           * generate_block;
     ast_identifier                 identifier;
     ast_if_else                  * ifelse;
     ast_level_symbol               level_symbol;
     ast_list                     * list;
     ast_loop_statement           * loop_statement;
     ast_lvalue                   * lvalue;
+    ast_mos_switch_instance      * mos_switch_instance  ;
+    ast_n_input_gate_instance    * n_input_gate_instance;
+    ast_n_input_gate_instances   * n_input_gate_instances;
+    ast_n_output_gate_instance   * n_output_gate_instance;
+    ast_n_output_gate_instances  * n_output_gate_instances;
+    ast_n_output_gatetype          n_output_gatetype;
     ast_node                     * node;
     ast_node_attributes          * node_attributes;
     ast_operator                   operator;
+    ast_pass_enable_switch       * pass_enable_switch   ;
+    ast_pass_enable_switches     * pass_enable_switches;
+    ast_pass_switch_instance     * pass_switch_instance ;
     ast_path_declaration         * path_declaration;
+    ast_port_connection          * port_connection;
     ast_primary                  * primary;
+    ast_primitive_pull_strength  * primitive_pull;
+    ast_primitive_strength         primitive_strength;
+    ast_pull_gate_instance       * pull_gate_instance   ;
     ast_range                    * range;
     ast_single_assignment        * single_assignment;
+    ast_statement                * generate_item;
     ast_statement                * statement;
     ast_statement_block          * statement_block;
+    ast_switch_gate              * switch_gate;
     ast_task_enable_statement    * task_enable_statement;
     ast_timing_control_statement * timing_control_statement;
     ast_udp_body                 * udp_body;
@@ -68,29 +90,9 @@
     ast_udp_port                 * udp_port;
     ast_udp_sequential_entry     * udp_seqential_entry;
     ast_wait_statement           * wait_statement;
-    ast_port_connection          * port_connection;
-    ast_generate_block           * generate_block;
-    ast_statement                * generate_item;
-    ast_switch_gate              * switch_gate;
-    ast_primitive_pull_strength  * primitive_pull;
-    ast_primitive_strength         primitive_strength;
 
-    ast_pull_gate_instance       * pull_gate_instance   ;
-    ast_pass_switch_instance     * pass_switch_instance ;
-    ast_pass_enable_switch       * pass_enable_switch   ;
-    ast_pass_enable_switches     * pass_enable_switches;
-    ast_n_input_gate_instance    * n_input_gate_instance;
-    ast_mos_switch_instance      * mos_switch_instance  ;
-    ast_cmos_switch_instance     * cmos_switch_instance ;
-    ast_enable_gate_instance     * enable_gate;
-    ast_gatetype_n_input           n_input_gatetype;
-    ast_enable_gatetype            enable_gatetype;
-    ast_enable_gate_instances    * enable_gates;
-    ast_n_output_gatetype          n_output_gatetype;
-    ast_n_output_gate_instance   * n_output_gate_instance;
-    ast_n_output_gate_instances  * n_output_gate_instances;
-    ast_n_input_gate_instances   * n_input_gate_instances;
-    ast_gate_instantiation       * gate_instantiation;
+    ast_module_instance          * module_instance;
+    ast_module_instantiation     * module_instantiation;
 
     char                   boolean;
     char                 * string;
@@ -586,7 +588,7 @@
 %type   <n_input_gate_instances>     gate_n_input
 %type   <n_output_gate_instances>    gate_n_output
 %type   <n_output_gatetype>          gatetype_n_output
-%type   <node>                       generated_instantiation
+%type   <generate_block>             generated_instantiation
 %type   <node>                       genvar_declaration
 %type   <node>                       grammar_begin
 %type   <node>                       ifdef_directive
@@ -607,18 +609,18 @@
 %type   <node>                       line_directive
 %type   <node>                       local_parameter_declaration
 %type   <node>                       module_declaration
-%type   <node>                       module_instance
-%type   <node>                       module_instances
-%type   <node>                       module_instantiation
+%type   <module_instance>            module_instance
+%type   <list>                       module_instances
+%type   <module_instantiation>       module_instantiation
 %type   <node>                       module_item
 %type   <node>                       module_item_os
 %type   <node>                       module_or_generate_item_declaration
 %type   <node>                       module_parameter_port_list
 %type   <node>                       module_params
 %type   <n_output_gate_instance>     n_output_gate_instance
-%type   <node>                       name_of_gate_instance
-%type   <node>                       name_of_instance
-%type   <node>                       named_parameter_assignment
+%type   <identifier>                 name_of_gate_instance
+%type   <identifier>                 name_of_instance
+%type   <port_connection>            named_parameter_assignment
 %type   <node>                       net_dec_p_delay
 %type   <node>                       net_dec_p_ds
 %type   <node>                       net_dec_p_range
@@ -630,7 +632,7 @@
 %type   <node>                       net_type_o
 %type   <node>                       non_port_module_item
 %type   <node>                       non_port_module_item_os
-%type   <node>                       ordered_port_connection
+%type   <expression>                 ordered_port_connection
 %type   <node>                       output_declaration
 %type   <node>                       output_variable_type
 %type   <node>                       output_variable_type_o
@@ -712,9 +714,9 @@
 %type   <single_assignment>          variable_assignment
 %type   <statement>                  function_statement
 %type   <statement>                  function_statement_or_null
-%type   <statement>                  generate_case_statement
-%type   <statement>                  generate_conditional_statement
-%type   <statement>                  generate_loop_statement
+%type   <case_statement>             generate_case_statement
+%type   <ifelse>                     generate_conditional_statement
+%type   <loop_statement>             generate_loop_statement
 %type   <statement>                  module_or_generate_item
 %type   <statement>                  statement
 %type   <statement>                  statement_or_null
@@ -1645,7 +1647,7 @@ gate_n_input :
   }
 | gatetype_n_input OB output_terminal COMMA input_terminals CB {
     ast_n_input_gate_instance * gate = ast_new_n_input_gate_instance(
-        "un-named gate", $3,$5);
+        "un-named gate", $5,$3);
     ast_list * list = ast_list_new();
     ast_list_append(list,gate);
     $$ = ast_new_n_input_gate_instances($1,NULL,NULL,list);
@@ -1653,7 +1655,7 @@ gate_n_input :
 | gatetype_n_input OB output_terminal COMMA input_terminals CB 
   COMMA n_input_gate_instances{
     ast_n_input_gate_instance * gate = ast_new_n_input_gate_instance(
-        "un-named gate", $3,$5);
+        "un-named gate", $5,$3);
     ast_list * list = $8;
     ast_list_preappend(list,gate);
     $$ = ast_new_n_input_gate_instances($1,NULL,NULL,list);

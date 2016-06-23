@@ -1587,7 +1587,7 @@ ast_cmos_switch_instance * ast_new_cmos_switch_instance(
 @brief Creates and returns a new pass enable switch instance.
 */
 ast_pass_enable_switch * ast_new_pass_enable_switch(
-    ast_identifier    * name,
+    ast_identifier      name,
     ast_lvalue        * terminal_1,
     ast_lvalue        * terminal_2,
     ast_expression    * enable
@@ -1667,7 +1667,7 @@ ast_enable_gate_instances * ast_new_enable_gate_instances(
 @see ast_n_output_gate_instances
 */
 ast_n_output_gate_instance * ast_new_n_output_gate_instance(
-    ast_identifier              * name,
+    ast_identifier                name,
     ast_list                    * outputs,
     ast_expression              * input
 ){

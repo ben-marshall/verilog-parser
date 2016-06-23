@@ -1706,7 +1706,7 @@ typedef struct ast_cmos_switch_instance_t{
 
 //! A single pass enable switch with pass and enable terminals.
 typedef struct ast_pass_enable_switch_t{
-    ast_identifier    * name;
+    ast_identifier      name;
     ast_lvalue        * terminal_1;
     ast_lvalue        * terminal_2;
     ast_expression    * enable;
@@ -1738,7 +1738,7 @@ typedef enum ast_n_output_gatetype_e{
 
 //! Describes a single gate with one input and several outputs.
 typedef struct ast_n_output_gate_instance_t{
-    ast_identifier              * name;
+    ast_identifier                name;
     ast_list                    * outputs;
     ast_expression              * input;
 } ast_n_output_gate_instance;
@@ -1755,7 +1755,7 @@ typedef struct ast_n_output_gate_instances_t{
 @see ast_n_output_gate_instances
 */
 ast_n_output_gate_instance * ast_new_n_output_gate_instance(
-    ast_identifier              * name,
+    ast_identifier                name,
     ast_list                    * outputs,
     ast_expression              * input
 );
@@ -1783,7 +1783,7 @@ ast_pass_enable_switches * ast_new_pass_enable_switches(
 @brief Creates and returns a new pass enable switch instance.
 */
 ast_pass_enable_switch * ast_new_pass_enable_switch(
-    ast_identifier    * name,
+    ast_identifier      name,
     ast_lvalue        * terminal_1,
     ast_lvalue        * terminal_2,
     ast_expression    * enable
@@ -1871,8 +1871,8 @@ typedef struct ast_gate_instantiation_t{
         ast_n_input_gate_instances * n_in;
         ast_n_output_gate_instances * n_out;
         struct{
-            ast_pull_strength   * pull_strength;
-            ast_list            * pull_gates;
+            ast_primitive_pull_strength   * pull_strength;
+            ast_list                      * pull_gates;
         };
     };
 } ast_gate_instantiation;
