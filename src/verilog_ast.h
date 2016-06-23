@@ -25,26 +25,43 @@ typedef char * ast_identifier;
 
 //! Placeholder until this is implemented properly.
 typedef struct ast_concatenation_t ast_concatenation;
-
+ 
+//! Expression type over a struct
 typedef struct ast_expression_t ast_expression;
+//! Expression type over a struct
 typedef struct ast_function_call_t ast_function_call;
     
+//! \b Temporary typedef.
 typedef char * ast_operator     ;
 typedef char * ast_string       ;
+//! A set of lvalue and corresponding assigned expressions
 typedef struct ast_assignment_t ast_assignment;
+//! A single lvalue=expression assignment.
 typedef struct ast_single_assignment_t ast_single_assignment;
+//! Generate block (of statements) type.
 typedef struct ast_generate_block_t ast_generate_block;
+//! \b Temporary typedef.
 typedef void * ast_delay3       ;
+//! \b Temporary typedef.
 typedef void * ast_delay2       ;
+//! \b Temporary typedef.
 typedef void * ast_delay_value  ;
+//! \b Temporary typedef.
 typedef void * ast_drive_strength;
+//! \b Temporary typedef.
 typedef void * ast_macro_use    ;
+//! \b Temporary typedef.
 typedef void * ast_minmax_exp   ;
+//! \b Temporary typedef.
 typedef void * ast_number       ;
+//! \b Temporary typedef.
 typedef void * ast_range        ;
+//! \b Temporary typedef.
 typedef void * ast_output_symbol;
+//! \b Temporary typedef.
 typedef void * ast_module_or_generate_item;
 
+//! \b Temporary typedef.
 typedef struct ast_statement_t ast_statement;
 
 //! Stores the values of booleans.
@@ -56,17 +73,17 @@ typedef enum  ast_boolean_e
 
 //! Describes a rising or falling edge, or where none is specified.
 typedef enum ast_edge_e{
-    EDGE_POS,
-    EDGE_NEG,
-    EDGE_NONE,
-    EDGE_ANY 
+    EDGE_POS,   //! Positive edge
+    EDGE_NEG,   //! Negative edge
+    EDGE_NONE,  //! Not edge triggered
+    EDGE_ANY    //! Positive or negative edge.
 } ast_edge;
 
 //! Describes the direction of a port
 typedef enum ast_port_direction_e{
-    PORT_INPUT,
-    PORT_OUTPUT,
-    PORT_INOUT,
+    PORT_INPUT,     //!< Input port.
+    PORT_OUTPUT,    //!< Output port.
+    PORT_INOUT,     //!< Bi-directional port.
     PORT_NONE,  //!< Used for when we don't know at declaration time.
 } ast_port_direction;
 
@@ -96,11 +113,14 @@ struct ast_node_attributes_t
 /*!
 @brief Creates and returns a new attribute node with the specified value
        and name.
+@param [in] value - The attribute value being set to add to the node.
 */
 ast_node * ast_new_attribute_node( ast_node_attributes* value);
 
 /*!
 @brief Creates and returns as a pointer a new attribute descriptor.
+@param [in] name - The name of the parameter/attribute.
+@param [in] value - The value the attribute should take.
 */
 ast_node_attributes * ast_new_attributes(
     ast_identifier name, 
@@ -131,11 +151,11 @@ module paths.
 //! Describes the type of concatenation being dealt with.
 typedef enum ast_concatenation_type_e
 {
-    CONCATENATION_EXPRESSION,
-    CONCATENATION_CONSTANT_EXPRESSION,
-    CONCATENATION_NET,
-    CONCATENATION_VARIABLE,
-    CONCATENATION_MODULE_PATH
+    CONCATENATION_EXPRESSION,           //!< A set of expressions concatenated
+    CONCATENATION_CONSTANT_EXPRESSION,  //!< Constant expressions
+    CONCATENATION_NET,                  //!< Net name concatenation (lvalue)
+    CONCATENATION_VARIABLE,             //!< Variable name concatenation (lvalue)
+    CONCATENATION_MODULE_PATH           //!< Module path concatenation.
 } ast_concatenation_type;
 
 //! Fully describes a concatenation in terms of type and data.
@@ -149,13 +169,15 @@ struct ast_concatenation_t{
 @brief Creates a new AST concatenation element with the supplied type and
 initial starting value.
 @param [in] repeat - Used for replications or multiple_concatenation
+@param [in] type - What sort of values are being concatenated?
+@param [in] first_value - The first element of the concatentation.
 @details Depending on the type supplied, the type of first_value
 should be:
     - CONCATENATION_EXPRESSION          : ast_expression
     - CONCATENATION_CONSTANT_EXPRESSION : ast_expression
-    - CONCATENATION_NET                 : TBD
-    - CONCATENATION_VARIABLE            : TBD
-    - CONCATENATION_MODULE_PATH         : TBD
+    - CONCATENATION_NET                 : ast_identifier
+    - CONCATENATION_VARIABLE            : ast_identifer
+    - CONCATENATION_MODULE_PATH         : ast_identifier
 */
 ast_concatenation * ast_new_concatenation(ast_concatenation_type type,
                                           ast_expression * repeat,
@@ -163,13 +185,15 @@ ast_concatenation * ast_new_concatenation(ast_concatenation_type type,
 
 /*!
 @brief Creates and returns a new empty concatenation of the specified type.
+@param [in] type - What sort of values are being concatenated?
 */
 ast_concatenation * ast_new_empty_concatenation(ast_concatenation_type type);
 
 /*!
 @brief Adds a new data element on to the *front* of a concatenation.
-@details Appends to the front because this naturally follows the
-behaviour of a left-recursive grammar.
+@param [inout] element - THe concantenation being extended,
+@param [in] repeat - Is the concatenation repeated?
+@param [in] data - The item to add to the concatenation sequence.
 */
 void                ast_extend_concatenation(ast_concatenation * element,
                                              ast_expression * repeat,
@@ -192,11 +216,11 @@ of an assignment.
 */
 typedef enum ast_lvalue_type_e
 {
-    NET_IDENTIFIER,
-    VAR_IDENTIFIER,
-    GENVAR_IDENTIFIER,
-    NET_CONCATENATION,
-    VAR_CONCATENATION
+    NET_IDENTIFIER,     //!< Identifies a wire/reg
+    VAR_IDENTIFIER,     //!< Identifies a variable
+    GENVAR_IDENTIFIER,  //!< Generateor variable.
+    NET_CONCATENATION,  //!< Concatenation of net identifiers
+    VAR_CONCATENATION   //!< Concatenation of variable identifiers.
 } ast_lvalue_type;
 
 /*!
@@ -260,6 +284,10 @@ struct ast_function_call_t {
 @param [in] arguments - list of elements of type ast_expression
 representing the various parameters to the function. If the function has
 no arguments, then it is an empty list, not NULL.
+@param [in] id - Function identifier / name
+@param [in] constant - Does this function return a constant value?
+@param [in] system - Is this a system function?
+@param [in] attr - Attributes for vendor specific tool features.
 */
 ast_function_call * ast_new_function_call(ast_identifier  id,
                                           ast_boolean     constant,
