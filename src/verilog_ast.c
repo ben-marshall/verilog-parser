@@ -9,16 +9,37 @@
 
 #include "verilog_ast.h"
 
+/*!
+@defgroup ast-utility-mem-manage Memory Management
+@{
+    @brief Helps to manage memory allocated during AST construction.
+@ingroup ast-utility
+*/
+
+/*!
+@brief A simple linked list element holder for just about everything.
+*/
 typedef struct ast_alloc_t ast_alloc;
 struct ast_alloc_t{
-    ast_alloc * next;
-    void * data;
+    ast_alloc * next;   //!< Next element in the linked list.
+    void * data;        //!< Data held in the list.
 };
 
+//! Used to store the head of the linked list of allocated data.
 ast_alloc * head = NULL;
+//! Used to walk along the list when adding or freeing.
 ast_alloc * walker = NULL;
 
-//! A wrapper arround calloc to make it easier to free the tree.
+/*!
+@brief A simple wrapper around calloc.
+@details This function is identical to calloc, but uses the head and
+walker variables above to keep a linked list of all heap memory that the
+AST construction allocates. This makes it very easy to clean up afterward
+using the @ref ast_free_all function.
+@param [in] num - Number of elements to allocate space for.
+@param [in] size - The size of each element being allocated.
+@returns A pointer to the start of the block of memory allocated.
+*/
 void * ast_calloc(size_t num, size_t size)
 {
     if(head == NULL)
@@ -36,10 +57,17 @@ void * ast_calloc(size_t num, size_t size)
     return walker -> data;
 }
 
-//! Iterates over all allocated memory and frees it.
+/*!
+@brief Frees all memory allocated using @ref ast_calloc.
+@details Free's all data stored in the linked list pointed to by the
+@ref head variable.
+@post @ref walker and @ref head are NULL. All memory allocated by ast_calloc
+has been freed.
+*/
 void ast_free_all()
 {
-    printf("Freeing AST... "); fflush(stdout);
+    if(head == NULL)
+        return; // No memory was allocated in the first place.
 
     while(head -> next != NULL)
     {
@@ -49,11 +77,15 @@ void ast_free_all()
         free(walker);
     }
 
-    printf("[DONE]\n"); fflush(stdout);
+    walker = NULL;
+    head = NULL;
 }
+
+/*!@}*/
 
 /*!
 @brief Creates a new empty ast_node and returns it.
+@deprecated Do not use!
 */
 ast_node * ast_node_new()
 {
