@@ -96,6 +96,7 @@
     ast_parameter_declarations   * parameter_declaration;
     ast_port_declaration         * port_declaration;
     ast_net_type                   net_type;
+    ast_type_declaration         * type_declaration;
 
     char                   boolean;
     char                 * string;
@@ -581,7 +582,7 @@
 %type   <node>                       eq_const_exp_o
 %type   <node>                       error_limit_value
 %type   <node>                       error_limit_value_o
-%type   <node>                       event_declaration
+%type   <type_declaration>           event_declaration
 %type   <node>                       file_path_spec
 %type   <node>                       file_path_specs
 %type   <node>                       function_declaration
@@ -592,7 +593,7 @@
 %type   <n_output_gate_instances>    gate_n_output
 %type   <n_output_gatetype>          gatetype_n_output
 %type   <generate_block>             generated_instantiation
-%type   <node>                       genvar_declaration
+%type   <type_declaration>           genvar_declaration
 %type   <node>                       grammar_begin
 %type   <node>                       ifdef_directive
 %type   <node>                       ifndef_directive
@@ -603,7 +604,7 @@
 %type   <port_declaration>           input_declaration
 %type   <node>                       inst_clause
 %type   <node>                       inst_name
-%type   <node>                       integer_declaration
+%type   <type_declaration>           integer_declaration
 %type   <node>                       liblist_clause
 %type   <node>                       library_declaration
 %type   <node>                       library_descriptions
@@ -624,13 +625,13 @@
 %type   <identifier>                 name_of_gate_instance
 %type   <identifier>                 name_of_instance
 %type   <port_connection>            named_parameter_assignment
-%type   <node>                       net_dec_p_delay
-%type   <node>                       net_dec_p_ds
-%type   <node>                       net_dec_p_range
-%type   <node>                       net_dec_p_si
-%type   <node>                       net_dec_p_vs
+%type   <type_declaration>           net_dec_p_delay
+%type   <type_declaration>           net_dec_p_ds
+%type   <type_declaration>           net_dec_p_range
+%type   <type_declaration>           net_dec_p_si
+%type   <type_declaration>           net_dec_p_vs
 %type   <node>                       net_decl_assignment
-%type   <node>                       net_declaration
+%type   <type_declaration>           net_declaration
 %type   <net_type>                   net_type
 %type   <net_type>                   net_type_o
 %type   <node>                       non_port_module_item
@@ -650,12 +651,12 @@
 %type   <node>                       pulse_control_specparam
 %type   <node>                       pulsestyle_declaration
 %type   <node>                       range_or_type
-%type   <node>                       real_declaration
+%type   <type_declaration>           real_declaration
 %type   <node>                       real_type
-%type   <node>                       realtime_declaration
-%type   <node>                       reg_dec_p_range
-%type   <node>                       reg_dec_p_signed
-%type   <node>                       reg_declaration
+%type   <type_declaration>           realtime_declaration
+%type   <type_declaration>           reg_dec_p_range
+%type   <type_declaration>           reg_dec_p_signed
+%type   <type_declaration>           reg_declaration
 %type   <node>                       reject_limit_value
 %type   <node>                       showcancelled_declaration
 %type   <node>                       source_text
@@ -674,7 +675,7 @@
 %type   <node>                       tf_input_declaration
 %type   <node>                       tf_output_declaration
 %type   <node>                       time
-%type   <node>                       time_declaration
+%type   <type_declaration>           time_declaration
 %type   <node>                       timescale_directive
 %type   <node>                       undefine_compiler_directive
 %type   <node>                       use_clause
@@ -1199,59 +1200,134 @@ NET_TYPE_NONE,$3,$2,AST_FALSE,$4,$5);
 
 /* A.2.1.3 Type declarations */
 
-event_declaration   : KW_EVENT list_of_event_identifiers SEMICOLON ;
-genvar_declaration  : KW_GENVAR list_of_genvar_identifiers SEMICOLON ;
-integer_declaration : KW_INTEGER list_of_variable_identifiers SEMICOLON ;
+event_declaration   : KW_EVENT list_of_event_identifiers SEMICOLON {
+    $$ = ast_new_type_declaration(DECLARE_EVENT);   
+    $$ -> identifiers = $2;
+};
+genvar_declaration  : KW_GENVAR list_of_genvar_identifiers SEMICOLON {
+    $$ = ast_new_type_declaration(DECLARE_GENVAR);   
+    $$ -> identifiers = $2;
+};
+integer_declaration : KW_INTEGER list_of_variable_identifiers SEMICOLON{
+    $$ = ast_new_type_declaration(DECLARE_INTEGER);   
+    $$ -> identifiers = $2;
+} ;
+time_declaration    : KW_TIME list_of_variable_identifiers SEMICOLON{
+    $$ = ast_new_type_declaration(DECLARE_TIME);   
+    $$ -> identifiers = $2;
+} ;
+real_declaration    : KW_REAL list_of_real_identifiers SEMICOLON{
+    $$ = ast_new_type_declaration(DECLARE_REAL);   
+    $$ -> identifiers = $2;
+} ;
+realtime_declaration: KW_REALTIME list_of_real_identifiers SEMICOLON{
+    $$ = ast_new_type_declaration(DECLARE_REALTIME);   
+    $$ -> identifiers = $2;
+} ;
+
+delay3_o            : delay3 {$$=$1;}| {$$=NULL;};
+drive_strength_o    : drive_strength {$$=$1;}| {$$=NULL;};
+
+net_declaration : 
+  net_type                  net_dec_p_ds{
+    $$ = $2;
+    $$ -> net_type = $1;
+  }
+| net_type  drive_strength  net_dec_p_ds{
+    $$ = $3;
+    $$ -> net_type = $1;
+    $$ -> drive_strength = $2;
+  }
+| KW_TRIREG                 net_dec_p_ds{
+    $$ = $2;
+    $$ -> net_type = NET_TYPE_TRIREG;
+  }
+| KW_TRIREG drive_strength  net_dec_p_ds{
+    $$ = $2;
+    $$ -> drive_strength = $2;
+    $$ -> net_type = NET_TYPE_TRIREG;
+  }
+| KW_TRIREG charge_strength net_dec_p_ds{
+    $$ = $2;
+    $$ -> charge_strength = $2;
+    $$ -> net_type = NET_TYPE_TRIREG;
+  }
+;
+
+net_dec_p_ds    : 
+  KW_VECTORED net_dec_p_vs{
+    $$ = $2;
+    $$ -> vectored = AST_TRUE;
+  }
+| KW_SCALARED net_dec_p_vs {
+    $$ = $2;
+    $$ -> scalared = AST_TRUE;
+  }
+| net_dec_p_vs{ $$= $1;}
+;
+
+net_dec_p_vs    : 
+  KW_SIGNED net_dec_p_si {
+    $$ = $2;
+    $$ -> is_signed = AST_TRUE;
+  }
+| net_dec_p_si {$$=$1;}
+;
+
+net_dec_p_si    : 
+  range net_dec_p_range{
+    $$ = $2;
+    $$ -> range = $1;
+  }
+| net_dec_p_range {$$ =$1;}
+;
+
+net_dec_p_range : 
+  delay3  net_dec_p_delay{
+    $$ = $2;
+    $$ -> delay = $1;
+  }
+| net_dec_p_delay {$$ = $1;}
+;
+
+net_dec_p_delay : 
+  list_of_net_identifiers  SEMICOLON{
+    $$ = ast_new_type_declaration(DECLARE_NET);
+    $$ -> identifiers = $1;
+  }
+| list_of_net_decl_assignments  SEMICOLON{
+    $$ = ast_new_type_declaration(DECLARE_NET);
+    $$ -> identifiers = $1;
+  }
+;
 
 
-delay3_o            : delay3 | ;
-drive_strength_o    : drive_strength | ;
 
-net_declaration : net_type                  net_dec_p_ds
-                | net_type  drive_strength  net_dec_p_ds
-                | KW_TRIREG                 net_dec_p_ds
-                | KW_TRIREG drive_strength  net_dec_p_ds
-                | KW_TRIREG charge_strength net_dec_p_ds
-                ;
+reg_declaration     : 
+  KW_REG KW_SIGNED reg_dec_p_signed{
+    $$ = $3;
+    $$ -> is_signed = AST_TRUE;
+  }
+| KW_REG reg_dec_p_signed{
+    $$ = $2;
+    $$ -> is_signed = AST_FALSE;
+  }
+;
 
-net_dec_p_ds    : KW_VECTORED                   net_dec_p_vs
-                | KW_SCALARED                   net_dec_p_vs
-                | net_dec_p_vs
-                ;
+reg_dec_p_signed    : 
+  range reg_dec_p_range {
+      $$ = $2;
+      $$ -> range = $1;
+  }
+| reg_dec_p_range {$$=$1;}
+;
 
-net_dec_p_vs    : KW_SIGNED                     net_dec_p_si
-                | net_dec_p_si
-                ;
-
-net_dec_p_si    : range                         net_dec_p_range
-                | net_dec_p_range
-                ;
-
-net_dec_p_range : delay3                        net_dec_p_delay
-                | net_dec_p_delay
-                ;
-
-net_dec_p_delay : list_of_net_identifiers       SEMICOLON
-                | list_of_net_decl_assignments  SEMICOLON
-                ;
-
-
-real_declaration    : KW_REAL list_of_real_identifiers SEMICOLON ;
-
-realtime_declaration: KW_REALTIME list_of_real_identifiers SEMICOLON ;
-
-reg_declaration     : KW_REG KW_SIGNED reg_dec_p_signed
-                    | KW_REG reg_dec_p_signed
+reg_dec_p_range     : list_of_variable_identifiers SEMICOLON{
+    $$ = ast_new_type_declaration(DECLARE_REG);
+    $$ -> identifiers = $1;
+}
                     ;
 
-reg_dec_p_signed    : range reg_dec_p_range
-                    | reg_dec_p_range
-                    ;
-
-reg_dec_p_range     : list_of_variable_identifiers SEMICOLON
-                    ;
-
-time_declaration    : KW_TIME list_of_variable_identifiers SEMICOLON ;
 
 /* 2.2.1 Net and variable types */
 

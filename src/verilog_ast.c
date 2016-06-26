@@ -1827,3 +1827,31 @@ ast_port_declaration * ast_new_port_declaration(
     
     return tr;
 }
+
+/*!
+@brief Creates and returns a node to represent the declaration of a new
+module item construct.
+@details Because of the complex nature of the grammar for these declarations,
+(bourne from the number of optional modifiers) no single constructor function
+is provided. Rather, one can create a new type declaration of a
+known type, but must otherwise fill out the data members as they go along.
+All pointer members are initialised to NULL, and all boolean members will
+initially be false.
+*/
+ast_type_declaration * ast_new_type_declaration(ast_declaration_type type)
+{
+    ast_type_declaration * tr = calloc(1,sizeof(ast_type_declaration));
+
+    tr -> type = type;
+    tr -> identifiers = NULL;
+    tr -> delay = NULL;
+    tr -> drive_strength = NULL;
+    tr -> charge_strength = NULL;
+    tr -> range = NULL;
+    tr -> vectored = AST_FALSE;
+    tr -> scalared = AST_FALSE;
+    tr -> is_signed = AST_FALSE;
+    tr -> net_type  = NET_TYPE_NONE;
+
+    return tr;
+}   

@@ -49,6 +49,8 @@ typedef void * ast_delay_value  ;
 //! \b Temporary typedef.
 typedef void * ast_drive_strength;
 //! \b Temporary typedef.
+typedef void * ast_charge_strength;
+//! \b Temporary typedef.
 typedef void * ast_macro_use    ;
 //! \b Temporary typedef.
 typedef void * ast_minmax_exp   ;
@@ -2078,18 +2080,6 @@ ast_gate_instantiation * ast_new_gate_instantiation(ast_gate_type type);
 
 /*! @} */
 
-// -------------------------------- Type Declarations ------------------------
-
-/*!
-@defgroup ast-node-type-declaration Type Declaration
-@{
-@ingroup ast-construction
-@brief Custom type declarations.
-*/
-
-
-
-/*! @} */
 
 // -------------------------------- Port Declarations ------------------------
 
@@ -2107,6 +2097,7 @@ typedef enum ast_net_type_e{
     NET_TYPE_TRI,
     NET_TYPE_TRIAND,
     NET_TYPE_TRIOR,
+    NET_TYPE_TRIREG,
     NET_TYPE_WIRE,
     NET_TYPE_WAND,
     NET_TYPE_WOR,
@@ -2136,6 +2127,60 @@ ast_port_declaration * ast_new_port_declaration(
     ast_range         * range,          //!< [in] Bus width.
     ast_list          * port_names      //!< [in] The names of the ports.
 );
+
+/*! @} */
+
+// -------------------------------- Type Declarations ------------------------
+
+/*!
+@defgroup ast-node-type-declaration Type Declaration
+@{
+@ingroup ast-construction
+@brief Custom type declarations.
+*/
+
+//! Describes the datatype of the construct being declared.
+typedef enum ast_declaration_type_e{
+    DECLARE_EVENT,
+    DECLARE_GENVAR,
+    DECLARE_INTEGER,
+    DECLARE_TIME,
+    DECLARE_REALTIME,
+    DECLARE_REAL,
+    DECLARE_NET,
+    DECLARE_REG,
+    DECLARE_UNKNOWN //!< For when we don't know the type when instancing.
+} ast_declaration_type;
+
+/*! 
+@brief Fully describes the declaration of elements one might find inside a
+module.
+@todo Clean this up to avoid accessing members which are mutually exclusive
+*/
+typedef struct ast_type_declaration_t{
+    ast_declaration_type  type;
+    ast_net_type          net_type;
+    ast_list            * identifiers;
+    ast_delay3          * delay;
+    ast_drive_strength  * drive_strength;
+    ast_charge_strength * charge_strength;
+    ast_boolean           vectored;
+    ast_boolean           scalared;
+    ast_boolean           is_signed;
+    ast_range           * range;
+} ast_type_declaration;
+
+/*!
+@brief Creates and returns a node to represent the declaration of a new
+module item construct.
+@details Because of the complex nature of the grammar for these declarations,
+(bourne from the number of optional modifiers) no single constructor function
+is provided. Rather, one can create a new type declaration of a
+known type, but must otherwise fill out the data members as they go along.
+All pointer members are initialised to NULL, and all boolean members will
+initially be false.
+*/
+ast_type_declaration * ast_new_type_declaration(ast_declaration_type type);
 
 /*! @} */
 
