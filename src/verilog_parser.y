@@ -94,6 +94,7 @@
     ast_module_instance          * module_instance;
     ast_module_instantiation     * module_instantiation;
     ast_parameter_declarations   * parameter_declaration;
+    ast_parameter_type             parameter_type;
     ast_port_declaration         * port_declaration;
     ast_net_type                   net_type;
     ast_type_declaration         * type_declaration;
@@ -577,8 +578,8 @@
 %type   <node>                       description
 %type   <node>                       design_statement
 %type   <node>                       dimension
-%type   <node>                       dimensions
-%type   <node>                       dimensions_o
+%type   <list>                       dimensions
+%type   <list>                       dimensions_o
 %type   <node>                       eq_const_exp_o
 %type   <node>                       error_limit_value
 %type   <node>                       error_limit_value_o
@@ -638,8 +639,8 @@
 %type   <node>                       non_port_module_item_os
 %type   <expression>                 ordered_port_connection
 %type   <port_declaration>           output_declaration
-%type   <node>                       output_variable_type
-%type   <node>                       output_variable_type_o
+%type   <parameter_type>             output_variable_type
+%type   <parameter_type>             output_variable_type_o
 %type   <parameter_declaration>      parameter_declaration
 %type   <node>                       parameter_override
 %type   <node>                       port
@@ -652,7 +653,7 @@
 %type   <node>                       pulsestyle_declaration
 %type   <node>                       range_or_type
 %type   <type_declaration>           real_declaration
-%type   <node>                       real_type
+%type   <identifier>                 real_type
 %type   <type_declaration>           realtime_declaration
 %type   <type_declaration>           reg_dec_p_range
 %type   <type_declaration>           reg_dec_p_signed
@@ -679,7 +680,7 @@
 %type   <node>                       timescale_directive
 %type   <node>                       undefine_compiler_directive
 %type   <node>                       use_clause
-%type   <node>                       variable_type
+%type   <identifier>                 variable_type
 %type   <node_attributes>            attr_spec
 %type   <node_attributes>            attr_specs
 %type   <node_attributes>            attribute_instances
@@ -1331,29 +1332,44 @@ reg_dec_p_range     : list_of_variable_identifiers SEMICOLON{
 
 /* 2.2.1 Net and variable types */
 
-net_type            : KW_SUPPLY0 | KW_SUPPLY1 | KW_TRI  | KW_TRIAND | 
-                      KW_TRIOR   | KW_WIRE    | KW_WAND | KW_WOR
+net_type            : 
+  KW_SUPPLY0 { $$ = NET_TYPE_SUPPLY0 ;}
+| KW_SUPPLY1 { $$ = NET_TYPE_SUPPLY1 ;}
+| KW_TRI     { $$ = NET_TYPE_TRI     ;}
+| KW_TRIAND  { $$ = NET_TYPE_TRIAND  ;}
+| KW_TRIOR   { $$ = NET_TYPE_TRIOR   ;}
+| KW_WIRE    { $$ = NET_TYPE_WIRE    ;}
+| KW_WAND    { $$ = NET_TYPE_WAND    ;}
+| KW_WOR     { $$ = NET_TYPE_WOR     ;}
+;
+
+output_variable_type_o : output_variable_type {$$= $1;} |{$$=PARAM_GENERIC;};
+output_variable_type: KW_INTEGER{$$=PARAM_INTEGER;}
+                    | KW_TIME{$$=PARAM_INTEGER;}
                     ;
 
-output_variable_type_o : output_variable_type | ;
-output_variable_type: KW_INTEGER
-                    | KW_TIME
-                    ;
+real_type : real_identifier {$$=$1; /* TODO FIXME */}
+          | real_identifier EQ constant_expression{$$=$1; /* TODO FIXME */}
+          | real_identifier dimension dimensions{$$=$1; /* TODO FIXME */}
+          ;
 
-real_type           : real_identifier 
-                    | real_identifier EQ constant_expression
-                    | real_identifier dimension dimensions
-                    ;
+dimensions          : 
+  dimension {
+    $$=ast_list_new();
+    ast_list_append($$,$1);
+   }
+ | dimensions dimension {
+    $$ = $1;
+    ast_list_append($$,$2);
+   }
+ | {$$ = ast_list_new();}
+ ;
 
-dimensions          : dimension
-                    | dimensions dimension
-                    |
-                    ;
-
-variable_type       : variable_identifier 
-                    | variable_identifier EQ constant_expression
-                    | variable_identifier dimension dimensions
-                    ;
+variable_type : 
+  variable_identifier {$$=$1; /* TODO FIXME */}
+| variable_identifier EQ constant_expression{$$=$1; /* TODO FIXME */}
+| variable_identifier dimension dimensions{$$=$1; /* TODO FIXME */}
+;
 
 /* A.2.2.2 Strengths */
 
