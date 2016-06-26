@@ -41,11 +41,11 @@ typedef struct ast_single_assignment_t ast_single_assignment;
 //! Generate block (of statements) type.
 typedef struct ast_generate_block_t ast_generate_block;
 //! \b Temporary typedef.
-typedef void * ast_delay3       ;
+typedef struct ast_delay3_t ast_delay3;
 //! \b Temporary typedef.
-typedef void * ast_delay2       ;
+typedef struct ast_delay2_t ast_delay2;
 //! \b Temporary typedef.
-typedef void * ast_delay_value  ;
+typedef struct ast_delay_value_t ast_delay_value  ;
 //! \b Temporary typedef.
 typedef void * ast_drive_strength;
 //! \b Temporary typedef.
@@ -1645,21 +1645,21 @@ typedef enum ast_switchtype_e{
 typedef struct ast_switch_gate_t{
     ast_switchtype type;
     union {
-        ast_delay3 delay3;
-        ast_delay2 delay2; //!< IFF type == TRAN or RTRAN
+        ast_delay3 * delay3;
+        ast_delay2 * delay2; //!< IFF type == TRAN or RTRAN
     };
 } ast_switch_gate;
 
 //! Instances a new switch type with a delay3.
 ast_switch_gate * ast_new_switch_gate_d3(
     ast_switchtype type,
-    ast_delay3     delay
+    ast_delay3     * delay
 );
 
 //! Instances a new switch type with a delay2.
 ast_switch_gate * ast_new_switch_gate_d2(
     ast_switchtype type,
-    ast_delay2     delay
+    ast_delay2     * delay
 );
 
 //! Describes the drive strength of a single primitive.
@@ -1827,7 +1827,7 @@ delay characteristics.
 */
 typedef struct ast_pass_enable_switches_t{
     ast_pass_enable_switchtype    type;
-    ast_delay2                    delay;
+    ast_delay2                  * delay;
     ast_list                    * switches;
 } ast_pass_enable_switches;
 
@@ -1876,7 +1876,7 @@ ast_n_output_gate_instances * ast_new_n_output_gate_instances(
 */
 ast_pass_enable_switches * ast_new_pass_enable_switches(
     ast_pass_enable_switchtype    type,
-    ast_delay2                    delay,
+    ast_delay2                  * delay,
     ast_list                    * switches 
 );
 
@@ -2048,6 +2048,63 @@ ast_gate_instantiation * ast_new_gate_instantiation(ast_gate_type type);
 @brief Signal propagation delays
 */
 
+//! Describes the union member of an ast_delay_value structure to be accessed.
+typedef enum ast_delay_value_type_e{
+    DELAY_VAL_PARAMETER,
+    DELAY_VAL_SPECPARAM,
+    DELAY_VAL_NUMBER,
+    DELAY_VAL_MINTYPMAX
+} ast_delay_value_type;
+
+//! Describes the type and value of a delay specifier.
+typedef struct ast_delay_value_t{
+    ast_delay_value_type type;
+    union{
+        ast_identifier parameter_id;
+        ast_identifier specparam_id;
+        ast_number     unsigned_number;
+        ast_minmax_exp mintypmax;
+        void        *  data;
+    };
+} ast_delay_value;
+
+//! Describes a 3 point delay distribution.
+struct ast_delay3_t{
+    ast_delay_value * min;
+    ast_delay_value * max;
+    ast_delay_value * avg;
+};
+
+//! Describes a 2 point delay distribution.
+struct ast_delay2_t{
+    ast_delay_value * min;
+    ast_delay_value * max;
+};
+
+/*!
+@brief Create a new delay value.
+*/
+ast_delay_value * ast_new_delay_value(
+    ast_delay_value_type type,
+    void * data
+);
+
+/*!
+@brief Create a new delay3 instance.
+*/
+ast_delay3 * ast_new_delay3(
+    ast_delay_value * min,
+    ast_delay_value * avg,
+    ast_delay_value * max
+);
+
+/*!
+@brief Create a new delay2 instance.
+*/
+ast_delay2 * ast_new_delay2(
+    ast_delay_value * min,
+    ast_delay_value * max
+);
 
 
 /*! @} */

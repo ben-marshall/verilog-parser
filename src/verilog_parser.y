@@ -1415,27 +1415,49 @@ charge_strength : OPEN_BRACKET KW_SMALL CLOSE_BRACKET  {$$=CHARGE_SMALL;}
 
 /* A.2.2.3 Delays */
 
-delay3              : HASH delay_value
-                    | HASH OPEN_BRACKET delay_value CLOSE_BRACKET
-                    | HASH OPEN_BRACKET delay_value COMMA delay_value 
-                      CLOSE_BRACKET
-                    | HASH OPEN_BRACKET delay_value COMMA delay_value COMMA 
-                      delay_value CLOSE_BRACKET
-                    |
-                    ;
+delay3 :
+  HASH delay_value{
+    $$ = ast_new_delay3($2,$2,$2);
+  }
+| HASH OPEN_BRACKET delay_value CLOSE_BRACKET{
+    $$ = ast_new_delay3($3,$3,$3);
+  }
+| HASH OPEN_BRACKET delay_value COMMA delay_value CLOSE_BRACKET{
+    $$ = ast_new_delay3($3,NULL,$5);
+  }
+| HASH OPEN_BRACKET delay_value COMMA delay_value COMMA delay_value CB{
+    $$ = ast_new_delay3($3,$5,$7);
+  }
+| {$$ = ast_new_delay3(NULL,NULL,NULL);}
+;
 
-delay2              : HASH delay_value
-                    | HASH OPEN_BRACKET delay_value CLOSE_BRACKET
-                    | HASH OPEN_BRACKET delay_value COMMA delay_value 
-                      CLOSE_BRACKET
-                    |
-                    ;
+delay2    : 
+  HASH delay_value{
+    $$ = ast_new_delay2($2,$2);
+  }
+| HASH OPEN_BRACKET delay_value CLOSE_BRACKET{
+    $$ = ast_new_delay2($3,$3);
+  }
+| HASH OPEN_BRACKET delay_value COMMA delay_value CLOSE_BRACKET{
+    $$ = ast_new_delay2($3,$5);
+  }
+| {$$ = ast_new_delay2(NULL,NULL);}
+;
 
-delay_value         : unsigned_number
-                    | parameter_identifier
-                    | specparam_identifier
-                    | mintypmax_expression
-                    ;
+delay_value : 
+  unsigned_number {
+      $$ = ast_new_delay_value(DELAY_VAL_NUMBER, $1);
+  }
+| parameter_identifier{
+      $$ = ast_new_delay_value(DELAY_VAL_PARAMETER, $1);
+  }
+| specparam_identifier{
+      $$ = ast_new_delay_value(DELAY_VAL_SPECPARAM, $1);
+  }
+| mintypmax_expression{
+      $$ = ast_new_delay_value(DELAY_VAL_MINTYPMAX, $1);
+  }
+;
 
 /* A.2.3 Declaration Lists */
 

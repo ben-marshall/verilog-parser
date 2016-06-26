@@ -1473,7 +1473,7 @@ ast_port_connection * ast_new_named_port_connection(
 //! Instances a new switch type with a delay3.
 ast_switch_gate * ast_new_switch_gate_d3(
     ast_switchtype type,
-    ast_delay3     delay
+    ast_delay3    * delay
 ){
     assert(type != SWITCH_TRAN && type != SWITCH_RTRAN);
     ast_switch_gate * tr = ast_calloc(1,sizeof(ast_switch_gate));
@@ -1487,7 +1487,7 @@ ast_switch_gate * ast_new_switch_gate_d3(
 //! Instances a new switch type with a delay2.
 ast_switch_gate * ast_new_switch_gate_d2(
     ast_switchtype type,
-    ast_delay2     delay
+    ast_delay2    * delay
 ){
     assert(type == SWITCH_TRAN || type == SWITCH_RTRAN);
     ast_switch_gate * tr = ast_calloc(1,sizeof(ast_switch_gate));
@@ -1641,7 +1641,7 @@ ast_pass_enable_switch * ast_new_pass_enable_switch(
 */
 ast_pass_enable_switches * ast_new_pass_enable_switches(
     ast_pass_enable_switchtype    type,
-    ast_delay2                    delay,
+    ast_delay2                  * delay,
     ast_list                    * switches 
 ){
     ast_pass_enable_switches * tr = 
@@ -1840,7 +1840,7 @@ initially be false.
 */
 ast_type_declaration * ast_new_type_declaration(ast_declaration_type type)
 {
-    ast_type_declaration * tr = calloc(1,sizeof(ast_type_declaration));
+    ast_type_declaration * tr = ast_calloc(1,sizeof(ast_type_declaration));
 
     tr -> type = type;
     tr -> identifiers = NULL;
@@ -1855,3 +1855,51 @@ ast_type_declaration * ast_new_type_declaration(ast_declaration_type type)
 
     return tr;
 }   
+
+
+/*!
+@brief Create a new delay value.
+*/
+ast_delay_value * ast_new_delay_value(
+    ast_delay_value_type type,
+    void * data
+){
+    ast_delay_value * tr = ast_calloc(1,sizeof(ast_delay_value));
+    
+    tr -> type = type;
+    tr -> data = data;
+
+    return tr;
+}
+
+/*!
+@brief Create a new delay3 instance.
+*/
+ast_delay3 * ast_new_delay3(
+    ast_delay_value * min,
+    ast_delay_value * avg,
+    ast_delay_value * max
+){
+    ast_delay3 * tr = ast_calloc(1,sizeof(ast_delay3));
+
+    tr -> min = min;
+    tr -> avg = avg;
+    tr -> max = max;
+
+    return tr;
+}
+
+/*!
+@brief Create a new delay2 instance.
+*/
+ast_delay2 * ast_new_delay2(
+    ast_delay_value * min,
+    ast_delay_value * max
+){
+    ast_delay2 * tr = ast_calloc(1,sizeof(ast_delay2));
+
+    tr -> min = min;
+    tr -> max = max;
+
+    return tr;
+}
