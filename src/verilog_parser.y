@@ -1172,10 +1172,30 @@ $$ = ast_new_port_declaration(PORT_OUTPUT, $2,$3,AST_FALSE,AST_FALSE,$4,$5);
 $$ = ast_new_port_declaration(PORT_OUTPUT,
 NET_TYPE_NONE,$3,$2,AST_FALSE,$4,$5);
   }
-| KW_OUTPUT output_variable_type_o list_of_port_identifiers
-| KW_OUTPUT output_variable_type list_of_variable_port_identifiers
-| KW_OUTPUT KW_REG signed_o range_o list_of_variable_port_identifiers
-                  ;
+| KW_OUTPUT output_variable_type_o list_of_port_identifiers{
+    $$ = ast_new_port_declaration(PORT_OUTPUT, NET_TYPE_NONE,
+        AST_FALSE,
+        AST_FALSE,
+        AST_TRUE,
+        NULL,
+        $3);
+  }
+| KW_OUTPUT output_variable_type list_of_variable_port_identifiers{
+    $$ = ast_new_port_declaration(PORT_OUTPUT, NET_TYPE_NONE,
+        AST_FALSE,
+        AST_FALSE,
+        AST_TRUE,
+        NULL,
+        $3);
+  }
+| KW_OUTPUT KW_REG signed_o range_o list_of_variable_port_identifiers{
+    $$ = ast_new_port_declaration(PORT_OUTPUT,
+                                  NET_TYPE_NONE,
+                                  $3, AST_TRUE,
+                                  AST_FALSE,
+                                  $4, $5);
+  }
+;
 
 /* A.2.1.3 Type declarations */
 
