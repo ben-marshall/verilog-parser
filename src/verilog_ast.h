@@ -49,8 +49,6 @@ typedef void * ast_delay_value  ;
 //! \b Temporary typedef.
 typedef void * ast_drive_strength;
 //! \b Temporary typedef.
-typedef void * ast_charge_strength;
-//! \b Temporary typedef.
 typedef void * ast_macro_use    ;
 //! \b Temporary typedef.
 typedef void * ast_minmax_exp   ;
@@ -2061,9 +2059,15 @@ ast_gate_instantiation * ast_new_gate_instantiation(ast_gate_type type);
 @{
 @ingroup ast-construction
 @brief Describes signal drive strengths.
+@see ast_primitive_strength ast_primitive_pull_strength ast_drive_strength
 */
 
-
+//! Describes (coloquially?!) the charge strength on a driver.
+typedef enum ast_charge_strength_e{
+    CHARGE_SMALL,
+    CHARGE_MEDIUM,
+    CHARGE_LARGE
+} ast_charge_strength;
 
 /*! @} */
 

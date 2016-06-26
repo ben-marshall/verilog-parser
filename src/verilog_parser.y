@@ -1373,21 +1373,45 @@ variable_type :
 
 /* A.2.2.2 Strengths */
 
-drive_strength      : strength0 COMMA strength1 CLOSE_BRACKET
-                    | strength1 COMMA strength0 CLOSE_BRACKET
-                    | strength0 COMMA KW_HIGHZ1 CLOSE_BRACKET
-                    | strength1 COMMA KW_HIGHZ0 CLOSE_BRACKET
-                    | KW_HIGHZ0 COMMA strength1 CLOSE_BRACKET
-                    | KW_HIGHZ1 COMMA strength0 CLOSE_BRACKET
-                    ;
+drive_strength      : 
+  strength0 COMMA strength1 CLOSE_BRACKET{
+      $$ = ast_new_pull_stregth($1,$3);
+  }
+| strength1 COMMA strength0 CLOSE_BRACKET{
+      $$ = ast_new_pull_stregth($1,$3);
+  }
+| strength0 COMMA KW_HIGHZ1 CLOSE_BRACKET{
+      $$ = ast_new_pull_stregth($1,STRENGTH_HIGHZ1);
+  }
+| strength1 COMMA KW_HIGHZ0 CLOSE_BRACKET{
+      $$ = ast_new_pull_stregth($1,STRENGTH_HIGHZ0);
+  }
+| KW_HIGHZ0 COMMA strength1 CLOSE_BRACKET{
+      $$ = ast_new_pull_stregth(STRENGTH_HIGHZ0, $3);
+  }
+| KW_HIGHZ1 COMMA strength0 CLOSE_BRACKET{
+      $$ = ast_new_pull_stregth(STRENGTH_HIGHZ1, $3);
+  }
+;
 
-strength0           : KW_SUPPLY0 | KW_STRONG0 | KW_PULL0 | KW_WEAK0 ;
-strength1           : KW_SUPPLY1 | KW_STRONG1 | KW_PULL1 | KW_WEAK1 ;
+strength0           : 
+  KW_SUPPLY0 { $$ = STRENGTH_SUPPLY0;}
+| KW_STRONG0 { $$ = STRENGTH_STRONG0;}
+| KW_PULL0   { $$ = STRENGTH_PULL0  ;}
+| KW_WEAK0   { $$ = STRENGTH_WEAK0  ;}
+;
 
-charge_strength     : OPEN_BRACKET KW_SMALL CLOSE_BRACKET
-                    | OPEN_BRACKET KW_MEDIUM CLOSE_BRACKET
-                    | OPEN_BRACKET KW_LARGE CLOSE_BRACKET
-                    ;
+strength1           : 
+  KW_SUPPLY1 { $$ = STRENGTH_SUPPLY1;}
+| KW_STRONG1 { $$ = STRENGTH_STRONG1;}
+| KW_PULL1   { $$ = STRENGTH_PULL1  ;}
+| KW_WEAK1   { $$ = STRENGTH_WEAK1  ;}
+;
+
+charge_strength : OPEN_BRACKET KW_SMALL CLOSE_BRACKET  {$$=CHARGE_SMALL;}
+                | OPEN_BRACKET KW_MEDIUM CLOSE_BRACKET {$$=CHARGE_MEDIUM;}
+                | OPEN_BRACKET KW_LARGE CLOSE_BRACKET  {$$=CHARGE_LARGE;}
+                ;
 
 /* A.2.2.3 Delays */
 
