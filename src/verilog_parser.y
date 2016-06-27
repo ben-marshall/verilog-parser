@@ -1582,31 +1582,43 @@ list_of_variable_port_identifiers :
 
 /* A.2.4 Declaration Assignments */
 
-net_decl_assignment     : net_identifier EQ expression  
-                        | net_identifier               
+net_decl_assignment     : 
+  net_identifier EQ expression {
+    $$ = ast_new_single_assignment($1,$3);
+  }
+| net_identifier{
+    $$ = ast_new_single_assignment($1,NULL);
+}   
+;
+
+param_assignment        : parameter_identifier EQ constant_expression {
+    $$= ast_new_single_assignment($1,$3);   
+};
+
+specparam_assignment    : 
+  specparam_identifier EQ constant_mintypmax_expression{
+    $$= ast_new_single_assignment($1,$3);
+  }
+| pulse_control_specparam{
+    $$ = ast_new_single_assignment($1,NULL);
+}
+;
+
+error_limit_value_o     : COMMA error_limit_value {$$=$2;}
+                        |   {$$ =NULL;}
                         ;
 
-param_assignment        : parameter_identifier EQ constant_expression ;
+pulse_control_specparam : 
+  KW_PATHPULSE EQ OPEN_BRACKET reject_limit_value error_limit_value_o
+  CLOSE_BRACKET SEMICOLON 
+| KW_PATHPULSE specify_input_terminal_descriptor '$'
+  specify_output_terminal_descriptor EQ OPEN_BRACKET reject_limit_value
+  error_limit_value_o CLOSE_BRACKET SEMICOLON
+;
 
-specparam_assignment    : specparam_identifier EQ 
-                          constant_mintypmax_expression
-                        | pulse_control_specparam
-                        ;
-
-error_limit_value_o     : COMMA error_limit_value
-                        |
-                        ;
-
-pulse_control_specparam : KW_PATHPULSE EQ OPEN_BRACKET reject_limit_value 
-                          error_limit_value_o CLOSE_BRACKET SEMICOLON
-                        | KW_PATHPULSE specify_input_terminal_descriptor '$'
-                          specify_output_terminal_descriptor EQ OPEN_BRACKET 
-                          reject_limit_value error_limit_value_o CLOSE_BRACKET SEMICOLON
-                        ;
-
-error_limit_value       : limit_value ;
-reject_limit_value      : limit_value ;
-limit_value             : constant_mintypmax_expression ;
+error_limit_value       : limit_value {$$=$1;};
+reject_limit_value      : limit_value {$$=$1;};
+limit_value             : constant_mintypmax_expression {$$=$1;};
 
 /* A.2.5 Declaration ranges */
 
