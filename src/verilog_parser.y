@@ -580,7 +580,7 @@
 %type   <node>                       dimension
 %type   <list>                       dimensions
 %type   <list>                       dimensions_o
-%type   <node>                       eq_const_exp_o
+%type   <expression>                 eq_const_exp_o
 %type   <node>                       error_limit_value
 %type   <node>                       error_limit_value_o
 %type   <type_declaration>           event_declaration
@@ -1461,59 +1461,124 @@ delay_value :
 
 /* A.2.3 Declaration Lists */
 
-dimensions_o        : dimensions
-                    |
+dimensions_o        : dimensions {$$ = $1;}
+                    | {$$=NULL;}
                     ;
 
-list_of_event_identifiers : event_identifier dimensions_o
-                          | list_of_event_identifiers COMMA event_identifier 
-                            dimensions_o
-                          ;
-
-list_of_genvar_identifiers: 
-  genvar_identifier
-| list_of_genvar_identifiers COMMA genvar_identifier
+list_of_event_identifiers : 
+  event_identifier dimensions_o{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| list_of_event_identifiers COMMA event_identifier dimensions_o{
+    $$ = $1;
+    ast_list_append($$,$3);
+}
 ;
 
-list_of_net_decl_assignments : net_decl_assignment
-                             | list_of_net_decl_assignments COMMA 
-                               net_decl_assignment
-                             ;
+list_of_genvar_identifiers: 
+  genvar_identifier{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| list_of_genvar_identifiers COMMA genvar_identifier{
+    $$ = $1;
+    ast_list_append($$,$3);
+}
+;
 
-list_of_net_identifiers      : net_identifier dimensions_o
-                             | list_of_net_identifiers COMMA net_identifier
-                               dimensions_o
-                             ;
+list_of_net_decl_assignments : 
+  net_decl_assignment{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| list_of_net_decl_assignments COMMA net_decl_assignment{
+    $$= $1;
+    ast_list_append($$,$3);
+}
+;
 
-list_of_param_assignments    : param_assignment
-                             | list_of_param_assignments COMMA param_assignment
-                             ;
+list_of_net_identifiers      :
+  net_identifier dimensions_o{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| list_of_net_identifiers COMMA net_identifier dimensions_o{
+    $$ = $1;
+    ast_list_append($$,$3);
+}
+;
 
-list_of_port_identifiers     : port_identifier
-                             | list_of_port_identifiers COMMA port_identifier
-                             ;
+list_of_param_assignments    : 
+   param_assignment{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+   }
+ | list_of_param_assignments COMMA param_assignment{
+    $$ = $1;
+    ast_list_append($$,$3);
+ }
+ ;
 
-list_of_real_identifiers     : real_type
-                             | list_of_real_identifiers COMMA real_type
-                             ;
+list_of_port_identifiers     : 
+  port_identifier{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| list_of_port_identifiers COMMA port_identifier{
+    $$ = $1;
+    ast_list_append($$,$3);
+}
+;
 
-list_of_specparam_assignments: specparam_assignment
-                             | list_of_specparam_assignments COMMA 
-                               specparam_assignment
-                             ;
+list_of_real_identifiers     : 
+  real_type{
+      $$ = ast_list_new();
+      ast_list_append($$,$1);
+  }
+| list_of_real_identifiers COMMA real_type{
+    $$ = $1;
+    ast_list_append($$,$3);
+}
+;
 
-list_of_variable_identifiers : variable_type
-                             | list_of_variable_identifiers COMMA variable_type
-                             ;
+list_of_specparam_assignments: 
+  specparam_assignment{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| list_of_specparam_assignments COMMA specparam_assignment{
+    $$ = $1;
+    ast_list_append($$,$3);
+}
+;
 
-eq_const_exp_o               : EQ constant_expression
-                             |
-                             ;
+list_of_variable_identifiers : 
+  variable_type{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| list_of_variable_identifiers COMMA variable_type{
+    $$ = $1;
+    ast_list_append($$,$3);
+}
+;
 
-list_of_variable_port_identifiers : port_identifier eq_const_exp_o
-                                  | list_of_variable_port_identifiers COMMA 
-                                    port_identifier eq_const_exp_o
-                                  ;
+eq_const_exp_o : 
+  EQ constant_expression {$$ = $2;}
+| {$$ = NULL;}
+;
+
+list_of_variable_port_identifiers : 
+  port_identifier eq_const_exp_o {
+    $$ = ast_list_new();
+    ast_list_append($$, ast_new_single_assignment($1,$2));
+  }
+| list_of_variable_port_identifiers COMMA port_identifier eq_const_exp_o{
+    $$ = $1;
+    ast_list_append($$, ast_new_single_assignment($3,$4));
+}
+;
 
 /* A.2.4 Declaration Assignments */
 
