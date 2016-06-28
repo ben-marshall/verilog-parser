@@ -98,6 +98,7 @@
     ast_port_declaration         * port_declaration;
     ast_net_type                   net_type;
     ast_type_declaration         * type_declaration;
+    ast_pulse_control_specparam  * pulse_control_specparam;
 
     char                   boolean;
     char                 * string;
@@ -649,7 +650,7 @@
 %type   <node>                       port_declarations
 %type   <node>                       port_dir
 %type   <node>                       port_reference
-%type   <node>                       pulse_control_specparam
+%type   <pulse_control_specparam>    pulse_control_specparam
 %type   <node>                       pulsestyle_declaration
 %type   <node>                       range_or_type
 %type   <type_declaration>           real_declaration
@@ -1610,10 +1611,16 @@ error_limit_value_o     : COMMA error_limit_value {$$=$2;}
 
 pulse_control_specparam : 
   KW_PATHPULSE EQ OPEN_BRACKET reject_limit_value error_limit_value_o
-  CLOSE_BRACKET SEMICOLON 
+  CLOSE_BRACKET SEMICOLON {
+    $$ = ast_new_pulse_control_specparam($4,$5);
+  }
 | KW_PATHPULSE specify_input_terminal_descriptor '$'
   specify_output_terminal_descriptor EQ OPEN_BRACKET reject_limit_value
-  error_limit_value_o CLOSE_BRACKET SEMICOLON
+  error_limit_value_o CLOSE_BRACKET SEMICOLON{
+    $$ = ast_new_pulse_control_specparam($7,$8);
+    $$ -> input_terminal = $2;
+    $$ -> output_terminal = $4;
+  }
 ;
 
 error_limit_value       : limit_value {$$=$1;};

@@ -1293,6 +1293,25 @@ ast_statement * ast_new_statement(
 );
 
 
+/*!
+@brief Describes the pulse characteristics in signal transmission?
+*/
+typedef struct ast_pulse_control_specparam_t{
+    ast_expression * reject_limit;
+    ast_expression * error_limit;
+    ast_identifier   input_terminal;
+    ast_identifier   output_terminal;
+} ast_pulse_control_specparam;
+
+/*!
+@brief Creates and returns a new pulse control data structure.
+*/
+ast_pulse_control_specparam * ast_new_pulse_control_specparam(
+    ast_expression * reject_limit,
+    ast_expression * error_limit
+);
+
+
 /*! @} */
 
 // -------------------------------- UDP Blocks -------------------------------

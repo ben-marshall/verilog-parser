@@ -1903,3 +1903,20 @@ ast_delay2 * ast_new_delay2(
 
     return tr;
 }
+
+
+/*!
+@brief Creates and returns a new pulse control data structure.
+*/
+ast_pulse_control_specparam * ast_new_pulse_control_specparam(
+    ast_expression * reject_limit,
+    ast_expression * error_limit
+){
+    ast_pulse_control_specparam * tr =
+        calloc(1,sizeof(ast_pulse_control_specparam));
+
+    tr -> reject_limit = reject_limit;
+    tr -> error_limit  = error_limit;
+
+    return tr;
+}
