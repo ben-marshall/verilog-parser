@@ -99,6 +99,8 @@
     ast_net_type                   net_type;
     ast_type_declaration         * type_declaration;
     ast_pulse_control_specparam  * pulse_control_specparam;
+    ast_range_or_type            * range_or_type;
+    ast_function_declaration     * function_declaration;
 
     char                   boolean;
     char                 * string;
@@ -563,7 +565,7 @@
 %type   <n_input_gatetype>           gatetype_n_input
 %type   <node>                       actual_argument
 %type   <node>                       always_construct
-%type   <node>                       automatic_o
+%type   <boolean>                    automatic_o
 %type   <node>                       block_item_declaration
 %type   <node>                       block_reg_declaration
 %type   <node>                       block_variable_type
@@ -578,7 +580,7 @@
 %type   <node>                       default_net_type_cd
 %type   <node>                       description
 %type   <node>                       design_statement
-%type   <node>                       dimension
+%type   <range>                      dimension
 %type   <list>                       dimensions
 %type   <list>                       dimensions_o
 %type   <expression>                 eq_const_exp_o
@@ -587,9 +589,9 @@
 %type   <type_declaration>           event_declaration
 %type   <node>                       file_path_spec
 %type   <node>                       file_path_specs
-%type   <node>                       function_declaration
+%type   <function_declaration>       function_declaration
 %type   <node>                       function_item_declaration
-%type   <node>                       function_port_list
+%type   <list>                       function_port_list
 %type   <gate_instantiation>         gate_instantiation
 %type   <n_input_gate_instances>     gate_n_input
 %type   <n_output_gate_instances>    gate_n_output
@@ -652,7 +654,8 @@
 %type   <node>                       port_reference
 %type   <pulse_control_specparam>    pulse_control_specparam
 %type   <node>                       pulsestyle_declaration
-%type   <node>                       range_or_type
+%type   <range_or_type>              range_or_type
+%type   <range_or_type>              range_or_type_o
 %type   <type_declaration>           real_declaration
 %type   <identifier>                 real_type
 %type   <type_declaration>           realtime_declaration
@@ -1629,58 +1632,100 @@ limit_value             : constant_mintypmax_expression {$$=$1;};
 
 /* A.2.5 Declaration ranges */
 
-dimension               : OPEN_SQ_BRACKET constant_expression COLON 
-                           constant_expression CLOSE_SQ_BRACKET ;
+dimension : OPEN_SQ_BRACKET constant_expression COLON constant_expression
+CLOSE_SQ_BRACKET{
+    $$ = ast_new_range($2,$4);
+};
 
-range                   : OPEN_SQ_BRACKET constant_expression COLON 
-                           constant_expression CLOSE_SQ_BRACKET 
-                        ;
+range     : OPEN_SQ_BRACKET constant_expression COLON constant_expression
+CLOSE_SQ_BRACKET{
+    $$ = ast_new_range($2,$4);
+};
 
 /* A.2.6 Function Declarations */
 
-automatic_o         : KW_AUTOMATIC | ;
+automatic_o         : KW_AUTOMATIC {$$=AST_TRUE;} | {$$=AST_FALSE;};
 
-function_declaration : KW_FUNCTION automatic_o signed_o range_or_type_o
-                       function_identifier SEMICOLON function_item_declarations
-                       function_statement KW_ENDFUNCTION
-                     | KW_FUNCTION automatic_o signed_o range_or_type_o
-                       function_identifier OPEN_BRACKET function_port_list CLOSE_BRACKET SEMICOLON 
-                       block_item_declarations
-                       function_statement KW_ENDFUNCTION
-                     ;
+function_declaration : 
+  KW_FUNCTION automatic_o signed_o range_or_type_o function_identifier
+  SEMICOLON function_item_declarations function_statement KW_ENDFUNCTION{
+    $$ = ast_new_function_declaration($2,$3,AST_TRUE,$4,$5,$7,$8);
+  }
+| KW_FUNCTION automatic_o signed_o range_or_type_o function_identifier
+  OPEN_BRACKET function_port_list CLOSE_BRACKET SEMICOLON
+  block_item_declarations function_statement KW_ENDFUNCTION{
+    $$ = ast_new_function_declaration($2,$3,AST_FALSE,$4,$5,$10,$11);
+  }
+;
 
-block_item_declarations    : block_item_declaration
-                           | block_item_declarations 
-                             block_item_declaration
-                           |
-                           ;
+block_item_declarations    : 
+  block_item_declaration{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| block_item_declarations block_item_declaration{
+    $$ = $1;
+    ast_list_append($$,$2);
+}
+| {$$ = ast_list_new();}
+;
 
-function_item_declarations : function_item_declaration
-                           | function_item_declarations 
-                             function_item_declaration
-                           |
-                           ;
+function_item_declarations : 
+   function_item_declaration{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+   }
+ | function_item_declarations function_item_declaration{
+    $$ = $1;
+    ast_list_append($$,$2);
+ }
+ | {$$ = ast_list_new();}
+ ;
 
-function_item_declaration  : block_item_declaration 
-                           | tf_input_declaration SEMICOLON
-                           ;
+function_item_declaration  : 
+  block_item_declaration 
+| tf_input_declaration SEMICOLON
+;
 
-function_port_list         : attribute_instances tf_input_declaration
-                             tf_input_declarations;
+function_port_list         : 
+attribute_instances tf_input_declaration tf_input_declarations{
+    $$ = $3;
+    ast_list_preappend($$,$2);
+};
 
-tf_input_declarations      : 
-                           | COMMA attribute_instances tf_input_declaration
-                             tf_input_declarations
-                           ;
+tf_input_declarations      : {
+    $$ = ast_list_new();
+}
+| COMMA attribute_instances tf_input_declaration tf_input_declarations{
+    $$ = $4;
+    ast_list_preappend($$,$3);
+}
+;
 
-range_or_type_o            : range_or_type | ;
+range_or_type_o            : range_or_type {$$=$1;} | {$$=NULL;};
 
-range_or_type              : range
-                           | KW_INTEGER
-                           | KW_REAL
-                           | KW_REALTIME
-                           | KW_TIME
-                           ;
+range_or_type              : 
+  range      {
+    $$ = ast_new_range_or_type(AST_TRUE);
+    $$ -> range = $1;
+  }
+| KW_INTEGER{
+    $$ = ast_new_range_or_type(AST_FALSE);
+    $$ -> type = PARAM_INTEGER;
+  }
+| KW_REAL{
+    $$ = ast_new_range_or_type(AST_FALSE);
+    $$ -> type = PARAM_REAL;
+  }
+| KW_REALTIME{
+    $$ = ast_new_range_or_type(AST_FALSE);
+    $$ -> type = PARAM_REALTIME;
+  }
+| KW_TIME{
+    $$ = ast_new_range_or_type(AST_FALSE);
+    $$ -> type = PARAM_TIME;
+  }
+;
 
 /* A.2.7 Task Declarations */
 

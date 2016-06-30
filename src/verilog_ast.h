@@ -55,11 +55,14 @@ typedef void * ast_minmax_exp   ;
 //! \b Temporary typedef.
 typedef void * ast_number       ;
 //! \b Temporary typedef.
-typedef void * ast_range        ;
+typedef struct ast_range_t ast_range ;
 //! \b Temporary typedef.
 typedef void * ast_output_symbol;
 //! \b Temporary typedef.
 typedef void * ast_module_or_generate_item;
+
+typedef void * ast_block_item_declaration;
+typedef void * ast_tf_input_declaration;
 
 //! \b Temporary typedef.
 typedef struct ast_statement_t ast_statement;
@@ -1311,6 +1314,22 @@ ast_pulse_control_specparam * ast_new_pulse_control_specparam(
     ast_expression * error_limit
 );
 
+/*!
+@brief Describes a range or dimension.
+*/
+struct ast_range_t{
+    ast_expression * upper;
+    ast_expression * lower;
+};
+
+/*!
+@brief Creates and returns a new range or dimension representation node.
+*/
+ast_range * ast_new_range(
+    ast_expression * upper,
+    ast_expression * lower
+);
+
 
 /*! @} */
 
@@ -2032,19 +2051,6 @@ ast_gate_instantiation * ast_new_gate_instantiation(ast_gate_type type);
 
 /*! @} */
 
-// -------------------------------- Function Declaration ---------------------
-
-/*!
-@defgroup ast-node-function-declaration Function Declaration
-@{
-@ingroup ast-node-declaration
-@brief Describes a declaration of a user function.
-*/
-
-
-
-/*! @} */
-
 // -------------------------------- Declaration Lists ------------------------
 
 /*!
@@ -2306,6 +2312,77 @@ ast_parameter_declarations * ast_new_parameter_declarations(
     ast_range       * range,
     ast_parameter_type  type 
 );
+
+/*! @} */
+
+// -------------------------------- Function Declaration ---------------------
+
+/*!
+@defgroup ast-node-function-declaration Function Declaration
+@{
+@ingroup ast-node-declaration
+@brief Describes a declaration of a user function.
+*/
+
+//! Holds either a range or a type data item.
+typedef struct ast_range_or_type_t{
+    ast_boolean is_range;   //!< iff true use range, else type.
+    union{
+        ast_range * range;
+        ast_parameter_type type; //!< Cannot be generic or specparam.
+    };
+} ast_range_or_type;
+
+/*!
+@brief Creates and returns a new object storing either a range or a type.
+*/
+ast_range_or_type * ast_new_range_or_type(ast_boolean is_range);
+
+
+/*!
+@brief Fully describes the declaration of a verilog function.
+*/
+typedef struct ast_function_declaration_t{
+    ast_boolean         automatic;
+    ast_boolean         is_signed;
+    ast_boolean         function_or_block; //!< IFF true statements is list of function_item_declaration else list of block_item_declaration.
+    ast_range_or_type  *rot;
+    ast_identifier      identifier;
+    ast_list           *item_declarations;
+    ast_list           *statements;
+} ast_function_declaration;
+
+/*!
+@brief Creates and returns a function declaration node.
+*/
+ast_function_declaration * ast_new_function_declaration(
+    ast_boolean         automatic,
+    ast_boolean         is_signed,
+    ast_boolean         function_or_block,
+    ast_range_or_type  *rot,
+    ast_identifier      identifier,
+    ast_list           *item_declarations,
+    ast_list           *statements
+);
+
+/*!
+@brief Describes a function item declaration, which is either a block
+item or port declaration.
+*/
+typedef struct ast_function_item_declaration_t{
+    ast_boolean is_input_declaration;
+    union{
+        ast_block_item_declaration  * block_item;
+        ast_tf_input_declaration    * input_declaration;
+    };
+} ast_function_item_declaration;
+
+/*!
+@brief Creates and returns a new function item declaration.
+@note All member fields must be filled out manaully. THis function just
+ensures the memory is allocated properly.
+*/
+ast_function_item_declaration * ast_new_function_item_declaration();
 
 /*! @} */
 

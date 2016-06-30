@@ -1920,3 +1920,69 @@ ast_pulse_control_specparam * ast_new_pulse_control_specparam(
 
     return tr;
 }
+
+
+/*!
+@brief Creates and returns a new range or dimension representation node.
+*/
+ast_range * ast_new_range(
+    ast_expression * upper,
+    ast_expression * lower
+){
+    ast_range * tr = ast_calloc(1,sizeof(ast_range));
+
+    tr -> upper = upper;
+    tr -> lower = lower;
+
+    return tr;
+}
+
+/*!
+@brief Creates and returns a new object storing either a range or a type.
+@note Expects the union member of ast_range_or_type to be set manually.
+@param [in] is_range - true if the contained object will be a range instance,
+else false.
+*/
+ast_range_or_type * ast_new_range_or_type(ast_boolean is_range)
+{
+    ast_range_or_type * tr = ast_calloc(1,sizeof(ast_range_or_type));
+
+    tr -> is_range = is_range;
+
+    return tr;
+}
+
+/*!
+@brief Creates and returns a function declaration node.
+*/
+ast_function_declaration * ast_new_function_declaration(
+    ast_boolean         automatic,
+    ast_boolean         is_signed,
+    ast_boolean         function_or_block,
+    ast_range_or_type  *rot,
+    ast_identifier      identifier,
+    ast_list           *item_declarations,
+    ast_list           *statements
+){
+    ast_function_declaration * tr = ast_calloc(
+        1,sizeof(ast_function_declaration));
+    
+    tr -> automatic         = automatic;
+    tr -> is_signed         = is_signed;
+    tr -> function_or_block = function_or_block;
+    tr -> rot               = rot;
+    tr -> identifier        = identifier;
+    tr -> item_declarations = item_declarations;
+    tr -> statements        = statements;
+
+    return tr;
+}
+
+/*!
+@brief Creates and returns a new function item declaration.
+@note All member fields must be filled out manaully. THis function just
+ensures the memory is allocated properly.
+*/
+ast_function_item_declaration * ast_new_function_item_declaration(){
+    return ast_calloc(1,sizeof(ast_function_item_declaration));
+}
