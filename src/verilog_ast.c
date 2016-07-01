@@ -2067,3 +2067,19 @@ ast_block_item_declaration * ast_new_block_item_declaration(
 
     return tr;
 }
+
+/*!
+@brief Creates and returns a new module item descriptor.
+@note Expects the relevant union member to be set based on the type manually.
+*/
+ast_module_item * ast_new_module_item(
+    ast_node_attributes * attributes,
+    ast_module_item_type  type
+){
+    ast_module_item * tr = calloc(1,sizeof(ast_module_item));
+
+    tr -> type       = type;
+    tr -> attributes = attributes;
+
+    return tr;
+}

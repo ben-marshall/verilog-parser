@@ -27,6 +27,8 @@
 /* token types */
 %union {
     ast_assignment               * assignment;
+    ast_block_item_declaration   * block_item_declaration;
+    ast_block_reg_declaration    * block_reg_declaration;
     ast_case_item                * case_item;
     ast_case_statement           * case_statement;
     ast_cmos_switch_instance     * cmos_switch_instance ;
@@ -45,6 +47,8 @@
     ast_event_expression         * event_expression;
     ast_expression               * expression;
     ast_function_call            * call_function;
+    ast_function_declaration     * function_declaration;
+    ast_function_item_declaration* function_or_task_item;
     ast_gate_instantiation       * gate_instantiation;
     ast_gatetype_n_input           n_input_gatetype;
     ast_generate_block           * generate_block;
@@ -54,32 +58,45 @@
     ast_list                     * list;
     ast_loop_statement           * loop_statement;
     ast_lvalue                   * lvalue;
+    ast_module_item              * module_item;
+    ast_module_instance          * module_instance;
+    ast_module_instantiation     * module_instantiation;
     ast_mos_switch_instance      * mos_switch_instance  ;
     ast_n_input_gate_instance    * n_input_gate_instance;
     ast_n_input_gate_instances   * n_input_gate_instances;
     ast_n_output_gate_instance   * n_output_gate_instance;
     ast_n_output_gate_instances  * n_output_gate_instances;
     ast_n_output_gatetype          n_output_gatetype;
+    ast_net_type                   net_type;
     ast_node                     * node;
     ast_node_attributes          * node_attributes;
     ast_operator                   operator;
+    ast_parameter_declarations   * parameter_declaration;
+    ast_parameter_type             parameter_type;
     ast_pass_enable_switch       * pass_enable_switch   ;
     ast_pass_enable_switches     * pass_enable_switches;
     ast_pass_switch_instance     * pass_switch_instance ;
     ast_path_declaration         * path_declaration;
     ast_port_connection          * port_connection;
+    ast_port_declaration         * port_declaration;
     ast_primary                  * primary;
     ast_primitive_pull_strength  * primitive_pull;
     ast_primitive_strength         primitive_strength;
     ast_pull_gate_instance       * pull_gate_instance   ;
+    ast_pulse_control_specparam  * pulse_control_specparam;
     ast_range                    * range;
+    ast_range_or_type            * range_or_type;
     ast_single_assignment        * single_assignment;
     ast_statement                * generate_item;
     ast_statement                * statement;
     ast_statement_block          * statement_block;
     ast_switch_gate              * switch_gate;
+    ast_task_declaration         * task_declaration;
     ast_task_enable_statement    * task_enable_statement;
+    ast_task_port                * task_port;
+    ast_task_port_type             task_port_type;
     ast_timing_control_statement * timing_control_statement;
+    ast_type_declaration         * type_declaration;
     ast_udp_body                 * udp_body;
     ast_udp_combinatorial_entry  * udp_combinatorial_entry;
     ast_udp_declaration          * udp_declaration;
@@ -90,23 +107,6 @@
     ast_udp_port                 * udp_port;
     ast_udp_sequential_entry     * udp_seqential_entry;
     ast_wait_statement           * wait_statement;
-
-    ast_module_instance          * module_instance;
-    ast_module_instantiation     * module_instantiation;
-    ast_parameter_declarations   * parameter_declaration;
-    ast_parameter_type             parameter_type;
-    ast_port_declaration         * port_declaration;
-    ast_net_type                   net_type;
-    ast_type_declaration         * type_declaration;
-    ast_pulse_control_specparam  * pulse_control_specparam;
-    ast_range_or_type            * range_or_type;
-    ast_function_declaration     * function_declaration;
-    ast_task_port                * task_port;
-    ast_task_port_type             task_port_type;
-    ast_task_declaration         * task_declaration;
-    ast_function_item_declaration* function_or_task_item;
-    ast_block_item_declaration   * block_item_declaration;
-    ast_block_reg_declaration    * block_reg_declaration;
 
     char                   boolean;
     char                 * string;
@@ -357,6 +357,9 @@
 %type   <assignment>                 nonblocking_assignment
 %type   <assignment>                 param_assignment
 %type   <assignment>                 procedural_continuous_assignments
+%type   <block_item_declaration>     block_item_declaration
+%type   <block_reg_declaration>      block_reg_declaration
+%type   <boolean>                    automatic_o
 %type   <boolean>                    reg_o
 %type   <boolean>                    signed_o
 %type   <call_function>              constant_function_call
@@ -368,6 +371,7 @@
 %type   <case_item>                  genvar_case_item
 %type   <case_statement>             case_statement
 %type   <case_statement>             function_case_statement
+%type   <case_statement>             generate_case_statement
 %type   <cmos_switch_instance>       cmos_switch_instance
 %type   <concatenation>              concatenation
 %type   <concatenation>              concatenation_cont
@@ -408,6 +412,7 @@
 %type   <expression>                 constant_range_expression
 %type   <expression>                 data_source_expression
 %type   <expression>                 enable_terminal
+%type   <expression>                 eq_const_exp_o
 %type   <expression>                 expression
 %type   <expression>                 expression_o
 %type   <expression>                 input_terminal
@@ -417,16 +422,23 @@
 %type   <expression>                 module_path_mintypemax_expression
 %type   <expression>                 ncontrol_terminal
 %type   <expression>                 ordered_parameter_assignment
+%type   <expression>                 ordered_port_connection
 %type   <expression>                 path_delay_expression
 %type   <expression>                 pcontrol_terminal
 %type   <expression>                 port_expression
 %type   <expression>                 range_expression
+%type   <function_declaration>       function_declaration
+%type   <function_or_task_item>      function_item_declaration
+%type   <function_or_task_item>      task_item_declaration
+%type   <gate_instantiation>         gate_instantiation
 %type   <generate_block>             generate_block
+%type   <generate_block>             generated_instantiation
 %type   <generate_item>              generate_item
 %type   <generate_item>              generate_item_or_null
 %type   <identifier>                 arrayed_identifier
 %type   <identifier>                 attr_name
 %type   <identifier>                 block_identifier
+%type   <identifier>                 block_variable_type
 %type   <identifier>                 cell_identifier
 %type   <identifier>                 config_identifier
 %type   <identifier>                 escaped_arrayed_identifier
@@ -459,12 +471,15 @@
 %type   <identifier>                 library_identifier_os
 %type   <identifier>                 module_identifier
 %type   <identifier>                 module_instance_identifier
+%type   <identifier>                 name_of_gate_instance
+%type   <identifier>                 name_of_instance
 %type   <identifier>                 net_identifier
 %type   <identifier>                 output_identifier
 %type   <identifier>                 output_port_identifier
 %type   <identifier>                 parameter_identifier
 %type   <identifier>                 port_identifier
 %type   <identifier>                 real_identifier
+%type   <identifier>                 real_type
 %type   <identifier>                 simple_arrayed_identifier
 %type   <identifier>                 simple_hierarchical_branch
 %type   <identifier>                 simple_hierarchical_identifier
@@ -481,9 +496,11 @@
 %type   <identifier>                 udp_identifier
 %type   <identifier>                 udp_instance_identifier
 %type   <identifier>                 variable_identifier
+%type   <identifier>                 variable_type
 %type   <ifelse>                     conditional_statement
 %type   <ifelse>                     function_conditional_statement
 %type   <ifelse>                     function_if_else_if_statement
+%type   <ifelse>                     generate_conditional_statement
 %type   <ifelse>                     if_else_if_statement
 %type   <level_symbol>               level_symbol
 %type   <list>                       block_item_declarations
@@ -492,6 +509,8 @@
 %type   <list>                       combinational_entrys
 %type   <list>                       compiler_directives
 %type   <list>                       constant_expressions
+%type   <list>                       dimensions
+%type   <list>                       dimensions_o
 %type   <list>                       edge_input_list
 %type   <list>                       else_if_statements
 %type   <list>                       enable_gate_instances
@@ -500,6 +519,7 @@
 %type   <list>                       function_case_items
 %type   <list>                       function_else_if_statements
 %type   <list>                       function_item_declarations
+%type   <list>                       function_port_list
 %type   <list>                       function_statements
 %type   <list>                       function_statements_o
 %type   <list>                       gate_n_output_a_id
@@ -530,11 +550,14 @@
 %type   <list>                       list_of_specparam_assignments
 %type   <list>                       list_of_variable_identifiers
 %type   <list>                       list_of_variable_port_identifiers
+%type   <list>                       module_instances
+%type   <list>                       module_item_os
 %type   <list>                       mos_switch_instances
 %type   <list>                       n_input_gate_instances
 %type   <list>                       n_output_gate_instances
 %type   <list>                       named_parameter_assignments
 %type   <list>                       named_port_connections
+%type   <list>                       non_port_module_item_os
 %type   <list>                       ordered_parameter_assignments
 %type   <list>                       ordered_port_connections
 %type   <list>                       output_terminals
@@ -561,20 +584,25 @@
 %type   <list>                       udp_port_declarations
 %type   <list>                       udp_port_list
 %type   <loop_statement>             function_loop_statement
+%type   <loop_statement>             generate_loop_statement
 %type   <loop_statement>             loop_statement
 %type   <lvalue>                     inout_terminal
 %type   <lvalue>                     net_lvalue
 %type   <lvalue>                     output_terminal
 %type   <lvalue>                     variable_lvalue
+%type   <module_instance>            module_instance
+%type   <module_instantiation>       module_instantiation
 %type   <mos_switch_instance>        mos_switch_instance
 %type   <n_input_gate_instance>      n_input_gate_instance
+%type   <n_input_gate_instances>     gate_n_input
 %type   <n_input_gatetype>           gatetype_n_input
+%type   <n_output_gate_instance>     n_output_gate_instance
+%type   <n_output_gate_instances>    gate_n_output
+%type   <n_output_gatetype>          gatetype_n_output
+%type   <net_type>                   net_type
+%type   <net_type>                   net_type_o
 %type   <node>                       actual_argument
-%type   <node>                       always_construct
-%type   <boolean>                    automatic_o
-%type   <block_item_declaration>     block_item_declaration
-%type   <block_reg_declaration>      block_reg_declaration
-%type   <identifier>                 block_variable_type
+%type   <statement>                  always_construct
 %type   <node>                       cell_clause
 %type   <node>                       charge_strength
 %type   <node>                       compiler_directive
@@ -586,111 +614,51 @@
 %type   <node>                       default_net_type_cd
 %type   <node>                       description
 %type   <node>                       design_statement
-%type   <range>                      dimension
-%type   <list>                       dimensions
-%type   <list>                       dimensions_o
-%type   <expression>                 eq_const_exp_o
 %type   <node>                       error_limit_value
 %type   <node>                       error_limit_value_o
-%type   <type_declaration>           event_declaration
 %type   <node>                       file_path_spec
 %type   <node>                       file_path_specs
-%type   <function_declaration>       function_declaration
-%type   <function_or_task_item>      function_item_declaration
-%type   <list>                       function_port_list
-%type   <gate_instantiation>         gate_instantiation
-%type   <n_input_gate_instances>     gate_n_input
-%type   <n_output_gate_instances>    gate_n_output
-%type   <n_output_gatetype>          gatetype_n_output
-%type   <generate_block>             generated_instantiation
-%type   <type_declaration>           genvar_declaration
 %type   <node>                       grammar_begin
 %type   <node>                       ifdef_directive
 %type   <node>                       ifndef_directive
 %type   <node>                       include_directive
 %type   <node>                       include_statement
-%type   <node>                       initial_construct
-%type   <port_declaration>           inout_declaration
-%type   <port_declaration>           input_declaration
+%type   <statement>                  initial_construct
 %type   <node>                       inst_clause
 %type   <node>                       inst_name
-%type   <type_declaration>           integer_declaration
 %type   <node>                       liblist_clause
 %type   <node>                       library_declaration
 %type   <node>                       library_descriptions
 %type   <node>                       library_text
 %type   <node>                       limit_value
 %type   <node>                       line_directive
-%type   <parameter_declaration>      local_parameter_declaration
 %type   <node>                       module_declaration
-%type   <module_instance>            module_instance
-%type   <list>                       module_instances
-%type   <module_instantiation>       module_instantiation
-%type   <node>                       module_item
-%type   <node>                       module_item_os
-%type   <node>                       module_or_generate_item_declaration
+%type   <module_item>                module_item
+%type   <module_item>                module_or_generate_item_declaration
 %type   <node>                       module_parameter_port_list
 %type   <node>                       module_params
-%type   <n_output_gate_instance>     n_output_gate_instance
-%type   <identifier>                 name_of_gate_instance
-%type   <identifier>                 name_of_instance
-%type   <port_connection>            named_parameter_assignment
-%type   <type_declaration>           net_dec_p_delay
-%type   <type_declaration>           net_dec_p_ds
-%type   <type_declaration>           net_dec_p_range
-%type   <type_declaration>           net_dec_p_si
-%type   <type_declaration>           net_dec_p_vs
 %type   <node>                       net_decl_assignment
-%type   <type_declaration>           net_declaration
-%type   <net_type>                   net_type
-%type   <net_type>                   net_type_o
-%type   <node>                       non_port_module_item
-%type   <node>                       non_port_module_item_os
-%type   <expression>                 ordered_port_connection
-%type   <port_declaration>           output_declaration
-%type   <parameter_type>             output_variable_type
-%type   <parameter_type>             output_variable_type_o
-%type   <parameter_declaration>      parameter_declaration
-%type   <node>                       parameter_override
+%type   <module_item>                non_port_module_item
+%type   <list>                       parameter_override
 %type   <node>                       port
 %type   <node>                       port_declaration
 %type   <node>                       port_declaration_l
 %type   <node>                       port_declarations
 %type   <node>                       port_dir
 %type   <node>                       port_reference
-%type   <pulse_control_specparam>    pulse_control_specparam
 %type   <node>                       pulsestyle_declaration
-%type   <range_or_type>              range_or_type
-%type   <range_or_type>              range_or_type_o
-%type   <type_declaration>           real_declaration
-%type   <identifier>                 real_type
-%type   <type_declaration>           realtime_declaration
-%type   <type_declaration>           reg_dec_p_range
-%type   <type_declaration>           reg_dec_p_signed
-%type   <type_declaration>           reg_declaration
 %type   <node>                       reject_limit_value
 %type   <node>                       showcancelled_declaration
 %type   <node>                       source_text
 %type   <node>                       specify_item
 %type   <node>                       specparam_assignment
-%type   <parameter_declaration>      specparam_declaration
 %type   <node>                       sq_bracket_constant_expressions
 %type   <node>                       system_timing_check
-%type   <task_declaration>           task_declaration
-%type   <function_or_task_item>      task_item_declaration
-%type   <task_port>                  task_port_item
-%type   <task_port_type>             task_port_type
-%type   <task_port_type>             task_port_type_o
 %type   <node>                       text_macro_definition
-%type   <task_port>                  tf_inout_declaration
-%type   <task_port>                  tf_input_declaration
-%type   <task_port>                  tf_output_declaration
 %type   <node>                       time
-%type   <type_declaration>           time_declaration
 %type   <node>                       timescale_directive
 %type   <node>                       undefine_compiler_directive
 %type   <node>                       use_clause
-%type   <identifier>                 variable_type
 %type   <node_attributes>            attr_spec
 %type   <node_attributes>            attr_specs
 %type   <node_attributes>            attribute_instances
@@ -703,6 +671,11 @@
 %type   <operator>                   polarity_operator_o
 %type   <operator>                   unary_module_path_operator
 %type   <operator>                   unary_operator
+%type   <parameter_declaration>      local_parameter_declaration
+%type   <parameter_declaration>      parameter_declaration
+%type   <parameter_declaration>      specparam_declaration
+%type   <parameter_type>             output_variable_type
+%type   <parameter_type>             output_variable_type_o
 %type   <pass_enable_switch>         pass_enable_switch_instance
 %type   <pass_enable_switches>       gate_pass_en_switch
 %type   <pass_switch_instance>       pass_switch_instance
@@ -710,7 +683,11 @@
 %type   <path_declaration>           path_declaration
 %type   <path_declaration>           simple_path_declaration
 %type   <path_declaration>           state_dependent_path_declaration
+%type   <port_connection>            named_parameter_assignment
 %type   <port_connection>            named_port_connection
+%type   <port_declaration>           inout_declaration
+%type   <port_declaration>           input_declaration
+%type   <port_declaration>           output_declaration
 %type   <primary>                    constant_primary
 %type   <primary>                    module_path_primary
 %type   <primary>                    primary
@@ -721,18 +698,19 @@
 %type   <primitive_strength>         strength0
 %type   <primitive_strength>         strength1
 %type   <pull_gate_instance>         pull_gate_instance
+%type   <pulse_control_specparam>    pulse_control_specparam
+%type   <range>                      dimension
 %type   <range>                      range
 %type   <range>                      range_o
+%type   <range_or_type>              range_or_type
+%type   <range_or_type>              range_or_type_o
 %type   <single_assignment>          function_blocking_assignment
 %type   <single_assignment>          genvar_assignment
 %type   <single_assignment>          net_assignment
 %type   <single_assignment>          variable_assignment
 %type   <statement>                  function_statement
 %type   <statement>                  function_statement_or_null
-%type   <case_statement>             generate_case_statement
-%type   <ifelse>                     generate_conditional_statement
-%type   <loop_statement>             generate_loop_statement
-%type   <statement>                  module_or_generate_item
+%type   <module_item>                module_or_generate_item
 %type   <statement>                  statement
 %type   <statement>                  statement_or_null
 %type   <statement_block>            function_seq_block
@@ -749,11 +727,33 @@
 %type   <switch_gate>                cmos_switchtype
 %type   <switch_gate>                mos_switchtype
 %type   <switch_gate>                pass_switchtype
+%type   <task_declaration>           task_declaration
 %type   <task_enable_statement>      system_task_enable
 %type   <task_enable_statement>      task_enable
+%type   <task_port>                  task_port_item
+%type   <task_port>                  tf_inout_declaration
+%type   <task_port>                  tf_input_declaration
+%type   <task_port>                  tf_output_declaration
+%type   <task_port_type>             task_port_type
+%type   <task_port_type>             task_port_type_o
 %type   <timing_control_statement>   delay_or_event_control
 %type   <timing_control_statement>   delay_or_event_control_o
 %type   <timing_control_statement>   procedural_timing_control_statement
+%type   <type_declaration>           event_declaration
+%type   <type_declaration>           genvar_declaration
+%type   <type_declaration>           integer_declaration
+%type   <type_declaration>           net_dec_p_delay
+%type   <type_declaration>           net_dec_p_ds
+%type   <type_declaration>           net_dec_p_range
+%type   <type_declaration>           net_dec_p_si
+%type   <type_declaration>           net_dec_p_vs
+%type   <type_declaration>           net_declaration
+%type   <type_declaration>           real_declaration
+%type   <type_declaration>           realtime_declaration
+%type   <type_declaration>           reg_dec_p_range
+%type   <type_declaration>           reg_dec_p_signed
+%type   <type_declaration>           reg_declaration
+%type   <type_declaration>           time_declaration
 %type   <udp_body>                   udp_body
 %type   <udp_combinatorial_entry>    combinational_entry
 %type   <udp_declaration>            udp_declaration
@@ -1049,59 +1049,168 @@ port_reference  : port_identifier
 
 /* A.1.5 Module Items */
 
-module_item_os : 
-               | module_item
-               | module_item_os module_item
-               ;
+module_item_os : {$$ = ast_list_new();}
+| module_item{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+}
+| module_item_os module_item{
+    $$ = $1;
+    ast_list_append($$,$2);
+}
+;
 
-non_port_module_item_os : 
-                        | non_port_module_item
-                        | non_port_module_item_os non_port_module_item
-                        ;
+non_port_module_item_os : {$$ = ast_list_new();}
+ | non_port_module_item{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+ }
+ | non_port_module_item_os non_port_module_item{
+    $$ = $1;
+    ast_list_append($$,$2);
+ }
+;
 
-module_item : module_or_generate_item
-            | port_declaration SEMICOLON
-            | attribute_instances generated_instantiation
-            | attribute_instances local_parameter_declaration
-            | attribute_instances parameter_declaration
-            | attribute_instances specify_block
-            | attribute_instances specparam_declaration
-            ;
+module_item : 
+   module_or_generate_item{
+    $$ = $1;
+ }
+ | port_declaration SEMICOLON{
+    $$ = ast_new_module_item($1, MOD_ITEM_PORT_DECLARATION);
+    $$ -> port_declaration = $1;
+ }
+ | attribute_instances generated_instantiation{
+    $$ = ast_new_module_item($1, MOD_ITEM_GENERATED_INSTANTIATION);
+    $$ -> generated_instantiation = $2;
+ }
+ | attribute_instances local_parameter_declaration{
+    $$ = ast_new_module_item($1, MOD_ITEM_PARAMETER_DECLARATION);
+    $$ -> parameter_declaration = $2;
+ }
+ | attribute_instances parameter_declaration{
+    $$ = ast_new_module_item($1, MOD_ITEM_PARAMETER_DECLARATION);
+    $$ -> parameter_declaration = $2;
+ }
+ | attribute_instances specify_block{
+    $$ = ast_new_module_item($1, MOD_ITEM_SPECIFY_BLOCK);
+    $$ -> specify_block = $2;
+ }
+ | attribute_instances specparam_declaration{
+    $$ = ast_new_module_item($1, MOD_ITEM_SPECPARAM_DECLARATION);
+    $$ -> specparam_declaration = $2;
+ }
+ ;
 
-module_or_generate_item : attribute_instances 
-                          module_or_generate_item_declaration
-                        | attribute_instances parameter_override
-                        | attribute_instances continuous_assign
-                        | attribute_instances gate_instantiation
-                        | attribute_instances udp_instantiation
-                        | attribute_instances module_instantiation
-                        | attribute_instances initial_construct
-                        | attribute_instances always_construct
-                        | compiler_directives
-                        ;
+module_or_generate_item : 
+  attribute_instances module_or_generate_item_declaration{
+    $$ = $2;
+  }
+| attribute_instances parameter_override{
+    $$ = ast_new_module_item($1, MOD_ITEM_PARAMETER_OVERRIDE);
+    $$ -> parameter_override = $2;
+  }
+| attribute_instances continuous_assign{
+    $$ = ast_new_module_item($1, MOD_ITEM_CONTINOUS_ASSIGNMENT);
+    $$ -> continuous_assignment = $2;
+  }
+| attribute_instances gate_instantiation{
+    $$ = ast_new_module_item($1, MOD_ITEM_GATE_INSTANTIATION);
+    $$ -> gate_instantiation = $2;
+  }
+| attribute_instances udp_instantiation{
+    $$ = ast_new_module_item($1, MOD_ITEM_UDP_INSTANTIATION);
+    $$ -> udp_instantiation = $2;
+  }
+| attribute_instances module_instantiation{
+    $$ = ast_new_module_item($1, MOD_ITEM_MODULE_INSTANTIATION);
+    $$ -> module_instantiation = $2;
+  }
+| attribute_instances initial_construct{
+    $$ = ast_new_module_item($1, MOD_ITEM_INITIAL_CONSTRUCT);
+    $$ -> initial_construct = $2;
+  }
+| attribute_instances always_construct{
+    $$ = ast_new_module_item($1, MOD_ITEM_ALWAYS_CONSTRUCT);
+    $$ -> always_construct = $2;
+  }
+| compiler_directives {
+    $$ = NULL;
+    printf("%s:%d - Deprecate this.\n",__FILE__,__LINE__);
+}
+;
 
-module_or_generate_item_declaration : net_declaration
-                                    | reg_declaration
-                                    | integer_declaration
-                                    | real_declaration
-                                    | time_declaration
-                                    | realtime_declaration
-                                    | event_declaration
-                                    | genvar_declaration
-                                    | task_declaration
-                                    | function_declaration
-                                    ;
+module_or_generate_item_declaration : 
+   net_declaration{
+    $$ = ast_new_module_item(NULL,MOD_ITEM_NET_DECLARATION);
+    $$ -> net_declaration = $1;
+ }
+ | reg_declaration{
+    $$ = ast_new_module_item(NULL,MOD_ITEM_REG_DECLARATION);
+    $$ -> reg_declaration = $1;
+ }
+ | integer_declaration{
+    $$ = ast_new_module_item(NULL, MOD_ITEM_INTEGER_DECLARATION);
+    $$ -> integer_declaration = $1;
+ }
+ | real_declaration{
+    $$ = ast_new_module_item(NULL,MOD_ITEM_REAL_DECLARATION);
+    $$ -> real_declaration = $1;
+ }
+ | time_declaration{
+    $$ = ast_new_module_item(NULL,MOD_ITEM_TIME_DECLARATION);
+    $$ -> time_declaration = $1;
+ }
+ | realtime_declaration{
+    $$ = ast_new_module_item(NULL, MOD_ITEM_REALTIME_DECLARATION);
+    $$ -> realtime_declaration = $1;
+ }
+ | event_declaration{
+    $$ = ast_new_module_item(NULL,MOD_ITEM_EVENT_DECLARATION);
+    $$ -> event_declaration = $1;
+ }
+ | genvar_declaration{
+    $$ = ast_new_module_item(NULL,MOD_ITEM_GENVAR_DECLARATION);
+    $$ -> genvar_declaration = $1;
+ }
+ | task_declaration{
+    $$ = ast_new_module_item(NULL,MOD_ITEM_TASK_DECLARATION);
+    $$ -> task_declaration = $1;
+ }
+ | function_declaration{
+    $$ = ast_new_module_item(NULL,MOD_ITEM_FUNCTION_DECLARATION);
+    $$ -> function_declaration = $1;
+ }
+ ;
 
-non_port_module_item : attribute_instances generated_instantiation
-                     | attribute_instances local_parameter_declaration
-                     | attribute_instances module_or_generate_item
-                     | attribute_instances parameter_declaration
-                     | attribute_instances specify_block
-                     | attribute_instances specparam_declaration
-                     ;
+non_port_module_item : 
+  attribute_instances generated_instantiation{
+    $$ = ast_new_module_item($1, MOD_ITEM_GENERATED_INSTANTIATION);
+    $$ -> generated_instantiation = $2;
+  }
+| attribute_instances local_parameter_declaration{
+    $$ = ast_new_module_item($1,MOD_ITEM_PARAMETER_DECLARATION);
+    $$ -> parameter_declaration = $2;
+}
+| attribute_instances module_or_generate_item{
+    $$ = $2;
+}
+| attribute_instances parameter_declaration{
+    $$ = ast_new_module_item($1,MOD_ITEM_PARAMETER_DECLARATION);
+    $$ -> parameter_declaration = $2;
+}
+| attribute_instances specify_block{
+    $$ = ast_new_module_item($1,MOD_ITEM_SPECIFY_BLOCK);
+    $$ -> specify_block = $2;
+}
+| attribute_instances specparam_declaration{
+    $$ = ast_new_module_item($1,MOD_ITEM_PORT_DECLARATION);
+    $$ -> specparam_declaration = $2;
+}
+;
 
-parameter_override  : KW_DEFPARAM list_of_param_assignments SEMICOLON
-                    ;
+parameter_override  : 
+  KW_DEFPARAM list_of_param_assignments SEMICOLON{$$ = $2;}
+;
 
 /* A.2.1.1 Module Parameter Declarations */
 
@@ -2818,8 +2927,8 @@ net_assignment : net_lvalue EQ expression{
 
 /* A.6.2 Procedural blocks and assignments */
 
-initial_construct   : KW_INITIAL statement;
-always_construct    : KW_ALWAYS statement ;
+initial_construct   : KW_INITIAL statement{$$ = $2;};
+always_construct    : KW_ALWAYS statement {$$ = $2;};
 
 blocking_assignment : variable_lvalue EQ delay_or_event_control_o expression{
     $$ = ast_new_blocking_assignment($1,$4,$3);   

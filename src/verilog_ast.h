@@ -2494,6 +2494,70 @@ ast_task_declaration * ast_new_task_declaration(
 module instantiations.
 */
 
+//! Describes the type of data structure representing a module item.
+typedef enum ast_module_item_type_e{
+    MOD_ITEM_PORT_DECLARATION,
+    MOD_ITEM_GENERATED_INSTANTIATION,
+    MOD_ITEM_PARAMETER_DECLARATION, //!< Local or global.
+    MOD_ITEM_SPECIFY_BLOCK,
+    MOD_ITEM_SPECPARAM_DECLARATION,
+    MOD_ITEM_PARAMETER_OVERRIDE,
+    MOD_ITEM_CONTINOUS_ASSIGNMENT,
+    MOD_ITEM_GATE_INSTANTIATION,
+    MOD_ITEM_UDP_INSTANTIATION,
+    MOD_ITEM_MODULE_INSTANTIATION,
+    MOD_ITEM_INITIAL_CONSTRUCT,
+    MOD_ITEM_ALWAYS_CONSTRUCT,
+    MOD_ITEM_NET_DECLARATION,
+    MOD_ITEM_REG_DECLARATION,
+    MOD_ITEM_INTEGER_DECLARATION,
+    MOD_ITEM_REAL_DECLARATION,
+    MOD_ITEM_TIME_DECLARATION,
+    MOD_ITEM_REALTIME_DECLARATION,
+    MOD_ITEM_EVENT_DECLARATION,
+    MOD_ITEM_GENVAR_DECLARATION,
+    MOD_ITEM_TASK_DECLARATION,
+    MOD_ITEM_FUNCTION_DECLARATION
+} ast_module_item_type;
+
+//! Describes a single module item, its type and data structure.
+typedef struct ast_module_item_t{
+    ast_module_item_type type;
+    ast_node_attributes *attributes;
+    union{
+        ast_port_declaration        * port_declaration;
+        ast_generate_block          * generated_instantiation;
+        ast_parameter_declarations  * parameter_declaration;
+        ast_list                    * specify_block;
+        ast_parameter_declarations  * specparam_declaration;
+        ast_list                    * parameter_override;
+        ast_continuous_assignment   * continuous_assignment;
+        ast_gate_instantiation      * gate_instantiation;
+        ast_udp_instantiation       * udp_instantiation;
+        ast_module_instantiation    * module_instantiation;
+        ast_statement               * always_construct;
+        ast_statement               * initial_construct;
+        ast_type_declaration        * net_declaration;
+        ast_type_declaration        * reg_declaration;
+        ast_type_declaration        * integer_declaration;
+        ast_type_declaration        * real_declaration;
+        ast_type_declaration        * time_declaration;
+        ast_type_declaration        * realtime_declaration;
+        ast_type_declaration        * event_declaration;
+        ast_type_declaration        * genvar_declaration;
+        ast_task_declaration        * task_declaration;
+        ast_function_declaration    * function_declaration;
+    };
+} ast_module_item;
+
+/*!
+@brief Creates and returns a new module item descriptor.
+@note Expects the relevant union member to be set based on the type manually.
+*/
+ast_module_item * ast_new_module_item(
+    ast_node_attributes * attributes,
+    ast_module_item_type  type
+);
 
 
 /*! @} */
