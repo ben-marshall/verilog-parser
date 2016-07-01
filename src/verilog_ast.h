@@ -61,7 +61,7 @@ typedef void * ast_output_symbol;
 //! \b Temporary typedef.
 typedef void * ast_module_or_generate_item;
 
-typedef void * ast_block_item_declaration;
+typedef struct ast_block_item_declaration_t ast_block_item_declaration;
 typedef void * ast_tf_input_declaration;
 
 //! \b Temporary typedef.
@@ -2025,18 +2025,6 @@ ast_gate_instantiation * ast_new_gate_instantiation(ast_gate_type type);
 
 /*! @} */
 
-// --------------------------- Block Item Declaration ------------------------
-
-/*!
-@defgroup ast-node-declaration Declarations
-@{
-@ingroup ast-node-module-items
-@brief Blocks of definitions
-*/
-
-
-
-/*! @} */
 
 // -------------------------------- Declaration Lists ------------------------
 
@@ -2299,6 +2287,61 @@ ast_parameter_declarations * ast_new_parameter_declarations(
     ast_range       * range,
     ast_parameter_type  type 
 );
+
+/*! @} */
+
+// --------------------------- Block Item Declaration ------------------------
+
+/*!
+@defgroup ast-node-declaration Declarations
+@{
+@ingroup ast-node-module-items
+@brief Blocks of definitions
+*/
+
+//! Describes the declaration of a set of registers within a block.
+typedef struct ast_block_reg_declaration_t{
+    ast_boolean   is_signed;
+    ast_range   * range;
+    ast_list    * identifiers;
+} ast_block_reg_declaration;
+
+/*!
+@brief Creates and returns a new block register declaration descriptor.
+*/
+ast_block_reg_declaration * ast_new_block_reg_declaration(
+    ast_boolean   is_signed,
+    ast_range   * range,
+    ast_list    * identifiers
+);
+
+//! Describes what sort of block item is being declared.
+typedef enum ast_block_item_declaration_type_e{
+    BLOCK_ITEM_REG,
+    BLOCK_ITEM_PARAM,//!< Parameters
+    BLOCK_ITEM_TYPE //!< event, integer,real,time,realtime
+} ast_block_item_declaration_type;
+
+//! Describes the declaration of a block item.
+struct ast_block_item_declaration_t{
+    ast_block_item_declaration_type type;
+    ast_node_attributes             * attributes;
+    union{
+        ast_block_reg_declaration * reg;
+        ast_type_declaration * event_or_var;//!< When type == BLOCK_ITEM_TYPE.
+        ast_parameter_declarations *  parameters;
+    };
+};
+
+/*!
+@brief Creates and returns a new block item declaration of the specified type.
+@note Expects the relevant union member to be set manually.
+*/
+ast_block_item_declaration * ast_new_block_item_declaration(
+    ast_block_item_declaration_type type,
+    ast_node_attributes             * attributes
+);
+
 
 /*! @} */
 

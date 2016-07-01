@@ -2031,3 +2031,39 @@ ast_task_declaration * ast_new_task_declaration(
 
     return tr;
 }
+
+/*!
+@brief Creates and returns a new block register declaration descriptor.
+*/
+ast_block_reg_declaration * ast_new_block_reg_declaration(
+    ast_boolean   is_signed,
+    ast_range   * range,
+    ast_list    * identifiers
+){
+    ast_block_reg_declaration * tr =
+        ast_calloc(1,sizeof(ast_block_reg_declaration));
+
+    tr -> is_signed = is_signed;
+    tr -> range     = range;
+    tr -> identifiers = identifiers;
+
+    return tr;
+}
+
+
+/*!
+@brief Creates and returns a new block item declaration of the specified type.
+@note Expects the relevant union member to be set manually.
+*/
+ast_block_item_declaration * ast_new_block_item_declaration(
+    ast_block_item_declaration_type type,
+    ast_node_attributes             * attributes
+){
+    ast_block_item_declaration * tr = 
+        ast_calloc(1,sizeof(ast_block_item_declaration));
+
+    tr -> type = type;
+    tr -> attributes = attributes;
+
+    return tr;
+}

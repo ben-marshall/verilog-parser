@@ -105,6 +105,8 @@
     ast_task_port_type             task_port_type;
     ast_task_declaration         * task_declaration;
     ast_function_item_declaration* function_or_task_item;
+    ast_block_item_declaration   * block_item_declaration;
+    ast_block_reg_declaration    * block_reg_declaration;
 
     char                   boolean;
     char                 * string;
@@ -570,9 +572,9 @@
 %type   <node>                       actual_argument
 %type   <node>                       always_construct
 %type   <boolean>                    automatic_o
-%type   <node>                       block_item_declaration
-%type   <node>                       block_reg_declaration
-%type   <node>                       block_variable_type
+%type   <block_item_declaration>     block_item_declaration
+%type   <block_reg_declaration>      block_reg_declaration
+%type   <identifier>                 block_variable_type
 %type   <node>                       cell_clause
 %type   <node>                       charge_strength
 %type   <node>                       compiler_directive
@@ -1843,27 +1845,60 @@ task_port_type   : KW_TIME      {$$ = PORT_TYPE_TIME;}
 
 /* A.2.8 Block item declarations */
 
-block_item_declaration : attribute_instances block_reg_declaration
-                       | attribute_instances event_declaration
-                       | attribute_instances integer_declaration
-                       | attribute_instances local_parameter_declaration
-                       | attribute_instances parameter_declaration
-                       | attribute_instances real_declaration
-                       | attribute_instances realtime_declaration
-                       | attribute_instances time_declaration
-                       ;
+block_item_declaration : 
+  attribute_instances block_reg_declaration{
+    $$ = ast_new_block_item_declaration(BLOCK_ITEM_REG, $1);
+    $$ -> reg = $2;
+  }
+| attribute_instances event_declaration{
+    $$ = ast_new_block_item_declaration(BLOCK_ITEM_TYPE, $1);
+    $$ -> event_or_var = $2;
+  }
+| attribute_instances integer_declaration{
+    $$ = ast_new_block_item_declaration(BLOCK_ITEM_TYPE, $1);
+    $$ -> event_or_var = $2;
+  }
+| attribute_instances local_parameter_declaration{
+    $$ = ast_new_block_item_declaration(BLOCK_ITEM_PARAM, $1);
+    $$ -> parameters = $2;
+  }
+| attribute_instances parameter_declaration{
+    $$ = ast_new_block_item_declaration(BLOCK_ITEM_PARAM, $1);
+    $$ -> parameters = $2;
+  }
+| attribute_instances real_declaration{
+    $$ = ast_new_block_item_declaration(BLOCK_ITEM_TYPE, $1);
+    $$ -> event_or_var = $2;
+  }
+| attribute_instances realtime_declaration{
+    $$ = ast_new_block_item_declaration(BLOCK_ITEM_TYPE, $1);
+    $$ -> event_or_var = $2;
+  }
+| attribute_instances time_declaration{
+    $$ = ast_new_block_item_declaration(BLOCK_ITEM_TYPE, $1);
+    $$ -> event_or_var = $2;
+  }
+;
 
-block_reg_declaration : KW_REG signed_o range_o 
-                        list_of_block_variable_identifiers SEMICOLON
-                      ;
+block_reg_declaration : 
+  KW_REG signed_o range_o list_of_block_variable_identifiers SEMICOLON{
+    $$ = ast_new_block_reg_declaration($2,$3,$4);
+  }
+;
 
-list_of_block_variable_identifiers : block_variable_type
-                                   | list_of_block_variable_identifiers COMMA 
-                                     block_variable_type
-                                   ;
+list_of_block_variable_identifiers : 
+  block_variable_type{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| list_of_block_variable_identifiers COMMA block_variable_type{
+    $$ = $1;
+    ast_list_append($$,$3);
+}
+;
 
-block_variable_type : variable_identifier
-                    | variable_identifier dimensions
+block_variable_type : variable_identifier {$$=$1;}
+                    | variable_identifier dimensions{$$=$1;}
                     ;
 
 /* A.3.1 primitive instantiation and instances */
