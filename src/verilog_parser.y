@@ -101,6 +101,10 @@
     ast_pulse_control_specparam  * pulse_control_specparam;
     ast_range_or_type            * range_or_type;
     ast_function_declaration     * function_declaration;
+    ast_task_port                * task_port;
+    ast_task_port_type             task_port_type;
+    ast_task_declaration         * task_declaration;
+    ast_function_item_declaration* function_or_task_item;
 
     char                   boolean;
     char                 * string;
@@ -590,7 +594,7 @@
 %type   <node>                       file_path_spec
 %type   <node>                       file_path_specs
 %type   <function_declaration>       function_declaration
-%type   <node>                       function_item_declaration
+%type   <function_or_task_item>      function_item_declaration
 %type   <list>                       function_port_list
 %type   <gate_instantiation>         gate_instantiation
 %type   <n_input_gate_instances>     gate_n_input
@@ -670,15 +674,15 @@
 %type   <parameter_declaration>      specparam_declaration
 %type   <node>                       sq_bracket_constant_expressions
 %type   <node>                       system_timing_check
-%type   <node>                       task_declaration
-%type   <node>                       task_item_declaration
-%type   <node>                       task_port_item
-%type   <node>                       task_port_type
-%type   <node>                       task_port_type_o
+%type   <task_declaration>           task_declaration
+%type   <function_or_task_item>      task_item_declaration
+%type   <task_port>                  task_port_item
+%type   <task_port_type>             task_port_type
+%type   <task_port_type>             task_port_type_o
 %type   <node>                       text_macro_definition
-%type   <node>                       tf_inout_declaration
-%type   <node>                       tf_input_declaration
-%type   <node>                       tf_output_declaration
+%type   <task_port>                  tf_inout_declaration
+%type   <task_port>                  tf_input_declaration
+%type   <task_port>                  tf_output_declaration
 %type   <node>                       time
 %type   <type_declaration>           time_declaration
 %type   <node>                       timescale_directive
@@ -1683,8 +1687,16 @@ function_item_declarations :
  ;
 
 function_item_declaration  : 
-  block_item_declaration 
-| tf_input_declaration SEMICOLON
+  block_item_declaration {
+    $$ = ast_new_function_item_declaration();
+    $$ -> is_port_declaration = AST_FALSE;
+    $$ -> block_item = $1;
+}
+| tf_input_declaration SEMICOLON{
+    $$ = ast_new_function_item_declaration();
+    $$ -> is_port_declaration = AST_TRUE;
+    $$ -> port_declaration    = $1;
+}
 ;
 
 function_port_list         : 
@@ -1711,70 +1723,121 @@ range_or_type              :
   }
 | KW_INTEGER{
     $$ = ast_new_range_or_type(AST_FALSE);
-    $$ -> type = PARAM_INTEGER;
+    $$ -> type = PORT_TYPE_INTEGER;
   }
 | KW_REAL{
     $$ = ast_new_range_or_type(AST_FALSE);
-    $$ -> type = PARAM_REAL;
+    $$ -> type = PORT_TYPE_REAL;
   }
 | KW_REALTIME{
     $$ = ast_new_range_or_type(AST_FALSE);
-    $$ -> type = PARAM_REALTIME;
+    $$ -> type = PORT_TYPE_REALTIME;
   }
 | KW_TIME{
     $$ = ast_new_range_or_type(AST_FALSE);
-    $$ -> type = PARAM_TIME;
+    $$ -> type = PORT_TYPE_TIME;
   }
 ;
 
 /* A.2.7 Task Declarations */
 
-task_declaration    : KW_TASK automatic_o task_identifier SEMICOLON
-                      task_item_declarations
-                      statement
-                      KW_ENDTASK
-                    | KW_TASK automatic_o task_identifier 
-                      OPEN_BRACKET task_port_list CLOSE_BRACKET SEMICOLON
-                      block_item_declarations
-                      statement
-                      KW_ENDTASK
-                    ;
+task_declaration    : 
+  KW_TASK automatic_o task_identifier SEMICOLON task_item_declarations 
+  statement KW_ENDTASK{
+    $$ = ast_new_task_declaration($2,$3,NULL,$5,$6);
+  }
+| KW_TASK automatic_o task_identifier OPEN_BRACKET task_port_list 
+  CLOSE_BRACKET SEMICOLON block_item_declarations statement KW_ENDTASK{
+    $$ = ast_new_task_declaration($2,$3,$5,$8,$9);
+  }
+;
 
-task_item_declarations : task_item_declaration
-                       | task_item_declarations task_item_declaration
-                       ;
+task_item_declarations : 
+  task_item_declaration{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| task_item_declarations task_item_declaration{
+    $$ = $1;
+    ast_list_append($$,$2);
+ }
+;
 
-task_item_declaration : block_item_declaration
-                      | attribute_instances tf_input_declaration SEMICOLON
-                      | attribute_instances tf_output_declaration SEMICOLON
-                      | attribute_instances tf_inout_declaration SEMICOLON
-                      ;
+task_item_declaration : 
+  block_item_declaration{
+    $$ = ast_new_function_item_declaration();
+    $$ -> is_port_declaration = AST_FALSE;
+    $$ -> block_item = $1;
+}
+| attribute_instances tf_input_declaration SEMICOLON{
+    $$ = ast_new_function_item_declaration();
+    $$ -> is_port_declaration = AST_TRUE;
+    $$ -> port_declaration = $2;
+}
+| attribute_instances tf_output_declaration SEMICOLON{
+    $$ = ast_new_function_item_declaration();
+    $$ -> is_port_declaration = AST_TRUE;
+    $$ -> port_declaration = $2;
+}
+| attribute_instances tf_inout_declaration SEMICOLON{
+    $$ = ast_new_function_item_declaration();
+    $$ -> is_port_declaration = AST_TRUE;
+    $$ -> port_declaration = $2;
+}
+;
 
-task_port_list  : task_port_item
-                | task_port_list COMMA task_port_item
-                ;
+task_port_list  : 
+   task_port_item{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+ | task_port_list COMMA task_port_item{
+    $$ = $1;
+    ast_list_append($$,$3);
+ }
+ ;
 
-task_port_item  : attribute_instances tf_input_declaration SEMICOLON
-                | attribute_instances tf_output_declaration SEMICOLON
-                | attribute_instances tf_inout_declaration SEMICOLON
+task_port_item  : 
+  attribute_instances tf_input_declaration  SEMICOLON {$$=$2;}
+| attribute_instances tf_output_declaration SEMICOLON {$$=$2;}
+| attribute_instances tf_inout_declaration  SEMICOLON {$$=$2;}
+;
 
-tf_input_declaration : KW_INPUT reg_o signed_o range_o list_of_port_identifiers
-                     | KW_INPUT task_port_type_o list_of_port_identifiers
-                     ;
+tf_input_declaration : 
+  KW_INPUT reg_o signed_o range_o list_of_port_identifiers{
+    $$ = ast_new_task_port(PORT_INPUT, $2,$3,$4,PORT_TYPE_NONE,$5);
+  }
+| KW_INPUT task_port_type_o list_of_port_identifiers{
+    $$ = ast_new_task_port(PORT_INPUT,AST_FALSE,AST_FALSE,NULL,
+        $2,$3);
+}
+;
 
-tf_output_declaration : KW_OUTPUT reg_o signed_o range_o list_of_port_identifiers
-                      | KW_OUTPUT task_port_type_o list_of_port_identifiers
-                      ;
+tf_output_declaration : 
+  KW_OUTPUT reg_o signed_o range_o list_of_port_identifiers{
+    $$ = ast_new_task_port(PORT_OUTPUT, $2,$3,$4,PORT_TYPE_NONE,$5);
+  }
+| KW_OUTPUT task_port_type_o list_of_port_identifiers{
+    $$ = ast_new_task_port(PORT_OUTPUT,AST_FALSE,AST_FALSE,NULL,
+        $2,$3);
+}
+;
 
-tf_inout_declaration : KW_INOUT reg_o signed_o range_o list_of_port_identifiers
-                     | KW_INOUT task_port_type_o list_of_port_identifiers
-                     ;
+tf_inout_declaration : 
+  KW_INOUT reg_o signed_o range_o list_of_port_identifiers{
+    $$ = ast_new_task_port(PORT_INOUT, $2,$3,$4,PORT_TYPE_NONE,$5);
+  }
+| KW_INOUT task_port_type_o list_of_port_identifiers{
+    $$ = ast_new_task_port(PORT_INOUT,AST_FALSE,AST_FALSE,NULL,
+        $2,$3);
+}
+;
 
-task_port_type_o : task_port_type | ;
-task_port_type   : KW_TIME
-                 | KW_REAL
-                 | KW_REALTIME
-                 | KW_INTEGER
+task_port_type_o : task_port_type {$$=$1;} | {$$=PORT_TYPE_NONE;} ;
+task_port_type   : KW_TIME      {$$ = PORT_TYPE_TIME;}
+                 | KW_REAL      {$$ = PORT_TYPE_REAL;}
+                 | KW_REALTIME  {$$ = PORT_TYPE_REALTIME;}
+                 | KW_INTEGER   {$$ = PORT_TYPE_INTEGER;}
                  ;
 
 

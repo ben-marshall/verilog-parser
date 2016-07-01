@@ -1986,3 +1986,48 @@ ensures the memory is allocated properly.
 ast_function_item_declaration * ast_new_function_item_declaration(){
     return ast_calloc(1,sizeof(ast_function_item_declaration));
 }
+
+/*
+@brief Creates and returns a new representation of a task or function
+argument.
+*/
+ast_task_port * ast_new_task_port(
+    ast_port_direction direction,
+    ast_boolean        reg,
+    ast_boolean        is_signed,
+    ast_range        * range,
+    ast_task_port_type type,
+    ast_list         * identifiers //!< The list of port names.
+){
+    ast_task_port * tr = ast_calloc(1,sizeof(ast_task_port));
+
+    tr -> direction   = direction;
+    tr -> reg         = reg;
+    tr -> is_signed   = is_signed;
+    tr -> range       = range;
+    tr -> type        = type;
+    tr -> identifiers = identifiers; //!< The list of port names.
+
+    return tr;
+}
+
+/*!
+@brief Creates and returns a new task declaration statement.
+*/
+ast_task_declaration * ast_new_task_declaration(
+    ast_boolean         automatic,
+    ast_identifier      identifier,
+    ast_list        *   ports,
+    ast_list        *   declarations,
+    ast_list        *   statements
+){
+    ast_task_declaration * tr = ast_calloc(1,sizeof(ast_task_declaration));
+
+    tr -> automatic  = automatic;
+    tr -> identifier = identifier;
+    tr -> declarations = declarations;
+    tr -> ports     = ports;
+    tr -> statements = statements;
+
+    return tr;
+}

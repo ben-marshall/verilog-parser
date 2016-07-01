@@ -2038,19 +2038,6 @@ ast_gate_instantiation * ast_new_gate_instantiation(ast_gate_type type);
 
 /*! @} */
 
-// -------------------------------- Task Declaration -------------------------
-
-/*!
-@defgroup ast-node-task-declaration Task Declaration
-@{
-@ingroup ast-node-declaration
-@brief User task (procedure) definition.
-*/
-
-
-
-/*! @} */
-
 // -------------------------------- Declaration Lists ------------------------
 
 /*!
@@ -2324,12 +2311,21 @@ ast_parameter_declarations * ast_new_parameter_declarations(
 @brief Describes a declaration of a user function.
 */
 
+//! Return value type for a task.
+typedef enum ast_task_port_type_e{
+    PORT_TYPE_TIME,
+    PORT_TYPE_REAL,
+    PORT_TYPE_REALTIME,
+    PORT_TYPE_INTEGER,
+    PORT_TYPE_NONE,
+} ast_task_port_type;
+
 //! Holds either a range or a type data item.
 typedef struct ast_range_or_type_t{
     ast_boolean is_range;   //!< iff true use range, else type.
     union{
         ast_range * range;
-        ast_parameter_type type; //!< Cannot be generic or specparam.
+        ast_task_port_type type;
     };
 } ast_range_or_type;
 
@@ -2365,15 +2361,39 @@ ast_function_declaration * ast_new_function_declaration(
     ast_list           *statements
 );
 
+//! Fully describes a set of task arguments with the same properties.
+typedef struct ast_task_port_t{
+    ast_port_direction direction;
+    ast_boolean        reg;
+    ast_boolean        is_signed;
+    ast_range        * range;
+    ast_task_port_type type;
+    ast_list         * identifiers; //!< The list of port names.
+} ast_task_port;
+
+
+/*
+@brief Creates and returns a new representation of a task or function
+argument.
+*/
+ast_task_port * ast_new_task_port(
+    ast_port_direction direction,
+    ast_boolean        reg,
+    ast_boolean        is_signed,
+    ast_range        * range,
+    ast_task_port_type type,
+    ast_list         * identifiers //!< The list of port names.
+);
+
 /*!
 @brief Describes a function item declaration, which is either a block
 item or port declaration.
 */
 typedef struct ast_function_item_declaration_t{
-    ast_boolean is_input_declaration;
+    ast_boolean is_port_declaration;
     union{
         ast_block_item_declaration  * block_item;
-        ast_tf_input_declaration    * input_declaration;
+        ast_task_port               * port_declaration;
     };
 } ast_function_item_declaration;
 
@@ -2383,6 +2403,41 @@ typedef struct ast_function_item_declaration_t{
 ensures the memory is allocated properly.
 */
 ast_function_item_declaration * ast_new_function_item_declaration();
+
+/*! @} */
+
+// -------------------------------- Task Declaration -------------------------
+
+/*!
+@defgroup ast-node-task-declaration Task Declaration
+@{
+@ingroup ast-node-declaration
+@brief User task (procedure) definition.
+*/
+
+/*!
+@brief Creates and returns a new task declaration statement.
+*/
+typedef struct ast_task_declaration_t{
+    ast_boolean         automatic;
+    ast_identifier      identifier;
+    ast_list        *   ports;
+    ast_list        *   declarations;
+    ast_list        *   statements;
+} ast_task_declaration;
+
+/*!
+@brief Creates and returns a new task declaration statement.
+*/
+ast_task_declaration * ast_new_task_declaration(
+    ast_boolean         automatic,
+    ast_identifier      identifier,
+    ast_list        *   ports,
+    ast_list        *   declarations,
+    ast_list        *   statements
+);
+
+
 
 /*! @} */
 
