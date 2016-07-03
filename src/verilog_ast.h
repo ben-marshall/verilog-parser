@@ -2025,20 +2025,6 @@ ast_gate_instantiation * ast_new_gate_instantiation(ast_gate_type type);
 
 /*! @} */
 
-
-// -------------------------------- Declaration Lists ------------------------
-
-/*!
-@defgroup ast-node-declaration-lists Declaration Lists
-@{
-@ingroup ast-node-declaration
-@brief 
-*/
-
-
-
-/*! @} */
-
 // -------------------------------- Delays -----------------------------------
 
 /*!
@@ -2119,12 +2105,15 @@ ast_delay2 * ast_new_delay2(
 @see ast_primitive_strength ast_primitive_pull_strength ast_drive_strength
 */
 
-//! Describes (coloquially?!) the charge strength on a driver.
+/*!
+@brief Describes (coloquially?!) the charge strength on a driver.
+@warning In physics, the quanta of charge are *not* small, medium and large.
+*/
 typedef enum ast_charge_strength_e{
-    CHARGE_SMALL,
-    CHARGE_MEDIUM,
-    CHARGE_LARGE,
-    CHARGE_DEFAULT
+    CHARGE_SMALL,   //!<
+    CHARGE_MEDIUM,  //!<
+    CHARGE_LARGE,   //!<
+    CHARGE_DEFAULT  //!< Use when not explicitly specified.
 } ast_charge_strength;
 
 /*! @} */
@@ -2154,15 +2143,15 @@ typedef enum ast_charge_strength_e{
 
 //! Describes the type of a net in Verilog.
 typedef enum ast_net_type_e{
-    NET_TYPE_SUPPLY0,
-    NET_TYPE_SUPPLY1,
-    NET_TYPE_TRI,
-    NET_TYPE_TRIAND,
-    NET_TYPE_TRIOR,
-    NET_TYPE_TRIREG,
-    NET_TYPE_WIRE,
-    NET_TYPE_WAND,
-    NET_TYPE_WOR,
+    NET_TYPE_SUPPLY0,   //!< Logic 0 supply rail
+    NET_TYPE_SUPPLY1,   //!< Logic 1 supply rail.
+    NET_TYPE_TRI,       //!< Tri-state
+    NET_TYPE_TRIAND,    //!< Tri-state AND
+    NET_TYPE_TRIOR,     //!< Tri-state OR
+    NET_TYPE_TRIREG,    //!< Tri-state reg wire
+    NET_TYPE_WIRE,      //!< Wire
+    NET_TYPE_WAND,      //!< ?
+    NET_TYPE_WOR,       //!< ?
     NET_TYPE_NONE       //!< Use only when not specified!
 } ast_net_type;
 
@@ -2235,6 +2224,9 @@ typedef struct ast_type_declaration_t{
 /*!
 @brief Creates and returns a node to represent the declaration of a new
 module item construct.
+@param [in] type - What sort of item is contained in the returned structure.
+From this, we know which members of the ast_type_declaration make sense and
+are safe to access.
 @details Because of the complex nature of the grammar for these declarations,
 (bourne from the number of optional modifiers) no single constructor function
 is provided. Rather, one can create a new type declaration of a
@@ -2302,23 +2294,23 @@ ast_parameter_declarations * ast_new_parameter_declarations(
 
 //! Describes the declaration of a set of registers within a block.
 typedef struct ast_block_reg_declaration_t{
-    ast_boolean   is_signed;
-    ast_range   * range;
-    ast_list    * identifiers;
+    ast_boolean   is_signed;     //!< Do they represent signed values?
+    ast_range   * range;         //!< Are these vectors of registers?
+    ast_list    * identifiers;   //!< list of reg names with same properties.
 } ast_block_reg_declaration;
 
 /*!
 @brief Creates and returns a new block register declaration descriptor.
 */
 ast_block_reg_declaration * ast_new_block_reg_declaration(
-    ast_boolean   is_signed,
-    ast_range   * range,
-    ast_list    * identifiers
+    ast_boolean   is_signed,    //!< Do they represent signed values?
+    ast_range   * range,        //!< Are these vectors of registers?
+    ast_list    * identifiers   //!< list of reg names with same properties.
 );
 
 //! Describes what sort of block item is being declared.
 typedef enum ast_block_item_declaration_type_e{
-    BLOCK_ITEM_REG,
+    BLOCK_ITEM_REG, //!< Reg declaration.
     BLOCK_ITEM_PARAM,//!< Parameters
     BLOCK_ITEM_TYPE //!< event, integer,real,time,realtime
 } ast_block_item_declaration_type;
@@ -2328,9 +2320,9 @@ struct ast_block_item_declaration_t{
     ast_block_item_declaration_type type;
     ast_node_attributes             * attributes;
     union{
-        ast_block_reg_declaration * reg;
+        ast_block_reg_declaration * reg; //!< When type == BLOCK_ITEM_REG
         ast_type_declaration * event_or_var;//!< When type == BLOCK_ITEM_TYPE.
-        ast_parameter_declarations *  parameters;
+        ast_parameter_declarations *  parameters; //!< When type==BLOCK_ITEM_PARAM.
     };
 };
 
@@ -2339,8 +2331,8 @@ struct ast_block_item_declaration_t{
 @note Expects the relevant union member to be set manually.
 */
 ast_block_item_declaration * ast_new_block_item_declaration(
-    ast_block_item_declaration_type type,
-    ast_node_attributes             * attributes
+    ast_block_item_declaration_type type, //!< The item type.
+    ast_node_attributes             * attributes //!< Tool specific attributes.
 );
 
 
@@ -2353,28 +2345,31 @@ ast_block_item_declaration * ast_new_block_item_declaration(
 @{
 @ingroup ast-node-declaration
 @brief Describes a declaration of a user function.
+@see ast-node-function-calling
 */
 
 //! Return value type for a task.
 typedef enum ast_task_port_type_e{
-    PORT_TYPE_TIME,
-    PORT_TYPE_REAL,
-    PORT_TYPE_REALTIME,
-    PORT_TYPE_INTEGER,
-    PORT_TYPE_NONE,
+    PORT_TYPE_TIME,     //!< Time value.
+    PORT_TYPE_REAL,     //!< Real valued number.
+    PORT_TYPE_REALTIME, //!< Real valued time.
+    PORT_TYPE_INTEGER,  //!< Integer type.
+    PORT_TYPE_NONE,     //!< No specified type.
 } ast_task_port_type;
 
 //! Holds either a range or a type data item.
 typedef struct ast_range_or_type_t{
     ast_boolean is_range;   //!< iff true use range, else type.
     union{
-        ast_range * range;
-        ast_task_port_type type;
+        ast_range * range;  //!< The range strucure.
+        ast_task_port_type type; //!< The type structure (an enum)
     };
 } ast_range_or_type;
 
 /*!
 @brief Creates and returns a new object storing either a range or a type.
+@param [in] is_range - IFF true then the structure's union contains a
+range structure, otherwise it contains a type structure.
 */
 ast_range_or_type * ast_new_range_or_type(ast_boolean is_range);
 
@@ -2383,35 +2378,37 @@ ast_range_or_type * ast_new_range_or_type(ast_boolean is_range);
 @brief Fully describes the declaration of a verilog function.
 */
 typedef struct ast_function_declaration_t{
-    ast_boolean         automatic;
-    ast_boolean         is_signed;
+    ast_boolean         automatic;         //!< Is automatic?
+    ast_boolean         is_signed;         //!< Is the returned value signed?
     ast_boolean         function_or_block; //!< IFF true statements is list of function_item_declaration else list of block_item_declaration.
-    ast_range_or_type  *rot;
-    ast_identifier      identifier;
-    ast_list           *item_declarations;
-    ast_list           *statements;
+    ast_range_or_type  *rot;               //!< Range or type.
+    ast_identifier      identifier;        //!< Function name.
+    ast_list           *item_declarations; //!< Internal variable declarations.
+    ast_list           *statements;        //!< Executable statements.
 } ast_function_declaration;
 
 /*!
 @brief Creates and returns a function declaration node.
 */
 ast_function_declaration * ast_new_function_declaration(
-    ast_boolean         automatic,
-    ast_boolean         is_signed,
-    ast_boolean         function_or_block,
-    ast_range_or_type  *rot,
-    ast_identifier      identifier,
-    ast_list           *item_declarations,
-    ast_list           *statements
+    ast_boolean         automatic,         //!< Is automatic?
+    ast_boolean         is_signed,         //!< Is the returned value signed?
+    ast_boolean         function_or_block, //!< IFF true statements is list of function_item_declaration else list of block_item_declaration.
+    ast_range_or_type  *rot,               //!< Range or type.
+    ast_identifier      identifier,        //!< Function name.
+    ast_list           *item_declarations, //!< Internal variable declarations.
+    ast_list           *statements         //!< Executable statements.
 );
 
-//! Fully describes a set of task arguments with the same properties.
+/*
+@brief Fully describes a set of task arguments with the same properties.
+*/
 typedef struct ast_task_port_t{
-    ast_port_direction direction;
-    ast_boolean        reg;
-    ast_boolean        is_signed;
-    ast_range        * range;
-    ast_task_port_type type;
+    ast_port_direction direction;   //!< Input or output to the port.
+    ast_boolean        reg;         //!< Is is a registered value?
+    ast_boolean        is_signed;   //!< Does it represent a signed value?
+    ast_range        * range;       //!< Bit or item range for arrays.
+    ast_task_port_type type;        //!< Data type (if any)
     ast_list         * identifiers; //!< The list of port names.
 } ast_task_port;
 
@@ -2421,11 +2418,11 @@ typedef struct ast_task_port_t{
 argument.
 */
 ast_task_port * ast_new_task_port(
-    ast_port_direction direction,
-    ast_boolean        reg,
-    ast_boolean        is_signed,
-    ast_range        * range,
-    ast_task_port_type type,
+    ast_port_direction direction,   //!< Input or output to the port.
+    ast_boolean        reg,         //!< Is is a registered value?
+    ast_boolean        is_signed,   //!< Does it represent a signed value?
+    ast_range        * range,       //!< Bit or item range for arrays.
+    ast_task_port_type type,        //!< Data type (if any)
     ast_list         * identifiers //!< The list of port names.
 );
 
@@ -2434,10 +2431,10 @@ ast_task_port * ast_new_task_port(
 item or port declaration.
 */
 typedef struct ast_function_item_declaration_t{
-    ast_boolean is_port_declaration;
+    ast_boolean is_port_declaration; //!< True IFF an argument to the function.
     union{
-        ast_block_item_declaration  * block_item;
-        ast_task_port               * port_declaration;
+        ast_block_item_declaration  * block_item; //!< Standard body statements.
+        ast_task_port               * port_declaration; //!< IFF is_port_declaration == AST_TRUE
     };
 } ast_function_item_declaration;
 
@@ -2463,22 +2460,22 @@ ast_function_item_declaration * ast_new_function_item_declaration();
 @brief Creates and returns a new task declaration statement.
 */
 typedef struct ast_task_declaration_t{
-    ast_boolean         automatic;
-    ast_identifier      identifier;
-    ast_list        *   ports;
-    ast_list        *   declarations;
-    ast_list        *   statements;
+    ast_boolean         automatic;      //!< Automatic iff TRUE
+    ast_identifier      identifier;     //!< The task name.
+    ast_list        *   ports;          //!< Arguments to the task.
+    ast_list        *   declarations;   //!< Internal variable declarations.
+    ast_list        *   statements;     //!< The body of the task.
 } ast_task_declaration;
 
 /*!
 @brief Creates and returns a new task declaration statement.
 */
 ast_task_declaration * ast_new_task_declaration(
-    ast_boolean         automatic,
-    ast_identifier      identifier,
-    ast_list        *   ports,
-    ast_list        *   declarations,
-    ast_list        *   statements
+    ast_boolean         automatic,      //!< Automatic iff TRUE
+    ast_identifier      identifier,     //!< The task name.
+    ast_list        *   ports,          //!< Arguments to the task.
+    ast_list        *   declarations,   //!< Internal variable declarations.
+    ast_list        *   statements      //!< The body of the task.
 );
 
 
@@ -2553,6 +2550,8 @@ typedef struct ast_module_item_t{
 
 /*!
 @brief Creates and returns a new module item descriptor.
+@param [in] attributes - Tool specific attributes.
+@param [in] type - What sort of module item is being represented?
 @note Expects the relevant union member to be set based on the type manually.
 */
 ast_module_item * ast_new_module_item(
@@ -2577,15 +2576,21 @@ ast_module_item * ast_new_module_item(
 ports and internal constructs.
 */
 typedef struct ast_module_declaration_t{
-    ast_node_attributes * attributes;
-    ast_identifier        identifier;
-    ast_list            * parameters;
-    ast_list            * ports;
-    ast_list            * constructs;
+    ast_node_attributes * attributes; //!< Tool specific attributes.
+    ast_identifier        identifier; //!< The name of the module.
+    ast_list            * parameters; //!< Parameters to the module.
+    ast_list            * ports;      //!< IO ports for the module.
+    ast_list            * constructs; //!< Internal wires, tasks & behaviours.
 } ast_module_declaration;
 
 /*!
 @brief Creates a new module instantiation.
+@param [in] attributes - Tool specific attributes.
+@param [in] identifier - The full module name
+@param [in] parameters - List of parameters to the module
+@param [in] ports      - List of module ports.
+@param [in] constructs - The internal constructs such as tasks, procedures and
+                         internal instantiations.
 */
 ast_module_declaration * ast_new_module_declaration(
     ast_node_attributes * attributes,
@@ -2643,25 +2648,32 @@ ast_module_declaration * ast_new_module_declaration(
 @defgroup ast-node-top-level Top Level
 @{
 @ingroup ast-construction
-@brief 
+@brief Represents nodes at the very top of the source tree.
+@details These nodes won't always correspond to a syntactic construct, and are
+used to represent a collection of other nodes.
 */
 
 //! Describes the type of a item in the list of source entries.
 typedef enum ast_source_item_type_e{
-    SOURCE_MODULE,
-    SOURCE_UDP
+    SOURCE_MODULE,  //!< Refers to a module definition
+    SOURCE_UDP      //!< A User Defined Primitive (UDP) Declaration
 } ast_source_item_type;
 
 //! Contains a source item and it's type.
 typedef struct ast_source_item_t{
-    ast_source_item_type type;
+    ast_source_item_type type;  //!< Which member of the union to access.
     union{
-        ast_module_declaration * module;
-        ast_udp_declaration    * udp;
+        ast_module_declaration * module; //!< IFF type == SOURCE_MODULE
+        ast_udp_declaration    * udp;   //!< IFF type == SOURCE_UDP
     };
 } ast_source_item;
 
-//! Creates and returns a new source item representation.
+/*!
+@brief Creates and returns a new source item representation.
+@param [in] type - The type of the source item to be represented.
+@note Expects the union member of the returned ast_source_item to be
+set manually.
+*/
 ast_source_item * ast_new_source_item(ast_source_item_type type);
 
 // --------------------------------------------------------------
