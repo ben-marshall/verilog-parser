@@ -60,6 +60,7 @@
     ast_lvalue                   * lvalue;
     ast_module_item              * module_item;
     ast_module_instance          * module_instance;
+    ast_module_declaration       * module_declaration;
     ast_module_instantiation     * module_instantiation;
     ast_mos_switch_instance      * mos_switch_instance  ;
     ast_n_input_gate_instance    * n_input_gate_instance;
@@ -87,6 +88,7 @@
     ast_range                    * range;
     ast_range_or_type            * range_or_type;
     ast_single_assignment        * single_assignment;
+    ast_source_item              * source_item;
     ast_statement                * generate_item;
     ast_statement                * statement;
     ast_statement_block          * statement_block;
@@ -374,6 +376,7 @@
 %type   <case_statement>             case_statement
 %type   <case_statement>             function_case_statement
 %type   <case_statement>             generate_case_statement
+%type   <charge_strength>            charge_strength
 %type   <cmos_switch_instance>       cmos_switch_instance
 %type   <concatenation>              concatenation
 %type   <concatenation>              concatenation_cont
@@ -427,7 +430,6 @@
 %type   <expression>                 ordered_port_connection
 %type   <expression>                 path_delay_expression
 %type   <expression>                 pcontrol_terminal
-%type   <list>                       port_expression
 %type   <expression>                 range_expression
 %type   <function_declaration>       function_declaration
 %type   <function_or_task_item>      function_item_declaration
@@ -479,7 +481,9 @@
 %type   <identifier>                 output_identifier
 %type   <identifier>                 output_port_identifier
 %type   <identifier>                 parameter_identifier
+%type   <identifier>                 port
 %type   <identifier>                 port_identifier
+%type   <identifier>                 port_reference
 %type   <identifier>                 real_identifier
 %type   <identifier>                 real_type
 %type   <identifier>                 simple_arrayed_identifier
@@ -527,6 +531,7 @@
 %type   <list>                       gate_n_output_a_id
 %type   <list>                       generate_items
 %type   <list>                       genvar_case_items
+%type   <list>                       grammar_begin
 %type   <list>                       input_port_identifiers
 %type   <list>                       input_terminals
 %type   <list>                       level_symbols
@@ -563,14 +568,18 @@
 %type   <list>                       ordered_parameter_assignments
 %type   <list>                       ordered_port_connections
 %type   <list>                       output_terminals
+%type   <list>                       parameter_override
 %type   <list>                       parameter_value_assignment
 %type   <list>                       parameter_value_assignment_o
 %type   <list>                       pass_enable_switch_instances
 %type   <list>                       pass_switch_instances
 %type   <list>                       path_delay_value
+%type   <list>                       port_declarations
+%type   <list>                       port_expression
 %type   <list>                       ports
 %type   <list>                       pull_gate_instances
 %type   <list>                       sequential_entrys
+%type   <list>                       source_text
 %type   <list>                       specify_block
 %type   <list>                       specify_items
 %type   <list>                       specify_items_o
@@ -592,8 +601,13 @@
 %type   <lvalue>                     net_lvalue
 %type   <lvalue>                     output_terminal
 %type   <lvalue>                     variable_lvalue
+%type   <module_declaration>         module_declaration
 %type   <module_instance>            module_instance
 %type   <module_instantiation>       module_instantiation
+%type   <module_item>                module_item
+%type   <module_item>                module_or_generate_item
+%type   <module_item>                module_or_generate_item_declaration
+%type   <module_item>                non_port_module_item
 %type   <mos_switch_instance>        mos_switch_instance
 %type   <n_input_gate_instance>      n_input_gate_instance
 %type   <n_input_gate_instances>     gate_n_input
@@ -604,9 +618,7 @@
 %type   <net_type>                   net_type
 %type   <net_type>                   net_type_o
 %type   <node>                       actual_argument
-%type   <statement>                  always_construct
 %type   <node>                       cell_clause
-%type   <charge_strength>            charge_strength
 %type   <node>                       compiler_directive
 %type   <node>                       conditional_compile_directive
 %type   <node>                       config_declaration
@@ -614,18 +626,15 @@
 %type   <node>                       config_rule_statement_os
 %type   <node>                       default_clause
 %type   <node>                       default_net_type_cd
-%type   <node>                       description
 %type   <node>                       design_statement
 %type   <node>                       error_limit_value
 %type   <node>                       error_limit_value_o
 %type   <node>                       file_path_spec
 %type   <node>                       file_path_specs
-%type   <node>                       grammar_begin
 %type   <node>                       ifdef_directive
 %type   <node>                       ifndef_directive
 %type   <node>                       include_directive
 %type   <node>                       include_statement
-%type   <statement>                  initial_construct
 %type   <node>                       inst_clause
 %type   <node>                       inst_name
 %type   <node>                       liblist_clause
@@ -634,24 +643,12 @@
 %type   <node>                       library_text
 %type   <node>                       limit_value
 %type   <node>                       line_directive
-%type   <node>                       module_declaration
-%type   <module_item>                module_item
-%type   <module_item>                module_or_generate_item_declaration
 %type   <node>                       module_parameter_port_list
 %type   <node>                       module_params
 %type   <node>                       net_decl_assignment
-%type   <module_item>                non_port_module_item
-%type   <list>                       parameter_override
-%type   <identifier>                 port
-%type   <port_declaration>           port_declaration
-%type   <port_declaration>           port_declaration_l
-%type   <list>                       port_declarations
-%type   <port_direction>             port_dir
-%type   <identifier>                 port_reference
 %type   <node>                       pulsestyle_declaration
 %type   <node>                       reject_limit_value
 %type   <node>                       showcancelled_declaration
-%type   <node>                       source_text
 %type   <node>                       specify_item
 %type   <node>                       specparam_assignment
 %type   <node>                       sq_bracket_constant_expressions
@@ -690,6 +687,9 @@
 %type   <port_declaration>           inout_declaration
 %type   <port_declaration>           input_declaration
 %type   <port_declaration>           output_declaration
+%type   <port_declaration>           port_declaration
+%type   <port_declaration>           port_declaration_l
+%type   <port_direction>             port_dir
 %type   <primary>                    constant_primary
 %type   <primary>                    module_path_primary
 %type   <primary>                    primary
@@ -710,9 +710,11 @@
 %type   <single_assignment>          genvar_assignment
 %type   <single_assignment>          net_assignment
 %type   <single_assignment>          variable_assignment
+%type   <source_item>                description
+%type   <statement>                  always_construct
 %type   <statement>                  function_statement
 %type   <statement>                  function_statement_or_null
-%type   <module_item>                module_or_generate_item
+%type   <statement>                  initial_construct
 %type   <statement>                  statement
 %type   <statement>                  statement_or_null
 %type   <statement_block>            function_seq_block
@@ -774,11 +776,9 @@
 %%
 /* Start variables */
 
-grammar_begin : library_text 
-              | config_declaration
-              | source_text
-              | white_space
-              | comment
+grammar_begin : library_text {$$ = ast_list_new();}
+              | config_declaration {$$ = ast_list_new();}
+              | source_text {$$= $1;}
               ;
 
 /* 19.0 Compiler Directives */
@@ -951,32 +951,53 @@ use_clause : KW_USE library_identifier DOT cell_identifier COLON KW_CONFIG
 
 /* A.1.3 Module and primitive source text. */
 
-source_text : description
-            | source_text description
-            ;
+source_text : 
+  description {
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+}
+| source_text description{
+    $$ = $1;
+    ast_list_append($$,$2);
+}
+;
 
-description : module_declaration
-            | udp_declaration
-            | compiler_directives
-            ;
+description : 
+  module_declaration{
+    $$ = ast_new_source_item(SOURCE_MODULE);
+    $$ -> module = $1;
+}
+| udp_declaration     {
+    $$ = ast_new_source_item(SOURCE_UDP);
+    $$ -> udp = $1;
+}
+| compiler_directives {
+    $$ = NULL;
+}
+;
 
-module_declaration : attribute_instances
-                     module_keyword
-                     module_identifier
-                     module_parameter_port_list
-                     list_of_port_declarations
-                     SEMICOLON
-                     non_port_module_item_os
-                     KW_ENDMODULE
-                   | attribute_instances
-                     module_keyword
-                     module_identifier
-                     module_parameter_port_list
-                     list_of_ports
-                     SEMICOLON
-                     module_item_os
-                     KW_ENDMODULE
-                   ;
+module_declaration : 
+  attribute_instances
+  module_keyword
+  module_identifier
+  module_parameter_port_list
+  list_of_port_declarations
+  SEMICOLON
+  non_port_module_item_os
+  KW_ENDMODULE{
+    $$ = ast_new_module_declaration($1,$3,$4,$5,$7);
+}
+| attribute_instances
+  module_keyword
+  module_identifier
+  module_parameter_port_list
+  list_of_ports
+  SEMICOLON
+  module_item_os
+  KW_ENDMODULE{
+    $$ = ast_new_module_declaration($1,$3,$4,$5,$7);
+}
+;
 
 module_keyword     : KW_MODULE
                    | KW_MACROMODULE

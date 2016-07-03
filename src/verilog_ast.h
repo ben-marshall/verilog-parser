@@ -2572,6 +2572,28 @@ ast_module_item * ast_new_module_item(
 @brief Details declaration of module ports and parameters.
 */
 
+/*!
+@brief Fully describes a single module declaration in terms of parameters
+ports and internal constructs.
+*/
+typedef struct ast_module_declaration_t{
+    ast_node_attributes * attributes;
+    ast_identifier        identifier;
+    ast_list            * parameters;
+    ast_list            * ports;
+    ast_list            * constructs;
+} ast_module_declaration;
+
+/*!
+@brief Creates a new module instantiation.
+*/
+ast_module_declaration * ast_new_module_declaration(
+    ast_node_attributes * attributes,
+    ast_identifier        identifier,
+    ast_list            * parameters,
+    ast_list            * ports,
+    ast_list            * constructs
+);
 
 
 /*! @} */
@@ -2623,6 +2645,26 @@ ast_module_item * ast_new_module_item(
 @ingroup ast-construction
 @brief 
 */
+
+//! Describes the type of a item in the list of source entries.
+typedef enum ast_source_item_type_e{
+    SOURCE_MODULE,
+    SOURCE_UDP
+} ast_source_item_type;
+
+//! Contains a source item and it's type.
+typedef struct ast_source_item_t{
+    ast_source_item_type type;
+    union{
+        ast_module_declaration * module;
+        ast_udp_declaration    * udp;
+    };
+} ast_source_item;
+
+//! Creates and returns a new source item representation.
+ast_source_item * ast_new_source_item(ast_source_item_type type);
+
+// --------------------------------------------------------------
 
 /*!
 @brief Stores the various data values that a node in the AST can represent.

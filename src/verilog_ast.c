@@ -2083,3 +2083,34 @@ ast_module_item * ast_new_module_item(
 
     return tr;
 }
+
+
+/*!
+@brief Creates a new module instantiation.
+*/
+ast_module_declaration * ast_new_module_declaration(
+    ast_node_attributes * attributes,
+    ast_identifier        identifier,
+    ast_list            * parameters,
+    ast_list            * ports,
+    ast_list            * constructs
+){
+    ast_module_declaration * tr = ast_calloc(1,sizeof(ast_module_declaration));
+
+    tr -> attributes = attributes;
+    tr -> identifier = identifier;
+    tr -> parameters = parameters;
+    tr -> ports      = ports;
+    tr -> constructs = constructs;
+
+    return tr;
+}
+
+//! Creates and returns a new source item representation.
+ast_source_item * ast_new_source_item(ast_source_item_type type){
+    ast_source_item * tr = ast_calloc(1,sizeof(ast_source_item));
+
+    tr -> type = type;
+
+    return tr;
+}
