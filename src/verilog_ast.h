@@ -2123,7 +2123,8 @@ ast_delay2 * ast_new_delay2(
 typedef enum ast_charge_strength_e{
     CHARGE_SMALL,
     CHARGE_MEDIUM,
-    CHARGE_LARGE
+    CHARGE_LARGE,
+    CHARGE_DEFAULT
 } ast_charge_strength;
 
 /*! @} */
@@ -2224,7 +2225,7 @@ typedef struct ast_type_declaration_t{
     ast_list            * identifiers;
     ast_delay3          * delay;
     ast_drive_strength  * drive_strength;
-    ast_charge_strength * charge_strength;
+    ast_charge_strength   charge_strength;
     ast_boolean           vectored;
     ast_boolean           scalared;
     ast_boolean           is_signed;

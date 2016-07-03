@@ -1846,7 +1846,7 @@ ast_type_declaration * ast_new_type_declaration(ast_declaration_type type)
     tr -> identifiers = NULL;
     tr -> delay = NULL;
     tr -> drive_strength = NULL;
-    tr -> charge_strength = NULL;
+    tr -> charge_strength = CHARGE_DEFAULT;
     tr -> range = NULL;
     tr -> vectored = AST_FALSE;
     tr -> scalared = AST_FALSE;

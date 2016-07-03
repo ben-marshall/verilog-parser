@@ -107,6 +107,8 @@
     ast_udp_port                 * udp_port;
     ast_udp_sequential_entry     * udp_seqential_entry;
     ast_wait_statement           * wait_statement;
+    ast_port_direction             port_direction;
+    ast_charge_strength            charge_strength;
 
     char                   boolean;
     char                 * string;
@@ -425,7 +427,7 @@
 %type   <expression>                 ordered_port_connection
 %type   <expression>                 path_delay_expression
 %type   <expression>                 pcontrol_terminal
-%type   <expression>                 port_expression
+%type   <list>                       port_expression
 %type   <expression>                 range_expression
 %type   <function_declaration>       function_declaration
 %type   <function_or_task_item>      function_item_declaration
@@ -604,7 +606,7 @@
 %type   <node>                       actual_argument
 %type   <statement>                  always_construct
 %type   <node>                       cell_clause
-%type   <node>                       charge_strength
+%type   <charge_strength>            charge_strength
 %type   <node>                       compiler_directive
 %type   <node>                       conditional_compile_directive
 %type   <node>                       config_declaration
@@ -640,12 +642,12 @@
 %type   <node>                       net_decl_assignment
 %type   <module_item>                non_port_module_item
 %type   <list>                       parameter_override
-%type   <node>                       port
+%type   <identifier>                 port
 %type   <node>                       port_declaration
 %type   <node>                       port_declaration_l
 %type   <node>                       port_declarations
-%type   <node>                       port_dir
-%type   <node>                       port_reference
+%type   <port_direction>             port_dir
+%type   <identifier>                 port_reference
 %type   <node>                       pulsestyle_declaration
 %type   <node>                       reject_limit_value
 %type   <node>                       showcancelled_declaration
@@ -983,69 +985,96 @@ module_keyword     : KW_MODULE
 /* A.1.4 Module parameters and ports */
 
 module_parameter_port_list  : 
-                            | HASH OPEN_BRACKET module_params CLOSE_BRACKET
-                            ;
+| HASH OPEN_BRACKET module_params CLOSE_BRACKET
+;
 
-module_params     : parameter_declaration
-                  | module_params COMMA parameter_declaration
-                  ;
+module_params     : 
+  parameter_declaration
+| module_params COMMA parameter_declaration
+;
 
 list_of_ports   :
-                | OPEN_BRACKET ports CLOSE_BRACKET 
-                ;
+| OPEN_BRACKET ports CLOSE_BRACKET 
+;
 
-list_of_port_declarations   : OPEN_BRACKET CLOSE_BRACKET
-                            | OPEN_BRACKET port_declarations CLOSE_BRACKET
-                            ;
+list_of_port_declarations   : 
+  OPEN_BRACKET CLOSE_BRACKET
+| OPEN_BRACKET port_declarations CLOSE_BRACKET
+;
 
-port_declarations : port_declarations COMMA port_dir port_declaration_l
-                  | port_declarations COMMA identifier_csv port_dir
-                    port_declaration_l
-                  | port_dir port_declaration_l
-                  ;
+port_declarations : 
+  port_declarations COMMA port_dir port_declaration_l
+| port_declarations COMMA identifier_csv port_dir port_declaration_l
+| port_dir port_declaration_l
+;
+
+port_declaration_l: 
+  net_type_o signed_o range_o port_identifier
+| reg_o      signed_o range_o port_identifier
+| KW_REG     signed_o range_o port_identifier eq_const_exp_o
+| output_variable_type_o      port_identifier
+| output_variable_type        port_identifier eq_const_exp_o
+;
 
 identifier_csv    : 
-                  | identifier
-                  | COMMA identifier identifier_csv
-                  ;
+| identifier
+| COMMA identifier identifier_csv
+;
 
-port_dir          : attribute_instances KW_OUTPUT
-                  | attribute_instances KW_INPUT
-                  | attribute_instances KW_INOUT
-                  ;
+port_dir          : 
+  attribute_instances KW_OUTPUT{$$ = PORT_OUTPUT;}
+| attribute_instances KW_INPUT {$$ = PORT_INPUT;}
+| attribute_instances KW_INOUT {$$ = PORT_INOUT;}
+;
 
-port_declaration_l: net_type_o signed_o range_o port_identifier
-                  | reg_o signed_o range_o port_identifier
-                  | output_variable_type_o port_identifier
-                  | output_variable_type port_identifier eq_const_exp_o
-                  | KW_REG signed_o range_o port_identifier eq_const_exp_o
-                  ;
+port_declaration  : 
+  inout_declaration {$$ = $1;}
+| input_declaration {$$ = $1;}
+| output_declaration {$$ = $1;}
+;
 
-port_declaration  : inout_declaration
-                  | input_declaration
-                  | output_declaration
-                  ;
+ports           : {$$ = ast_list_new();}
+| ports COMMA port{
+    $$ = $1;
+    ast_list_append($$,$3);
+}
+| port {
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+}
+;
 
-ports           : 
-                | ports COMMA port
-                | port 
-                ;
+port            : 
+  port_expression{
+    $$ = $1;
+  }
+| DOT port_identifier OPEN_BRACKET port_expression CLOSE_BRACKET{
+    $$ = $2;
+}
+;
 
-port            : port_expression
-                | DOT port_identifier OPEN_BRACKET port_expression
-                  CLOSE_BRACKET
-                ;
+port_expression : 
+  port_reference {
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| port_expression COMMA port_reference{
+    $$ = $1;
+    ast_list_append($$,$3);
+}
+;
 
-port_expression : port_reference 
-                | port_expression COMMA port_reference
-                ;
-
-port_reference  : port_identifier
-                | port_identifier OPEN_SQ_BRACKET constant_expression
-                  CLOSE_SQ_BRACKET 
-                | port_identifier OPEN_SQ_BRACKET
-                  range_expression CLOSE_SQ_BRACKET
-                ;
+port_reference  : 
+  port_identifier{
+    $$ = $1;
+}
+| port_identifier OPEN_SQ_BRACKET constant_expression CLOSE_SQ_BRACKET {
+    $$ = $1;
+}
+| port_identifier OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET{
+    $$ = $1;
+}
+;
 
 /* A.1.5 Module Items */
 
@@ -1359,16 +1388,16 @@ net_declaration :
     $$ -> drive_strength = $2;
   }
 | KW_TRIREG                 net_dec_p_ds{
-    $$ = $2;
+    $$ = ast_new_type_declaration(DECLARE_NET);
     $$ -> net_type = NET_TYPE_TRIREG;
   }
 | KW_TRIREG drive_strength  net_dec_p_ds{
-    $$ = $2;
+    $$ = ast_new_type_declaration(DECLARE_NET);
     $$ -> drive_strength = $2;
     $$ -> net_type = NET_TYPE_TRIREG;
   }
 | KW_TRIREG charge_strength net_dec_p_ds{
-    $$ = $2;
+    $$ = ast_new_type_declaration(DECLARE_NET);
     $$ -> charge_strength = $2;
     $$ -> net_type = NET_TYPE_TRIREG;
   }
