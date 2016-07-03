@@ -1893,7 +1893,8 @@ task_declaration    :
 ;
 
 task_item_declarations : 
-  task_item_declaration{
+ { $$ = ast_list_new();}
+| task_item_declaration{
     $$ = ast_list_new();
     ast_list_append($$,$1);
   }
@@ -3076,6 +3077,9 @@ statement :
   attribute_instances blocking_assignment SEMICOLON{
     $$ = ast_new_statement($1,AST_FALSE, $2, STM_ASSIGNMENT);
   }
+| attribute_instances task_enable{
+    $$ = ast_new_statement($1,AST_FALSE, $2, STM_TASK_ENABLE);
+  }
 | attribute_instances nonblocking_assignment SEMICOLON{
     $$ = ast_new_statement($1,AST_FALSE, $2, STM_ASSIGNMENT);
   }
@@ -3110,9 +3114,6 @@ statement :
     $$ = ast_new_statement($1,AST_FALSE, $2, STM_FUNCTION_CALL);
   }
 | attribute_instances system_task_enable{
-    $$ = ast_new_statement($1,AST_FALSE, $2, STM_TASK_ENABLE);
-  }
-| attribute_instances task_enable{
     $$ = ast_new_statement($1,AST_FALSE, $2, STM_TASK_ENABLE);
   }
 | attribute_instances wait_statement{
@@ -3468,16 +3469,23 @@ loop_statement          :
 /* A.6.9 task enable statements */
 
 system_task_enable      : 
-    system_task_identifier expressions_o SEMICOLON {
-        $$ = ast_new_task_enable_statement($2,$1,AST_TRUE);
+    system_task_identifier OPEN_BRACKET expressions CLOSE_BRACKET SEMICOLON {
+        $$ = ast_new_task_enable_statement($3,$1,AST_TRUE);
+    }
+|   system_task_identifier SEMICOLON {
+        $$ = ast_new_task_enable_statement(NULL,$1,AST_TRUE);
     }
     ;
 
 task_enable             : 
-    hierarchical_task_identifier expressions_o SEMICOLON{
-        $$ = ast_new_task_enable_statement($2,$1,AST_FALSE);
+    hierarchical_task_identifier SEMICOLON{
+        $$ = ast_new_task_enable_statement(NULL,$1,AST_FALSE);
     }
-    ;
+|   hierarchical_task_identifier OPEN_BRACKET expressions CLOSE_BRACKET 
+    SEMICOLON{
+        $$ = ast_new_task_enable_statement($3,$1,AST_FALSE);
+    }
+;
 
 /* A.7.1 specify block declaration */
 
@@ -4268,12 +4276,12 @@ primary :
 | system_function_call{
       $$ = ast_new_primary_function_call($1);
   }
-| hierarchical_identifier constant_function_call_pid{
-      $$ = ast_new_primary_function_call($2);
-  }
 | hierarchical_identifier{
       $$ = ast_new_primary(PRIMARY_IDENTIFIER);
       $$ -> value.identifier = $1;
+  }
+| hierarchical_identifier constant_function_call_pid{
+      $$ = ast_new_primary_function_call($2);
   }
 | OPEN_BRACKET mintypmax_expression CLOSE_BRACKET{
       $$ = ast_new_primary(PRIMARY_MINMAX_EXP);

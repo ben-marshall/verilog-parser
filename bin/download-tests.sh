@@ -77,6 +77,7 @@ downloadTutorialTest avoid_latch_else.v
 downloadTutorialTest bitwise_operators.v
 downloadTutorialTest buf_gate.v
 downloadTutorialTest buf_gate1.v
+downloadTutorialTest bus_wr_rd_task.v
 downloadTutorialTest casex_example.v
 downloadTutorialTest comma_example.v
 downloadTutorialTest concatenation_operator.v
@@ -118,6 +119,8 @@ downloadTutorialTest quest_for_out.v
 downloadTutorialTest switch_primitives.v
 downloadTutorialTest syn_fifo_assert.v
 downloadTutorialTest syn_fifo_psl.v
+downloadTutorialTest task_calling.v
+downloadTutorialTest task_global.v
 downloadTutorialTest test_tri.v
 downloadTutorialTest test_trireg.v
 downloadTutorialTest test_wor.v
