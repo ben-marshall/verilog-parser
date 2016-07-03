@@ -2667,17 +2667,6 @@ ast_source_item * ast_new_source_item(ast_source_item_type type);
 // --------------------------------------------------------------
 
 /*!
-@brief Stores the various data values that a node in the AST can represent.
-*/
-typedef union ast_value_u 
-{
-    int     integer;
-    float   real;
-    char  * string;
-    ast_node_attributes * attributes;
-}ast_value;
-
-/*!
 @brief Enum type describing the data value that an AST node holds.
 */
 typedef enum ast_node_type_e
@@ -2697,8 +2686,7 @@ struct ast_node_t
     ast_node     * parent;      //!< Parent node in the tree.
     unsigned int   child_count; //!< Number of children the node has.
     ast_node     * children;    //!< Linked list of children.
-
-    ast_value      value;       //!< Data value of the node.
+    ast_node_attributes * attributes;
     ast_node_type  type;        //!< Datatype of the value stored in the node.
 };
 
@@ -2706,12 +2694,6 @@ struct ast_node_t
 @brief Creates a new empty ast_node and returns it.
 */
 ast_node * ast_node_new();
-    
-/*!
-@brief Creates and returns a new node for the tree which contains a
-       single simple identifier.
-*/
-ast_node * ast_new_identifier_node(char * identifier);
 
 
 /*! @} */

@@ -100,20 +100,6 @@ ast_node * ast_node_new()
 }
 
 /*!
-@brief Creates and returns a new node for the tree which contains a
-       single simple identifier.
-*/
-ast_node * ast_new_identifier_node(ast_identifier identifier)
-{
-    ast_node * tr = ast_node_new();
-
-    tr->type         = IDENTIFIER;
-    tr->value.string = identifier;
-
-    return tr;
-}
-
-/*!
 @brief Creates and returns as a pointer a new attribute descriptor.
 */
 ast_node_attributes * ast_new_attributes(ast_identifier name, 
@@ -135,7 +121,7 @@ ast_node * ast_new_attribute_node(ast_node_attributes * value)
     ast_node * tr = ast_node_new();
 
     tr -> type = ATTRIBUTE_LIST;
-    tr -> value.attributes = value;
+    tr -> attributes = value;
 
     return tr;
 }
