@@ -88,8 +88,9 @@ There are some things that the parser does not support:
   since Verilog is a subset of SystemVerilog.
 - System timing checks. See Annex 7.5.1 of the specification for what this
   omits. It hopefully won't be long before I get round to adding it though.
-- Abstract Syntax Trees. This is a work in progress, but it will be in there
-  eventually.
+- ~~Abstract Syntax Trees. This is a work in progress, but it will be in there
+  eventually.~~ This is now implemented to a usable state, although I haven't
+  had the chance to use it in anger yet, and it may change.
 
 ## Wishlist
 
