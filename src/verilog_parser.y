@@ -643,9 +643,9 @@
 %type   <module_item>                non_port_module_item
 %type   <list>                       parameter_override
 %type   <identifier>                 port
-%type   <node>                       port_declaration
-%type   <node>                       port_declaration_l
-%type   <node>                       port_declarations
+%type   <port_declaration>           port_declaration
+%type   <port_declaration>           port_declaration_l
+%type   <list>                       port_declarations
 %type   <port_direction>             port_dir
 %type   <identifier>                 port_reference
 %type   <node>                       pulsestyle_declaration
@@ -984,41 +984,90 @@ module_keyword     : KW_MODULE
 
 /* A.1.4 Module parameters and ports */
 
-module_parameter_port_list  : 
-| HASH OPEN_BRACKET module_params CLOSE_BRACKET
+module_parameter_port_list  : {
+    $$ = ast_list_new();
+}
+| HASH OPEN_BRACKET module_params CLOSE_BRACKET{
+    $$ = $3;
+}
 ;
 
 module_params     : 
-  parameter_declaration
-| module_params COMMA parameter_declaration
+  parameter_declaration{
+    $$ = ast_list_new();
+    ast_list_append($$, $1);
+  }
+| module_params COMMA parameter_declaration{
+    $$ = $1;
+    ast_list_append($$,$3);
+}
 ;
 
-list_of_ports   :
-| OPEN_BRACKET ports CLOSE_BRACKET 
+list_of_ports   : {$$ = ast_list_new();}
+| OPEN_BRACKET ports CLOSE_BRACKET {
+    $$ = $2;
+}
 ;
 
 list_of_port_declarations   : 
-  OPEN_BRACKET CLOSE_BRACKET
-| OPEN_BRACKET port_declarations CLOSE_BRACKET
+  OPEN_BRACKET CLOSE_BRACKET{
+    $$ = ast_list_new();
+  }
+| OPEN_BRACKET port_declarations CLOSE_BRACKET{
+    $$ = $2;
+}
 ;
 
 port_declarations : 
-  port_declarations COMMA port_dir port_declaration_l
-| port_declarations COMMA identifier_csv port_dir port_declaration_l
-| port_dir port_declaration_l
+  port_declarations COMMA port_dir port_declaration_l{
+    $$ = $1;
+    $4 -> direction = $3;
+    ast_list_append($$,$4);
+}
+| port_declarations COMMA identifier_csv port_dir port_declaration_l{
+    $$ = $1;
+    $5 -> direction = $4;
+    ast_list_append($$,$5);
+}
+| port_dir port_declaration_l{
+    $$ = ast_list_new();
+    $2 -> direction = $1;
+    ast_list_append($$,$2);
+}
 ;
 
 port_declaration_l: 
-  net_type_o signed_o range_o port_identifier
-| reg_o      signed_o range_o port_identifier
-| KW_REG     signed_o range_o port_identifier eq_const_exp_o
-| output_variable_type_o      port_identifier
-| output_variable_type        port_identifier eq_const_exp_o
+  net_type_o signed_o range_o port_identifier{
+    $$ = ast_new_port_declaration(PORT_NONE, $1, $2,
+    AST_FALSE,AST_FALSE,NULL,$3);
+}
+|            signed_o range_o port_identifier{
+    $$ = ast_new_port_declaration(PORT_NONE, NET_TYPE_NONE, $1,
+    AST_FALSE,AST_FALSE,NULL,$3);
+}
+| KW_REG     signed_o range_o port_identifier eq_const_exp_o{
+    $$ = ast_new_port_declaration(PORT_NONE, NET_TYPE_NONE, AST_FALSE,
+    AST_TRUE,AST_FALSE,NULL,$4);
+}
+| output_variable_type_o      port_identifier{
+    $$ = ast_new_port_declaration(PORT_NONE, NET_TYPE_NONE, AST_FALSE,
+    AST_FALSE,AST_TRUE,NULL,$2);
+}
+| output_variable_type        port_identifier eq_const_exp_o{
+    $$ = ast_new_port_declaration(PORT_NONE, NET_TYPE_NONE, AST_FALSE,
+    AST_FALSE,AST_TRUE,NULL,$2);
+}
 ;
 
-identifier_csv    : 
-| identifier
-| COMMA identifier identifier_csv
+identifier_csv    : {$$ = ast_list_new();}
+| identifier{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+}
+| COMMA identifier identifier_csv{
+    $$ = $3;
+    ast_list_append($$,$2);
+}
 ;
 
 port_dir          : 
