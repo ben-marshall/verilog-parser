@@ -2,51 +2,13 @@
 @defgroup ast-nodes AST Nodes
 @ingroup ast
 
-@brief This section contains a list of all grammar constructs and data
-structures that have yet to be written and integrated.
+@brief Notes and todo list for the AST nodes.
 
-    - Attribute Instances [DONE]
-    - Expression L-Values [DONE]
-    - Expression R-Values [DONE]
-     - Expression Primaries [DONE]
-     - Constant Expressions [DONE]
-     - Variable Expressions [DONE]
-    - Proper Number Representation
-    - Function Calls [DONE]
-    - Concatenations [DONE]
-    - Path Delays [DONE]
-    - Specify Blocks [DONE]
-    - Statements [DONE]
-     - Loops [DONE]
-     - Case [DONE]
-     - If Else [DONE]
-     - Timing Control [DONE]
-    - Fork Join [DONE]
-    - Procedural Blocks [DONE]
-    - Continous assignments [DONE]
-    - UDP
-     - UDP Instance
-     - UDP Port
-     - UDP Body
-    - Generate Loops
-    - Module Instantiation
-    - Primitives
-     - Terminals
-     - Strengths
-     - Switch Types
-    - Task Declaration
-    - Function Declaration
-    - Declaration Assignments
-    - Delays
-    - Drive Strenghts
-    - Nets
-    - Modules
-     - Ports
-     - Module Paramaters
-     - Module Items
-    - Configuration Source Text
-    - Library Source Text
-    - Compiler Directives
-    - Top Level
+@section ast-todo AST Todo List
+
+- Proper node for all types of identifier.
+- Proper number representation node.
+- Completely deprecate the @ref ast_node type.
+- Types and assertions for the @ref ast_list construct.
 
 */
