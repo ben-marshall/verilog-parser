@@ -144,7 +144,7 @@
 %token <number> UNSIGNED_NUMBER
 
 %token <identifier> SYSTEM_ID
-%token <identifier> SIMPLE_ID
+%token <string>     SIMPLE_ID
 %token <identifier> DEFINE_ID
 
 %token ATTRIBUTE_START
@@ -497,7 +497,7 @@
 %type   <identifier>                 system_task_identifier
 %type   <identifier>                 task_identifier
 %type   <identifier>                 text_macro_name
-%type   <identifier>                 text_macro_usage
+%type   <string>                     text_macro_usage
 %type   <identifier>                 topmodule_identifier
 %type   <identifier>                 udp_identifier
 %type   <identifier>                 udp_instance_identifier
@@ -4551,13 +4551,6 @@ block_comment       : COMMENT_BLOCK {$$=$1;};
 
 /* A.9.3 Identifiers */
 
-arrayed_identifier              : simple_arrayed_identifier     {$$=$1;}
-                                | escaped_arrayed_identifier    {$$=$1;}
-                                ;
-
-block_identifier                : identifier {$$=$1;};
-cell_identifier                 : identifier {$$=$1;};
-config_identifier               : identifier {$$=$1;};
 escaped_arrayed_identifier      : escaped_identifier range_o;
 escaped_hierarchical_identifier : escaped_hierarchical_branch 
                                   escaped_hierarchical_identifiers
@@ -4566,53 +4559,80 @@ escaped_hierarchical_identifier : escaped_hierarchical_branch
 escaped_hierarchical_identifiers: 
   DOT simple_hierarchical_identifier {$$=$2;}
 | DOT escaped_hierarchical_identifier {$$=$2;}
-| escaped_hierarchical_identifiers DOT simple_hierarchical_identifier {$$=$3;}
-| escaped_hierarchical_identifier DOT escaped_hierarchical_identifiers {$$=$1;}
+| escaped_hierarchical_identifiers DOT simple_hierarchical_identifier {
+    $$=$3;
+  }
+| escaped_hierarchical_identifier DOT escaped_hierarchical_identifiers {
+    $$=$1;
+  }
 ;
-
-
-escaped_identifier              : '\''
-                                  anys 
-                                  white_space {$$=$<identifier>2;}
-                                ;
 
 anys : anys ANY {$$=$2;}
      | ANY {$$ = $1;}
      ;
 
-event_identifier                : identifier {$$=$1;};
-function_identifier             : identifier {$$=$1;};
 gate_instance_identifier        : arrayed_identifier{$$=$1;};
-generate_block_identifier       : identifier {$$=$1;};
-genvar_identifier               : identifier {$$=$1;};
-hierarchical_block_identifier   : hierarchical_identifier{$$=$1;};
-hierarchical_event_identifier   : hierarchical_identifier{$$=$1;};
-hierarchical_function_identifier: hierarchical_identifier{$$=$1;};
-hierarchical_identifier         : simple_hierarchical_identifier {$$=$1;}
-                                | escaped_hierarchical_identifier{$$=$1;}
+module_instance_identifier      : arrayed_identifier{$$=$1;};
+udp_instance_identifier         : arrayed_identifier{$$=$1;};
+
+arrayed_identifier              : simple_arrayed_identifier     {$$=$1;}
+                                | escaped_arrayed_identifier    {$$=$1;}
                                 ;
+
 
 hierarchical_net_identifier     : hierarchical_identifier{$$=$1;};
 hierarchical_variable_identifier: hierarchical_identifier{$$=$1;};
 hierarchical_task_identifier    : hierarchical_identifier{$$=$1;};
-identifier                      : simple_identifier  {$$=$1;}
-                                | escaped_identifier {$$=$1;}
-                                | text_macro_usage {$$=$1;}
+hierarchical_block_identifier   : hierarchical_identifier{$$=$1;};
+hierarchical_event_identifier   : hierarchical_identifier{$$=$1;};
+hierarchical_function_identifier: hierarchical_identifier{$$=$1;};
+
+hierarchical_identifier         : simple_hierarchical_identifier {$$=$1;}
+                                | escaped_hierarchical_identifier{$$=$1;}
                                 ;
 
+block_identifier                : identifier {$$=$1;};
+cell_identifier                 : identifier {$$=$1;};
+config_identifier               : identifier {$$=$1;};
+event_identifier                : identifier {$$=$1;};
+function_identifier             : identifier {$$=$1;};
+generate_block_identifier       : identifier {$$=$1;};
+genvar_identifier               : identifier {$$=$1;};
 inout_port_identifier           : identifier {$$=$1;};
 input_port_identifier           : identifier {$$=$1;};
 instance_identifier             : identifier {$$=$1;};
 library_identifier              : identifier {$$=$1;};
 module_identifier               : identifier {$$=$1;};
-module_instance_identifier      : arrayed_identifier;
 net_identifier                  : identifier {$$=$1;};
 output_port_identifier          : identifier {$$=$1;};
-parameter_identifier            : identifier  {$$=$1;}
+specparam_identifier            : identifier {$$=$1;};
+task_identifier                 : identifier {$$=$1;};
+topmodule_identifier            : identifier {$$=$1;};
+udp_identifier                  : identifier {$$=$1;};
+variable_identifier             : identifier {$$=$1;};
+parameter_identifier            : identifier {$$=$1;}
                                 | hierarchical_identifier{$$=$1;}
                                 ;
 port_identifier                 : identifier {$$=$1;};
 real_identifier                 : identifier {$$=$1;};
+
+identifier                      : simple_identifier  {$$=$1;}
+                                | escaped_identifier {$$=$1;}
+                                | text_macro_usage {$$=$1;}
+                                ;
+
+simple_identifier: 
+  SIMPLE_ID {
+    $$ = ast_new_identifier($1, yylineno);
+}
+| text_macro_usage {
+    $$ = ast_new_identifier($1, yylineno);
+    $$ -> type = ID_UNEXPANDED_MACRO;
+}
+;
+
+escaped_identifier  : '\'' anys  white_space {$$=$<identifier>2;};
+
 simple_arrayed_identifier       : simple_identifier range_o ;
 
 simple_hierarchical_identifier  : simple_hierarchical_branch {$$=$1;}
@@ -4620,20 +4640,14 @@ simple_hierarchical_identifier  : simple_hierarchical_branch {$$=$1;}
                                   escaped_identifier {$$=$1;}
                                 ;
 
-simple_identifier               : SIMPLE_ID {$$=$1;}
-                                | text_macro_usage {$$=$1;}
-                                ;
-
-specparam_identifier            : identifier {$$=$1;};
-
-system_function_identifier      : SYSTEM_ID {$$=$1;};
-system_task_identifier          : SYSTEM_ID {$$=$1;};
-
-task_identifier                 : identifier {$$=$1;};
-topmodule_identifier            : identifier {$$=$1;};
-udp_identifier                  : identifier {$$=$1;};
-udp_instance_identifier         : arrayed_identifier{$$=$1;};
-variable_identifier             : identifier {$$=$1;};
+system_function_identifier      : SYSTEM_ID {
+    $$ = ast_new_system_identifier($1,yylineno);
+    $$ -> type = ID_SYSTEM_FUNCTION;
+};
+system_task_identifier          : SYSTEM_ID {
+    $$ = ast_new_system_identifier($1,yylineno);
+    $$ -> type = ID_SYSTEM_TASK;
+};
 
 /* A.9.4 Identifier Branches */
 
@@ -4646,9 +4660,9 @@ simple_hierarchical_branch :
 | SIMPLE_ID OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET {$$=$1;}
 | simple_hierarchical_branch DOT simple_identifier{$$=$1;}
 | simple_hierarchical_branch DOT SIMPLE_ID OPEN_SQ_BRACKET
-expression CLOSE_SQ_BRACKET {$$=$1;}
+  expression CLOSE_SQ_BRACKET {$$=$1;}
 | simple_hierarchical_branch DOT SIMPLE_ID OPEN_SQ_BRACKET
-range_expression CLOSE_SQ_BRACKET {$$=$1;}
+  range_expression CLOSE_SQ_BRACKET {$$=$1;}
 ;
 
 
@@ -4662,7 +4676,7 @@ escaped_hierarchical_branch :
 | escaped_identifier{$$=$1;}
 | escaped_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET{$$=$1;}
 | escaped_identifier OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
-{$$=$1;}
+  {$$=$1;}
 ;
 
 white_space : SPACE | TAB | NEWLINE;

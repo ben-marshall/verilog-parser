@@ -19,9 +19,11 @@ void ast_free_all();
 //! Forward declare. Defines the core node type for the AST.
 typedef struct ast_node_t ast_node;
 
-//! Typedef to make it easier to change into a proper structure later.
-//! @todo add proper support for hierarchical identifiers and scope.
-typedef char * ast_identifier;
+/*! 
+@brief Typedef to make it easier to change into a proper structure later.
+@note The pointer is already included in the type.
+*/
+typedef struct ast_identifier_t * ast_identifier;
 
 //! Placeholder until this is implemented properly.
 typedef struct ast_concatenation_t ast_concatenation;
@@ -2603,13 +2605,116 @@ ast_module_declaration * ast_new_module_declaration(
 
 /*! @} */
 
+// -------------------------------- Identifiers ------------------------------
+
+/*!
+@defgroup ast-node-identifiers Identifiers
+@{
+@ingroup ast-construction
+@brief Functions and data structures representing identifiers for all
+Verilog Constructs.
+*/
+
+/*!
+@brief Describes the type of contruct that the identifier corresponds to.
+*/
+typedef enum ast_identifier_type_e{
+    ID_ARRAYED,
+    ID_BLOCK,
+    ID_CELL,
+    ID_CONFIG,
+    ID_ESCAPED_ARRAYED,
+    ID_ESCAPED_HIERARCHICAL_BRANCH,
+    ID_ESCAPED_HIERARCHICAL,
+    ID_ESCAPED_HIERARCHICALS,
+    ID_ESCAPED,
+    ID_EVENT,
+    ID_EVENT_TRIGGER,
+    ID_FUNCTION,
+    ID_GATE_INSTANCE,
+    ID_GENERATE_BLOCK,
+    ID_GENVAR,
+    ID_HIERARCHICAL_BLOCK,
+    ID_HIERARCHICAL_EVENT,
+    ID_HIERARCHICAL_FUNCTION,
+    ID_HIERARCHICAL,
+    ID_HIERARCHICAL_NET,
+    ID_HIERARCHICAL_TASK,
+    ID_HIERARCHICAL_VARIABLE,
+    ID_CSV,
+    ID_INOUT_PORT,
+    ID_INPUT,
+    ID_INPUT_PORT,
+    ID_INSTANCE,
+    ID_LIBRARY,
+    ID_MODULE,
+    ID_MODULE_INSTANCE,
+    ID_NAME_OF_GATE_INSTANCE,
+    ID_NAME_OF_INSTANCE,
+    ID_NET,
+    ID_OUTPUT,
+    ID_OUTPUT_PORT,
+    ID_PARAMETER,
+    ID_PORT,
+    ID_REAL,
+    ID_SIMPLE_ARRAYED,
+    ID_SIMPLE_HIERARCHICAL_BRANCH,
+    ID_SIMPLE_HIERARCHICAL,
+    ID_SIMPLE,
+    ID_SPECPARAM,
+    ID_SYSTEM_FUNCTION,
+    ID_SYSTEM_TASK,
+    ID_TASK,
+    ID_TOPMODULE,
+    ID_UNKNOWN,                     //!< Used when we don't know the type.
+    ID_UNEXPANDED_MACRO,            //!< For when the pre-processor hasn't run.
+    ID_UDP,
+    ID_UDP_INSTANCE,
+    ID_VARIABLE,
+} ast_identifier_type;
+
+/*!
+@brief Structure containing all information on an identifier.
+*/
+struct ast_identifier_t{
+    ast_identifier_type   type;         //!< What construct does it identify?
+    char                * identifier;   //!< The identifier value.
+    unsigned int          from_line;    //!< The line number of the file.
+    ast_boolean           is_system;    //!< Is this a system identifier?
+};
+
+/*!
+@brief Creates and returns a new node representing an identifier.
+@details By default, the returned identifier has the ID_UNKNOWN type,
+and this is set later when the parser winds back up and knows which rules
+to follow.
+Also, the is_system member is set to false. If you want a new system
+idenifier instance, use the @ref ast_new_system_identifier function.
+*/
+ast_identifier ast_new_identifier(
+    char         * identifier,  //!< String text of the identifier.
+    unsigned int   from_line    //!< THe line the idenifier came from.
+);
+
+
+/*!
+@brief Creates and returns a new node representing an identifier.
+@details By default, the returned identifier has the ID_SYSTEM_* type,
+*/
+ast_identifier ast_new_system_identifier(
+    char         * identifier,  //!< String text of the identifier.
+    unsigned int   from_line    //!< THe line the idenifier came from.
+);
+
+/*! @} */
+
 // -------------------------------- Configuration Source ---------------------
 
 /*!
 @defgroup ast-node-configuration-source Configuration Source
 @{
 @ingroup ast-construction
-@brief 
+@brief  TODO
 */
 
 
@@ -2622,7 +2727,7 @@ ast_module_declaration * ast_new_module_declaration(
 @defgroup ast-node-library-source-text Library Source
 @{
 @ingroup ast-construction
-@brief 
+@brief TODO
 */
 
 
@@ -2635,7 +2740,7 @@ ast_module_declaration * ast_new_module_declaration(
 @defgroup ast-node-compiler-directives Compiler Directives
 @{
 @ingroup ast-construction
-@brief 
+@brief TODO
 */
 
 

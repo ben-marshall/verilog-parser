@@ -2100,3 +2100,27 @@ ast_source_item * ast_new_source_item(ast_source_item_type type){
 
     return tr;
 }
+
+ast_identifier ast_new_identifier(
+    char         * identifier, 
+    unsigned int   from_line  
+){
+    ast_identifier tr = ast_calloc(1,sizeof(ast_identifier));
+
+    tr -> from_line = from_line;
+    tr -> identifier = identifier;
+    tr -> type = ID_UNKNOWN;
+
+    return tr;
+}
+
+ast_identifier ast_new_system_identifier(
+    char         * identifier,  //!< String text of the identifier.
+    unsigned int   from_line    //!< THe line the idenifier came from.
+){
+    ast_identifier tr = ast_new_identifier(identifier,from_line);
+    
+    tr -> is_system = AST_TRUE;
+
+    return tr;
+}
