@@ -4579,50 +4579,81 @@ anys : anys ANY {$$=$2;}
      | ANY {$$ = $1;}
      ;
 
-gate_instance_identifier        : arrayed_identifier{$$=$1;};
-module_instance_identifier      : arrayed_identifier{$$=$1;};
-udp_instance_identifier         : arrayed_identifier{$$=$1;};
 
 arrayed_identifier              : simple_arrayed_identifier     {$$=$1;}
                                 | escaped_arrayed_identifier    {$$=$1;}
                                 ;
 
 
-hierarchical_net_identifier     : hierarchical_identifier{$$=$1;};
-hierarchical_variable_identifier: hierarchical_identifier{$$=$1;};
-hierarchical_task_identifier    : hierarchical_identifier{$$=$1;};
-hierarchical_block_identifier   : hierarchical_identifier{$$=$1;};
-hierarchical_event_identifier   : hierarchical_identifier{$$=$1;};
-hierarchical_function_identifier: hierarchical_identifier{$$=$1;};
-
 hierarchical_identifier         : simple_hierarchical_identifier {$$=$1;}
                                 | escaped_hierarchical_identifier{$$=$1;}
                                 ;
 
-block_identifier                : identifier {$$=$1;};
-cell_identifier                 : identifier {$$=$1;};
-config_identifier               : identifier {$$=$1;};
-event_identifier                : identifier {$$=$1;};
-function_identifier             : identifier {$$=$1;};
-generate_block_identifier       : identifier {$$=$1;};
-genvar_identifier               : identifier {$$=$1;};
-inout_port_identifier           : identifier {$$=$1;};
-input_port_identifier           : identifier {$$=$1;};
-instance_identifier             : identifier {$$=$1;};
-library_identifier              : identifier {$$=$1;};
-module_identifier               : identifier {$$=$1;};
-net_identifier                  : identifier {$$=$1;};
-output_port_identifier          : identifier {$$=$1;};
-specparam_identifier            : identifier {$$=$1;};
-task_identifier                 : identifier {$$=$1;};
-topmodule_identifier            : identifier {$$=$1;};
-udp_identifier                  : identifier {$$=$1;};
-variable_identifier             : identifier {$$=$1;};
-parameter_identifier            : identifier {$$=$1;}
-                                | hierarchical_identifier{$$=$1;}
+hierarchical_net_identifier     : hierarchical_identifier
+    {$$=$1; $$ -> type = ID_HIERARCHICAL_NET;};
+hierarchical_variable_identifier: hierarchical_identifier
+    {$$=$1; $$ -> type = ID_HIERARCHICAL_VARIABLE;};
+hierarchical_task_identifier    : hierarchical_identifier
+    {$$=$1; $$ -> type = ID_HIERARCHICAL_TASK;};
+hierarchical_block_identifier   : hierarchical_identifier
+    {$$=$1; $$ -> type = ID_HIERARCHICAL_BLOCK;};
+hierarchical_event_identifier   : hierarchical_identifier
+    {$$=$1; $$ -> type = ID_HIERARCHICAL_EVENT;};
+hierarchical_function_identifier: hierarchical_identifier
+    {$$=$1; $$ -> type = ID_FUNCTION;};
+gate_instance_identifier        : arrayed_identifier
+    {$$=$1; $$ -> type = ID_GATE_INSTANCE;};
+module_instance_identifier      : arrayed_identifier
+    {$$=$1; $$ -> type = ID_MODULE_INSTANCE;};
+udp_instance_identifier         : arrayed_identifier
+    {$$=$1; $$ -> type = ID_UDP_INSTANCE;};
+block_identifier                : identifier 
+    {$$=$1; $$ -> type = ID_BLOCK;};
+cell_identifier                 : identifier 
+    {$$=$1; $$ -> type = ID_CELL;};
+config_identifier               : identifier 
+    {$$=$1; $$ -> type = ID_CONFIG;};
+event_identifier                : identifier 
+    {$$=$1; $$ -> type = ID_EVENT;};
+function_identifier             : identifier 
+    {$$=$1; $$ -> type = ID_FUNCTION;};
+generate_block_identifier       : identifier 
+    {$$=$1; $$ -> type = ID_GENERATE_BLOCK;};
+genvar_identifier               : identifier 
+    {$$=$1; $$ -> type = ID_GENVAR;};
+inout_port_identifier           : identifier 
+    {$$=$1; $$ -> type = ID_INOUT_PORT;};
+input_port_identifier           : identifier 
+    {$$=$1; $$ -> type = ID_INPUT_PORT;};
+instance_identifier             : identifier 
+    {$$=$1; $$ -> type = ID_INSTANCE;};
+library_identifier              : identifier 
+    {$$=$1; $$ -> type = ID_LIBRARY;};
+module_identifier               : identifier 
+    {$$=$1; $$ -> type = ID_MODULE;};
+net_identifier                  : identifier 
+    {$$=$1; $$ -> type = ID_NET;};
+output_port_identifier          : identifier 
+    {$$=$1; $$ -> type = ID_OUTPUT_PORT;};
+specparam_identifier            : identifier 
+    {$$=$1; $$ -> type = ID_SPECPARAM;};
+task_identifier                 : identifier 
+    {$$=$1; $$ -> type = ID_TASK;};
+topmodule_identifier            : identifier 
+    {$$=$1; $$ -> type = ID_TOPMODULE;};
+udp_identifier                  : identifier 
+    {$$=$1; $$ -> type = ID_UDP;};
+variable_identifier             : identifier 
+    {$$=$1; $$ -> type = ID_VARIABLE;};
+parameter_identifier            : identifier 
+    {$$=$1; $$ -> type = ID_PARAMETER;}
+                                | hierarchical_identifier
+    {$$=$1; $$ -> type = ID_PARAMETER;}
                                 ;
-port_identifier                 : identifier {$$=$1;};
-real_identifier                 : identifier {$$=$1;};
+port_identifier                 : identifier 
+    {$$=$1; $$ -> type = ID_PORT;};
+real_identifier                 : identifier 
+    {$$=$1; $$ -> type = ID_REAL;};
 
 identifier                      : simple_identifier  {$$=$1;}
                                 | escaped_identifier {$$=$1;}
