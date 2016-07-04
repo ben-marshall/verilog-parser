@@ -2170,3 +2170,17 @@ ast_config_rule_statement * ast_new_config_rule_statement(
 
     return tr;
 }
+
+ast_config_declaration * ast_new_config_declaration(
+    ast_identifier  identifier,
+    ast_identifier  design_statement,
+    ast_list      * rule_statements
+){
+    ast_config_declaration * tr = ast_calloc(1,sizeof(ast_config_declaration));
+
+    tr -> identifier = identifier;
+    tr -> design_statement = design_statement;
+    tr -> rule_statements = rule_statements;
+
+    return tr;
+}

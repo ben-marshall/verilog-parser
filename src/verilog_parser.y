@@ -635,7 +635,7 @@
 %type   <config_rule_statement>      config_rule_statement
 %type   <list>                       config_rule_statement_os
 %type   <node>                       default_net_type_cd
-%type   <node>                       design_statement
+%type   <identifier>                 design_statement
 %type   <node>                       ifdef_directive
 %type   <node>                       ifndef_directive
 %type   <node>                       include_directive
@@ -888,21 +888,41 @@ include_statement : KW_INCLUDE file_path_spec SEMICOLON
    
 /* A.1.2 Configuration Source Text */
 
-config_declaration : KW_CONFIG config_identifier SEMICOLON
-                     design_statement
-                     config_rule_statement_os
-                     KW_ENDCONFIG
-                   ;
+config_declaration : 
+ KW_CONFIG config_identifier SEMICOLON design_statement
+ config_rule_statement_os KW_ENDCONFIG{
+    $$ = ast_new_config_declaration($2,$4,$5);
+  }
+;
 
-design_statement : KW_DESIGN lib_cell_identifier_os SEMICOLON
-                 ;
+design_statement : KW_DESIGN lib_cell_identifier_os SEMICOLON{
+    $$ == $2;
+}
+;
 
 lib_cell_identifier_os :
   {$$ =NULL;}
-| cell_identifier
-| library_identifier DOT cell_identifier
-| lib_cell_identifier_os cell_identifier
-| lib_cell_identifier_os library_identifier DOT cell_identifier
+| cell_identifier {
+    $$ = $1;
+  }
+| library_identifier DOT cell_identifier{
+    $$ = ast_append_identifier($1,$3);
+}
+| lib_cell_identifier_os cell_identifier{
+    if($1 == NULL){
+        $$ = $2;
+    } else {
+        $$ = ast_append_identifier($1,$2);
+    }
+}
+| lib_cell_identifier_os library_identifier DOT cell_identifier{
+    if($1 == NULL){
+        $$ = ast_append_identifier($2,$4);
+    } else {
+        $2 = ast_append_identifier($2,$4);
+        $$ = ast_append_identifier($1,$2);
+    }
+}
 ;
 
 config_rule_statement_os : {

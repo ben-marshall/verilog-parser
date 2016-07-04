@@ -2761,7 +2761,7 @@ void ast_identifier_set_index(
 @defgroup ast-node-configuration-source Configuration Source
 @{
 @ingroup ast-construction
-@brief  TODO
+@brief  Describes configuration constructs.
 */
 
 //! Fully describes a config rule statemnet. See Annex 1.2
@@ -2782,6 +2782,21 @@ ast_config_rule_statement * ast_new_config_rule_statement(
     ast_identifier clause_2     //!< The second grammar clause.
 );
 
+//! Describes a single config declaration in it's entirety.
+typedef struct ast_config_declaration_t{
+    ast_identifier  identifier;
+    ast_identifier  design_statement;
+    ast_list      * rule_statements;
+} ast_config_declaration;
+
+/*!
+@brief Creates and returns a new config declaration node.
+*/
+ast_config_declaration * ast_new_config_declaration(
+    ast_identifier  identifier,
+    ast_identifier  design_statement,
+    ast_list      * rule_statements
+);
 
 /*! @} */
 
