@@ -2151,3 +2151,22 @@ void ast_identifier_set_index(
     id -> index = index;
     id -> range_or_idx = ID_HAS_INDEX;
 }
+
+
+/*!
+@brief Creates and returns a new configuration rule statment node.
+*/
+ast_config_rule_statement * ast_new_config_rule_statement(
+    ast_boolean    is_default,
+    ast_identifier clause_1,    //!< The first grammar clause.
+    ast_identifier clause_2     //!< The second grammar clause.
+){
+    ast_config_rule_statement * tr =
+        ast_calloc(1,sizeof(ast_config_rule_statement));
+
+    tr -> is_default;
+    tr -> clause_1 = clause_1;
+    tr -> clause_2 = clause_2;
+
+    return tr;
+}

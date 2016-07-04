@@ -34,6 +34,7 @@
     ast_charge_strength            charge_strength;
     ast_cmos_switch_instance     * cmos_switch_instance ;
     ast_concatenation            * concatenation;
+    ast_config_rule_statement    * config_rule_statement;
     ast_delay2                   * delay2;
     ast_delay3                   * delay3;
     ast_delay_ctrl               * delay_control;
@@ -478,7 +479,7 @@
 %type   <identifier>                 instance_identifier_os
 %type   <identifier>                 lib_cell_identifier_os
 %type   <identifier>                 library_identifier
-%type   <identifier>                 library_identifier_os
+%type   <list>                       library_identifier_os
 %type   <identifier>                 module_identifier
 %type   <identifier>                 module_instance_identifier
 %type   <identifier>                 name_of_gate_instance
@@ -627,19 +628,19 @@
 %type   <net_type>                   net_type
 %type   <net_type>                   net_type_o
 %type   <node>                       actual_argument
-%type   <node>                       cell_clause
+%type   <identifier>                 cell_clause
 %type   <node>                       compiler_directive
 %type   <node>                       conditional_compile_directive
 %type   <node>                       config_declaration
-%type   <node>                       config_rule_statement
-%type   <node>                       config_rule_statement_os
+%type   <config_rule_statement>      config_rule_statement
+%type   <list>                       config_rule_statement_os
 %type   <node>                       default_net_type_cd
 %type   <node>                       design_statement
 %type   <node>                       ifdef_directive
 %type   <node>                       ifndef_directive
 %type   <node>                       include_directive
 %type   <node>                       include_statement
-%type   <node>                       liblist_clause
+%type   <list>                       liblist_clause
 %type   <node>                       library_declaration
 %type   <node>                       library_descriptions
 %type   <node>                       library_text
@@ -652,7 +653,7 @@
 %type   <node>                       time
 %type   <node>                       timescale_directive
 %type   <node>                       undefine_compiler_directive
-%type   <node>                       use_clause
+%type   <identifier>                 use_clause
 %type   <node_attributes>            attr_spec
 %type   <node_attributes>            attr_specs
 %type   <node_attributes>            attribute_instances
@@ -897,53 +898,109 @@ design_statement : KW_DESIGN lib_cell_identifier_os SEMICOLON
                  ;
 
 lib_cell_identifier_os :
-                       | cell_identifier
-                       | library_identifier DOT cell_identifier
-                       | lib_cell_identifier_os cell_identifier
-                       | lib_cell_identifier_os library_identifier DOT 
-                         cell_identifier
-                       ;
+  {$$ =NULL;}
+| cell_identifier
+| library_identifier DOT cell_identifier
+| lib_cell_identifier_os cell_identifier
+| lib_cell_identifier_os library_identifier DOT cell_identifier
+;
 
-config_rule_statement_os :
-                         | config_rule_statement
-                         | config_rule_statement_os config_rule_statement
-                         ;
+config_rule_statement_os : {
+    $$ = ast_list_new();
+}
+| config_rule_statement{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+}
+| config_rule_statement_os config_rule_statement{
+    $$ = $1;
+    ast_list_append($$,$2);
+}
+;
 
-config_rule_statement : KW_DEFAULT liblist_clause
-                      | inst_clause liblist_clause
-                      | inst_clause use_clause
-                      | cell_clause liblist_clause
-                      | cell_clause use_clause
-                      ;
+config_rule_statement : 
+  KW_DEFAULT liblist_clause{
+    $$ = ast_new_config_rule_statement(AST_TRUE,$2,NULL);
+  }
+| inst_clause liblist_clause{
+    $$ = ast_new_config_rule_statement(AST_FALSE,$1,$2);
+  }
+| inst_clause use_clause{
+    $$ = ast_new_config_rule_statement(AST_FALSE,$1,$2);
+  }
+| cell_clause liblist_clause{
+    $$ = ast_new_config_rule_statement(AST_FALSE,$1,$2);
+  }
+| cell_clause use_clause{
+    $$ = ast_new_config_rule_statement(AST_FALSE,$1,$2);
+  }
+;
 
-inst_clause : KW_INSTANCE inst_name
+inst_clause : KW_INSTANCE inst_name {$$=$2;}
             ;
 
-inst_name   : topmodule_identifier instance_identifier_os
-            ;
+inst_name   : 
+  topmodule_identifier instance_identifier_os{
+    $$ = $1;
+    if($2 != NULL)
+        ast_append_identifier($$,$2);
+  }
+;
 
 instance_identifier_os  :
-                        | DOT instance_identifier
-                        | instance_identifier_os DOT instance_identifier
-                        ;
+  {$$ = NULL;}
+| DOT instance_identifier{$$ = $2;}
+| instance_identifier_os DOT instance_identifier{
+    if($1 == NULL){
+        $$ = $3;
+    } else {
+        $$ = $1;
+        ast_append_identifier($$,$3);
+    }
+}
+;
 
-cell_clause : KW_CELL cell_identifier
-            | KW_CELL library_identifier DOT cell_identifier
-            ;
+cell_clause : 
+  KW_CELL cell_identifier {
+    $$ = $2;
+  }
+| KW_CELL library_identifier DOT cell_identifier{
+    $$ = $2;
+    ast_append_identifier($$,$4);
+}
+;
 
-liblist_clause  : KW_LIBLIST library_identifier_os
+liblist_clause  : KW_LIBLIST library_identifier_os{$$ = $2;}
                 ;
 
-library_identifier_os : 
-                      | library_identifier
-                      | library_identifier_os library_identifier
-                      ;
+library_identifier_os :
+  {$$ = ast_list_new();}
+| library_identifier{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+}
+| library_identifier_os library_identifier{
+    $$ = $1;
+    ast_list_append($$,$2);
+}
+;
 
-use_clause : KW_USE library_identifier DOT cell_identifier COLON KW_CONFIG
-           | KW_USE library_identifier DOT cell_identifier
-           | KW_USE cell_identifier COLON KW_CONFIG
-           | KW_USE cell_identifier
-           ;
+use_clause : 
+  KW_USE library_identifier DOT cell_identifier COLON KW_CONFIG{
+    $$ = $2;
+    ast_append_identifier($$,$4);
+  }
+| KW_USE library_identifier DOT cell_identifier{
+    $$ = $2;
+    ast_append_identifier($$,$4);
+  }
+| KW_USE cell_identifier COLON KW_CONFIG{
+    $$ = $2;
+  }
+| KW_USE cell_identifier{
+    $$ = $2;
+  }
+;
 
 /* A.1.3 Module and primitive source text. */
 

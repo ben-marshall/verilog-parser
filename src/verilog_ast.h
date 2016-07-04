@@ -2764,6 +2764,23 @@ void ast_identifier_set_index(
 @brief  TODO
 */
 
+//! Fully describes a config rule statemnet. See Annex 1.2
+typedef struct ast_config_rule_statement_t{
+    ast_boolean    is_default;
+    ast_identifier clause_1;    //!< The first grammar clause.
+    ast_identifier clause_2;    //!< The second grammar clause.
+} ast_config_rule_statement;
+
+
+/*!
+@brief Creates and returns a new configuration rule statment node.
+@details If is_default is TRUE then clause_2 is NULL.
+*/
+ast_config_rule_statement * ast_new_config_rule_statement(
+    ast_boolean    is_default,
+    ast_identifier clause_1,    //!< The first grammar clause.
+    ast_identifier clause_2     //!< The second grammar clause.
+);
 
 
 /*! @} */
