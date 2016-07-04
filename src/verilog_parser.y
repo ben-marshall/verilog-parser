@@ -31,6 +31,7 @@
     ast_block_reg_declaration    * block_reg_declaration;
     ast_case_item                * case_item;
     ast_case_statement           * case_statement;
+    ast_charge_strength            charge_strength;
     ast_cmos_switch_instance     * cmos_switch_instance ;
     ast_concatenation            * concatenation;
     ast_delay2                   * delay2;
@@ -58,10 +59,10 @@
     ast_list                     * list;
     ast_loop_statement           * loop_statement;
     ast_lvalue                   * lvalue;
-    ast_module_item              * module_item;
-    ast_module_instance          * module_instance;
     ast_module_declaration       * module_declaration;
+    ast_module_instance          * module_instance;
     ast_module_instantiation     * module_instantiation;
+    ast_module_item              * module_item;
     ast_mos_switch_instance      * mos_switch_instance  ;
     ast_n_input_gate_instance    * n_input_gate_instance;
     ast_n_input_gate_instances   * n_input_gate_instances;
@@ -80,6 +81,7 @@
     ast_path_declaration         * path_declaration;
     ast_port_connection          * port_connection;
     ast_port_declaration         * port_declaration;
+    ast_port_direction             port_direction;
     ast_primary                  * primary;
     ast_primitive_pull_strength  * primitive_pull;
     ast_primitive_strength         primitive_strength;
@@ -109,8 +111,6 @@
     ast_udp_port                 * udp_port;
     ast_udp_sequential_entry     * udp_seqential_entry;
     ast_wait_statement           * wait_statement;
-    ast_port_direction             port_direction;
-    ast_charge_strength            charge_strength;
 
     char                   boolean;
     char                 * string;
@@ -418,9 +418,12 @@
 %type   <expression>                 data_source_expression
 %type   <expression>                 enable_terminal
 %type   <expression>                 eq_const_exp_o
+%type   <expression>                 error_limit_value
+%type   <expression>                 error_limit_value_o
 %type   <expression>                 expression
 %type   <expression>                 expression_o
 %type   <expression>                 input_terminal
+%type   <expression>                 limit_value
 %type   <expression>                 mintypmax_expression
 %type   <expression>                 module_path_conditional_expression
 %type   <expression>                 module_path_expression
@@ -431,6 +434,7 @@
 %type   <expression>                 path_delay_expression
 %type   <expression>                 pcontrol_terminal
 %type   <expression>                 range_expression
+%type   <expression>                 reject_limit_value
 %type   <function_declaration>       function_declaration
 %type   <function_or_task_item>      function_item_declaration
 %type   <function_or_task_item>      task_item_declaration
@@ -468,6 +472,8 @@
 %type   <identifier>                 inout_port_identifier
 %type   <identifier>                 input_identifier
 %type   <identifier>                 input_port_identifier
+%type   <identifier>                 inst_clause
+%type   <identifier>                 inst_name
 %type   <identifier>                 instance_identifier
 %type   <identifier>                 instance_identifier_os
 %type   <identifier>                 lib_cell_identifier_os
@@ -497,7 +503,6 @@
 %type   <identifier>                 system_task_identifier
 %type   <identifier>                 task_identifier
 %type   <identifier>                 text_macro_name
-%type   <string>                     text_macro_usage
 %type   <identifier>                 topmodule_identifier
 %type   <identifier>                 udp_identifier
 %type   <identifier>                 udp_instance_identifier
@@ -522,6 +527,7 @@
 %type   <list>                       enable_gate_instances
 %type   <list>                       expressions
 %type   <list>                       expressions_o
+%type   <list>                       file_path_specs
 %type   <list>                       function_case_items
 %type   <list>                       function_else_if_statements
 %type   <list>                       function_item_declarations
@@ -559,6 +565,8 @@
 %type   <list>                       list_of_variable_port_identifiers
 %type   <list>                       module_instances
 %type   <list>                       module_item_os
+%type   <list>                       module_parameter_port_list
+%type   <list>                       module_params
 %type   <list>                       mos_switch_instances
 %type   <list>                       n_input_gate_instances
 %type   <list>                       n_output_gate_instances
@@ -583,6 +591,7 @@
 %type   <list>                       specify_block
 %type   <list>                       specify_items
 %type   <list>                       specify_items_o
+%type   <list>                       sq_bracket_constant_expressions
 %type   <list>                       sq_bracket_expressions
 %type   <list>                       statements
 %type   <list>                       statements_o
@@ -624,34 +633,20 @@
 %type   <node>                       config_declaration
 %type   <node>                       config_rule_statement
 %type   <node>                       config_rule_statement_os
-%type   <node>                       default_clause
 %type   <node>                       default_net_type_cd
 %type   <node>                       design_statement
-%type   <node>                       error_limit_value
-%type   <node>                       error_limit_value_o
-%type   <node>                       file_path_spec
-%type   <node>                       file_path_specs
 %type   <node>                       ifdef_directive
 %type   <node>                       ifndef_directive
 %type   <node>                       include_directive
 %type   <node>                       include_statement
-%type   <node>                       inst_clause
-%type   <node>                       inst_name
 %type   <node>                       liblist_clause
 %type   <node>                       library_declaration
 %type   <node>                       library_descriptions
 %type   <node>                       library_text
-%type   <node>                       limit_value
 %type   <node>                       line_directive
-%type   <node>                       module_parameter_port_list
-%type   <node>                       module_params
-%type   <node>                       net_decl_assignment
 %type   <node>                       pulsestyle_declaration
-%type   <node>                       reject_limit_value
 %type   <node>                       showcancelled_declaration
 %type   <node>                       specify_item
-%type   <node>                       specparam_assignment
-%type   <node>                       sq_bracket_constant_expressions
 %type   <node>                       system_timing_check
 %type   <node>                       text_macro_definition
 %type   <node>                       time
@@ -709,6 +704,8 @@
 %type   <single_assignment>          function_blocking_assignment
 %type   <single_assignment>          genvar_assignment
 %type   <single_assignment>          net_assignment
+%type   <single_assignment>          net_decl_assignment
+%type   <single_assignment>          specparam_assignment
 %type   <single_assignment>          variable_assignment
 %type   <source_item>                description
 %type   <statement>                  always_construct
@@ -724,9 +721,11 @@
 %type   <string>                     block_comment
 %type   <string>                     comment
 %type   <string>                     file_path
+%type   <string>                     file_path_spec
 %type   <string>                     macro_text
 %type   <string>                     one_line_comment
 %type   <string>                     string
+%type   <string>                     text_macro_usage
 %type   <string>                     white_space
 %type   <switch_gate>                cmos_switchtype
 %type   <switch_gate>                mos_switchtype
@@ -910,15 +909,12 @@ config_rule_statement_os :
                          | config_rule_statement_os config_rule_statement
                          ;
 
-config_rule_statement : default_clause liblist_clause
+config_rule_statement : KW_DEFAULT liblist_clause
                       | inst_clause liblist_clause
                       | inst_clause use_clause
                       | cell_clause liblist_clause
                       | cell_clause use_clause
                       ;
-
-default_clause  : KW_DEFAULT
-                ;
 
 inst_clause : KW_INSTANCE inst_name
             ;
