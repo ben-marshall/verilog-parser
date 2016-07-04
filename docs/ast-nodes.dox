@@ -6,7 +6,6 @@
 
 @section ast-todo AST Todo List
 
-- Proper node for all types of identifier.
 - Proper number representation node.
 - Completely deprecate the @ref ast_node type.
 - Types and assertions for the @ref ast_list construct.

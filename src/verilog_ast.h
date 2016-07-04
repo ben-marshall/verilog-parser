@@ -2806,10 +2806,48 @@ ast_config_declaration * ast_new_config_declaration(
 @defgroup ast-node-library-source-text Library Source
 @{
 @ingroup ast-construction
-@brief TODO
+@brief Library, config and include statements / constructs.
 */
 
+/*!
+@brief Describes a library declaration of file and include paths.
+*/
+typedef struct ast_library_declaration_t{
+    ast_identifier  identifier;
+    ast_list      * file_paths;
+    ast_list      * incdirs;
+} ast_library_declaration;
 
+/*!
+@brief Creates a new library declaration node.
+*/
+ast_library_declaration * ast_new_library_declaration(
+    ast_identifier  identifier,
+    ast_list      * file_paths,
+    ast_list      * incdirs
+);
+
+//! Describes a library item.
+typedef enum ast_library_item_type_e{
+    LIB_LIBRARY,
+    LIB_INCLUDE,
+    LIB_CONFIG
+} ast_library_item_type;
+
+//! Super structure for different library construct types.
+typedef struct ast_library_descriptions_t{
+    ast_library_item_type type;
+    union{
+        ast_library_declaration * library;
+        ast_config_declaration  * config;
+        ast_string                include;
+    };
+} ast_library_descriptions;
+
+//! Creates and returns a new library description object.
+ast_library_descriptions * ast_new_library_description(
+    ast_library_item_type type
+);
 
 /*! @} */
 

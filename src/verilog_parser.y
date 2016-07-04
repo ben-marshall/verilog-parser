@@ -35,6 +35,9 @@
     ast_cmos_switch_instance     * cmos_switch_instance ;
     ast_concatenation            * concatenation;
     ast_config_rule_statement    * config_rule_statement;
+    ast_config_declaration       * config_declaration;
+    ast_library_declaration      * library_declaration;
+    ast_library_descriptions     * library_descriptions;
     ast_delay2                   * delay2;
     ast_delay3                   * delay3;
     ast_delay_ctrl               * delay_control;
@@ -631,7 +634,7 @@
 %type   <identifier>                 cell_clause
 %type   <node>                       compiler_directive
 %type   <node>                       conditional_compile_directive
-%type   <node>                       config_declaration
+%type   <config_declaration>         config_declaration
 %type   <config_rule_statement>      config_rule_statement
 %type   <list>                       config_rule_statement_os
 %type   <node>                       default_net_type_cd
@@ -639,11 +642,11 @@
 %type   <node>                       ifdef_directive
 %type   <node>                       ifndef_directive
 %type   <node>                       include_directive
-%type   <node>                       include_statement
+%type   <string>                     include_statement
 %type   <list>                       liblist_clause
-%type   <node>                       library_declaration
-%type   <node>                       library_descriptions
-%type   <node>                       library_text
+%type   <library_declaration>        library_declaration
+%type   <library_descriptions>       library_descriptions
+%type   <list>                       library_text
 %type   <node>                       line_directive
 %type   <node>                       pulsestyle_declaration
 %type   <node>                       showcancelled_declaration
@@ -856,34 +859,62 @@ include_directive   : CD_INCLUDE string;
 
 /* A.1.1 Library Source Text */
 
-library_text : library_descriptions
-             | library_text library_descriptions
+library_text : 
+  library_descriptions{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| library_text library_descriptions{
+    $$ = $1;
+    ast_list_append($$,$2);
+}
+;
 
-library_descriptions : library_declaration
-                     | include_statement
-                     | config_declaration
-                     | compiler_directives
-                     ;
+library_descriptions : 
+  library_declaration{
+    $$ = ast_new_library_description(LIB_LIBRARY);
+    $$ -> library = $1;
+  }
+| include_statement{
+    $$ = ast_new_library_description(LIB_INCLUDE);
+    $$ -> include = $1;
+  }
+| config_declaration{
+    $$ = ast_new_library_description(LIB_CONFIG);
+    $$ -> config = $1;
+  }
+| compiler_directives {
+    $$ = NULL;
+}
+;
 
-library_declaration : KW_LIBRARY library_identifier 
-                      file_path_specs
-                      SEMICOLON
-                    | KW_LIBRARY library_identifier 
-                      file_path_specs
-                      KW_INCDIR file_path_specs
-                      SEMICOLON
-                    ;
+library_declaration : 
+  KW_LIBRARY library_identifier file_path_specs SEMICOLON{
+    $$ = ast_new_library_declaration($2,$3,ast_list_new());
+  }
+| KW_LIBRARY library_identifier file_path_specs KW_INCDIR file_path_specs 
+  SEMICOLON{
+    $$ = ast_new_library_declaration($2,$3,$5);
+  }
+;
 
-file_path_specs : file_path_spec
-                | file_path_specs COMMA file_path_spec
-                ;
+file_path_specs : 
+  file_path_spec{
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+  }
+| file_path_specs COMMA file_path_spec{
+    $$ = $1;
+    ast_list_append($$,$3);
+  }
+;
 
-file_path_spec : file_path
+file_path_spec : file_path{$$=$1;}
                ;
 
-file_path : string;
+file_path : string {$$=$1;};
 
-include_statement : KW_INCLUDE file_path_spec SEMICOLON
+include_statement : KW_INCLUDE file_path_spec SEMICOLON{$$=$2;}
                   ;
    
 /* A.1.2 Configuration Source Text */

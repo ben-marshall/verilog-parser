@@ -2184,3 +2184,31 @@ ast_config_declaration * ast_new_config_declaration(
 
     return tr;
 }
+
+/*!
+@brief Creates a new library declaration node.
+*/
+ast_library_declaration * ast_new_library_declaration(
+    ast_identifier  identifier,
+    ast_list      * file_paths,
+    ast_list      * incdirs
+){
+    ast_library_declaration * tr =
+            ast_calloc(1,sizeof(ast_library_declaration));
+    
+    tr -> identifier = identifier;
+    tr -> file_paths = file_paths;
+    tr -> incdirs    = incdirs;
+}
+
+//! Creates and returns a new library description object.
+ast_library_descriptions * ast_new_library_description(
+    ast_library_item_type type
+){
+    ast_library_descriptions * tr = 
+                ast_calloc(1,sizeof(ast_library_descriptions));
+
+    tr -> type = type;
+
+    return tr;
+}

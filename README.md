@@ -22,7 +22,7 @@ This will get you going.
 
     ```sh
     $> make setup
-    $> make all
+    $> make test
     ```
 
 This will download the test suite files, setup the build directory, and
