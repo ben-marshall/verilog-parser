@@ -4551,19 +4551,27 @@ block_comment       : COMMENT_BLOCK {$$=$1;};
 
 /* A.9.3 Identifiers */
 
-escaped_arrayed_identifier      : escaped_identifier range_o;
-escaped_hierarchical_identifier : escaped_hierarchical_branch 
-                                  escaped_hierarchical_identifiers
-                                ;
+escaped_arrayed_identifier      : escaped_identifier range_o{ 
+    $$ = $1;
+    if($2 != NULL){
+        ast_identifier_set_range($$,$2);
+    }
+};
+
+escaped_hierarchical_identifier : 
+  escaped_hierarchical_branch escaped_hierarchical_identifiers{
+      $$=ast_append_identifier($1,$2);
+}
+;
 
 escaped_hierarchical_identifiers: 
   DOT simple_hierarchical_identifier {$$=$2;}
 | DOT escaped_hierarchical_identifier {$$=$2;}
 | escaped_hierarchical_identifiers DOT simple_hierarchical_identifier {
-    $$=$3;
+    $$=ast_append_identifier($1,$3);
   }
 | escaped_hierarchical_identifier DOT escaped_hierarchical_identifiers {
-    $$=$1;
+    $$=ast_append_identifier($1,$3);
   }
 ;
 
@@ -4633,12 +4641,19 @@ simple_identifier:
 
 escaped_identifier  : '\'' anys  white_space {$$=$<identifier>2;};
 
-simple_arrayed_identifier       : simple_identifier range_o ;
+simple_arrayed_identifier       : simple_identifier range_o {
+    $$ = $1;
+    if($2 != NULL){
+        ast_identifier_set_range($$,$2);
+    }
+};
 
-simple_hierarchical_identifier  : simple_hierarchical_branch {$$=$1;}
-                                | simple_hierarchical_branch DOT
-                                  escaped_identifier {$$=$1;}
-                                ;
+simple_hierarchical_identifier  : 
+  simple_hierarchical_branch {$$=$1;}
+| simple_hierarchical_branch DOT escaped_identifier {
+    $$ = ast_append_identifier($1,$3);
+  }
+;
 
 system_function_identifier      : SYSTEM_ID {
     $$ = ast_new_system_identifier($1,yylineno);
@@ -4655,14 +4670,33 @@ system_task_identifier          : SYSTEM_ID {
 in the closed brackets reduces to an "unsigned_number" */
 
 simple_hierarchical_branch : 
-  SIMPLE_ID {$$=$1;}
-| SIMPLE_ID OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET {$$=$1;}
-| SIMPLE_ID OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET {$$=$1;}
-| simple_hierarchical_branch DOT simple_identifier{$$=$1;}
-| simple_hierarchical_branch DOT SIMPLE_ID OPEN_SQ_BRACKET
-  expression CLOSE_SQ_BRACKET {$$=$1;}
-| simple_hierarchical_branch DOT SIMPLE_ID OPEN_SQ_BRACKET
-  range_expression CLOSE_SQ_BRACKET {$$=$1;}
+  SIMPLE_ID {
+      $$=ast_new_identifier($1,yylineno);
+  }
+| SIMPLE_ID OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET{
+      $$=ast_new_identifier($1,yylineno);
+      ast_identifier_set_index($$,$3);
+  }
+| SIMPLE_ID OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET{
+      $$=ast_new_identifier($1,yylineno);
+      ast_identifier_set_range($$,$3);
+  }
+| simple_hierarchical_branch DOT simple_identifier{
+      $$ = ast_new_identifier($1,yylineno);
+      $$ = ast_append_identifier($1,$$);
+  }
+| simple_hierarchical_branch DOT SIMPLE_ID OPEN_SQ_BRACKET expression 
+  CLOSE_SQ_BRACKET {
+      $$=ast_new_identifier($3,yylineno);
+      ast_identifier_set_index($$,$5);
+      $$ = ast_append_identifier($1,$$);
+  }
+| simple_hierarchical_branch DOT SIMPLE_ID OPEN_SQ_BRACKET range_expression 
+  CLOSE_SQ_BRACKET{
+      $$=ast_new_identifier($1,yylineno);
+      ast_identifier_set_index($$,$5);
+      $$ = ast_append_identifier($1,$$);
+  }
 ;
 
 
@@ -4670,14 +4704,25 @@ simple_hierarchical_branch :
 in the closed brackets reduces to an "unsigned_number" */
 
 escaped_hierarchical_branch :
-  escaped_hierarchical_branch DOT escaped_identifier {$$=$1;}
+  escaped_hierarchical_branch DOT escaped_identifier {
+      $$ = ast_append_identifier($1,$3);
+  }
 | escaped_hierarchical_branch DOT escaped_identifier OPEN_SQ_BRACKET 
-  expression CLOSE_SQ_BRACKET {$$=$1;}
-| escaped_identifier{$$=$1;}
-| escaped_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET{$$=$1;}
-| escaped_identifier OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET
-  {$$=$1;}
-;
+  expression CLOSE_SQ_BRACKET {
+      ast_identifier_set_index($3,$5);
+      $$ = ast_append_identifier($1,$3);
+  }
+| escaped_identifier{
+    $$=$1;
+  }
+| escaped_identifier OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET{
+    ast_identifier_set_index($1,$3);
+    $$=$1;
+  }
+| escaped_identifier OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET{
+    ast_identifier_set_index($1,$3);
+    $$=$1;
+  };
 
 white_space : SPACE | TAB | NEWLINE;
 

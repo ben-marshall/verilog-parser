@@ -2673,6 +2673,13 @@ typedef enum ast_identifier_type_e{
     ID_VARIABLE,
 } ast_identifier_type;
 
+//! Used to tell if an identifier has a bit vector or index attatched to it.
+typedef enum ast_id_range_or_index_e{
+    ID_HAS_RANGE,   //!< Has a range selector
+    ID_HAS_INDEX,   //!< Has an index selector
+    ID_HAS_NONE     //!< Has neither a range or index selector.
+} ast_id_range_or_index;
+
 /*!
 @brief Structure containing all information on an identifier.
 */
@@ -2681,6 +2688,12 @@ struct ast_identifier_t{
     char                * identifier;   //!< The identifier value.
     unsigned int          from_line;    //!< The line number of the file.
     ast_boolean           is_system;    //!< Is this a system identifier?
+    ast_identifier        next;         //!< Represents a hierarchical id.
+    ast_id_range_or_index range_or_idx; //!< Is it indexed or ranged?
+    union{
+        ast_range       * range; //!< Iff range_or_idx == ID_HAS_RANGE
+        ast_expression  * index; //!< Iff range_or_idx == ID_HAS_INDEX
+    };
 };
 
 /*!
@@ -2704,6 +2717,40 @@ ast_identifier ast_new_identifier(
 ast_identifier ast_new_system_identifier(
     char         * identifier,  //!< String text of the identifier.
     unsigned int   from_line    //!< THe line the idenifier came from.
+);
+
+/*!
+@brief Used to construct linked lists of hierarchical identifiers.
+@details The child node is linked to the next field of the parent,
+and the parent field returned.
+@param [in] child - The child to add to the hierarchy.
+@param [inout] parent - The parent identifier.
+*/
+ast_identifier ast_append_identifier(
+    ast_identifier parent,
+    ast_identifier child
+);
+
+/*!
+@brief Used to set the range field of an identifier.
+@param [inout] id - The identifier to set the range for.
+@param [in] range - The range the identifier refers to.
+@post Also sets the range_or_idx member to ID_HAS_RANGE
+*/
+void ast_identifier_set_range(
+    ast_identifier    id,
+    ast_range       * range
+);
+
+/*!
+@brief Used to set the index field of an identifier.
+@param [inout] id - The identifier to set the index for.
+@param [in] index - The index the identifier refers to.
+@post Also sets the range_or_idx member to ID_HAS_INDEX
+*/
+void ast_identifier_set_index(
+    ast_identifier    id,
+    ast_expression  * index
 );
 
 /*! @} */

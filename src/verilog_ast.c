@@ -2105,11 +2105,13 @@ ast_identifier ast_new_identifier(
     char         * identifier, 
     unsigned int   from_line  
 ){
-    ast_identifier tr = ast_calloc(1,sizeof(ast_identifier));
+    ast_identifier tr = ast_calloc(1,sizeof(struct ast_identifier_t));
 
     tr -> from_line = from_line;
     tr -> identifier = identifier;
     tr -> type = ID_UNKNOWN;
+    tr -> next = NULL;
+    tr -> range_or_idx = ID_HAS_NONE;
 
     return tr;
 }
@@ -2123,4 +2125,29 @@ ast_identifier ast_new_system_identifier(
     tr -> is_system = AST_TRUE;
 
     return tr;
+}
+
+ast_identifier ast_append_identifier(
+    ast_identifier parent,
+    ast_identifier child
+){
+    ast_identifier tr = parent;
+    parent -> next = child;
+    return tr;
+}
+
+void ast_identifier_set_range(
+    ast_identifier    id,
+    ast_range       * range
+){
+    id -> range = range;
+    id -> range_or_idx = ID_HAS_RANGE;
+}
+
+void ast_identifier_set_index(
+    ast_identifier    id,
+    ast_expression  * index 
+){
+    id -> index = index;
+    id -> range_or_idx = ID_HAS_INDEX;
 }
