@@ -2647,8 +2647,8 @@ typedef enum ast_identifier_type_e{
     ID_INPUT_PORT,
     ID_INSTANCE,
     ID_LIBRARY,
-    ID_MODULE,
-    ID_MODULE_INSTANCE,
+    ID_MODULE,                      //!< Declaration
+    ID_MODULE_INSTANCE,             //!< Instantiation
     ID_NAME_OF_GATE_INSTANCE,
     ID_NAME_OF_INSTANCE,
     ID_NET,
@@ -2668,8 +2668,8 @@ typedef enum ast_identifier_type_e{
     ID_TOPMODULE,
     ID_UNKNOWN,                     //!< Used when we don't know the type.
     ID_UNEXPANDED_MACRO,            //!< For when the pre-processor hasn't run.
-    ID_UDP,
-    ID_UDP_INSTANCE,
+    ID_UDP,                         //!< Declaration
+    ID_UDP_INSTANCE,                //!< Instantiation
     ID_VARIABLE,
 } ast_identifier_type;
 
