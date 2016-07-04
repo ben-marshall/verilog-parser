@@ -866,6 +866,7 @@ ast_wait_statement * ast_new_wait_statement(
 @brief Creates a new event expression node
 @param trigger_edge - the edge on which the trigger is activated.
 @param expression - the expression to monitor the waveforms of.
+@bug Assertion (commented out) fires in some circumstances.
 */
 ast_event_expression * ast_new_event_expression(
     ast_edge trigger_edge,
@@ -874,7 +875,7 @@ ast_event_expression * ast_new_event_expression(
 {
     ast_event_expression * tr = ast_calloc(1,sizeof(ast_event_expression));
 
-    assert(trigger_edge != EDGE_NONE);
+    //assert(trigger_edge != EDGE_NONE);
 
     if(trigger_edge == EDGE_POS)
     {

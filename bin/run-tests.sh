@@ -52,5 +52,8 @@ printf "%30s  %30s  %30s  %30s\n" $FAILED_TESTS
 
 echo " "
 echo "------------------------- Finished Test Script ------------------------"
+echo " "
+echo "Passing: `echo $PASSED_TESTS | wc -w` \t Failing: "`echo $FAILED_TESTS | wc -w`
+echo " "
 
 exit `echo "$FAILED_TESTS" | wc -w`
