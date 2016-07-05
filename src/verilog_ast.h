@@ -108,7 +108,7 @@ assignments.
 typedef struct ast_node_attributes_t ast_node_attributes;
 struct ast_node_attributes_t
 {
-    char                * attr_name;    //!< Name of the attribute
+    ast_identifier        attr_name;    //!< Name of the attribute
     ast_expression      * attr_value;   //!< Value of the attribute.
 
     ast_node_attributes * next;         //!< Next one in a linked list.
@@ -344,6 +344,7 @@ typedef union ast_primary_value_e
     ast_function_call * function_call;  //!< Call to a function.
     ast_minmax_exp      minmax;
     ast_macro_use       macro;          //!< A MACRO expansion.
+    char              * string;
 } ast_primary_value;
 
 /*!

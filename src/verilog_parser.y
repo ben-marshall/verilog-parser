@@ -147,9 +147,9 @@
 %token <number> NUMBER
 %token <number> UNSIGNED_NUMBER
 
-%token <identifier> SYSTEM_ID
-%token <string>     SIMPLE_ID
-%token <identifier> DEFINE_ID
+%token <string> SYSTEM_ID
+%token <string> SIMPLE_ID
+%token <string> DEFINE_ID
 
 %token ATTRIBUTE_START
 %token ATTRIBUTE_END
@@ -729,7 +729,7 @@
 %type   <string>                     macro_text
 %type   <string>                     one_line_comment
 %type   <string>                     string
-%type   <string>                     text_macro_usage
+%type   <identifier>                 text_macro_usage
 %type   <string>                     white_space
 %type   <switch_gate>                cmos_switchtype
 %type   <switch_gate>                mos_switchtype
@@ -3064,14 +3064,14 @@ edge_symbol : /* can be r,f,p,n or star in any case. */
 | 'P'   {$$ = EDGE_POS;}
 | 'n'   {$$ = EDGE_NEG;}
 | 'N'   {$$ = EDGE_NEG;}
-| SIMPLE_ID {      if (strcmp(yylval.identifier,"r") == 0) $$ = EDGE_POS ;
-              else if (strcmp(yylval.identifier,"R") == 0) $$ = EDGE_POS ;
-              else if (strcmp(yylval.identifier,"f") == 0) $$ = EDGE_NEG ;
-              else if (strcmp(yylval.identifier,"F") == 0) $$ = EDGE_NEG ;
-              else if (strcmp(yylval.identifier,"p") == 0) $$ = EDGE_POS ;
-              else if (strcmp(yylval.identifier,"P") == 0) $$ = EDGE_POS ;
-              else if (strcmp(yylval.identifier,"n") == 0) $$ = EDGE_NEG ;
-              else                                         $$ = EDGE_NEG ;
+| SIMPLE_ID {      if (strcmp(yylval.string,"r") == 0) $$ = EDGE_POS ;
+              else if (strcmp(yylval.string,"R") == 0) $$ = EDGE_POS ;
+              else if (strcmp(yylval.string,"f") == 0) $$ = EDGE_NEG ;
+              else if (strcmp(yylval.string,"F") == 0) $$ = EDGE_NEG ;
+              else if (strcmp(yylval.string,"p") == 0) $$ = EDGE_POS ;
+              else if (strcmp(yylval.string,"P") == 0) $$ = EDGE_POS ;
+              else if (strcmp(yylval.string,"n") == 0) $$ = EDGE_NEG ;
+              else                                     $$ = EDGE_NEG ;
   }
 | STAR {$$ = EDGE_ANY;}
 ;
@@ -4091,7 +4091,7 @@ constant_function_call :
 
 constant_function_call_pid :
   attribute_instances OPEN_BRACKET constant_expressions CLOSE_BRACKET{
-    $$ = ast_new_function_call("unknown",AST_TRUE,AST_FALSE,$1,$3);
+    $$ = ast_new_function_call(NULL,AST_TRUE,AST_FALSE,$1,$3);
  }
 ;
 
@@ -4337,7 +4337,7 @@ module_path_conditional_expression :
   }
 ;
 
-module_path_expression : /* TODO: */
+module_path_expression :
   module_path_primary{
     $$ = ast_new_expression_primary($1);
     $$ -> type = MODULE_PATH_PRIMARY_EXPRESSION;
@@ -4455,6 +4455,7 @@ primary :
       $$ -> value.identifier = $1;
   }
 | hierarchical_identifier constant_function_call_pid{
+      $2 -> function= $1;
       $$ = ast_new_primary_function_call($2);
   }
 | OPEN_BRACKET mintypmax_expression CLOSE_BRACKET{
@@ -4769,7 +4770,7 @@ simple_identifier:
     $$ = ast_new_identifier($1, yylineno);
 }
 | text_macro_usage {
-    $$ = ast_new_identifier($1, yylineno);
+    $$ = $1;
     $$ -> type = ID_UNEXPANDED_MACRO;
 }
 ;
@@ -4814,11 +4815,10 @@ simple_hierarchical_branch :
   }
 | SIMPLE_ID OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET{
       $$=ast_new_identifier($1,yylineno);
-      ast_identifier_set_range($$,$3);
+      ast_identifier_set_index($$,$3);
   }
 | simple_hierarchical_branch DOT simple_identifier{
-      $$ = ast_new_identifier($1,yylineno);
-      $$ = ast_append_identifier($1,$$);
+      $$ = ast_append_identifier($1,$3);
   }
 | simple_hierarchical_branch DOT SIMPLE_ID OPEN_SQ_BRACKET expression 
   CLOSE_SQ_BRACKET {
@@ -4828,7 +4828,7 @@ simple_hierarchical_branch :
   }
 | simple_hierarchical_branch DOT SIMPLE_ID OPEN_SQ_BRACKET range_expression 
   CLOSE_SQ_BRACKET{
-      $$=ast_new_identifier($1,yylineno);
+      $$=ast_new_identifier($3,yylineno);
       ast_identifier_set_index($$,$5);
       $$ = ast_append_identifier($1,$$);
   }

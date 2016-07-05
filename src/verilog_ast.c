@@ -2165,7 +2165,7 @@ ast_config_rule_statement * ast_new_config_rule_statement(
     ast_config_rule_statement * tr =
         ast_calloc(1,sizeof(ast_config_rule_statement));
 
-    tr -> is_default;
+    tr -> is_default = is_default;
     tr -> clause_1 = clause_1;
     tr -> clause_2 = clause_2;
 
@@ -2200,6 +2200,8 @@ ast_library_declaration * ast_new_library_declaration(
     tr -> identifier = identifier;
     tr -> file_paths = file_paths;
     tr -> incdirs    = incdirs;
+    
+    return tr;
 }
 
 //! Creates and returns a new library description object.
