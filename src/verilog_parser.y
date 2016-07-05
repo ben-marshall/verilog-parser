@@ -149,6 +149,7 @@
 
 %token <string> SYSTEM_ID
 %token <string> SIMPLE_ID
+%token <string> ESCAPED_ID
 %token <string> DEFINE_ID
 
 %token ATTRIBUTE_START
@@ -1549,25 +1550,25 @@ realtime_declaration: KW_REALTIME list_of_real_identifiers SEMICOLON{
 } ;
 
 delay3_o            : delay3 {$$=$1;}| {$$=NULL;};
-drive_strength_o    : drive_strength {$$=$1;}| {$$=NULL;};
+drive_strength_o    : OPEN_BRACKET drive_strength {$$=$2;}| {$$=NULL;};
 
 net_declaration : 
   net_type                  net_dec_p_ds{
     $$ = $2;
     $$ -> net_type = $1;
   }
-| net_type  drive_strength  net_dec_p_ds{
+| net_type OPEN_BRACKET  drive_strength  net_dec_p_ds{
     $$ = $3;
     $$ -> net_type = $1;
-    $$ -> drive_strength = $2;
+    $$ -> drive_strength = $3;
   }
 | KW_TRIREG                 net_dec_p_ds{
     $$ = ast_new_type_declaration(DECLARE_NET);
     $$ -> net_type = NET_TYPE_TRIREG;
   }
-| KW_TRIREG drive_strength  net_dec_p_ds{
+| KW_TRIREG OPEN_BRACKET drive_strength  net_dec_p_ds{
     $$ = ast_new_type_declaration(DECLARE_NET);
-    $$ -> drive_strength = $2;
+    $$ -> drive_strength = $3;
     $$ -> net_type = NET_TYPE_TRIREG;
   }
 | KW_TRIREG charge_strength net_dec_p_ds{
@@ -1860,7 +1861,18 @@ list_of_port_identifiers     :
     $$ = ast_list_new();
     ast_list_append($$,$1);
   }
+| port_identifier OPEN_SQ_BRACKET constant_expression CLOSE_SQ_BRACKET {
+    ast_identifier_set_index($1,$3);
+    $$ = ast_list_new();
+    ast_list_append($$,$1);
+}
 | list_of_port_identifiers COMMA port_identifier{
+    $$ = $1;
+    ast_list_append($$,$3);
+}
+| list_of_port_identifiers COMMA port_identifier OPEN_SQ_BRACKET 
+  constant_expression CLOSE_SQ_BRACKET {
+    ast_identifier_set_index($3,$5);
     $$ = $1;
     ast_list_append($$,$3);
 }
@@ -2648,7 +2660,10 @@ pass_switchtype     :
 /* A.4.1 module instantiation */
 
 module_instantiation: 
-  module_identifier parameter_value_assignment_o module_instances SEMICOLON{
+  module_identifier delay3 parameter_value_assignment_o module_instances SEMICOLON{
+    $$ = ast_new_module_instantiation($1,$3,$4);
+  }
+| module_identifier parameter_value_assignment_o module_instances SEMICOLON{
     $$ = ast_new_module_instantiation($1,$2,$3);
   }
 ;
@@ -4775,15 +4790,19 @@ parameter_identifier            : identifier
                                 | hierarchical_identifier
     {$$=$1; $$ -> type = ID_PARAMETER;}
                                 ;
-port_identifier                 : identifier 
-    {$$=$1; $$ -> type = ID_PORT;};
+port_identifier                 : 
+ identifier 
+    {$$=$1; $$ -> type = ID_PORT;
+};
+
 real_identifier                 : identifier 
     {$$=$1; $$ -> type = ID_REAL;};
 
-identifier                      : simple_identifier  {$$=$1;}
-                                | escaped_identifier {$$=$1;}
-                                | text_macro_usage {$$=$1;}
-                                ;
+identifier : 
+  simple_identifier  {$$=$1;}
+| escaped_identifier {$$=$1;}
+| text_macro_usage {$$=$1;}
+;
 
 simple_identifier: 
   SIMPLE_ID {
@@ -4795,7 +4814,9 @@ simple_identifier:
 }
 ;
 
-escaped_identifier  : '\'' anys  white_space {$$=$<identifier>2;};
+escaped_identifier  : ESCAPED_ID {
+    $$=ast_new_identifier($1,yylineno);
+};
 
 simple_arrayed_identifier       : simple_identifier range_o {
     $$ = $1;

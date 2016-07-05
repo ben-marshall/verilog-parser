@@ -212,6 +212,7 @@ NUMBER              {NUM_BINARY}|{NUM_HEX}|{NUM_OCTAL}|{NUM_REAL}|{NUM_DECIMAL}
 
 SYSTEM_ID           \$[a-zA-Z0-9_\$]+
 SIMPLE_ID           [a-zA-Z_][a-zA-Z0-9_$]*
+ESCAPED_ID          \\{SIMPLE_ID}
 MACRO_IDENTIFIER    `{SIMPLE_ID}
 
 MACRO_TEXT          .*\n
@@ -471,6 +472,7 @@ TERNARY             "?"
 {XOR}                  {return KW_XOR                ;} 
 
 {SYSTEM_ID}            {return SYSTEM_ID             ;}
+{ESCAPED_ID}           {yylval.string= yytext; return ESCAPED_ID;}
 {SIMPLE_ID}            {yylval.string= yytext; return SIMPLE_ID ;}
 {MACRO_IDENTIFIER}     {return MACRO_IDENTIFIER      ;}
 
