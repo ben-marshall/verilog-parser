@@ -49,6 +49,9 @@ code, and ideally, not trigger in you're submitted fix! I'm open to people
 just submitting bugs as well, but it might take longer for me to get round to
 fixing it!
 
+There is more information on how to help in the [contributing](CONTRIBUTING.md)
+guide.
+
 ## Design Choices
 
 ### Why C, why not something more modern?
