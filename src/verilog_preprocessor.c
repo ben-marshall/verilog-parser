@@ -10,7 +10,9 @@ verilog_preprocessor_context * verilog_new_preprocessor_context()
     verilog_preprocessor_context * tr = 
         ast_calloc(1,sizeof(verilog_preprocessor_context));
 
-    tr -> token_count = 0;
+    tr -> token_count    = 0;
+    tr -> in_cell_define = AST_FALSE;
+    tr -> emit           = AST_TRUE;
 
     return tr;
 }

@@ -24,6 +24,7 @@
 - Timescale directives
 */
 typedef struct verilog_preprocessor_context_t{
+    ast_boolean  emit;           //!< Only emit tokens iff true.
     unsigned int token_count;    //!< Keeps count of tokens processed.
     ast_boolean  in_cell_define; //!< TRUE iff we are in a cell define.
 } verilog_preprocessor_context;

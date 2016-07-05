@@ -7,7 +7,8 @@
     //! Stores all information needed for the preprocessor.
     verilog_preprocessor_context * yy_preproc;
 
-    #define EMIT_TOKEN(x) yy_preproc -> token_count ++; return x
+    #define EMIT_TOKEN(x) yy_preproc -> token_count ++; \
+                          if(yy_preproc -> emit) return x
 %}
 
 %option yylineno
@@ -285,6 +286,8 @@ TERNARY             "?"
 <in_define>{SIMPLE_ID}   {BEGIN(in_define_t); EMIT_TOKEN(SIMPLE_ID);}
 <in_define_t>{MACRO_TEXT} {BEGIN(INITIAL);EMIT_TOKEN(MACRO_TEXT);}
 
+{CD_UNDEF}               {EMIT_TOKEN(CD_UNDEF);}
+
 {COMMENT_LINE}         {/*EMIT_TOKEN(COMMENT_LINE); IGNORE */}
 {COMMENT_BEGIN}        {BEGIN(in_comment)                     ;}
 
@@ -295,18 +298,22 @@ TERNARY             "?"
 {CD_ENDCELLDEFINE}       {verilog_preproc_exit_cell_define();}
 
 {CD_DEFAULT_NETTYPE}     {EMIT_TOKEN(CD_DEFAULT_NETTYPE);}
-{CD_ELSE}                {EMIT_TOKEN(CD_ELSE);}
-{CD_ELSIF}               {EMIT_TOKEN(CD_ELSIF);}
-{CD_ENDIF}               {EMIT_TOKEN(CD_ENDIF);}
+{CD_TIMESCALE}           {EMIT_TOKEN(CD_TIMESCALE);}
+
 {CD_IFDEF}               {EMIT_TOKEN(CD_IFDEF);}
 {CD_IFNDEF}              {EMIT_TOKEN(CD_IFNDEF);}
+{CD_ELSIF}               {EMIT_TOKEN(CD_ELSIF);}
+{CD_ELSE}                {EMIT_TOKEN(CD_ELSE);}
+{CD_ENDIF}               {EMIT_TOKEN(CD_ENDIF);}
+
 {CD_INCLUDE}             {EMIT_TOKEN(CD_INCLUDE);}
+
 {CD_LINE}                {EMIT_TOKEN(CD_LINE);}
+
 {CD_NOUNCONNECTED_DRIVE} {EMIT_TOKEN(CD_NOUNCONNECTED_DRIVE);}
-{CD_RESETALL}            {EMIT_TOKEN(CD_RESETALL);}
-{CD_TIMESCALE}           {EMIT_TOKEN(CD_TIMESCALE);}
 {CD_UNCONNECTED_DRIVE}   {EMIT_TOKEN(CD_UNCONNECTED_DRIVE);}
-{CD_UNDEF}               {EMIT_TOKEN(CD_UNDEF);}
+
+{CD_RESETALL}            {EMIT_TOKEN(CD_RESETALL);}
 
 {AT}                   {EMIT_TOKEN(AT);}
 {COMMA}                {EMIT_TOKEN(COMMA);}
