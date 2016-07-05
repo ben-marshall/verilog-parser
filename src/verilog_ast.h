@@ -2706,6 +2706,7 @@ typedef enum ast_identifier_type_e{
 //! Used to tell if an identifier has a bit vector or index attatched to it.
 typedef enum ast_id_range_or_index_e{
     ID_HAS_RANGE,   //!< Has a range selector
+    ID_HAS_RANGES,   //!< Has >1 range selector
     ID_HAS_INDEX,   //!< Has an index selector
     ID_HAS_NONE     //!< Has neither a range or index selector.
 } ast_id_range_or_index;
@@ -2721,6 +2722,7 @@ struct ast_identifier_t{
     ast_identifier        next;         //!< Represents a hierarchical id.
     ast_id_range_or_index range_or_idx; //!< Is it indexed or ranged?
     union{
+        ast_list        * ranges; //!< For multi-dimensional arrays.
         ast_range       * range; //!< Iff range_or_idx == ID_HAS_RANGE
         ast_expression  * index; //!< Iff range_or_idx == ID_HAS_INDEX
     };

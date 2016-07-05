@@ -1672,8 +1672,12 @@ output_variable_type: KW_INTEGER{$$=PARAM_INTEGER;}
 
 real_type : real_identifier {$$=$1; /* TODO FIXME */}
           | real_identifier EQ constant_expression{$$=$1; /* TODO FIXME */}
-          | real_identifier dimension dimensions{$$=$1; /* TODO FIXME */}
-          ;
+          | real_identifier dimension dimensions{
+    $$=$1; 
+    $$ -> range_or_idx = ID_HAS_RANGES;
+    ast_list_preappend($3,$2);
+    $$ -> ranges = $2; 
+  }          ;
 
 dimensions          : 
   dimension {
@@ -1688,9 +1692,18 @@ dimensions          :
  ;
 
 variable_type : 
-  variable_identifier {$$=$1; /* TODO FIXME */}
-| variable_identifier EQ constant_expression{$$=$1; /* TODO FIXME */}
-| variable_identifier dimension dimensions{$$=$1; /* TODO FIXME */}
+  variable_identifier {
+      $$=$1; 
+  }
+| variable_identifier EQ constant_expression{
+    $$=$1; /* TODO FIXME */
+  }
+| variable_identifier dimension dimensions{
+    $$=$1; 
+    $$ -> range_or_idx = ID_HAS_RANGES;
+    ast_list_preappend($3,$2);
+    $$ -> ranges = $2; 
+  }
 ;
 
 /* A.2.2.2 Strengths */
