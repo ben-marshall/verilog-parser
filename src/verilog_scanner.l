@@ -4,7 +4,10 @@
     
     #include "verilog_preprocessor.h"
 
-    #define EMIT_TOKEN(x) return x
+    //! Stores all information needed for the preprocessor.
+    verilog_preprocessor_context * yy_preproc;
+
+    #define EMIT_TOKEN(x) yy_preproc -> token_count ++; return x
 %}
 
 %option yylineno

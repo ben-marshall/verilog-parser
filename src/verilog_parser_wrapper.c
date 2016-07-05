@@ -5,6 +5,10 @@
 */
 
 #include "verilog_parser.h"
+#include "verilog_preprocessor.h"
+ 
+//! refered too externally.
+extern verilog_preprocessor_context * yy_preproc;
 
 /*!
 @brief Sets up the parser to accept more input from a new input file.
@@ -12,6 +16,11 @@
 */
 void    verilog_parser_setup(FILE * input_file)
 {
+    if(yy_preproc == NULL) {
+        yy_preproc = verilog_new_preprocessor_context();
+    } else {
+        printf("Reusing old preproc. ");
+    }
     yyrestart(input_file);
 }
 
