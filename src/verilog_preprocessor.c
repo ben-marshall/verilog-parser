@@ -20,3 +20,13 @@ void verilog_free_preprocessor_context(verilog_preprocessor_context * tofree)
 {
     free(tofree);
 }
+
+void verilog_preproc_enter_cell_define()
+{
+    yy_preproc -> in_cell_define = AST_FALSE;
+}
+
+void verilog_preproc_exit_cell_define()
+{
+    yy_preproc -> in_cell_define = AST_FALSE;
+}

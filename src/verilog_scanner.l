@@ -291,11 +291,12 @@ TERNARY             "?"
 <in_comment>.|\n       {/* IGNORE                            */}
 <in_comment>{COMMENT_END} {BEGIN(INITIAL);                     }
 
-{CD_CELLDEFINE}          {EMIT_TOKEN(CD_CELLDEFINE);}
+{CD_CELLDEFINE}          {verilog_preproc_enter_cell_define();}
+{CD_ENDCELLDEFINE}       {verilog_preproc_exit_cell_define();}
+
 {CD_DEFAULT_NETTYPE}     {EMIT_TOKEN(CD_DEFAULT_NETTYPE);}
 {CD_ELSE}                {EMIT_TOKEN(CD_ELSE);}
 {CD_ELSIF}               {EMIT_TOKEN(CD_ELSIF);}
-{CD_ENDCELLDEFINE}       {EMIT_TOKEN(CD_ENDCELLDEFINE);}
 {CD_ENDIF}               {EMIT_TOKEN(CD_ENDIF);}
 {CD_IFDEF}               {EMIT_TOKEN(CD_IFDEF);}
 {CD_IFNDEF}              {EMIT_TOKEN(CD_IFNDEF);}

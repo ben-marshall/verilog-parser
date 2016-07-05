@@ -24,7 +24,8 @@
 - Timescale directives
 */
 typedef struct verilog_preprocessor_context_t{
-    unsigned int token_count;   //!< Keeps count of tokens processed.
+    unsigned int token_count;    //!< Keeps count of tokens processed.
+    ast_boolean  in_cell_define; //!< TRUE iff we are in a cell define.
 } verilog_preprocessor_context;
 
 //! Stores all information needed for the preprocessor.
@@ -41,6 +42,17 @@ verilog_preprocessor_context * verilog_new_preprocessor_context();
 void verilog_free_preprocessor_context(
     verilog_preprocessor_context * tofree
 );
+
+/*!
+@brief Tells the preprocessor we are now defining PLI modules and to tag
+       them as such.
+*/
+void verilog_preproc_enter_cell_define();
+
+/*!
+@brief Tells the preprocessor we are no longer defining PLI modules.
+*/
+void verilog_preproc_exit_cell_define();
 
 #endif
 
