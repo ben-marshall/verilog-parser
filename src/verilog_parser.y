@@ -363,7 +363,7 @@
 %type   <assignment>                 blocking_assignment
 %type   <assignment>                 continuous_assign
 %type   <assignment>                 nonblocking_assignment
-%type   <assignment>                 param_assignment
+%type   <single_assignment>          param_assignment
 %type   <assignment>                 procedural_continuous_assignments
 %type   <block_item_declaration>     block_item_declaration
 %type   <block_reg_declaration>      block_reg_declaration
@@ -1894,11 +1894,13 @@ eq_const_exp_o :
 list_of_variable_port_identifiers : 
   port_identifier eq_const_exp_o {
     $$ = ast_list_new();
-    ast_list_append($$, ast_new_single_assignment($1,$2));
+    ast_list_append($$, 
+        ast_new_single_assignment(ast_new_lvalue_id(VAR_IDENTIFIER,$1),$2));
   }
 | list_of_variable_port_identifiers COMMA port_identifier eq_const_exp_o{
     $$ = $1;
-    ast_list_append($$, ast_new_single_assignment($3,$4));
+    ast_list_append($$, 
+        ast_new_single_assignment(ast_new_lvalue_id(VAR_IDENTIFIER,$3),$4));
 }
 ;
 
@@ -1906,20 +1908,20 @@ list_of_variable_port_identifiers :
 
 net_decl_assignment     : 
   net_identifier EQ expression {
-    $$ = ast_new_single_assignment($1,$3);
+    $$ = ast_new_single_assignment(ast_new_lvalue_id(NET_IDENTIFIER,$1),$3);
   }
 | net_identifier{
-    $$ = ast_new_single_assignment($1,NULL);
+    $$ = ast_new_single_assignment(ast_new_lvalue_id(NET_IDENTIFIER,$1),NULL);
 }   
 ;
 
 param_assignment        : parameter_identifier EQ constant_expression {
-    $$= ast_new_single_assignment($1,$3);   
+    $$ = ast_new_single_assignment(ast_new_lvalue_id(PARAM_ID,$1),$3);   
 };
 
 specparam_assignment    : 
   specparam_identifier EQ constant_mintypmax_expression{
-    $$= ast_new_single_assignment($1,$3);
+    $$= ast_new_single_assignment(ast_new_lvalue_id(SPECPARAM_ID,$1),$3);
   }
 | pulse_control_specparam{
     $$ = ast_new_single_assignment($1,NULL);
@@ -2325,14 +2327,14 @@ gate_enable :
 | enable_gatetype OB output_terminal COMMA input_terminal COMMA 
   enable_terminal CB COMMA n_output_gate_instances{
     ast_enable_gate_instance * gate = ast_new_enable_gate_instance(
-        "unnamed enable gate", $3,$7,$5);
+        ast_new_identifier("unamed_gate",yylineno), $3,$7,$5);
     ast_list_preappend($10,gate);
     $$ = ast_new_enable_gate_instances($1,NULL,NULL,$10);
 }
 | enable_gatetype OB output_terminal COMMA input_terminal COMMA 
   enable_terminal CB{
     ast_enable_gate_instance * gate = ast_new_enable_gate_instance(
-        "unnamed enable gate", $3,$7,$5);
+        ast_new_identifier("unamed_gate",yylineno), $3,$7,$5);
     ast_list * list = ast_list_new();
     ast_list_append(list,gate);
     $$ = ast_new_enable_gate_instances($1,NULL,NULL,list);
@@ -2380,15 +2382,16 @@ gate_n_input :
   }
 | gatetype_n_input OB output_terminal COMMA input_terminals CB {
     ast_n_input_gate_instance * gate = ast_new_n_input_gate_instance(
-        "un-named gate", $5,$3);
+        ast_new_identifier("unamed_gate",yylineno), $5,$3);
     ast_list * list = ast_list_new();
     ast_list_append(list,gate);
     $$ = ast_new_n_input_gate_instances($1,NULL,NULL,list);
   }
 | gatetype_n_input OB output_terminal COMMA input_terminals CB 
   COMMA n_input_gate_instances{
+    
     ast_n_input_gate_instance * gate = ast_new_n_input_gate_instance(
-        "un-named gate", $5,$3);
+        ast_new_identifier("unamed_gate",yylineno), $5,$3);
     ast_list * list = $8;
     ast_list_preappend(list,gate);
     $$ = ast_new_n_input_gate_instances($1,NULL,NULL,list);
@@ -2598,7 +2601,7 @@ pullup_strength             :
 
 name_of_gate_instance   : 
   gate_instance_identifier range_o {$$ = $1;}
-| {$$ = "un-named gate instance";}
+| {$$ = ast_new_identifier("Unnamed gate instance", yylineno);}
 ;
 
 /* A.3.3 primitive terminals */
@@ -2725,7 +2728,7 @@ named_port_connections   :
 ;
 
 ordered_port_connection : attribute_instances expression_o{
-    if($2 == NULL){ return NULL;}
+    if($2 == NULL){ $$ = NULL;}
     else{
         $2 -> attributes = $1;
         $$ = $2;
@@ -2745,8 +2748,9 @@ expression_o : expression {$$=$1;}
 /* A.4.2 Generated instantiation */
 
 generated_instantiation : KW_GENERATE generate_items KW_ENDGENERATE {
-    ast_identifier new_id = calloc(25,sizeof(char));
-    sprintf(new_id,"gen_%d",yylineno);
+    char * id = calloc(25,sizeof(char));
+    sprintf(id,"gen_%d",yylineno);
+    ast_identifier new_id = ast_new_identifier(id,yylineno);
     $$ = ast_new_generate_block(new_id,$2);
 };
 
@@ -2777,9 +2781,10 @@ generate_item :
     $$ = ast_new_generate_item(STM_GENERATE,$1);
   }
 | module_or_generate_item{
-    $$ = $1;
-    if($$ != NULL){
-        $$ -> is_generate_statement = AST_TRUE;
+    if($1 != NULL){
+        $$ = ast_new_generate_item(STM_MODULE_ITEM,$1);
+    } else{
+        $$ = NULL;
     }
   }
 ;
@@ -2791,7 +2796,8 @@ generate_conditional_statement :
     $$ = ast_new_if_else(c1,$7);
   }
 | KW_IF OPEN_BRACKET constant_expression CLOSE_BRACKET generate_item_or_null{
-    $$ = ast_new_conditional_statement($5,$3);
+    ast_conditional_statement * c1 = ast_new_conditional_statement($5,$3);
+    $$ = ast_new_if_else(c1,NULL);
   }
 ;
 
@@ -2833,7 +2839,7 @@ generate_loop_statement :
  constant_expression
  SEMICOLON genvar_assignment CLOSE_BRACKET KW_BEGIN COLON
  generate_block_identifier generate_items KW_END{
-    $$ = ast_new_for_loop_statement($12, $3,$7,$5);
+    $$ = ast_new_generate_loop_statement($12, $3,$7,$5);
  }
 ;
 
@@ -2844,8 +2850,9 @@ genvar_assignment : genvar_identifier EQ constant_expression{
 
 generate_block : 
   KW_BEGIN generate_items KW_END{
-    ast_identifier new_id = calloc(25,sizeof(char));
-    sprintf(new_id,"gen_%d",yylineno);
+    char * id = calloc(25,sizeof(char));
+    sprintf(id,"gen_%d",yylineno);
+    ast_identifier new_id = ast_new_identifier(id,yylineno);
     $$ = ast_new_generate_block(new_id, $2);
   }
 | KW_BEGIN COLON generate_block_identifier generate_items KW_END{

@@ -32,6 +32,9 @@ typedef struct ast_concatenation_t ast_concatenation;
 typedef struct ast_expression_t ast_expression;
 //! Expression type over a struct
 typedef struct ast_function_call_t ast_function_call;
+
+//! An item within a module. Duh.
+typedef struct ast_module_item_t ast_module_item;
     
 //! \b Temporary typedef.
 typedef char * ast_operator     ;
@@ -49,7 +52,7 @@ typedef struct ast_delay2_t ast_delay2;
 //! \b Temporary typedef.
 typedef struct ast_delay_value_t ast_delay_value  ;
 //! \b Temporary typedef.
-typedef void * ast_drive_strength;
+typedef struct ast_pull_strength_t ast_drive_strength;
 //! \b Temporary typedef.
 typedef void * ast_macro_use    ;
 //! \b Temporary typedef.
@@ -221,6 +224,8 @@ of an assignment.
 */
 typedef enum ast_lvalue_type_e
 {
+    SPECPARAM_ID,
+    PARAM_ID,
     NET_IDENTIFIER,     //!< Identifies a wire/reg
     VAR_IDENTIFIER,     //!< Identifies a variable
     GENVAR_IDENTIFIER,  //!< Generateor variable.
@@ -726,13 +731,17 @@ typedef enum ast_loop_type_e{
     LOOP_FOREVER,
     LOOP_REPEAT,
     LOOP_WHILE,
-    LOOP_FOR
+    LOOP_FOR,
+    LOOP_GENERATE
 } ast_loop_type;
 
 //! Fully describes a single loop statement.
 typedef struct ast_loop_statement_t{
     ast_loop_type   type;            //!< The type of loop
-    ast_statement * inner_statement; //!< Loop body.
+    union{
+        ast_statement * inner_statement; //!< Loop body.
+        ast_list      * generate_items; //!< IFF type == LOOP_GENERATE;
+    };
     ast_expression * condition;      //!< Condition on which the loop runs.
     ast_single_assignment * initial;       //!< Initial condition for for loops.
     ast_single_assignment * modify;        //!< Modification assignment for for loop.
@@ -750,8 +759,8 @@ ast_loop_statement * ast_new_forever_loop_statement(
 
 /*!
 @brief Creates and returns a new for loop statement.
-@param inner_statement - Pointer to the inner body of statements which
-make upt the loop body.
+@param inner_statements - Pointer to the inner body of statements which
+make up the loop body.
 @param initial_condition - Assignement which sets up the initial condition
 of the iterator.
 @param modify_assignment - How the iterator variable changes with each
@@ -760,10 +769,28 @@ loop iteration.
 continue or break.
 */
 ast_loop_statement * ast_new_for_loop_statement(
-    ast_statement  * inner_statement,
+    ast_statement  * inner_statements,
     ast_single_assignment * initial_condition,
     ast_single_assignment * modify_assignment,
     ast_expression * continue_condition
+);
+
+/*!
+@brief Creates and returns a new generate loop statement.
+@param inner_statements - Pointer to the inner body of statements which
+make up the loop body.
+@param initial_condition - Assignement which sets up the initial condition
+of the iterator.
+@param modify_assignment - How the iterator variable changes with each
+loop iteration.
+@param continue_condition - Expression which governs whether the loop should
+continue or break.
+*/
+ast_loop_statement * ast_new_generate_loop_statement(
+    ast_list              * inner_statements,
+    ast_single_assignment * initial_condition,
+    ast_single_assignment * modify_assignment,
+    ast_expression        * continue_condition
 );
 
 /*!
@@ -1251,7 +1278,8 @@ typedef enum ast_statement_type_e{
     STM_TIMING_CONTROL,
     STM_FUNCTION_CALL,
     STM_TASK_ENABLE,        //!< System, user
-    STM_WAIT
+    STM_WAIT,
+    STM_MODULE_ITEM
 } ast_statement_type;
 
 
@@ -1283,6 +1311,7 @@ struct ast_statement_t{
         ast_case_statement              * case_statement;
         ast_assignment                  * assignment;
         ast_generate_block              * generate_block;
+        ast_module_item                 * module_item;
         void                            * data;
     };
 };
@@ -2387,7 +2416,7 @@ typedef struct ast_function_declaration_t{
     ast_range_or_type  *rot;               //!< Range or type.
     ast_identifier      identifier;        //!< Function name.
     ast_list           *item_declarations; //!< Internal variable declarations.
-    ast_list           *statements;        //!< Executable statements.
+    ast_statement      *statements;        //!< Executable statements.
 } ast_function_declaration;
 
 /*!
@@ -2400,7 +2429,7 @@ ast_function_declaration * ast_new_function_declaration(
     ast_range_or_type  *rot,               //!< Range or type.
     ast_identifier      identifier,        //!< Function name.
     ast_list           *item_declarations, //!< Internal variable declarations.
-    ast_list           *statements         //!< Executable statements.
+    ast_statement      *statements         //!< Executable statements.
 );
 
 /*
@@ -2467,7 +2496,7 @@ typedef struct ast_task_declaration_t{
     ast_identifier      identifier;     //!< The task name.
     ast_list        *   ports;          //!< Arguments to the task.
     ast_list        *   declarations;   //!< Internal variable declarations.
-    ast_list        *   statements;     //!< The body of the task.
+    ast_statement   *   statements;     //!< The body of the task.
 } ast_task_declaration;
 
 /*!
@@ -2478,7 +2507,7 @@ ast_task_declaration * ast_new_task_declaration(
     ast_identifier      identifier,     //!< The task name.
     ast_list        *   ports,          //!< Arguments to the task.
     ast_list        *   declarations,   //!< Internal variable declarations.
-    ast_list        *   statements      //!< The body of the task.
+    ast_statement   *   statements      //!< The body of the task.
 );
 
 
@@ -2522,7 +2551,7 @@ typedef enum ast_module_item_type_e{
 } ast_module_item_type;
 
 //! Describes a single module item, its type and data structure.
-typedef struct ast_module_item_t{
+struct ast_module_item_t{
     ast_module_item_type type;
     ast_node_attributes *attributes;
     union{
@@ -2549,7 +2578,7 @@ typedef struct ast_module_item_t{
         ast_task_declaration        * task_declaration;
         ast_function_declaration    * function_declaration;
     };
-} ast_module_item;
+};
 
 /*!
 @brief Creates and returns a new module item descriptor.

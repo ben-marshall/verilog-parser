@@ -154,7 +154,9 @@ ast_lvalue * ast_new_lvalue_id(ast_lvalue_type type, ast_identifier id)
 {
     assert(type == NET_IDENTIFIER 
         || type == VAR_IDENTIFIER
-        || type == GENVAR_IDENTIFIER);
+        || type == GENVAR_IDENTIFIER
+        || type == SPECPARAM_ID
+        || type == PARAM_ID);
     ast_lvalue * tr = ast_calloc(1, sizeof(ast_lvalue));
     tr -> type = type;
     tr -> data.identifier = id;
@@ -676,6 +678,34 @@ ast_loop_statement * ast_new_for_loop_statement(
     tr -> initial           = initial_condition;
     tr -> condition         = continue_condition;
     tr -> modify            = modify_assignment;
+
+    return tr;
+}
+
+/*!
+@brief Creates and returns a new generate loop statement.
+@param inner_statements - Pointer to the inner body of statements which
+make up the loop body.
+@param initial_condition - Assignement which sets up the initial condition
+of the iterator.
+@param modify_assignment - How the iterator variable changes with each
+loop iteration.
+@param continue_condition - Expression which governs whether the loop should
+continue or break.
+*/
+ast_loop_statement * ast_new_generate_loop_statement(
+    ast_list              * inner_statements,
+    ast_single_assignment * initial_condition,
+    ast_single_assignment * modify_assignment,
+    ast_expression        * continue_condition
+){
+    ast_loop_statement * tr = ast_new_for_loop_statement(NULL,
+                                                         initial_condition,
+                                                         modify_assignment,
+                                                         continue_condition);
+    
+    tr -> type = LOOP_GENERATE;
+    tr -> generate_items = inner_statements;
 
     return tr;
 }
@@ -1949,7 +1979,7 @@ ast_function_declaration * ast_new_function_declaration(
     ast_range_or_type  *rot,
     ast_identifier      identifier,
     ast_list           *item_declarations,
-    ast_list           *statements
+    ast_statement      *statements
 ){
     ast_function_declaration * tr = ast_calloc(
         1,sizeof(ast_function_declaration));
@@ -2006,7 +2036,7 @@ ast_task_declaration * ast_new_task_declaration(
     ast_identifier      identifier,
     ast_list        *   ports,
     ast_list        *   declarations,
-    ast_list        *   statements
+    ast_statement   *   statements
 ){
     ast_task_declaration * tr = ast_calloc(1,sizeof(ast_task_declaration));
 
