@@ -70,7 +70,8 @@ APP_OBJ         = $(OBJ_DIR)/main.o
 
 SRC_OBJS        = $(OBJ_DIR)/verilog_ast.o          \
                   $(OBJ_DIR)/verilog_ast_common.o   \
-                  $(OBJ_DIR)/verilog_parser_wrapper.o
+                  $(OBJ_DIR)/verilog_parser_wrapper.o \
+                  $(OBJ_DIR)/verilog_preprocessor.o
 
 GEN_OBJS        = $(OBJ_DIR)/verilog_parser.tab.o \
                   $(OBJ_DIR)/verilog_scanner.o
