@@ -15,6 +15,7 @@ verilog_preprocessor_context * verilog_new_preprocessor_context()
     tr -> emit           = AST_TRUE;
 
     tr -> net_types      = ast_list_new();
+    tr -> unconnected_drive_pull = STRENGTH_NONE;
 
     return tr;
 }
@@ -78,4 +79,18 @@ void verilog_preproc_default_net(
 void verilog_preprocessor_resetall()
 {
     return;
+}
+
+
+/*!
+@brief Handles the entering of a no-unconnected drive directive.
+*/
+void verilog_preprocessor_nounconnected_drive(
+    ast_primitive_strength direction
+){
+    assert(direction == STRENGTH_PULL1 ||
+           direction == STRENGTH_PULL0 ||
+           direction == STRENGTH_NONE);
+
+    yy_preproc -> unconnected_drive_pull = direction;
 }

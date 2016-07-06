@@ -34,10 +34,13 @@ CD_ENDIF               "`endif"
 CD_IFDEF               "`ifdef"
 CD_IFNDEF              "`ifndef"
 CD_INCLUDE             "`include"
-CD_NOUNCONNECTED_DRIVE "`nounconnected_drive"
 CD_RESETALL            "`resetall"
-CD_UNCONNECTED_DRIVE   "`unconnected_drive"
 CD_UNDEF               "`undef"
+
+CD_NOUNCONNECTED_DRIVE "`nounconnected_drive"
+CD_UNCONNECTED_DRIVE   "`unconnected_drive"
+
+%x in_unconnected_drive
 
 /* Times and compiler directives */
 
@@ -382,8 +385,20 @@ TERNARY             "?"
 <in_line_2>{STRING}      {BEGIN(in_line_3);}
 <in_line_3>{INTEGER}     {BEGIN(INITIAL);}
 
-{CD_NOUNCONNECTED_DRIVE} {EMIT_TOKEN(CD_NOUNCONNECTED_DRIVE);}
-{CD_UNCONNECTED_DRIVE}   {EMIT_TOKEN(CD_UNCONNECTED_DRIVE);}
+{CD_NOUNCONNECTED_DRIVE} {
+    verilog_preprocessor_nounconnected_drive(STRENGTH_NONE);
+}
+{CD_UNCONNECTED_DRIVE}   {
+    BEGIN(in_unconnected_drive);
+}
+<in_unconnected_drive>{PULL0} {
+    verilog_preprocessor_nounconnected_drive(STRENGTH_PULL0);
+    BEGIN(INITIAL);
+}
+<in_unconnected_drive>{PULL1} {
+    verilog_preprocessor_nounconnected_drive(STRENGTH_PULL1);
+    BEGIN(INITIAL);
+}
 
 {CD_DEFINE}              {BEGIN(in_define);EMIT_TOKEN(CD_DEFINE);}
 <in_define>{SIMPLE_ID}   {BEGIN(in_define_t); EMIT_TOKEN(SIMPLE_ID);}

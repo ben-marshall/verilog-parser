@@ -51,13 +51,22 @@ typedef struct verilog_timescale_directive_t{
     char * precision;
 } verilog_timescale_directive;
 
-// ----------------------- Preprocessor Context -------------------------
+// ----------------------- resetall directives --------------------------
 
 /*!
 @brief Handles the encounter of a `resetall directive as described in annex
 19.6 of the spec.
 */
 void verilog_preprocessor_resetall();
+
+// ----------------------- Connected Drive Directives -------------------
+
+/*!
+@brief Handles the entering of a no-unconnected drive directive.
+*/
+void verilog_preprocessor_nounconnected_drive(
+    ast_primitive_strength direction
+);
 
 // ----------------------- Preprocessor Context -------------------------
 
@@ -77,6 +86,7 @@ typedef struct verilog_preprocessor_context_t{
     
     ast_list      * net_types;      //!< Storage for default nettype directives
     verilog_timescale_directive timescale; //!< Timescale information
+    ast_primitive_strength unconnected_drive_pull; //!< nounconnectedrive
 } verilog_preprocessor_context;
 
 
