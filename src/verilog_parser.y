@@ -642,7 +642,6 @@
 %type   <identifier>                 design_statement
 %type   <node>                       ifdef_directive
 %type   <node>                       ifndef_directive
-%type   <node>                       include_directive
 %type   <string>                     include_statement
 %type   <list>                       liblist_clause
 %type   <library_declaration>        library_declaration
@@ -799,7 +798,6 @@ compiler_directives : compiler_directive
 compiler_directive  : text_macro_definition
                     | undefine_compiler_directive
                     | conditional_compile_directive
-                    | include_directive
                     ;
 
 text_macro_definition : CD_DEFINE text_macro_name macro_text
@@ -836,7 +834,6 @@ conditional_compile_directive   : ifdef_directive
 ifdef_directive : CD_IFDEF SIMPLE_ID;
 ifndef_directive: CD_IFNDEF SIMPLE_ID;
 
-include_directive   : CD_INCLUDE string;
 
 /* A.1.1 Library Source Text */
 
