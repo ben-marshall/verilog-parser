@@ -17,8 +17,13 @@
 
 /* Pre-processor definitions */
 CD_DEFAULT_NETTYPE     "`default_nettype"
-
 %x in_default_nettype
+
+CD_LINE                "`line"
+%x in_line_1
+%x in_line_2
+%x in_line_3
+%x in_line_4
 
 CD_CELLDEFINE          "`celldefine"
 CD_DEFINE              "`define"
@@ -29,7 +34,6 @@ CD_ENDIF               "`endif"
 CD_IFDEF               "`ifdef"
 CD_IFNDEF              "`ifndef"
 CD_INCLUDE             "`include"
-CD_LINE                "`line"
 CD_NOUNCONNECTED_DRIVE "`nounconnected_drive"
 CD_RESETALL            "`resetall"
 CD_TIMESCALE           "`timescale"
@@ -352,7 +356,10 @@ TERNARY             "?"
 
 {CD_INCLUDE}             {EMIT_TOKEN(CD_INCLUDE);}
 
-{CD_LINE}                {EMIT_TOKEN(CD_LINE);}
+{CD_LINE}                {BEGIN(in_line_1);}
+<in_line_1>{INTEGER}     {BEGIN(in_line_2);}
+<in_line_2>{STRING}      {BEGIN(in_line_3);}
+<in_line_3>{INTEGER}     {BEGIN(INITIAL);}
 
 {CD_NOUNCONNECTED_DRIVE} {EMIT_TOKEN(CD_NOUNCONNECTED_DRIVE);}
 {CD_UNCONNECTED_DRIVE}   {EMIT_TOKEN(CD_UNCONNECTED_DRIVE);}

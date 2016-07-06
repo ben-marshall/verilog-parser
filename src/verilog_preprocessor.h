@@ -34,6 +34,14 @@ verilog_default_net_type * verilog_new_default_net_type(
     ast_net_type type           //!< The net type.
 );
 
+// ----------------------- Line Directives ------------------------------
+
+//! Describes a line directive.
+typedef struct verilog_line_directive_t{
+    unsigned int         line;
+    char *               file;
+    unsigned char        level;
+} verilog_line_directive;
 
 // ----------------------- Preprocessor Context -------------------------
 

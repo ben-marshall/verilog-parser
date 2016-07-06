@@ -792,9 +792,6 @@ These are not properly handled at the moment and are completely
 ignored by the parser.
 */
 
-default_net_type_cd : CD_DEFAULT_NETTYPE net_type
-                    ;
-
 compiler_directives : compiler_directive
                     | compiler_directives compiler_directive
                     ;
@@ -804,7 +801,6 @@ compiler_directive  : CD_CELLDEFINE
                     | CD_RESETALL
                     | CD_UNCONNECTED_DRIVE
                     | CD_NOUNCONNECTED_DRIVE
-                    | default_net_type_cd
                     | text_macro_definition
                     | undefine_compiler_directive
                     | conditional_compile_directive
