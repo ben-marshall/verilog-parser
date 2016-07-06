@@ -69,3 +69,13 @@ void verilog_preproc_default_net(
 
     ast_list_append(yy_preproc -> net_types, directive);
 }
+
+
+/*!
+@brief Handles the encounter of a `resetall directive as described in annex
+19.6 of the spec.
+*/
+void verilog_preprocessor_resetall()
+{
+    return;
+}

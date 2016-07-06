@@ -53,6 +53,14 @@ typedef struct verilog_timescale_directive_t{
 
 // ----------------------- Preprocessor Context -------------------------
 
+/*!
+@brief Handles the encounter of a `resetall directive as described in annex
+19.6 of the spec.
+*/
+void verilog_preprocessor_resetall();
+
+// ----------------------- Preprocessor Context -------------------------
+
 /*
 @brief Stores all of the contextual information used by the pre-processor.
 @details Stores things like:

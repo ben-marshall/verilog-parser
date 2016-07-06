@@ -796,10 +796,7 @@ compiler_directives : compiler_directive
                     | compiler_directives compiler_directive
                     ;
 
-compiler_directive  : CD_CELLDEFINE
-                    | CD_ENDCELLDEFINE
-                    | CD_RESETALL
-                    | CD_UNCONNECTED_DRIVE
+compiler_directive  : CD_UNCONNECTED_DRIVE
                     | CD_NOUNCONNECTED_DRIVE
                     | text_macro_definition
                     | undefine_compiler_directive

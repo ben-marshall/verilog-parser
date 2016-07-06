@@ -365,6 +365,10 @@ TERNARY             "?"
     BEGIN(INITIAL);
 }
 
+{CD_RESETALL}            {
+    verilog_preprocessor_resetall();
+}
+
 {CD_IFDEF}               {EMIT_TOKEN(CD_IFDEF);}
 {CD_IFNDEF}              {EMIT_TOKEN(CD_IFNDEF);}
 {CD_ELSIF}               {EMIT_TOKEN(CD_ELSIF);}
@@ -380,8 +384,6 @@ TERNARY             "?"
 
 {CD_NOUNCONNECTED_DRIVE} {EMIT_TOKEN(CD_NOUNCONNECTED_DRIVE);}
 {CD_UNCONNECTED_DRIVE}   {EMIT_TOKEN(CD_UNCONNECTED_DRIVE);}
-
-{CD_RESETALL}            {EMIT_TOKEN(CD_RESETALL);}
 
 {CD_DEFINE}              {BEGIN(in_define);EMIT_TOKEN(CD_DEFINE);}
 <in_define>{SIMPLE_ID}   {BEGIN(in_define_t); EMIT_TOKEN(SIMPLE_ID);}
