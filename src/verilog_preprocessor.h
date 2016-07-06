@@ -65,7 +65,21 @@ void verilog_preprocessor_resetall();
 @brief Handles the entering of a no-unconnected drive directive.
 */
 void verilog_preprocessor_nounconnected_drive(
-    ast_primitive_strength direction
+    ast_primitive_strength direction;
+);
+
+// ----------------------- Include Directives ---------------------------
+
+//! Stores information on an include directive.
+typedef struct verilog_include_directive_t{
+    char       * filename;
+    unsigned int lineNumber;
+} verilog_include_directive;
+
+//! Handles the encounter of an include diretive.
+void verilog_preprocessor_include(
+    char * filename,
+    unsigned int lineNumber
 );
 
 // ----------------------- Preprocessor Context -------------------------
@@ -84,6 +98,7 @@ typedef struct verilog_preprocessor_context_t{
     unsigned int    token_count;    //!< Keeps count of tokens processed.
     ast_boolean     in_cell_define; //!< TRUE iff we are in a cell define.
     
+    ast_list      * includes;       //!< Include directives.
     ast_list      * net_types;      //!< Storage for default nettype directives
     verilog_timescale_directive timescale; //!< Timescale information
     ast_primitive_strength unconnected_drive_pull; //!< nounconnectedrive

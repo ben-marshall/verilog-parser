@@ -14,6 +14,7 @@ verilog_preprocessor_context * verilog_new_preprocessor_context()
     tr -> in_cell_define = AST_FALSE;
     tr -> emit           = AST_TRUE;
 
+    tr -> includes       = ast_list_new();
     tr -> net_types      = ast_list_new();
     tr -> unconnected_drive_pull = STRENGTH_NONE;
 
@@ -93,4 +94,19 @@ void verilog_preprocessor_nounconnected_drive(
            direction == STRENGTH_NONE);
 
     yy_preproc -> unconnected_drive_pull = direction;
+}
+
+
+//! Handles the encounter of an include diretive.
+void verilog_preprocessor_include(
+    char * filename,
+    unsigned int lineNumber
+){
+    verilog_include_directive * toadd = 
+        ast_calloc(1,sizeof(verilog_include_directive));
+
+    toadd -> filename = filename;
+    toadd -> lineNumber = lineNumber;
+
+    ast_list_append(yy_preproc -> includes, toadd);
 }

@@ -33,7 +33,6 @@ CD_ENDCELLDEFINE       "`endcelldefine"
 CD_ENDIF               "`endif"
 CD_IFDEF               "`ifdef"
 CD_IFNDEF              "`ifndef"
-CD_INCLUDE             "`include"
 CD_RESETALL            "`resetall"
 CD_UNDEF               "`undef"
 
@@ -41,6 +40,12 @@ CD_NOUNCONNECTED_DRIVE "`nounconnected_drive"
 CD_UNCONNECTED_DRIVE   "`unconnected_drive"
 
 %x in_unconnected_drive
+
+/* Include Directives */
+
+CD_INCLUDE             "`include"
+
+%x in_include
 
 /* Times and compiler directives */
 
@@ -378,7 +383,13 @@ TERNARY             "?"
 {CD_ELSE}                {EMIT_TOKEN(CD_ELSE);}
 {CD_ENDIF}               {EMIT_TOKEN(CD_ENDIF);}
 
-{CD_INCLUDE}             {EMIT_TOKEN(CD_INCLUDE);}
+{CD_INCLUDE}             {
+    BEGIN(in_include);
+}
+<in_include>{STRING}     {
+    verilog_preprocessor_include(yylval.string,yylineno);
+    BEGIN(INITIAL);
+}
 
 {CD_LINE}                {BEGIN(in_line_1);}
 <in_line_1>{INTEGER}     {BEGIN(in_line_2);}
