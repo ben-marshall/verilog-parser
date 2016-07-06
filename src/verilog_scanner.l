@@ -16,8 +16,11 @@
 %option noyywrap 
 
 /* Pre-processor definitions */
-CD_CELLDEFINE          "`celldefine"
 CD_DEFAULT_NETTYPE     "`default_nettype"
+
+%x in_default_nettype
+
+CD_CELLDEFINE          "`celldefine"
 CD_DEFINE              "`define"
 CD_ELSE                "`else"
 CD_ELSIF               "`elsif"
@@ -289,7 +292,7 @@ TERNARY             "?"
 {CD_UNDEF}               {EMIT_TOKEN(CD_UNDEF);}
 
 {COMMENT_LINE}         {/*EMIT_TOKEN(COMMENT_LINE); IGNORE */}
-{COMMENT_BEGIN}        {BEGIN(in_comment)                     ;}
+{COMMENT_BEGIN}        {BEGIN(in_comment);                    ;}
 
 <in_comment>.|\n       {/* IGNORE                            */}
 <in_comment>{COMMENT_END} {BEGIN(INITIAL);                     }
@@ -297,7 +300,48 @@ TERNARY             "?"
 {CD_CELLDEFINE}          {verilog_preproc_enter_cell_define();}
 {CD_ENDCELLDEFINE}       {verilog_preproc_exit_cell_define();}
 
-{CD_DEFAULT_NETTYPE}     {EMIT_TOKEN(CD_DEFAULT_NETTYPE);}
+{CD_DEFAULT_NETTYPE}     {BEGIN(in_default_nettype);}
+<in_default_nettype>{SUPPLY0} {
+    BEGIN(INITIAL); 
+    verilog_preproc_default_net(yy_preproc -> token_count, 
+        yylineno, NET_TYPE_SUPPLY0);
+    }
+<in_default_nettype>{SUPPLY1} {
+    BEGIN(INITIAL); 
+    verilog_preproc_default_net(yy_preproc -> token_count, 
+        yylineno, NET_TYPE_SUPPLY1);
+    }
+<in_default_nettype>{TRI}     {
+    BEGIN(INITIAL); 
+    verilog_preproc_default_net(yy_preproc -> token_count, 
+        yylineno, NET_TYPE_TRI    );
+    }
+<in_default_nettype>{TRIAND}  {
+    BEGIN(INITIAL); 
+    verilog_preproc_default_net(yy_preproc -> token_count, 
+        yylineno, NET_TYPE_TRIAND );
+    }
+<in_default_nettype>{TRIOR}   {
+    BEGIN(INITIAL); 
+    verilog_preproc_default_net(yy_preproc -> token_count, 
+        yylineno, NET_TYPE_TRIOR  );
+    }
+<in_default_nettype>{WIRE}    {
+    BEGIN(INITIAL); 
+    verilog_preproc_default_net(yy_preproc -> token_count, 
+        yylineno, NET_TYPE_WIRE   );
+    }
+<in_default_nettype>{WAND}    {
+    BEGIN(INITIAL); 
+    verilog_preproc_default_net(yy_preproc -> token_count, 
+        yylineno, NET_TYPE_WAND   );
+    }
+<in_default_nettype>{WOR}     {
+    BEGIN(INITIAL); 
+    verilog_preproc_default_net(yy_preproc -> token_count, 
+        yylineno, NET_TYPE_WOR    );
+    }
+
 {CD_TIMESCALE}           {EMIT_TOKEN(CD_TIMESCALE);}
 
 {CD_IFDEF}               {EMIT_TOKEN(CD_IFDEF);}
