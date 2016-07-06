@@ -8,7 +8,7 @@
     verilog_preprocessor_context * yy_preproc;
 
     #define EMIT_TOKEN(x) yy_preproc -> token_count ++; \
-                          if(yy_preproc -> emit) return x
+                          if(yy_preproc -> emit) {return x;}
 %}
 
 %option yylineno

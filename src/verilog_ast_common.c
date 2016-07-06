@@ -6,6 +6,7 @@
 
 #include "stdarg.h"
 #include "stdlib.h"
+#include "assert.h"
 
 #include "verilog_ast_common.h"
 
@@ -158,3 +159,101 @@ ast_list *    ast_list_concat(ast_list * head, ast_list * tail)
     // return the new list.
     return head;
 }
+
+/*!
+@brief Creates and returns a new stack object.
+*/
+ast_stack * ast_stack_new(){
+    ast_stack * tr = calloc(1,sizeof(ast_stack));
+    tr -> depth = 0;
+    return tr;
+}
+
+/*!
+@brief Free the stack, but not it's contents
+*/
+void ast_stack_free(ast_stack * stack){
+    assert(stack != NULL);
+    
+    while(stack -> items != NULL){
+        ast_stack_element * tmp = stack -> items -> next;
+        free(stack -> items);
+        stack -> items = tmp;
+    }
+
+    free(stack);
+}
+
+/*!
+@brief Push a new item to the top of the stack.
+@param [inout] stack - The stack to push to.
+@param [in]    item  - The thing to push onto the stack.
+*/
+void ast_stack_push(
+    ast_stack * stack,
+    void      * item
+){
+    assert(stack != NULL);
+
+    if(stack -> items == NULL)
+    {
+        stack -> items = calloc(1,sizeof(ast_stack_element));
+        stack -> items -> data = item;
+    } 
+    else
+    {
+        ast_stack_element * toadd = calloc(1,sizeof(ast_stack_element));
+        toadd -> data = item;
+        toadd -> next = stack -> items;
+        stack -> items = toadd;
+    }
+
+    stack -> depth ++;
+
+}
+
+/*!
+@brief Pop the top item from the top of the stack.
+@param [inout] stack - The stack to pop from.
+*/
+void * ast_stack_pop(
+
+  ast_stack * stack
+){
+    assert(stack != NULL);
+
+    if(stack -> items != NULL)
+    {
+        void * tr = stack -> items -> data;
+        ast_stack_element * tofree = stack -> items;
+        stack -> items = stack -> items -> next;
+        free(tofree);
+        stack -> depth --;
+        return tr;
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
+/*!
+@brief Peek at the top item on the top of the stack.
+@param [inout] stack - The stack to peek at
+*/
+void * ast_stack_peek(
+    ast_stack * stack
+){
+    assert(stack != NULL);
+    
+    if(stack -> items != NULL)
+    {
+        void * tr = stack -> items -> data;
+        return tr;
+    }
+    else
+    {
+        return NULL;
+    }
+}
+

@@ -86,4 +86,65 @@ ast_list *    ast_list_concat(ast_list * head, ast_list * tail);
 
 /*! @} */
 
+/*!
+@defgroup ast-stack Stack
+@{
+@ingroup ast-utility
+*/
+
+//! Typedef for the ast_stack_element_t
+typedef struct ast_stack_element_t ast_stack_element;
+
+/*!
+@brief Storage container for a single element in the stack
+*/
+struct ast_stack_element_t{
+    ast_stack_element * next;
+    void             * data;
+};
+
+//! A very simple stack.
+typedef struct ast_stack_t{
+    unsigned int          depth; //!< How many items are on the stack?
+    ast_stack_element   * items; //!< The stack of items.
+} ast_stack;
+
+/*!
+@brief Creates and returns a new stack object.
+*/
+ast_stack * ast_stack_new();
+
+/*!
+@brief Free the stack, but not it's contents
+*/
+void ast_stack_free(ast_stack * stack);
+
+/*!
+@brief Push a new item to the top of the stack.
+@param [inout] stack - The stack to push to.
+@param [in]    item  - The thing to push onto the stack.
+*/
+void ast_stack_push(
+    ast_stack * stack,
+    void      * item
+);
+
+/*!
+@brief Pop the top item from the top of the stack.
+@param [inout] stack - The stack to pop from.
+*/
+void * ast_stack_pop(
+    ast_stack * stack
+);
+
+/*!
+@brief Peek at the top item on the top of the stack.
+@param [inout] stack - The stack to peek at
+*/
+void * ast_stack_peek(
+    ast_stack * stack
+);
+
+/*! @} */
+
 #endif
