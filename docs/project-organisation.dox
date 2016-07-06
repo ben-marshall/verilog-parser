@@ -1,5 +1,6 @@
 /*!
 @page project-organisation Project Organisation
+@subpage project-organisation-code
 
 @brief This page descibes how the project file tree and build system are
 organised.

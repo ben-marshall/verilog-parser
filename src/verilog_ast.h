@@ -2945,6 +2945,7 @@ ast_source_item * ast_new_source_item(ast_source_item_type type);
 
 /*!
 @brief Enum type describing the data value that an AST node holds.
+@deprecated The AST Node was only ever temporary, don't add new stuff with it.
 */
 typedef enum ast_node_type_e
 {
@@ -2957,6 +2958,7 @@ typedef enum ast_node_type_e
 
 /*!
 @brief Node type that forms the tree.
+@deprecated The AST Node was only ever temporary, don't add new stuff with it.
 */
 struct ast_node_t
 {
@@ -2969,6 +2971,7 @@ struct ast_node_t
 
 /*!
 @brief Creates a new empty ast_node and returns it.
+@deprecated The AST Node was only ever temporary, don't add new stuff with it.
 */
 ast_node * ast_node_new();
 
