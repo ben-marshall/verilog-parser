@@ -43,6 +43,14 @@ typedef struct verilog_line_directive_t{
     unsigned char        level;
 } verilog_line_directive;
 
+// ----------------------- Timescale Directives -------------------------
+
+//! Describes a line directive.
+typedef struct verilog_timescale_directive_t{
+    char * scale;
+    char * precision;
+} verilog_timescale_directive;
+
 // ----------------------- Preprocessor Context -------------------------
 
 /*
@@ -60,6 +68,7 @@ typedef struct verilog_preprocessor_context_t{
     ast_boolean     in_cell_define; //!< TRUE iff we are in a cell define.
     
     ast_list      * net_types;      //!< Storage for default nettype directives
+    verilog_timescale_directive timescale; //!< Timescale information
 } verilog_preprocessor_context;
 
 

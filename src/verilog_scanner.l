@@ -36,9 +36,16 @@ CD_IFNDEF              "`ifndef"
 CD_INCLUDE             "`include"
 CD_NOUNCONNECTED_DRIVE "`nounconnected_drive"
 CD_RESETALL            "`resetall"
-CD_TIMESCALE           "`timescale"
 CD_UNCONNECTED_DRIVE   "`unconnected_drive"
 CD_UNDEF               "`undef"
+
+/* Times and compiler directives */
+
+CD_TIMESCALE           "`timescale"
+TIME_UNITS             "(s|ms|us|ns|ps|fs)"
+%x in_ts_1
+%x in_ts_2
+%x in_ts_3
 
 /* Keyword Token deffinitions. */
 ALWAYS              "always"
@@ -288,13 +295,6 @@ TERNARY             "?"
 {ATTRIBUTE_START}      {EMIT_TOKEN(ATTRIBUTE_START);}
 {ATTRIBUTE_END}        {EMIT_TOKEN(ATTRIBUTE_END);}
 
-
-{CD_DEFINE}              {BEGIN(in_define);EMIT_TOKEN(CD_DEFINE);}
-<in_define>{SIMPLE_ID}   {BEGIN(in_define_t); EMIT_TOKEN(SIMPLE_ID);}
-<in_define_t>{MACRO_TEXT} {BEGIN(INITIAL);EMIT_TOKEN(MACRO_TEXT);}
-
-{CD_UNDEF}               {EMIT_TOKEN(CD_UNDEF);}
-
 {COMMENT_LINE}         {/*EMIT_TOKEN(COMMENT_LINE); IGNORE */}
 {COMMENT_BEGIN}        {BEGIN(in_comment);                    ;}
 
@@ -346,7 +346,24 @@ TERNARY             "?"
         yylineno, NET_TYPE_WOR    );
     }
 
-{CD_TIMESCALE}           {EMIT_TOKEN(CD_TIMESCALE);}
+{CD_TIMESCALE}           {
+    BEGIN(in_ts_1);
+}
+<in_ts_1>{UNSIGNED_NUM}      {
+    yy_preproc -> timescale.scale = yylval.string;
+}
+<in_ts_1>{SIMPLE_ID}         {
+    BEGIN(in_ts_2);
+}
+<in_ts_2>{DIV}               {
+    BEGIN(in_ts_3);
+}
+<in_ts_3>{UNSIGNED_NUM}      {
+    yy_preproc -> timescale.precision= yylval.string;
+}
+<in_ts_3>{SIMPLE_ID}         {
+    BEGIN(INITIAL);
+}
 
 {CD_IFDEF}               {EMIT_TOKEN(CD_IFDEF);}
 {CD_IFNDEF}              {EMIT_TOKEN(CD_IFNDEF);}
@@ -365,6 +382,12 @@ TERNARY             "?"
 {CD_UNCONNECTED_DRIVE}   {EMIT_TOKEN(CD_UNCONNECTED_DRIVE);}
 
 {CD_RESETALL}            {EMIT_TOKEN(CD_RESETALL);}
+
+{CD_DEFINE}              {BEGIN(in_define);EMIT_TOKEN(CD_DEFINE);}
+<in_define>{SIMPLE_ID}   {BEGIN(in_define_t); EMIT_TOKEN(SIMPLE_ID);}
+<in_define_t>{MACRO_TEXT} {BEGIN(INITIAL);EMIT_TOKEN(MACRO_TEXT);}
+
+{CD_UNDEF}               {EMIT_TOKEN(CD_UNDEF);}
 
 {AT}                   {EMIT_TOKEN(AT);}
 {COMMA}                {EMIT_TOKEN(COMMA);}
