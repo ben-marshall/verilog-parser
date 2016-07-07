@@ -13,9 +13,11 @@
     #include "verilog_ast.h"
 
     extern int yylineno;
+    extern char * yytext;
 
     void yyerror(const char *msg){
-    printf("line %d - ERROR: %s\n", yylineno,msg);
+        printf("line %d - ERROR: %s\n", yylineno,msg);
+        printf("- '%s'\n", yytext);
     }
 %}
 

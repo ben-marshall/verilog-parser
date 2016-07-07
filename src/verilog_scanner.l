@@ -431,8 +431,8 @@ TERNARY             "?"
         yylineno-1,
         yy_preproc -> scratch,
         strlen(yy_preproc -> scratch),
-        yytext,
-        yyleng-1); // -1 to avoid including the newline.
+        yytext+1,
+        yyleng-2); // -1 to avoid including the newline.
     BEGIN(INITIAL);
 }
 
@@ -445,6 +445,33 @@ TERNARY             "?"
         yytext
     );
     BEGIN(INITIAL);
+}
+
+{MACRO_IDENTIFIER}     {
+
+    // Look for the macro entry.
+    verilog_macro_directive * macro = NULL;
+    char * macroName = (yytext)+1;
+    ast_hashtable_result r = ast_hashtable_get(yy_preproc -> macrodefines,
+                                               macroName,
+                                               &macro);
+    
+    if(r == HASH_SUCCESS)
+    {
+        // Switch buffers to expand the macro.
+
+        YY_BUFFER_STATE cur = YY_CURRENT_BUFFER;
+        YY_BUFFER_STATE n   = yy_scan_string(macro -> macro_value);
+        
+        yy_switch_to_buffer(cur);
+        yypush_buffer_state(n);
+    }
+    else
+    {
+        // Undefined macro - PANIC!
+        printf("ERROR: Undefined macro '%s' on line %d\n", yytext, yylineno);
+        printf("\tIt's probably all going to fall apart now...\n\n");
+    }
 }
 
 {AT}                   {EMIT_TOKEN(AT);}
@@ -621,7 +648,6 @@ TERNARY             "?"
 {SYSTEM_ID}            {EMIT_TOKEN(SYSTEM_ID);}
 {ESCAPED_ID}           {yylval.string= yytext; EMIT_TOKEN(ESCAPED_ID);}
 {SIMPLE_ID}            {yylval.string= yytext; EMIT_TOKEN(SIMPLE_ID);}
-{MACRO_IDENTIFIER}     {EMIT_TOKEN(MACRO_IDENTIFIER);}
 
 {STRING}               {EMIT_TOKEN(STRING);                 }
 
@@ -629,6 +655,17 @@ TERNARY             "?"
 <*>{SPACE}                {/*EMIT_TOKEN(SPACE);   IGNORE */   }
 <*>{TAB}                  {/*EMIT_TOKEN(TAB);     IGNORE */   }
 
-.                      {EMIT_TOKEN(ANY);}
+<<EOF>> {
+    yypop_buffer_state();
+
+    if ( !YY_CURRENT_BUFFER )
+    {
+        yyterminate();
+    }
+}
+
+.                      {
+    EMIT_TOKEN(ANY);
+}
 
 %%

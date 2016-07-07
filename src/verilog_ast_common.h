@@ -213,7 +213,7 @@ ast_hashtable_result ast_hashtable_insert(
 ast_hashtable_result ast_hashtable_get(
     ast_hashtable * table, //!< The table to fetch from.
     char          * key,   //!< The key of the data to fetch.
-    void          * value  //!< [out] The data being returned.
+    void         ** value  //!< [out] The data being returned.
 );
 
 //! Removes a key value pair from the hashtable.

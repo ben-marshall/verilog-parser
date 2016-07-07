@@ -158,19 +158,11 @@ void verilog_preprocessor_macro_define(
 void verilog_preprocessor_macro_undefine(
     char * macro_name //!< The name of the macro to remove.
 ){
-    printf("Removing Macro: %s ", macro_name);
-
+    printf("Undefined %s\n", macro_name);
     ast_hashtable_result r = ast_hashtable_delete(
         yy_preproc -> macrodefines,
         macro_name
     );
-
-    if(r == HASH_SUCCESS)
-        printf("[SUCCESS]\n");
-    else if(r == HASH_KEY_NOT_FOUND)
-        printf("[FAILED] - no such key\n");
-    else
-        printf("[FAILED]\n");
 
     return;
 }

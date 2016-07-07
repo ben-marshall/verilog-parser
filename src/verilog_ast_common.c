@@ -8,6 +8,7 @@
 #include "stdlib.h"
 #include "assert.h"
 #include "string.h"
+#include "stdio.h"
 
 #include "verilog_ast_common.h"
 
@@ -341,14 +342,14 @@ ast_hashtable_result ast_hashtable_insert(
 ast_hashtable_result ast_hashtable_get(
     ast_hashtable * table, //!< The table to fetch from.
     char          * key,   //!< The key of the data to fetch.
-    void          * value  //!< [out] The data being returned.
+    void         ** value  //!< [out] The data being returned.
 ){
     int i;
     for(i = 0; i < table -> elements -> items; i ++)
     {
         ast_hashtable_element * e = ast_list_get(table->elements, i);
         if(strcmp(e -> key , key) == 0){
-            value = e -> data;
+            *value = (e -> data);
             return HASH_SUCCESS;
         }
     }
