@@ -7,6 +7,7 @@
 #include "stdarg.h"
 #include "stdlib.h"
 #include "assert.h"
+#include "string.h"
 
 #include "verilog_ast_common.h"
 
@@ -79,6 +80,38 @@ void       ast_list_append(ast_list * list, void * data)
 
 
 /*!
+@brief Removes the i'th item from a linked list.
+*/
+void      ast_list_remove_at(ast_list * list, unsigned int i)
+{
+    if(i > list -> items - 1)
+    {
+        return;
+    }
+    else
+    {
+        if(i < list -> current_item)
+        {
+            list -> current_item = 0;
+            list -> walker = list -> head;
+        }
+
+        while(list -> current_item != i-1 && list -> walker != NULL)
+        {
+            list -> walker = list -> walker -> next;
+            list -> current_item += 1;
+        }
+        assert(i-1 == list -> current_item);
+        
+        ast_list_element * toremove =  list -> walker -> next;
+        list -> walker -> next = list -> walker -> next -> next;
+        list -> items -= 1;
+        free(toremove);
+    }
+}
+
+
+/*!
 @brief Adds a new item to the front of a linked list.
 */
 void       ast_list_preappend(ast_list * list, void * data)
@@ -112,7 +145,7 @@ void       ast_list_preappend(ast_list * list, void * data)
 @details Returns a void* pointer. The programmer must be sure to cast this
 as the correct type.
 */
-void *    ast_list_get(ast_list * list, int item)
+void *    ast_list_get(ast_list * list, unsigned int item)
 {
     if(item > list -> items - 1)
     {
@@ -257,3 +290,96 @@ void * ast_stack_peek(
     }
 }
 
+//! Creates and returns a new hashtable.
+ast_hashtable * ast_hashtable_new(){
+    ast_hashtable * tr = calloc(1,sizeof(ast_hashtable));
+
+    tr -> size = 0;
+    tr -> elements = ast_list_new();
+
+    return tr;
+}
+
+//! Frees an existing hashtable, but not it's contents, only the structure.
+void  ast_hashtable_free(
+    ast_hashtable * table  //!< The table to free.
+){
+    ast_list_free(table -> elements);
+    free(table);
+    return;
+}
+
+//! Inserts a new item into the hashtable.
+ast_hashtable_result ast_hashtable_insert(
+    ast_hashtable * table, //!< The table to insert into.
+    char          * key,   //!< The key to insert with.
+    void          * value  //!< The data being added.
+){
+    int i;
+    for(i = 0; i < table -> elements -> items; i ++)
+    {
+        ast_hashtable_element * e = ast_list_get(table->elements, i);
+        if(strcmp(e -> key , key) == 0){
+            return HASH_KEY_COLLISION;
+        }
+    }
+    ast_hashtable_element * toinsert = calloc(1,sizeof(ast_hashtable_element));
+    toinsert -> key = key;
+    toinsert -> data = value;
+    ast_list_append(table -> elements, toinsert);;
+
+    return HASH_SUCCESS;
+}
+
+//! Returns an item from the hashtable.
+ast_hashtable_result ast_hashtable_get(
+    ast_hashtable * table, //!< The table to fetch from.
+    char          * key,   //!< The key of the data to fetch.
+    void          * value  //!< [out] The data being returned.
+){
+    int i;
+    for(i = 0; i < table -> elements -> items; i ++)
+    {
+        ast_hashtable_element * e = ast_list_get(table->elements, i);
+        if(strcmp(e -> key , key) == 0){
+            value = e -> data;
+            return HASH_SUCCESS;
+        }
+    }
+    return HASH_KEY_NOT_FOUND;
+}
+
+//! Removes a key value pair from the hashtable.
+ast_hashtable_result ast_hashtable_delete(
+    ast_hashtable * table, //!< The table to delete from.
+    char          * key    //!< The key to delete.
+){
+    int i;
+    for(i = 0; i < table -> elements -> items; i ++)
+    {
+        ast_hashtable_element * e = ast_list_get(table->elements, i);
+        if(strcmp(e -> key , key) == 0){
+            ast_list_remove_at(table->elements, i);
+            return HASH_SUCCESS;
+        }
+    }
+    return HASH_KEY_NOT_FOUND;
+}
+
+//! Updates an existing item in the hashtable.
+ast_hashtable_result ast_hashtable_update(
+    ast_hashtable * table, //!< The table to update.
+    char          * key,   //!< The key to update with.
+    void          * value  //!< The new data item to update.
+){
+    int i;
+    for(i = 0; i < table -> elements -> items; i ++)
+    {
+        ast_hashtable_element * e = ast_list_get(table->elements, i);
+        if(strcmp(e -> key , key) == 0){
+            e -> data = value;
+            return HASH_SUCCESS;
+        }
+    }
+    return HASH_KEY_NOT_FOUND;
+}
