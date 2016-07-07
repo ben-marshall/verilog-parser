@@ -14,6 +14,19 @@
 #ifndef VERILOG_PREPROCESSOR_H
 #define VERILOG_PREPROCESSOR_H
 
+/*!
+@defgroup verilog-preprocessor Preprocessor
+@{
+@brief This module contains all code and information on the preprocessor and
+how it works / is implemented.
+
+@details
+
+The preprocessor is implemented mostly as part of the lexer, with the
+various compiler directives handled within the verilog_preprocessor_context
+structure and it's associated functions.
+
+*/
 
 // ----------------------- Default Net Type Directives ------------------
 
@@ -176,6 +189,8 @@ void verilog_preproc_default_net(
     unsigned int line_number,   //!< Line number of the directive.
     ast_net_type type           //!< The net type.
 );
+
+/*! @} */
 
 #endif
 
