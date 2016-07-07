@@ -34,7 +34,10 @@ CD_ENDIF               "`endif"
 CD_IFDEF               "`ifdef"
 CD_IFNDEF              "`ifndef"
 CD_RESETALL            "`resetall"
+
 CD_UNDEF               "`undef"
+
+%x in_undef
 
 CD_NOUNCONNECTED_DRIVE "`nounconnected_drive"
 CD_UNCONNECTED_DRIVE   "`unconnected_drive"
@@ -411,11 +414,38 @@ TERNARY             "?"
     BEGIN(INITIAL);
 }
 
-{CD_DEFINE}              {BEGIN(in_define);EMIT_TOKEN(CD_DEFINE);}
-<in_define>{SIMPLE_ID}   {BEGIN(in_define_t); EMIT_TOKEN(SIMPLE_ID);}
-<in_define_t>{MACRO_TEXT} {BEGIN(INITIAL);EMIT_TOKEN(MACRO_TEXT);}
+{CD_DEFINE}              {
+    BEGIN(in_define);
+}
 
-{CD_UNDEF}               {EMIT_TOKEN(CD_UNDEF);}
+<in_define>{SIMPLE_ID}   {
+    if(yy_preproc -> scratch != NULL)
+        free(yy_preproc -> scratch);
+    yy_preproc -> scratch = calloc(yyleng+1,sizeof(char));
+    memcpy(yy_preproc -> scratch,yytext,yyleng);
+    BEGIN(in_define_t);
+}
+
+<in_define_t>{MACRO_TEXT} {
+    verilog_preprocessor_macro_define(
+        yylineno-1,
+        yy_preproc -> scratch,
+        strlen(yy_preproc -> scratch),
+        yytext,
+        yyleng-1); // -1 to avoid including the newline.
+    BEGIN(INITIAL);
+}
+
+{CD_UNDEF}             {
+    BEGIN(in_undef);
+}
+
+<in_undef>{SIMPLE_ID}  {
+    verilog_preprocessor_macro_undefine(
+        yytext
+    );
+    BEGIN(INITIAL);
+}
 
 {AT}                   {EMIT_TOKEN(AT);}
 {COMMA}                {EMIT_TOKEN(COMMA);}

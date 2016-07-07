@@ -90,7 +90,7 @@ void      ast_list_remove_at(ast_list * list, unsigned int i)
     }
     else
     {
-        if(i < list -> current_item)
+        if(i <= list -> current_item)
         {
             list -> current_item = 0;
             list -> walker = list -> head;
@@ -101,12 +101,18 @@ void      ast_list_remove_at(ast_list * list, unsigned int i)
             list -> walker = list -> walker -> next;
             list -> current_item += 1;
         }
-        assert(i-1 == list -> current_item);
-        
-        ast_list_element * toremove =  list -> walker -> next;
-        list -> walker -> next = list -> walker -> next -> next;
-        list -> items -= 1;
-        free(toremove);
+        if(i > 0){
+            assert(i-1 == list -> current_item);
+            ast_list_element * toremove =  list -> walker -> next;
+            list -> walker -> next = list -> walker -> next -> next;
+            list -> items -= 1;
+            free(toremove);
+        } else {
+            ast_list_element * toremove =  list -> head;
+            list -> head = list -> head -> next;
+            free(toremove);
+            list -> items -= 1;
+        }
     }
 }
 

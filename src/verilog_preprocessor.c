@@ -17,6 +17,7 @@ verilog_preprocessor_context * verilog_new_preprocessor_context()
     tr -> includes       = ast_list_new();
     tr -> net_types      = ast_list_new();
     tr -> unconnected_drive_pull = STRENGTH_NONE;
+    tr -> macrodefines   = ast_hashtable_new();
 
     return tr;
 }
@@ -24,6 +25,9 @@ verilog_preprocessor_context * verilog_new_preprocessor_context()
 
 void verilog_free_preprocessor_context(verilog_preprocessor_context * tofree)
 {
+    ast_list_free(tofree -> includes);
+    ast_list_free(tofree -> net_types);
+    ast_hashtable_free(tofree -> macrodefines);
     free(tofree);
 }
 
@@ -109,4 +113,64 @@ void verilog_preprocessor_include(
     toadd -> lineNumber = lineNumber;
 
     ast_list_append(yy_preproc -> includes, toadd);
+
+    return;
+}
+
+/*
+@brief Instructs the preprocessor to register a new macro definition.
+*/
+void verilog_preprocessor_macro_define(
+    unsigned int line,  //!< The line the defininition comes from.
+    char * macro_name,  //!< The macro identifier.
+    size_t name_len  ,  //!< Length in bytes of macro_name.
+    char * macro_text,  //!< The value the macro expands to.
+    size_t text_len     //!< Length in bytes of macro_text.
+){
+    verilog_macro_directive * toadd = 
+        ast_calloc(1, sizeof(verilog_macro_directive));
+    
+    toadd -> line = line;
+
+    // Make space for, and duplicate, the macro text, into the thing
+    // we will put into the hashtable.
+    toadd -> macro_id    = calloc(name_len,sizeof(char));
+    memcpy(toadd -> macro_id,macro_name, name_len);
+
+    toadd -> macro_value = calloc(text_len,sizeof(char));
+    memcpy(toadd -> macro_value,macro_text,text_len);
+
+    printf("\nEncountered macro '%s' on line %d ", toadd -> macro_id, line);
+    printf("with value '%s'\n", toadd -> macro_value);
+
+    ast_hashtable_insert(
+        yy_preproc -> macrodefines,
+        toadd -> macro_id,
+        toadd
+    );
+
+    return;
+}
+
+/*!
+@brief Removes a macro definition from the preprocessors lookup table.
+*/
+void verilog_preprocessor_macro_undefine(
+    char * macro_name //!< The name of the macro to remove.
+){
+    printf("Removing Macro: %s ", macro_name);
+
+    ast_hashtable_result r = ast_hashtable_delete(
+        yy_preproc -> macrodefines,
+        macro_name
+    );
+
+    if(r == HASH_SUCCESS)
+        printf("[SUCCESS]\n");
+    else if(r == HASH_KEY_NOT_FOUND)
+        printf("[FAILED] - no such key\n");
+    else
+        printf("[FAILED]\n");
+
+    return;
 }

@@ -82,6 +82,36 @@ void verilog_preprocessor_include(
     unsigned int lineNumber
 );
 
+// ----------------------- `define Directives ---------------------------
+
+/*!
+@brief A simple container for macro directives
+@note Expect this to expand as macro processing is completed.
+*/
+typedef struct verilog_macro_directive_t{
+    unsigned int line;
+    char * macro_id;
+    char * macro_value;
+} verilog_macro_directive;
+
+/*
+@brief Instructs the preprocessor to register a new macro definition.
+*/
+void verilog_preprocessor_macro_define(
+    unsigned int line,  //!< The line the defininition comes from.
+    char * macro_name,  //!< The macro identifier.
+    size_t name_len  ,  //!< Length in bytes of macro_name.
+    char * macro_text,  //!< The value the macro expands to.
+    size_t text_len     //!< Length in bytes of macro_text.
+);
+    
+/*!
+@brief Removes a macro definition from the preprocessors lookup table.
+*/
+void verilog_preprocessor_macro_undefine(
+    char * macro_name //!< The name of the macro to remove.
+);
+
 // ----------------------- Preprocessor Context -------------------------
 
 /*
@@ -97,7 +127,10 @@ typedef struct verilog_preprocessor_context_t{
     ast_boolean     emit;           //!< Only emit tokens iff true.
     unsigned int    token_count;    //!< Keeps count of tokens processed.
     ast_boolean     in_cell_define; //!< TRUE iff we are in a cell define.
+
+    char *          scratch;        //!< A scratch variable. DO NOT USE.
     
+    ast_hashtable * macrodefines;   //!< `define kvp matching.
     ast_list      * includes;       //!< Include directives.
     ast_list      * net_types;      //!< Storage for default nettype directives
     verilog_timescale_directive timescale; //!< Timescale information
