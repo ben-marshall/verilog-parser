@@ -813,22 +813,8 @@ compiler_directives : compiler_directive
                     | compiler_directives compiler_directive
                     ;
 
-compiler_directive  : text_macro_definition
-                    | undefine_compiler_directive
-                    | conditional_compile_directive
+compiler_directive  : conditional_compile_directive
                     ;
-
-text_macro_definition : CD_DEFINE text_macro_name macro_text
-                      ;
-
-text_macro_name     : SIMPLE_ID 
-                    | SIMPLE_ID list_of_formal_arguments
-                    ;
-
-list_of_formal_arguments : identifier_csv
-                         ; 
-
-macro_text : MACRO_TEXT;   
 
 text_macro_usage : MACRO_IDENTIFIER list_of_actual_arguments
                  | MACRO_IDENTIFIER
@@ -840,9 +826,6 @@ list_of_actual_arguments : actual_argument
 
 actual_argument : expression
                 ; 
-
-undefine_compiler_directive : CD_UNDEF MACRO_IDENTIFIER
-                            ;
 
 conditional_compile_directive   : ifdef_directive
                                 | ifndef_directive
