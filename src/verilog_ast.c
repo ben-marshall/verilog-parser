@@ -2245,3 +2245,22 @@ ast_library_descriptions * ast_new_library_description(
 
     return tr;
 }
+
+
+/*!
+@brief Creates a new number representation object.
+@todo Implement proper representation converstion.
+*/
+ast_number * ast_new_number(
+    ast_number_base base,   //!< What is the base of the number.
+    ast_number_representation representation,   //!< How to interepret digits.
+    char  * digits  //!< The string token representing the number.
+){
+    ast_number * tr = ast_calloc(1,sizeof(ast_number));
+
+    tr -> base = base;
+    tr -> representation = representation;
+    tr -> as_bits = digits;
+
+    return tr;
+}

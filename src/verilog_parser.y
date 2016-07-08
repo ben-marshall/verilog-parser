@@ -146,8 +146,24 @@
 %token OPEN_SQ_BRACE      
 %token CLOSE_SQ_BRACE     
 
-%token <number> NUMBER
-%token <number> UNSIGNED_NUMBER
+%token <string> BIN_VALUE
+%token <string> OCT_VALUE
+%token <string> HEX_VALUE
+
+%token <string> DEC_BASE
+%token <string> BIN_BASE
+%token <string> OCT_BASE
+%token <string> HEX_BASE
+
+%token <string> NUM_REAL
+%token <string> NUM_SIZE
+%token <string> UNSIGNED_NUMBER
+
+%type  <number> decimal_number
+%type  <number> binary_number
+%type  <number> hex_number
+%type  <number> octal_number
+%type  <number> real_number
 
 %token <string> SYSTEM_ID
 %token <string> SIMPLE_ID
@@ -3052,7 +3068,7 @@ next_state            : output_symbol  {$$=$1;}
                       ;
 
 output_symbol : 
-  UNSIGNED_NUMBER {$$ = UDP_NEXT_STATE_X; /*TODO FIX THIS*/}
+  unsigned_number {$$ = UDP_NEXT_STATE_X; /*TODO FIX THIS*/}
 | 'X'       {$$ = UDP_NEXT_STATE_X;}
 | 'x'       {$$ = UDP_NEXT_STATE_X;}
 | TERNARY   {$$ = UDP_NEXT_STATE_QM;}
@@ -3060,7 +3076,7 @@ output_symbol :
 ;
 
 level_symbol :
-  UNSIGNED_NUMBER {$$ = LEVEL_X;}
+  unsigned_number {$$ = LEVEL_X;}
 | 'X'             {$$ = LEVEL_X;}
 | 'x'             {$$ = LEVEL_X;}
 | TERNARY         {$$ = LEVEL_Q;}
@@ -4608,12 +4624,66 @@ binary_module_path_operator : L_EQ   {$$=$1;}
 
 /* A.8.7 Numbers */
 
-unsigned_number : UNSIGNED_NUMBER
-                ;
+unsigned_number :
+  UNSIGNED_NUMBER {
+    $$ = ast_new_number(BASE_DECIMAL, REP_BITS, $1);
+  }
+| NUM_SIZE {
+    $$ = ast_new_number(BASE_DECIMAL, REP_BITS, $1);
+  }
+;
 
-number : NUMBER
-       | unsigned_number
-       ;
+number :
+  decimal_number {$$ = $1;}
+| octal_number   {$$ = $1;}
+| binary_number  {$$ = $1;}
+| hex_number     {$$ = $1;}
+| real_number    {$$ = $1;}
+;
+
+decimal_number :
+  unsigned_number {$$ = $1;}
+| NUM_SIZE DEC_BASE unsigned_number{
+    $$ = $3;
+  }
+|          DEC_BASE unsigned_number{
+    $$ = $2;
+  }
+
+binary_number :
+  NUM_SIZE BIN_BASE BIN_VALUE{
+    $$ = ast_new_number(BASE_BINARY,REP_BITS,$3);
+  }
+|          BIN_BASE BIN_VALUE{
+    $$ = ast_new_number(BASE_BINARY,REP_BITS,$2);
+  }
+;
+
+hex_number :
+  NUM_SIZE HEX_BASE HEX_VALUE{
+    $$ = ast_new_number(BASE_HEX,REP_BITS,$3);
+  }
+|          HEX_BASE HEX_VALUE{
+    $$ = ast_new_number(BASE_HEX,REP_BITS,$2);
+  }
+;
+
+
+octal_number :
+  NUM_SIZE OCT_BASE OCT_VALUE{
+    $$ = ast_new_number(BASE_OCTAL,REP_BITS,$3);
+  }
+|          OCT_BASE OCT_VALUE{
+    $$ = ast_new_number(BASE_OCTAL,REP_BITS,$2);
+  }
+;
+
+real_number :
+   NUM_REAL{
+    $$ = ast_new_number(BASE_DECIMAL,REP_BITS,$1);
+  }
+; 
+
 
 /* A.8.8 Strings */
 

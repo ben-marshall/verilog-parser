@@ -68,8 +68,8 @@ typedef struct ast_pull_strength_t ast_drive_strength;
 typedef void * ast_macro_use    ;
 //! \b Temporary typedef.
 typedef void * ast_minmax_exp   ;
-//! \b Temporary typedef.
-typedef void * ast_number       ;
+//! Number data structure.
+typedef struct ast_number_t ast_number ;
 //! \b Temporary typedef.
 typedef struct ast_range_t ast_range ;
 //! \b Temporary typedef.
@@ -105,6 +105,56 @@ typedef enum ast_port_direction_e{
     PORT_INOUT,     //!< Bi-directional port.
     PORT_NONE,  //!< Used for when we don't know at declaration time.
 } ast_port_direction;
+
+//-------------- Numbers ---------------------------------------
+
+/*!
+@defgroup ast-node-numbers Numbers
+@{
+@ingroup ast-construction
+@brief Objects used to represent individual numbers.
+*/
+
+//! Base value of a number representation.
+typedef enum ast_number_base_e{
+    BASE_BINARY,
+    BASE_OCTAL,
+    BASE_DECIMAL,
+    BASE_HEX
+} ast_number_base;
+
+//! How is the number represented?
+typedef enum ast_number_representation_e{
+    REP_BITS,       //!< For numbers specified per digit.
+    REP_INTEGER,    //!< For "Integer" typed numbers"
+    REP_FLOAT       //!< For "real" typed numbers.
+} ast_number_representation;
+
+/*!
+@brief Stores the base, value and width (in bits) of a number.
+*/
+struct ast_number_t{
+    unsigned int    width; //!< Width of the number in bits.
+    ast_number_base base; //!< Hex, octal, binary, decimal.
+    ast_number_representation   representation; //!< How is it expressed?
+    union{
+        char * as_bits;
+        float  as_float;
+        int    as_int;
+    };
+};
+
+/*!
+@brief Creates a new number representation object.
+*/
+ast_number * ast_new_number(
+    ast_number_base base,   //!< What is the base of the number.
+    ast_number_representation representation,   //!< How to interepret digits.
+    char  * digits  //!< The string token representing the number.
+);
+
+/*! }@ */
+
 
 //-------------- attributes ------------------------------------
 
@@ -354,7 +404,7 @@ typedef enum ast_primary_value_type_e
 //! The expression primary can produce several different sub-expressions:
 typedef union ast_primary_value_e
 {
-    ast_number          number;         //!< A single constant number
+    ast_number        * number;         //!< A single constant number
     ast_identifier      identifier;     //!< Net or variable identifier.
     ast_concatenation * concatenation;  //!< Concatenation of expressions.
     ast_function_call * function_call;  //!< Call to a function.
@@ -2091,7 +2141,7 @@ typedef struct ast_delay_value_t{
     union{
         ast_identifier parameter_id;
         ast_identifier specparam_id;
-        ast_number     unsigned_number;
+        ast_number  *  unsigned_number;
         ast_minmax_exp mintypmax;
         void        *  data;
     };

@@ -132,16 +132,21 @@ void verilog_preprocessor_macro_define(
     
     toadd -> line = line;
 
+    //printf("\nEncountered macro '%s' on line %d ", toadd -> macro_id, line);
+    //printf("with value '%s'\n", toadd -> macro_value);
+    //fflush(stdout);
+
     // Make space for, and duplicate, the macro text, into the thing
     // we will put into the hashtable.
     toadd -> macro_id    = calloc(name_len,sizeof(char));
     memcpy(toadd -> macro_id,macro_name, name_len);
 
-    toadd -> macro_value = calloc(text_len,sizeof(char));
-    memcpy(toadd -> macro_value,macro_text,text_len);
-
-    printf("\nEncountered macro '%s' on line %d ", toadd -> macro_id, line);
-    printf("with value '%s'\n", toadd -> macro_value);
+    if(text_len > 0){
+        toadd -> macro_value = calloc(text_len,sizeof(char));
+        memcpy(toadd -> macro_value,macro_text,text_len);
+    } else {
+        toadd -> macro_value = NULL;
+    }
 
     ast_hashtable_insert(
         yy_preproc -> macrodefines,

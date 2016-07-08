@@ -117,7 +117,6 @@ downloadTutorialTest param_overide_instance_example.v
 downloadTutorialTest quest_for_in.v
 downloadTutorialTest quest_for_out.v
 downloadTutorialTest switch_primitives.v
-downloadTutorialTest syn_fifo_assert.v
 downloadTutorialTest syn_fifo_psl.v
 downloadTutorialTest task_calling.v
 downloadTutorialTest task_global.v

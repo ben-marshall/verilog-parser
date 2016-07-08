@@ -226,20 +226,22 @@ BASE_HEX            '[sS]?[hH]
 
 SIZE                {DIGIT_DECMIAL_NZ}+
 
-UNSIGNED_NUM        {DIGIT_DECIMAL}({UNDERSCORE}|{DIGIT_DECIMAL})*
-NUM_REAL_EXP        {UNSIGNED_NUM}({DOT}{UNSIGNED_NUM})?{EXP}({SIGN})?{UNSIGNED_NUM}
-NUM_REAL            {UNSIGNED_NUM}{DOT}{UNSIGNED_NUM}|{NUM_REAL_EXP}
+NUM_REAL_EXP        {NUM_UNSIGNED}({DOT}{NUM_UNSIGNED})?{EXP}({SIGN})?{NUM_UNSIGNED}
 
 BIN_VALUE           {DIGIT_BINARY}({UNDERSCORE}|{DIGIT_BINARY})*
 OCT_VALUE           {DIGIT_OCTAL}({UNDERSCORE}|{DIGIT_OCTAL})*
 HEX_VALUE           {DIGIT_HEX}({UNDERSCORE}|{DIGIT_HEX})*
 
+%x in_hex_val
+%x in_oct_val
+%x in_bin_val
+
 NUM_BINARY          {SIZE}?{BASE_BINARY}{BIN_VALUE}
 NUM_OCTAL           {SIZE}?{BASE_OCTAL}{OCT_VALUE}
 NUM_HEX             {SIZE}?{BASE_HEX}{HEX_VALUE}
-NUM_DECIMAL         {SIZE}?{BASE_DECIMAL}{UNSIGNED_NUM}
-
-NUMBER              {NUM_BINARY}|{NUM_HEX}|{NUM_OCTAL}|{NUM_REAL}|{NUM_DECIMAL}
+NUM_DECIMAL         {SIZE}?{BASE_DECIMAL}{NUM_UNSIGNED}
+NUM_REAL            {NUM_UNSIGNED}{DOT}{NUM_UNSIGNED}|{NUM_REAL_EXP}
+NUM_UNSIGNED        {DIGIT_DECIMAL}({UNDERSCORE}|{DIGIT_DECIMAL})*
 
 /* Identifiers */
 
@@ -360,7 +362,7 @@ TERNARY             "?"
 {CD_TIMESCALE}           {
     BEGIN(in_ts_1);
 }
-<in_ts_1>{UNSIGNED_NUM}      {
+<in_ts_1>{NUM_UNSIGNED}      {
     yy_preproc -> timescale.scale = yylval.string;
 }
 <in_ts_1>{SIMPLE_ID}         {
@@ -369,7 +371,7 @@ TERNARY             "?"
 <in_ts_2>{DIV}               {
     BEGIN(in_ts_3);
 }
-<in_ts_3>{UNSIGNED_NUM}      {
+<in_ts_3>{NUM_UNSIGNED}      {
     yy_preproc -> timescale.precision= yylval.string;
 }
 <in_ts_3>{SIMPLE_ID}         {
@@ -427,12 +429,26 @@ TERNARY             "?"
 }
 
 <in_define_t>{MACRO_TEXT} {
-    verilog_preprocessor_macro_define(
-        yylineno-1,
-        yy_preproc -> scratch,
-        strlen(yy_preproc -> scratch),
-        yytext+1,
-        yyleng-2); // -1 to avoid including the newline.
+    if(yyleng == 1)
+    {
+        // Macro has no value, and is just a newline character.
+        verilog_preprocessor_macro_define(
+            yylineno-1,
+            yy_preproc -> scratch,
+            strlen(yy_preproc -> scratch),
+            NULL,
+            0); // -1 to avoid including the newline.
+    }
+    else
+    {
+        // Macro has a proper value.
+        verilog_preprocessor_macro_define(
+            yylineno-1,
+            yy_preproc -> scratch,
+            strlen(yy_preproc -> scratch),
+            yytext+1,
+            yyleng-2); // -1 to avoid including the newline.
+    }
     BEGIN(INITIAL);
 }
 
@@ -518,8 +534,18 @@ TERNARY             "?"
 {B_NOR}                {EMIT_TOKEN(B_NOR);}
 {TERNARY}              {EMIT_TOKEN(TERNARY);}
 
-{NUMBER}               {EMIT_TOKEN(NUMBER);}
-{UNSIGNED_NUM}         {EMIT_TOKEN(UNSIGNED_NUMBER);}
+<in_bin_val>{BIN_VALUE} {BEGIN(INITIAL); EMIT_TOKEN(BIN_VALUE);}
+<in_oct_val>{OCT_VALUE} {BEGIN(INITIAL); EMIT_TOKEN(OCT_VALUE);}
+<in_hex_val>{HEX_VALUE} {BEGIN(INITIAL); EMIT_TOKEN(HEX_VALUE);}
+
+{BASE_DECIMAL}         {EMIT_TOKEN(DEC_BASE);}
+{BASE_HEX}             {BEGIN(in_hex_val); EMIT_TOKEN(HEX_BASE);}
+{BASE_OCTAL}           {BEGIN(in_oct_val); EMIT_TOKEN(OCT_BASE);}
+{BASE_BINARY}          {BEGIN(in_bin_val); EMIT_TOKEN(BIN_BASE);}
+{SIZE}                 {EMIT_TOKEN(NUM_SIZE);}
+
+{NUM_REAL}             {EMIT_TOKEN(NUM_REAL);}
+{NUM_UNSIGNED}         {EMIT_TOKEN(UNSIGNED_NUMBER);}
 
 {ALWAYS}               {EMIT_TOKEN(KW_ALWAYS);} 
 {AND}                  {EMIT_TOKEN(KW_AND);} 
