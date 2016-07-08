@@ -171,3 +171,49 @@ void verilog_preprocessor_macro_undefine(
 
     return;
 }
+
+/*!
+@brief Handles an ifdef statement being encountered.
+@param [in] macro_name - The macro to test if defined or not.
+*/
+void verilog_preprocessor_ifdef (char * macro_name)
+{
+
+}
+
+/*!
+@brief Handles an ifndef statement being encountered.
+@param [in] macro_name - The macro to test if defined or not.
+*/
+void verilog_preprocessor_ifndef(char * macro_name)
+{
+
+}
+
+/*!
+@brief Handles an elseif statement being encountered.
+@param [in] macro_name - The macro to test if defined or not.
+*/
+void verilog_preprocessor_elseif(char * macro_name)
+{
+
+}
+
+/*!
+@brief Handles an else statement being encountered.
+*/
+void verilog_preprocessor_else  ()
+{
+
+}
+
+/*!
+@brief Handles an else statement being encountered.
+*/
+void verilog_preprocessor_endif ()
+{
+
+}
+
+
+

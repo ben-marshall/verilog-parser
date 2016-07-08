@@ -27,13 +27,18 @@ CD_LINE                "`line"
 
 CD_CELLDEFINE          "`celldefine"
 CD_DEFINE              "`define"
+CD_RESETALL            "`resetall"
+CD_ENDCELLDEFINE       "`endcelldefine"
+
 CD_ELSE                "`else"
 CD_ELSIF               "`elsif"
-CD_ENDCELLDEFINE       "`endcelldefine"
 CD_ENDIF               "`endif"
 CD_IFDEF               "`ifdef"
 CD_IFNDEF              "`ifndef"
-CD_RESETALL            "`resetall"
+
+%x in_ifdef
+%x in_ifndef
+%x in_elseif
 
 CD_UNDEF               "`undef"
 
@@ -382,11 +387,37 @@ TERNARY             "?"
     verilog_preprocessor_resetall();
 }
 
-{CD_IFDEF}               {EMIT_TOKEN(CD_IFDEF);}
-{CD_IFNDEF}              {EMIT_TOKEN(CD_IFNDEF);}
-{CD_ELSIF}               {EMIT_TOKEN(CD_ELSIF);}
-{CD_ELSE}                {EMIT_TOKEN(CD_ELSE);}
-{CD_ENDIF}               {EMIT_TOKEN(CD_ENDIF);}
+{CD_IFDEF}               {
+    BEGIN(in_ifdef);
+}
+<in_ifdef>{SIMPLE_ID}    {
+    verilog_preprocessor_ifdef(yytext);
+    BEGIN(INITIAL);
+}
+
+{CD_IFNDEF}              {
+    BEGIN(in_ifndef);
+}
+<in_ifndef>{SIMPLE_ID}   {
+    verilog_preprocessor_ifndef(yytext);
+    BEGIN(INITIAL);
+}
+
+{CD_ELSIF}               {
+    BEGIN(in_elseif);
+}
+<in_elseif>{SIMPLE_ID}   {
+    verilog_preprocessor_ifndef(yytext);
+    BEGIN(INITIAL);
+}
+
+{CD_ELSE}                {
+    verilog_preprocessor_else();
+}
+
+{CD_ENDIF}               {
+    verilog_preprocessor_endif();
+}
 
 {CD_INCLUDE}             {
     BEGIN(in_include);
