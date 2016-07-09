@@ -1,7 +1,7 @@
 
 # Verilog Parser
 
-[![Build Status](https://travis-ci.org/ben-marshall/verilog-parser.svg?branch=feature%2Fpreprocessor)](https://travis-ci.org/ben-marshall/verilog-parser)
+[![Build Status](https://travis-ci.org/ben-marshall/verilog-parser.svg?branch=feature%2Fpreprocessor)(https://travis-ci.org/ben-marshall/verilog-parser/branches)
 [![Coverage Status](https://coveralls.io/repos/github/ben-marshall/verilog-parser/badge.svg?branch=feature%2Fpreprocessor)](https://coveralls.io/github/ben-marshall/verilog-parser?branch=master)
 [![Documentation](https://codedocs.xyz/ben-marshall/verilog-parser.svg)](https://codedocs.xyz/ben-marshall/verilog-parser/)
 
