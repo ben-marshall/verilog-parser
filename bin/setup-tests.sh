@@ -23,7 +23,7 @@ function downloadModelTest {
     fi
 }
 
-if [$CI -e "true" ]
+if [ "$CI" -eq "true" ]
 then 
     echo "Not unpacking SPARC test set yet..."
 else
