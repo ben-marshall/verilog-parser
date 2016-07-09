@@ -103,20 +103,38 @@ void verilog_preprocessor_nounconnected_drive(
 }
 
 
-//! Handles the encounter of an include diretive.
-void verilog_preprocessor_include(
+/*! 
+@brief Handles the encounter of an include directive.
+@returns A pointer to the newly created directive reference.
+*/
+verilog_include_directive * verilog_preprocessor_include(
     char * filename,
     unsigned int lineNumber
 ){
     verilog_include_directive * toadd = 
         ast_calloc(1,sizeof(verilog_include_directive));
 
-    toadd -> filename = filename;
+    filename = filename + 1; // Remove leading quote mark.
+    size_t length = strlen(filename);
+    
+    toadd -> filename = calloc(length,sizeof(char));
+    memcpy(toadd -> filename, filename, length-1); // Remove trailing quote.
     toadd -> lineNumber = lineNumber;
 
     ast_list_append(yy_preproc -> includes, toadd);
 
-    return;
+    FILE * handle = fopen(toadd -> filename,"r");
+    if(handle)
+    {
+        fclose(handle);
+        toadd -> file_found = AST_TRUE;
+    }
+    else
+    {   
+        toadd -> file_found = AST_FALSE;
+    }
+
+    return toadd;
 }
 
 /*

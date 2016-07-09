@@ -88,10 +88,14 @@ void verilog_preprocessor_nounconnected_drive(
 typedef struct verilog_include_directive_t{
     char       * filename;      //!< The file to include.
     unsigned int lineNumber;    //!< The line number of the directive.
+    ast_boolean  file_found;    //!< Can we find the file?
 } verilog_include_directive;
 
-//! Handles the encounter of an include diretive.
-void verilog_preprocessor_include(
+/*! 
+@brief Handles the encounter of an include directive.
+@returns A pointer to the newly created directive reference.
+*/
+verilog_include_directive * verilog_preprocessor_include(
     char * filename,        //<! The file to include.
     unsigned int lineNumber //!< The line number of the directive.
 );

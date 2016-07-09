@@ -8,7 +8,9 @@
     verilog_preprocessor_context * yy_preproc;
 
     #define EMIT_TOKEN(x) yy_preproc -> token_count ++; \
-                          if(yy_preproc -> emit) {return x;}
+                          if(yy_preproc -> emit) {      \
+                              return x;                 \
+                          }
 %}
 
 %option yylineno
@@ -423,7 +425,35 @@ TERNARY             "?"
     BEGIN(in_include);
 }
 <in_include>{STRING}     {
-    verilog_preprocessor_include(yylval.string,yylineno);
+    YY_BUFFER_STATE cur = YY_CURRENT_BUFFER;
+
+    verilog_include_directive * id = 
+        verilog_preprocessor_include(yytext,yylineno);
+
+    // Now, we need to look for the file, open it as a buffer, and then 
+    // switch to it.
+
+    if(id -> file_found == AST_TRUE)
+    {
+        printf("Found include file '%s' form line %d.\n", 
+            id -> filename, id -> lineNumber);
+        
+        FILE * file = fopen(id -> filename, "r");
+
+        YY_BUFFER_STATE n   = yy_create_buffer(file, YY_BUF_SIZE);
+        
+        cur -> yy_bs_lineno = yylineno;
+        yy_switch_to_buffer(cur);
+        yypush_buffer_state(n);
+        BEGIN(INITIAL);
+    }
+    else
+    {
+        printf("ERROR - Could not find include file %s on line %d\n",
+            id -> filename, id-> lineNumber);
+        printf("\tExpect stuff to break now.\n");
+    }
+    
     BEGIN(INITIAL);
 }
 
@@ -713,11 +743,18 @@ TERNARY             "?"
 <*>{TAB}                  {/*EMIT_TOKEN(TAB);     IGNORE */   }
 
 <<EOF>> {
+
     yypop_buffer_state();
+
 
     if ( !YY_CURRENT_BUFFER )
     {
         yyterminate();
+    }
+    else
+    {
+        YY_BUFFER_STATE cur = YY_CURRENT_BUFFER;
+        yylineno = cur -> yy_bs_lineno;
     }
 }
 
