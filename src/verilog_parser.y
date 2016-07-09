@@ -13,9 +13,11 @@
     #include "verilog_ast.h"
 
     extern int yylineno;
+    extern char * yytext;
 
     void yyerror(const char *msg){
-    printf("line %d - ERROR: %s\n", yylineno,msg);
+        printf("line %d - ERROR: %s\n", yylineno,msg);
+        printf("- '%s'\n", yytext);
     }
 %}
 
@@ -144,8 +146,24 @@
 %token OPEN_SQ_BRACE      
 %token CLOSE_SQ_BRACE     
 
-%token <number> NUMBER
-%token <number> UNSIGNED_NUMBER
+%token <string> BIN_VALUE
+%token <string> OCT_VALUE
+%token <string> HEX_VALUE
+
+%token <string> DEC_BASE
+%token <string> BIN_BASE
+%token <string> OCT_BASE
+%token <string> HEX_BASE
+
+%token <string> NUM_REAL
+%token <string> NUM_SIZE
+%token <string> UNSIGNED_NUMBER
+
+%type  <number> decimal_number
+%type  <number> binary_number
+%type  <number> hex_number
+%type  <number> octal_number
+%type  <number> real_number
 
 %token <string> SYSTEM_ID
 %token <string> SIMPLE_ID
@@ -642,7 +660,6 @@
 %type   <identifier>                 design_statement
 %type   <node>                       ifdef_directive
 %type   <node>                       ifndef_directive
-%type   <node>                       include_directive
 %type   <string>                     include_statement
 %type   <list>                       liblist_clause
 %type   <library_declaration>        library_declaration
@@ -792,47 +809,12 @@ These are not properly handled at the moment and are completely
 ignored by the parser.
 */
 
-default_net_type_cd : CD_DEFAULT_NETTYPE net_type
-                    ;
-
 compiler_directives : compiler_directive
                     | compiler_directives compiler_directive
                     ;
 
-compiler_directive  : CD_CELLDEFINE
-                    | CD_ENDCELLDEFINE
-                    | CD_RESETALL
-                    | CD_UNCONNECTED_DRIVE
-                    | CD_NOUNCONNECTED_DRIVE
-                    | default_net_type_cd
-                    | text_macro_definition
-                    | undefine_compiler_directive
-                    | conditional_compile_directive
-                    | include_directive
-                    | line_directive
-                    | timescale_directive
+compiler_directive  : conditional_compile_directive
                     ;
-
-timescale_directive : CD_TIMESCALE time DIV time;
-
-time: unsigned_number ANY
-    | unsigned_number ANY ANY
-    | unsigned_number SIMPLE_ID
-    ;
-
-line_directive  : CD_LINE number string unsigned_number
-
-text_macro_definition : CD_DEFINE text_macro_name macro_text
-                      ;
-
-text_macro_name     : SIMPLE_ID 
-                    | SIMPLE_ID list_of_formal_arguments
-                    ;
-
-list_of_formal_arguments : identifier_csv
-                         ; 
-
-macro_text : MACRO_TEXT;   
 
 text_macro_usage : MACRO_IDENTIFIER list_of_actual_arguments
                  | MACRO_IDENTIFIER
@@ -845,9 +827,6 @@ list_of_actual_arguments : actual_argument
 actual_argument : expression
                 ; 
 
-undefine_compiler_directive : CD_UNDEF MACRO_IDENTIFIER
-                            ;
-
 conditional_compile_directive   : ifdef_directive
                                 | ifndef_directive
                                 | CD_ENDIF
@@ -856,7 +835,6 @@ conditional_compile_directive   : ifdef_directive
 ifdef_directive : CD_IFDEF SIMPLE_ID;
 ifndef_directive: CD_IFNDEF SIMPLE_ID;
 
-include_directive   : CD_INCLUDE string;
 
 /* A.1.1 Library Source Text */
 
@@ -3073,7 +3051,7 @@ next_state            : output_symbol  {$$=$1;}
                       ;
 
 output_symbol : 
-  UNSIGNED_NUMBER {$$ = UDP_NEXT_STATE_X; /*TODO FIX THIS*/}
+  unsigned_number {$$ = UDP_NEXT_STATE_X; /*TODO FIX THIS*/}
 | 'X'       {$$ = UDP_NEXT_STATE_X;}
 | 'x'       {$$ = UDP_NEXT_STATE_X;}
 | TERNARY   {$$ = UDP_NEXT_STATE_QM;}
@@ -3081,7 +3059,7 @@ output_symbol :
 ;
 
 level_symbol :
-  UNSIGNED_NUMBER {$$ = LEVEL_X;}
+  unsigned_number {$$ = LEVEL_X;}
 | 'X'             {$$ = LEVEL_X;}
 | 'x'             {$$ = LEVEL_X;}
 | TERNARY         {$$ = LEVEL_Q;}
@@ -4629,12 +4607,66 @@ binary_module_path_operator : L_EQ   {$$=$1;}
 
 /* A.8.7 Numbers */
 
-unsigned_number : UNSIGNED_NUMBER
-                ;
+unsigned_number :
+  UNSIGNED_NUMBER {
+    $$ = ast_new_number(BASE_DECIMAL, REP_BITS, $1);
+  }
+| NUM_SIZE {
+    $$ = ast_new_number(BASE_DECIMAL, REP_BITS, $1);
+  }
+;
 
-number : NUMBER
-       | unsigned_number
-       ;
+number :
+  decimal_number {$$ = $1;}
+| octal_number   {$$ = $1;}
+| binary_number  {$$ = $1;}
+| hex_number     {$$ = $1;}
+| real_number    {$$ = $1;}
+;
+
+decimal_number :
+  unsigned_number {$$ = $1;}
+| NUM_SIZE DEC_BASE unsigned_number{
+    $$ = $3;
+  }
+|          DEC_BASE unsigned_number{
+    $$ = $2;
+  }
+
+binary_number :
+  NUM_SIZE BIN_BASE BIN_VALUE{
+    $$ = ast_new_number(BASE_BINARY,REP_BITS,$3);
+  }
+|          BIN_BASE BIN_VALUE{
+    $$ = ast_new_number(BASE_BINARY,REP_BITS,$2);
+  }
+;
+
+hex_number :
+  NUM_SIZE HEX_BASE HEX_VALUE{
+    $$ = ast_new_number(BASE_HEX,REP_BITS,$3);
+  }
+|          HEX_BASE HEX_VALUE{
+    $$ = ast_new_number(BASE_HEX,REP_BITS,$2);
+  }
+;
+
+
+octal_number :
+  NUM_SIZE OCT_BASE OCT_VALUE{
+    $$ = ast_new_number(BASE_OCTAL,REP_BITS,$3);
+  }
+|          OCT_BASE OCT_VALUE{
+    $$ = ast_new_number(BASE_OCTAL,REP_BITS,$2);
+  }
+;
+
+real_number :
+   NUM_REAL{
+    $$ = ast_new_number(BASE_DECIMAL,REP_BITS,$1);
+  }
+; 
+
 
 /* A.8.8 Strings */
 

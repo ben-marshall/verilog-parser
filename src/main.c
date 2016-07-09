@@ -6,6 +6,7 @@
 #include "stdio.h"
 
 #include "verilog_parser.h"
+#include "verilog_preprocessor.h"
 
 int main(int argc, char ** argv)
 {
@@ -45,5 +46,6 @@ int main(int argc, char ** argv)
             }
         }
     }
+    verilog_free_preprocessor_context(yy_preproc);
     return 0;
 }

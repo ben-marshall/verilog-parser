@@ -1,6 +1,14 @@
 %{
     #include "verilog_ast.h"
     #include "verilog_parser.tab.h"
+    
+    #include "verilog_preprocessor.h"
+
+    //! Stores all information needed for the preprocessor.
+    verilog_preprocessor_context * yy_preproc;
+
+    #define EMIT_TOKEN(x) yy_preproc -> token_count ++; \
+                          if(yy_preproc -> emit) {return x;}
 %}
 
 %option yylineno
@@ -8,22 +16,52 @@
 %option noyywrap 
 
 /* Pre-processor definitions */
-CD_CELLDEFINE          "`celldefine"
 CD_DEFAULT_NETTYPE     "`default_nettype"
+%x in_default_nettype
+
+CD_LINE                "`line"
+%x in_line_1
+%x in_line_2
+%x in_line_3
+%x in_line_4
+
+CD_CELLDEFINE          "`celldefine"
 CD_DEFINE              "`define"
+CD_RESETALL            "`resetall"
+CD_ENDCELLDEFINE       "`endcelldefine"
+
 CD_ELSE                "`else"
 CD_ELSIF               "`elsif"
-CD_ENDCELLDEFINE       "`endcelldefine"
 CD_ENDIF               "`endif"
 CD_IFDEF               "`ifdef"
 CD_IFNDEF              "`ifndef"
-CD_INCLUDE             "`include"
-CD_LINE                "`line"
-CD_NOUNCONNECTED_DRIVE "`nounconnected_drive"
-CD_RESETALL            "`resetall"
-CD_TIMESCALE           "`timescale"
-CD_UNCONNECTED_DRIVE   "`unconnected_drive"
+
+%x in_ifdef
+%x in_ifndef
+%x in_elseif
+
 CD_UNDEF               "`undef"
+
+%x in_undef
+
+CD_NOUNCONNECTED_DRIVE "`nounconnected_drive"
+CD_UNCONNECTED_DRIVE   "`unconnected_drive"
+
+%x in_unconnected_drive
+
+/* Include Directives */
+
+CD_INCLUDE             "`include"
+
+%x in_include
+
+/* Times and compiler directives */
+
+CD_TIMESCALE           "`timescale"
+TIME_UNITS             "(s|ms|us|ns|ps|fs)"
+%x in_ts_1
+%x in_ts_2
+%x in_ts_3
 
 /* Keyword Token deffinitions. */
 ALWAYS              "always"
@@ -193,20 +231,22 @@ BASE_HEX            '[sS]?[hH]
 
 SIZE                {DIGIT_DECMIAL_NZ}+
 
-UNSIGNED_NUM        {DIGIT_DECIMAL}({UNDERSCORE}|{DIGIT_DECIMAL})*
-NUM_REAL_EXP        {UNSIGNED_NUM}({DOT}{UNSIGNED_NUM})?{EXP}({SIGN})?{UNSIGNED_NUM}
-NUM_REAL            {UNSIGNED_NUM}{DOT}{UNSIGNED_NUM}|{NUM_REAL_EXP}
+NUM_REAL_EXP        {NUM_UNSIGNED}({DOT}{NUM_UNSIGNED})?{EXP}({SIGN})?{NUM_UNSIGNED}
 
 BIN_VALUE           {DIGIT_BINARY}({UNDERSCORE}|{DIGIT_BINARY})*
 OCT_VALUE           {DIGIT_OCTAL}({UNDERSCORE}|{DIGIT_OCTAL})*
 HEX_VALUE           {DIGIT_HEX}({UNDERSCORE}|{DIGIT_HEX})*
 
+%x in_hex_val
+%x in_oct_val
+%x in_bin_val
+
 NUM_BINARY          {SIZE}?{BASE_BINARY}{BIN_VALUE}
 NUM_OCTAL           {SIZE}?{BASE_OCTAL}{OCT_VALUE}
 NUM_HEX             {SIZE}?{BASE_HEX}{HEX_VALUE}
-NUM_DECIMAL         {SIZE}?{BASE_DECIMAL}{UNSIGNED_NUM}
-
-NUMBER              {NUM_BINARY}|{NUM_HEX}|{NUM_OCTAL}|{NUM_REAL}|{NUM_DECIMAL}
+NUM_DECIMAL         {SIZE}?{BASE_DECIMAL}{NUM_UNSIGNED}
+NUM_REAL            {NUM_UNSIGNED}{DOT}{NUM_UNSIGNED}|{NUM_REAL_EXP}
+NUM_UNSIGNED        {DIGIT_DECIMAL}({UNDERSCORE}|{DIGIT_DECIMAL})*
 
 /* Identifiers */
 
@@ -270,218 +310,419 @@ B_NOR               "~|"
 TERNARY             "?"
 
 %%
-{ATTRIBUTE_START}      {return ATTRIBUTE_START       ;}
-{ATTRIBUTE_END}        {return ATTRIBUTE_END         ;}
+{ATTRIBUTE_START}      {EMIT_TOKEN(ATTRIBUTE_START);}
+{ATTRIBUTE_END}        {EMIT_TOKEN(ATTRIBUTE_END);}
 
-
-{CD_DEFINE}              {BEGIN(in_define);return CD_DEFINE;}
-<in_define>{SIMPLE_ID}   {BEGIN(in_define_t); return SIMPLE_ID;}
-<in_define_t>{MACRO_TEXT} {BEGIN(INITIAL);return MACRO_TEXT ;}
-
-{COMMENT_LINE}         {/*return COMMENT_LINE; IGNORE */}
-{COMMENT_BEGIN}        {BEGIN(in_comment)                     ;}
+{COMMENT_LINE}         {/*EMIT_TOKEN(COMMENT_LINE); IGNORE */}
+{COMMENT_BEGIN}        {BEGIN(in_comment);                    ;}
 
 <in_comment>.|\n       {/* IGNORE                            */}
 <in_comment>{COMMENT_END} {BEGIN(INITIAL);                     }
 
-{CD_CELLDEFINE}          {return CD_CELLDEFINE         ;}
-{CD_DEFAULT_NETTYPE}     {return CD_DEFAULT_NETTYPE    ;}
-{CD_ELSE}                {return CD_ELSE               ;}
-{CD_ELSIF}               {return CD_ELSIF              ;}
-{CD_ENDCELLDEFINE}       {return CD_ENDCELLDEFINE      ;}
-{CD_ENDIF}               {return CD_ENDIF              ;}
-{CD_IFDEF}               {return CD_IFDEF              ;}
-{CD_IFNDEF}              {return CD_IFNDEF             ;}
-{CD_INCLUDE}             {return CD_INCLUDE            ;}
-{CD_LINE}                {return CD_LINE               ;}
-{CD_NOUNCONNECTED_DRIVE} {return CD_NOUNCONNECTED_DRIVE;}
-{CD_RESETALL}            {return CD_RESETALL           ;}
-{CD_TIMESCALE}           {return CD_TIMESCALE          ;}
-{CD_UNCONNECTED_DRIVE}   {return CD_UNCONNECTED_DRIVE  ;}
-{CD_UNDEF}               {return CD_UNDEF              ;}
+{CD_CELLDEFINE}          {verilog_preproc_enter_cell_define();}
+{CD_ENDCELLDEFINE}       {verilog_preproc_exit_cell_define();}
 
-{AT}                   {return AT                    ;}
-{COMMA}                {return COMMA                 ;}
-{HASH}                 {return HASH                  ;}
-{DOT}                  {return DOT                   ;}
-{EQ}                   {return EQ                    ;}
-{COLON}                {return COLON                 ;}
-{IDX_PRT_SEL}          {return IDX_PRT_SEL           ;}
-{SEMICOLON}            {return SEMICOLON             ;}
-{OPEN_BRACKET}         {return OPEN_BRACKET          ;}
-{CLOSE_BRACKET}        {return CLOSE_BRACKET         ;}
-{OPEN_SQ_BRACKET}      {return OPEN_SQ_BRACKET       ;}
-{CLOSE_SQ_BRACKET}     {return CLOSE_SQ_BRACKET      ;}
-{OPEN_SQ_BRACE}        {return OPEN_SQ_BRACE         ;}
-{CLOSE_SQ_BRACE}       {return CLOSE_SQ_BRACE        ;}
-{STAR}                 {return STAR                  ;}
-{PLUS}                 {return PLUS                ;}
-{MINUS}                {return MINUS               ;}
-{ASL}                  {return ASL                 ;}
-{ASR}                  {return ASR                 ;}
-{LSL}                  {return LSL                 ;}
-{LSR}                  {return LSR                 ;}
-{DIV}                  {return DIV                 ;}
-{POW}                  {return POW                 ;}
-{MOD}                  {return MOD                 ;}
-{GTE}                  {return GTE                 ;}
-{LTE}                  {return LTE                 ;}
-{GT}                   {return GT                  ;}
-{LT}                   {return LT                  ;}
-{L_NEG}                {return L_NEG               ;}
-{L_AND}                {return L_AND               ;}
-{L_OR}                 {return L_OR                ;}
-{C_EQ}                 {return C_EQ                ;}
-{L_EQ}                 {return L_EQ                ;}
-{C_NEQ}                {return C_NEQ               ;}
-{L_NEQ}                {return L_NEQ               ;}
-{B_NEG}                {return B_NEG               ;}
-{B_AND}                {return B_AND               ;}
-{B_OR}                 {return B_OR                ;}
-{B_XOR}                {return B_XOR               ;}
-{B_EQU}                {return B_EQU               ;}
-{B_NAND}               {return B_NAND              ;}
-{B_NOR}                {return B_NOR               ;}
-{TERNARY}              {return TERNARY             ;}
+{CD_DEFAULT_NETTYPE}     {BEGIN(in_default_nettype);}
+<in_default_nettype>{SUPPLY0} {
+    BEGIN(INITIAL); 
+    verilog_preproc_default_net(yy_preproc -> token_count, 
+        yylineno, NET_TYPE_SUPPLY0);
+    }
+<in_default_nettype>{SUPPLY1} {
+    BEGIN(INITIAL); 
+    verilog_preproc_default_net(yy_preproc -> token_count, 
+        yylineno, NET_TYPE_SUPPLY1);
+    }
+<in_default_nettype>{TRI}     {
+    BEGIN(INITIAL); 
+    verilog_preproc_default_net(yy_preproc -> token_count, 
+        yylineno, NET_TYPE_TRI    );
+    }
+<in_default_nettype>{TRIAND}  {
+    BEGIN(INITIAL); 
+    verilog_preproc_default_net(yy_preproc -> token_count, 
+        yylineno, NET_TYPE_TRIAND );
+    }
+<in_default_nettype>{TRIOR}   {
+    BEGIN(INITIAL); 
+    verilog_preproc_default_net(yy_preproc -> token_count, 
+        yylineno, NET_TYPE_TRIOR  );
+    }
+<in_default_nettype>{WIRE}    {
+    BEGIN(INITIAL); 
+    verilog_preproc_default_net(yy_preproc -> token_count, 
+        yylineno, NET_TYPE_WIRE   );
+    }
+<in_default_nettype>{WAND}    {
+    BEGIN(INITIAL); 
+    verilog_preproc_default_net(yy_preproc -> token_count, 
+        yylineno, NET_TYPE_WAND   );
+    }
+<in_default_nettype>{WOR}     {
+    BEGIN(INITIAL); 
+    verilog_preproc_default_net(yy_preproc -> token_count, 
+        yylineno, NET_TYPE_WOR    );
+    }
 
-{NUMBER}               {return NUMBER;}
-{UNSIGNED_NUM}         {return UNSIGNED_NUMBER;}
+{CD_TIMESCALE}           {
+    BEGIN(in_ts_1);
+}
+<in_ts_1>{NUM_UNSIGNED}      {
+    yy_preproc -> timescale.scale = yylval.string;
+}
+<in_ts_1>{SIMPLE_ID}         {
+    BEGIN(in_ts_2);
+}
+<in_ts_2>{DIV}               {
+    BEGIN(in_ts_3);
+}
+<in_ts_3>{NUM_UNSIGNED}      {
+    yy_preproc -> timescale.precision= yylval.string;
+}
+<in_ts_3>{SIMPLE_ID}         {
+    BEGIN(INITIAL);
+}
 
-{ALWAYS}               {return KW_ALWAYS             ;} 
-{AND}                  {return KW_AND                ;} 
-{ASSIGN}               {return KW_ASSIGN             ;} 
-{AUTOMATIC}            {return KW_AUTOMATIC          ;} 
-{BEGIN}                {return KW_BEGIN              ;} 
-{BUF}                  {return KW_BUF                ;} 
-{BUFIF0}               {return KW_BUFIF0             ;} 
-{BUFIF1}               {return KW_BUFIF1             ;} 
-{CASE}                 {return KW_CASE               ;} 
-{CASEX}                {return KW_CASEX              ;} 
-{CASEZ}                {return KW_CASEZ              ;} 
-{CELL}                 {return KW_CELL               ;} 
-{CMOS}                 {return KW_CMOS               ;} 
-{CONFIG}               {return KW_CONFIG             ;} 
-{DEASSIGN}             {return KW_DEASSIGN           ;} 
-{DEFAULT}              {return KW_DEFAULT            ;} 
-{DEFPARAM}             {return KW_DEFPARAM           ;} 
-{DESIGN}               {return KW_DESIGN             ;} 
-{DISABLE}              {return KW_DISABLE            ;} 
-{EDGE}                 {return KW_EDGE               ;} 
-{ELSE}                 {return KW_ELSE               ;} 
-{END}                  {return KW_END                ;} 
-{ENDCASE}              {return KW_ENDCASE            ;} 
-{ENDCONFIG}            {return KW_ENDCONFIG          ;} 
-{ENDFUNCTION}          {return KW_ENDFUNCTION        ;} 
-{ENDGENERATE}          {return KW_ENDGENERATE        ;} 
-{ENDMODULE}            {return KW_ENDMODULE          ;} 
-{ENDPRIMITIVE}         {return KW_ENDPRIMITIVE       ;} 
-{ENDSPECIFY}           {return KW_ENDSPECIFY         ;} 
-{ENDTABLE}             {return KW_ENDTABLE           ;} 
-{ENDTASK}              {return KW_ENDTASK            ;} 
-{EVENT}                {return KW_EVENT              ;} 
-{FOR}                  {return KW_FOR                ;} 
-{FORCE}                {return KW_FORCE              ;} 
-{FOREVER}              {return KW_FOREVER            ;} 
-{FORK}                 {return KW_FORK               ;} 
-{FUNCTION}             {return KW_FUNCTION           ;} 
-{GENERATE}             {return KW_GENERATE           ;} 
-{GENVAR}               {return KW_GENVAR             ;} 
-{HIGHZ0}               {return KW_HIGHZ0             ;} 
-{HIGHZ1}               {return KW_HIGHZ1             ;} 
-{IF}                   {return KW_IF                 ;} 
-{IFNONE}               {return KW_IFNONE             ;} 
-{INCDIR}               {return KW_INCDIR             ;} 
-{INCLUDE}              {return KW_INCLUDE            ;} 
-{INITIAL}              {return KW_INITIAL            ;} 
-{INOUT}                {return KW_INOUT              ;} 
-{INPUT}                {return KW_INPUT              ;} 
-{INSTANCE}             {return KW_INSTANCE           ;} 
-{INTEGER}              {return KW_INTEGER            ;} 
-{JOIN}                 {return KW_JOIN               ;} 
-{LARGE}                {return KW_LARGE              ;} 
-{LIBLIST}              {return KW_LIBLIST            ;} 
-{LIBRARY}              {return KW_LIBRARY            ;} 
-{LOCALPARAM}           {return KW_LOCALPARAM         ;} 
-{MACROMODULE}          {return KW_MACROMODULE        ;} 
-{MEDIUM}               {return KW_MEDIUM             ;} 
-{MODULE}               {return KW_MODULE             ;} 
-{NAND}                 {return KW_NAND               ;} 
-{NEGEDGE}              {return KW_NEGEDGE            ;} 
-{NMOS}                 {return KW_NMOS               ;} 
-{NOR}                  {return KW_NOR                ;} 
-{NOSHOWCANCELLED}      {return KW_NOSHOWCANCELLED    ;} 
-{NOT}                  {return KW_NOT                ;} 
-{NOTIF0}               {return KW_NOTIF0             ;} 
-{NOTIF1}               {return KW_NOTIF1             ;} 
-{OR}                   {return KW_OR                 ;} 
-{OUTPUT}               {return KW_OUTPUT             ;} 
-{PARAMETER}            {return KW_PARAMETER          ;} 
-{PMOS}                 {return KW_PMOS               ;} 
-{POSEDGE}              {return KW_POSEDGE            ;} 
-{PRIMITIVE}            {return KW_PRIMITIVE          ;} 
-{PULL0}                {return KW_PULL0              ;} 
-{PULL1}                {return KW_PULL1              ;} 
-{PULLDOWN}             {return KW_PULLDOWN           ;} 
-{PULLUP}               {return KW_PULLUP             ;} 
-{PULSESTYLE_ONEVENT}   {return KW_PULSESTYLE_ONEVENT ;} 
-{PULSESTYLE_ONDETECT}  {return KW_PULSESTYLE_ONDETECT;} 
-{RCMOS}                {return KW_RCMOS              ;} 
-{REAL}                 {return KW_REAL               ;} 
-{REALTIME}             {return KW_REALTIME           ;} 
-{REG}                  {return KW_REG                ;} 
-{RELEASE}              {return KW_RELEASE            ;} 
-{REPEAT}               {return KW_REPEAT             ;} 
-{RNMOS}                {return KW_RNMOS              ;} 
-{RPMOS}                {return KW_RPMOS              ;} 
-{RTRAN}                {return KW_RTRAN              ;} 
-{RTRANIF0}             {return KW_RTRANIF0           ;} 
-{RTRANIF1}             {return KW_RTRANIF1           ;} 
-{SCALARED}             {return KW_SCALARED           ;} 
-{SHOWCANCELLED}        {return KW_SHOWCANCELLED      ;} 
-{SIGNED}               {return KW_SIGNED             ;} 
-{SMALL}                {return KW_SMALL              ;} 
-{SPECIFY}              {return KW_SPECIFY            ;} 
-{SPECPARAM}            {return KW_SPECPARAM          ;} 
-{STRONG0}              {return KW_STRONG0            ;} 
-{STRONG1}              {return KW_STRONG1            ;} 
-{SUPPLY0}              {return KW_SUPPLY0            ;} 
-{SUPPLY1}              {return KW_SUPPLY1            ;} 
-{TABLE}                {return KW_TABLE              ;} 
-{TASK}                 {return KW_TASK               ;} 
-{TIME}                 {return KW_TIME               ;} 
-{TRAN}                 {return KW_TRAN               ;} 
-{TRANIF0}              {return KW_TRANIF0            ;} 
-{TRANIF1}              {return KW_TRANIF1            ;} 
-{TRI}                  {return KW_TRI                ;} 
-{TRI0}                 {return KW_TRI0               ;} 
-{TRI1}                 {return KW_TRI1               ;} 
-{TRIAND}               {return KW_TRIAND             ;} 
-{TRIOR}                {return KW_TRIOR              ;} 
-{TRIREG}               {return KW_TRIREG             ;} 
-{UNSIGNED}             {return KW_UNSIGNED           ;} 
-{USE}                  {return KW_USE                ;} 
-{VECTORED}             {return KW_VECTORED           ;} 
-{WAIT}                 {return KW_WAIT               ;} 
-{WAND}                 {return KW_WAND               ;} 
-{WEAK0}                {return KW_WEAK0              ;} 
-{WEAK1}                {return KW_WEAK1              ;} 
-{WHILE}                {return KW_WHILE              ;} 
-{WIRE}                 {return KW_WIRE               ;} 
-{WOR}                  {return KW_WOR                ;} 
-{XNOR}                 {return KW_XNOR               ;} 
-{XOR}                  {return KW_XOR                ;} 
+{CD_RESETALL}            {
+    verilog_preprocessor_resetall();
+}
 
-{SYSTEM_ID}            {return SYSTEM_ID             ;}
-{ESCAPED_ID}           {yylval.string= yytext; return ESCAPED_ID;}
-{SIMPLE_ID}            {yylval.string= yytext; return SIMPLE_ID ;}
-{MACRO_IDENTIFIER}     {return MACRO_IDENTIFIER      ;}
+{CD_IFDEF}               {
+    BEGIN(in_ifdef);
+}
+<in_ifdef>{SIMPLE_ID}    {
+    verilog_preprocessor_ifdef(yytext,yylineno,AST_FALSE);
+    BEGIN(INITIAL);
+}
 
-{STRING}               {return STRING;                 }
+{CD_IFNDEF}              {
+    BEGIN(in_ifndef);
+}
+<in_ifndef>{SIMPLE_ID}   {
+    verilog_preprocessor_ifdef(yytext,yylineno,AST_TRUE);
+    BEGIN(INITIAL);
+}
 
-<*>{NEWLINE}              {/*return NEWLINE; IGNORE */   }
-<*>{SPACE}                {/*return SPACE;   IGNORE */   }
-<*>{TAB}                  {/*return TAB;     IGNORE */   }
+{CD_ELSIF}               {
+    BEGIN(in_elseif);
+}
+<in_elseif>{SIMPLE_ID}   {
+    verilog_preprocessor_elseif(yytext, yylineno);
+    BEGIN(INITIAL);
+}
 
-.                      {return ANY                   ;}
+{CD_ELSE}                {
+    verilog_preprocessor_else(yylineno);
+}
+
+{CD_ENDIF}               {
+    verilog_preprocessor_endif(yylineno);
+}
+
+{CD_INCLUDE}             {
+    BEGIN(in_include);
+}
+<in_include>{STRING}     {
+    verilog_preprocessor_include(yylval.string,yylineno);
+    BEGIN(INITIAL);
+}
+
+{CD_LINE}                {BEGIN(in_line_1);}
+<in_line_1>{INTEGER}     {BEGIN(in_line_2);}
+<in_line_2>{STRING}      {BEGIN(in_line_3);}
+<in_line_3>{INTEGER}     {BEGIN(INITIAL);}
+
+{CD_NOUNCONNECTED_DRIVE} {
+    verilog_preprocessor_nounconnected_drive(STRENGTH_NONE);
+}
+{CD_UNCONNECTED_DRIVE}   {
+    BEGIN(in_unconnected_drive);
+}
+<in_unconnected_drive>{PULL0} {
+    verilog_preprocessor_nounconnected_drive(STRENGTH_PULL0);
+    BEGIN(INITIAL);
+}
+<in_unconnected_drive>{PULL1} {
+    verilog_preprocessor_nounconnected_drive(STRENGTH_PULL1);
+    BEGIN(INITIAL);
+}
+
+{CD_DEFINE}              {
+    BEGIN(in_define);
+}
+
+<in_define>{SIMPLE_ID}   {
+    if(yy_preproc -> scratch != NULL)
+        free(yy_preproc -> scratch);
+    yy_preproc -> scratch = calloc(yyleng+1,sizeof(char));
+    memcpy(yy_preproc -> scratch,yytext,yyleng);
+    BEGIN(in_define_t);
+}
+
+<in_define_t>{MACRO_TEXT} {
+    if(yyleng == 1)
+    {
+        // Macro has no value, and is just a newline character.
+        verilog_preprocessor_macro_define(
+            yylineno-1,
+            yy_preproc -> scratch,
+            strlen(yy_preproc -> scratch),
+            NULL,
+            0); // -1 to avoid including the newline.
+    }
+    else
+    {
+        // Macro has a proper value.
+        verilog_preprocessor_macro_define(
+            yylineno-1,
+            yy_preproc -> scratch,
+            strlen(yy_preproc -> scratch),
+            yytext+1,
+            yyleng-2); // -1 to avoid including the newline.
+    }
+    BEGIN(INITIAL);
+}
+
+{CD_UNDEF}             {
+    BEGIN(in_undef);
+}
+
+<in_undef>{SIMPLE_ID}  {
+    verilog_preprocessor_macro_undefine(
+        yytext
+    );
+    BEGIN(INITIAL);
+}
+
+{MACRO_IDENTIFIER}     {
+
+    // Look for the macro entry.
+    verilog_macro_directive * macro = NULL;
+    char * macroName = (yytext)+1;
+    ast_hashtable_result r = ast_hashtable_get(yy_preproc -> macrodefines,
+                                               macroName,
+                                               &macro);
+    
+    if(r == HASH_SUCCESS)
+    {
+        // Switch buffers to expand the macro.
+
+        YY_BUFFER_STATE cur = YY_CURRENT_BUFFER;
+        YY_BUFFER_STATE n   = yy_scan_string(macro -> macro_value);
+        
+        yy_switch_to_buffer(cur);
+        yypush_buffer_state(n);
+    }
+    else
+    {
+        // Undefined macro - PANIC!
+        printf("ERROR: Undefined macro '%s' on line %d\n", yytext, yylineno);
+        printf("\tIt's probably all going to fall apart now...\n\n");
+    }
+}
+
+{AT}                   {EMIT_TOKEN(AT);}
+{COMMA}                {EMIT_TOKEN(COMMA);}
+{HASH}                 {EMIT_TOKEN(HASH);}
+{DOT}                  {EMIT_TOKEN(DOT);}
+{EQ}                   {EMIT_TOKEN(EQ);}
+{COLON}                {EMIT_TOKEN(COLON);}
+{IDX_PRT_SEL}          {EMIT_TOKEN(IDX_PRT_SEL);}
+{SEMICOLON}            {EMIT_TOKEN(SEMICOLON);}
+{OPEN_BRACKET}         {EMIT_TOKEN(OPEN_BRACKET);}
+{CLOSE_BRACKET}        {EMIT_TOKEN(CLOSE_BRACKET);}
+{OPEN_SQ_BRACKET}      {EMIT_TOKEN(OPEN_SQ_BRACKET);}
+{CLOSE_SQ_BRACKET}     {EMIT_TOKEN(CLOSE_SQ_BRACKET);}
+{OPEN_SQ_BRACE}        {EMIT_TOKEN(OPEN_SQ_BRACE);}
+{CLOSE_SQ_BRACE}       {EMIT_TOKEN(CLOSE_SQ_BRACE);}
+{STAR}                 {EMIT_TOKEN(STAR);}
+{PLUS}                 {EMIT_TOKEN(PLUS);}
+{MINUS}                {EMIT_TOKEN(MINUS);}
+{ASL}                  {EMIT_TOKEN(ASL);}
+{ASR}                  {EMIT_TOKEN(ASR);}
+{LSL}                  {EMIT_TOKEN(LSL);}
+{LSR}                  {EMIT_TOKEN(LSR);}
+{DIV}                  {EMIT_TOKEN(DIV);}
+{POW}                  {EMIT_TOKEN(POW);}
+{MOD}                  {EMIT_TOKEN(MOD);}
+{GTE}                  {EMIT_TOKEN(GTE);}
+{LTE}                  {EMIT_TOKEN(LTE);}
+{GT}                   {EMIT_TOKEN(GT);}
+{LT}                   {EMIT_TOKEN(LT);}
+{L_NEG}                {EMIT_TOKEN(L_NEG);}
+{L_AND}                {EMIT_TOKEN(L_AND);}
+{L_OR}                 {EMIT_TOKEN(L_OR);}
+{C_EQ}                 {EMIT_TOKEN(C_EQ);}
+{L_EQ}                 {EMIT_TOKEN(L_EQ);}
+{C_NEQ}                {EMIT_TOKEN(C_NEQ);}
+{L_NEQ}                {EMIT_TOKEN(L_NEQ);}
+{B_NEG}                {EMIT_TOKEN(B_NEG);}
+{B_AND}                {EMIT_TOKEN(B_AND);}
+{B_OR}                 {EMIT_TOKEN(B_OR);}
+{B_XOR}                {EMIT_TOKEN(B_XOR);}
+{B_EQU}                {EMIT_TOKEN(B_EQU);}
+{B_NAND}               {EMIT_TOKEN(B_NAND);}
+{B_NOR}                {EMIT_TOKEN(B_NOR);}
+{TERNARY}              {EMIT_TOKEN(TERNARY);}
+
+<in_bin_val>{BIN_VALUE} {BEGIN(INITIAL); EMIT_TOKEN(BIN_VALUE);}
+<in_oct_val>{OCT_VALUE} {BEGIN(INITIAL); EMIT_TOKEN(OCT_VALUE);}
+<in_hex_val>{HEX_VALUE} {BEGIN(INITIAL); EMIT_TOKEN(HEX_VALUE);}
+
+{BASE_DECIMAL}         {EMIT_TOKEN(DEC_BASE);}
+{BASE_HEX}             {BEGIN(in_hex_val); EMIT_TOKEN(HEX_BASE);}
+{BASE_OCTAL}           {BEGIN(in_oct_val); EMIT_TOKEN(OCT_BASE);}
+{BASE_BINARY}          {BEGIN(in_bin_val); EMIT_TOKEN(BIN_BASE);}
+{SIZE}                 {EMIT_TOKEN(NUM_SIZE);}
+
+{NUM_REAL}             {EMIT_TOKEN(NUM_REAL);}
+{NUM_UNSIGNED}         {EMIT_TOKEN(UNSIGNED_NUMBER);}
+
+{ALWAYS}               {EMIT_TOKEN(KW_ALWAYS);} 
+{AND}                  {EMIT_TOKEN(KW_AND);} 
+{ASSIGN}               {EMIT_TOKEN(KW_ASSIGN);} 
+{AUTOMATIC}            {EMIT_TOKEN(KW_AUTOMATIC);} 
+{BEGIN}                {EMIT_TOKEN(KW_BEGIN);} 
+{BUF}                  {EMIT_TOKEN(KW_BUF);} 
+{BUFIF0}               {EMIT_TOKEN(KW_BUFIF0);} 
+{BUFIF1}               {EMIT_TOKEN(KW_BUFIF1);} 
+{CASE}                 {EMIT_TOKEN(KW_CASE);} 
+{CASEX}                {EMIT_TOKEN(KW_CASEX);} 
+{CASEZ}                {EMIT_TOKEN(KW_CASEZ);} 
+{CELL}                 {EMIT_TOKEN(KW_CELL);} 
+{CMOS}                 {EMIT_TOKEN(KW_CMOS);} 
+{CONFIG}               {EMIT_TOKEN(KW_CONFIG);} 
+{DEASSIGN}             {EMIT_TOKEN(KW_DEASSIGN);} 
+{DEFAULT}              {EMIT_TOKEN(KW_DEFAULT);} 
+{DEFPARAM}             {EMIT_TOKEN(KW_DEFPARAM);} 
+{DESIGN}               {EMIT_TOKEN(KW_DESIGN);} 
+{DISABLE}              {EMIT_TOKEN(KW_DISABLE);} 
+{EDGE}                 {EMIT_TOKEN(KW_EDGE);} 
+{ELSE}                 {EMIT_TOKEN(KW_ELSE);} 
+{END}                  {EMIT_TOKEN(KW_END);} 
+{ENDCASE}              {EMIT_TOKEN(KW_ENDCASE);} 
+{ENDCONFIG}            {EMIT_TOKEN(KW_ENDCONFIG);} 
+{ENDFUNCTION}          {EMIT_TOKEN(KW_ENDFUNCTION);} 
+{ENDGENERATE}          {EMIT_TOKEN(KW_ENDGENERATE);} 
+{ENDMODULE}            {EMIT_TOKEN(KW_ENDMODULE);} 
+{ENDPRIMITIVE}         {EMIT_TOKEN(KW_ENDPRIMITIVE);} 
+{ENDSPECIFY}           {EMIT_TOKEN(KW_ENDSPECIFY);} 
+{ENDTABLE}             {EMIT_TOKEN(KW_ENDTABLE);} 
+{ENDTASK}              {EMIT_TOKEN(KW_ENDTASK);} 
+{EVENT}                {EMIT_TOKEN(KW_EVENT);} 
+{FOR}                  {EMIT_TOKEN(KW_FOR);} 
+{FORCE}                {EMIT_TOKEN(KW_FORCE);} 
+{FOREVER}              {EMIT_TOKEN(KW_FOREVER);} 
+{FORK}                 {EMIT_TOKEN(KW_FORK);} 
+{FUNCTION}             {EMIT_TOKEN(KW_FUNCTION);} 
+{GENERATE}             {EMIT_TOKEN(KW_GENERATE);} 
+{GENVAR}               {EMIT_TOKEN(KW_GENVAR);} 
+{HIGHZ0}               {EMIT_TOKEN(KW_HIGHZ0);} 
+{HIGHZ1}               {EMIT_TOKEN(KW_HIGHZ1);} 
+{IF}                   {EMIT_TOKEN(KW_IF);} 
+{IFNONE}               {EMIT_TOKEN(KW_IFNONE);} 
+{INCDIR}               {EMIT_TOKEN(KW_INCDIR);} 
+{INCLUDE}              {EMIT_TOKEN(KW_INCLUDE);} 
+{INITIAL}              {EMIT_TOKEN(KW_INITIAL);} 
+{INOUT}                {EMIT_TOKEN(KW_INOUT);} 
+{INPUT}                {EMIT_TOKEN(KW_INPUT);} 
+{INSTANCE}             {EMIT_TOKEN(KW_INSTANCE);} 
+{INTEGER}              {EMIT_TOKEN(KW_INTEGER);} 
+{JOIN}                 {EMIT_TOKEN(KW_JOIN);} 
+{LARGE}                {EMIT_TOKEN(KW_LARGE);} 
+{LIBLIST}              {EMIT_TOKEN(KW_LIBLIST);} 
+{LIBRARY}              {EMIT_TOKEN(KW_LIBRARY);} 
+{LOCALPARAM}           {EMIT_TOKEN(KW_LOCALPARAM);} 
+{MACROMODULE}          {EMIT_TOKEN(KW_MACROMODULE);} 
+{MEDIUM}               {EMIT_TOKEN(KW_MEDIUM);} 
+{MODULE}               {EMIT_TOKEN(KW_MODULE);} 
+{NAND}                 {EMIT_TOKEN(KW_NAND);} 
+{NEGEDGE}              {EMIT_TOKEN(KW_NEGEDGE);} 
+{NMOS}                 {EMIT_TOKEN(KW_NMOS);} 
+{NOR}                  {EMIT_TOKEN(KW_NOR);} 
+{NOSHOWCANCELLED}      {EMIT_TOKEN(KW_NOSHOWCANCELLED);} 
+{NOT}                  {EMIT_TOKEN(KW_NOT);} 
+{NOTIF0}               {EMIT_TOKEN(KW_NOTIF0);} 
+{NOTIF1}               {EMIT_TOKEN(KW_NOTIF1);} 
+{OR}                   {EMIT_TOKEN(KW_OR);} 
+{OUTPUT}               {EMIT_TOKEN(KW_OUTPUT);} 
+{PARAMETER}            {EMIT_TOKEN(KW_PARAMETER);} 
+{PMOS}                 {EMIT_TOKEN(KW_PMOS);} 
+{POSEDGE}              {EMIT_TOKEN(KW_POSEDGE);} 
+{PRIMITIVE}            {EMIT_TOKEN(KW_PRIMITIVE);} 
+{PULL0}                {EMIT_TOKEN(KW_PULL0);} 
+{PULL1}                {EMIT_TOKEN(KW_PULL1);} 
+{PULLDOWN}             {EMIT_TOKEN(KW_PULLDOWN);} 
+{PULLUP}               {EMIT_TOKEN(KW_PULLUP);} 
+{PULSESTYLE_ONEVENT}   {EMIT_TOKEN(KW_PULSESTYLE_ONEVENT);} 
+{PULSESTYLE_ONDETECT}  {EMIT_TOKEN(KW_PULSESTYLE_ONDETECT);} 
+{RCMOS}                {EMIT_TOKEN(KW_RCMOS);} 
+{REAL}                 {EMIT_TOKEN(KW_REAL);} 
+{REALTIME}             {EMIT_TOKEN(KW_REALTIME);} 
+{REG}                  {EMIT_TOKEN(KW_REG);} 
+{RELEASE}              {EMIT_TOKEN(KW_RELEASE);} 
+{REPEAT}               {EMIT_TOKEN(KW_REPEAT);} 
+{RNMOS}                {EMIT_TOKEN(KW_RNMOS);} 
+{RPMOS}                {EMIT_TOKEN(KW_RPMOS);} 
+{RTRAN}                {EMIT_TOKEN(KW_RTRAN);} 
+{RTRANIF0}             {EMIT_TOKEN(KW_RTRANIF0);} 
+{RTRANIF1}             {EMIT_TOKEN(KW_RTRANIF1);} 
+{SCALARED}             {EMIT_TOKEN(KW_SCALARED);} 
+{SHOWCANCELLED}        {EMIT_TOKEN(KW_SHOWCANCELLED);} 
+{SIGNED}               {EMIT_TOKEN(KW_SIGNED);} 
+{SMALL}                {EMIT_TOKEN(KW_SMALL);} 
+{SPECIFY}              {EMIT_TOKEN(KW_SPECIFY);} 
+{SPECPARAM}            {EMIT_TOKEN(KW_SPECPARAM);} 
+{STRONG0}              {EMIT_TOKEN(KW_STRONG0);} 
+{STRONG1}              {EMIT_TOKEN(KW_STRONG1);} 
+{SUPPLY0}              {EMIT_TOKEN(KW_SUPPLY0);} 
+{SUPPLY1}              {EMIT_TOKEN(KW_SUPPLY1);} 
+{TABLE}                {EMIT_TOKEN(KW_TABLE);} 
+{TASK}                 {EMIT_TOKEN(KW_TASK);} 
+{TIME}                 {EMIT_TOKEN(KW_TIME);} 
+{TRAN}                 {EMIT_TOKEN(KW_TRAN);} 
+{TRANIF0}              {EMIT_TOKEN(KW_TRANIF0);} 
+{TRANIF1}              {EMIT_TOKEN(KW_TRANIF1);} 
+{TRI}                  {EMIT_TOKEN(KW_TRI);} 
+{TRI0}                 {EMIT_TOKEN(KW_TRI0);} 
+{TRI1}                 {EMIT_TOKEN(KW_TRI1);} 
+{TRIAND}               {EMIT_TOKEN(KW_TRIAND);} 
+{TRIOR}                {EMIT_TOKEN(KW_TRIOR);} 
+{TRIREG}               {EMIT_TOKEN(KW_TRIREG);} 
+{UNSIGNED}             {EMIT_TOKEN(KW_UNSIGNED);} 
+{USE}                  {EMIT_TOKEN(KW_USE);} 
+{VECTORED}             {EMIT_TOKEN(KW_VECTORED);} 
+{WAIT}                 {EMIT_TOKEN(KW_WAIT);} 
+{WAND}                 {EMIT_TOKEN(KW_WAND);} 
+{WEAK0}                {EMIT_TOKEN(KW_WEAK0);} 
+{WEAK1}                {EMIT_TOKEN(KW_WEAK1);} 
+{WHILE}                {EMIT_TOKEN(KW_WHILE);} 
+{WIRE}                 {EMIT_TOKEN(KW_WIRE);} 
+{WOR}                  {EMIT_TOKEN(KW_WOR);} 
+{XNOR}                 {EMIT_TOKEN(KW_XNOR);} 
+{XOR}                  {EMIT_TOKEN(KW_XOR);} 
+
+{SYSTEM_ID}            {EMIT_TOKEN(SYSTEM_ID);}
+{ESCAPED_ID}           {yylval.string= yytext; EMIT_TOKEN(ESCAPED_ID);}
+{SIMPLE_ID}            {yylval.string= yytext; EMIT_TOKEN(SIMPLE_ID);}
+
+{STRING}               {EMIT_TOKEN(STRING);                 }
+
+<*>{NEWLINE}              {/*EMIT_TOKEN(NEWLINE); IGNORE */   }
+<*>{SPACE}                {/*EMIT_TOKEN(SPACE);   IGNORE */   }
+<*>{TAB}                  {/*EMIT_TOKEN(TAB);     IGNORE */   }
+
+<<EOF>> {
+    yypop_buffer_state();
+
+    if ( !YY_CURRENT_BUFFER )
+    {
+        yyterminate();
+    }
+}
+
+.                      {
+    EMIT_TOKEN(ANY);
+}
 
 %%
