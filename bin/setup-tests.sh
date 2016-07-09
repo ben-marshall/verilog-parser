@@ -23,14 +23,14 @@ function downloadModelTest {
     fi
 }
 
-if [$CI -eq "true" ]
+if [$CI -e "true" ]
 then 
     echo "Not unpacking SPARC test set yet..."
 else
     echo "Unzipping SPARC test set..."
-    tar -zcf ./bin/sparct1.zip tests/
+    unzip ../bin/sparct1.zip
+    exit 0
 fi
-
 
 
 echo "Downloading Tests..."
