@@ -5,10 +5,6 @@
 */
 
 #include "verilog_parser.h"
-#include "verilog_preprocessor.h"
- 
-//! refered too externally.
-extern verilog_preprocessor_context * yy_preproc;
 
 /*!
 @brief Sets up the parser to accept more input from a new input file.

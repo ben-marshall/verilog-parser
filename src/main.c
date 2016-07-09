@@ -6,6 +6,7 @@
 #include "stdio.h"
 
 #include "verilog_parser.h"
+#include "verilog_ast_common.h"
 #include "verilog_preprocessor.h"
 
 int main(int argc, char ** argv)
@@ -18,6 +19,13 @@ int main(int argc, char ** argv)
     else
     {
         int F = 0;
+            
+        // Create a new preprocessor instance.
+        yy_preproc = verilog_new_preprocessor_context();
+
+        // Setup the preprocessor to look in ./tests/ for include files.
+        char * sdir = "./tests/";
+        ast_list_append(yy_preproc -> search_dirs, sdir);
 
         for(F = 1; F < argc; F++)
         {

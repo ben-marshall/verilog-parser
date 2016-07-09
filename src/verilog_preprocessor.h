@@ -209,6 +209,7 @@ typedef struct verilog_preprocessor_context_t{
     verilog_timescale_directive timescale; //!< Timescale information
     ast_primitive_strength unconnected_drive_pull; //!< nounconnectedrive
     ast_stack     * ifdefs;         //!< Storage for conditional compile stack.
+    ast_list      * search_dirs;    //!< Where to look for include files.
 } verilog_preprocessor_context;
 
 

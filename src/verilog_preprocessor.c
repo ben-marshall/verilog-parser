@@ -19,6 +19,10 @@ verilog_preprocessor_context * verilog_new_preprocessor_context()
     tr -> unconnected_drive_pull = STRENGTH_NONE;
     tr -> macrodefines   = ast_hashtable_new();
     tr -> ifdefs         = ast_stack_new();
+    tr -> search_dirs    = ast_list_new();
+
+    // By default, search CWD for include files.
+    ast_list_append(tr -> search_dirs,"./");
 
     return tr;
 }
@@ -30,6 +34,7 @@ void verilog_free_preprocessor_context(verilog_preprocessor_context * tofree)
     ast_list_free(tofree -> net_types);
     ast_hashtable_free(tofree -> macrodefines);
     ast_stack_free(tofree -> ifdefs);
+    ast_list_free(tofree -> search_dirs);
     free(tofree);
 }
 
@@ -123,15 +128,33 @@ verilog_include_directive * verilog_preprocessor_include(
 
     ast_list_append(yy_preproc -> includes, toadd);
 
-    FILE * handle = fopen(toadd -> filename,"r");
-    if(handle)
+    unsigned int d = 0;
+    for(d = 0; d < yy_preproc -> search_dirs -> items; d ++)
     {
-        fclose(handle);
-        toadd -> file_found = AST_TRUE;
-    }
-    else
-    {   
-        toadd -> file_found = AST_FALSE;
+        char * dir       = ast_list_get(yy_preproc -> search_dirs, d);
+        size_t dirlen    = strlen(dir)+1;
+        size_t namelen   = strlen(toadd -> filename);
+        char * full_name = calloc(dirlen+namelen, sizeof(char));
+
+        strcat(full_name, dir);
+        strcat(full_name, toadd -> filename);
+
+        printf("Searching %s\n", full_name);
+
+        FILE * handle = fopen(full_name,"r");
+        if(handle)
+        {
+            fclose(handle);
+            free(toadd -> filename);
+            toadd -> filename = full_name;
+            toadd -> file_found = AST_TRUE;
+            break;
+        }
+        else
+        {   
+            toadd -> file_found = AST_FALSE;
+            free(full_name);
+        }
     }
 
     return toadd;
