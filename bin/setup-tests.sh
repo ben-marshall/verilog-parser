@@ -22,6 +22,17 @@ function downloadModelTest {
         echo "[DONE]"
     fi
 }
+
+if [$CI -eq "true" ]
+then 
+    echo "Not unpacking SPARC test set yet..."
+else
+    echo "Unzipping SPARC test set..."
+    tar -zcf ./bin/sparct1.zip tests/
+fi
+
+
+
 echo "Downloading Tests..."
 
 downloadModelTest arbiter_tb.v

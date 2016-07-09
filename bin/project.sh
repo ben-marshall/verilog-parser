@@ -4,7 +4,7 @@ echo "Setting up project workspace..."
 
 # Download tests
 cd tests
-source ../bin/download-tests.sh
+source ../bin/setup-tests.sh
 cd ../
 
 # Create build directory structure.
