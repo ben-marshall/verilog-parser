@@ -51,17 +51,17 @@ verilog_default_net_type * verilog_new_default_net_type(
 
 //! Describes a line directive.
 typedef struct verilog_line_directive_t{
-    unsigned int         line;
-    char *               file;
-    unsigned char        level;
+    unsigned int  line;  //!< The line to set the current counter to.
+    char *        file;  //!< The file we should pretend stuff comes from.
+    unsigned char level; //!< Level of include depth.
 } verilog_line_directive;
 
 // ----------------------- Timescale Directives -------------------------
 
-//! Describes a line directive.
+//! Describes a simulation timescale directive.
 typedef struct verilog_timescale_directive_t{
-    char * scale;
-    char * precision;
+    char * scale;       //!< The timescale to simulate on.
+    char * precision;   //!< Precision of each timestep.
 } verilog_timescale_directive;
 
 // ----------------------- resetall directives --------------------------
@@ -76,6 +76,7 @@ void verilog_preprocessor_resetall();
 
 /*!
 @brief Handles the entering of a no-unconnected drive directive.
+@param [in] direction -  Where should an unconnected line be pulled?
 */
 void verilog_preprocessor_nounconnected_drive(
     ast_primitive_strength direction;
@@ -85,29 +86,28 @@ void verilog_preprocessor_nounconnected_drive(
 
 //! Stores information on an include directive.
 typedef struct verilog_include_directive_t{
-    char       * filename;
-    unsigned int lineNumber;
+    char       * filename;      //!< The file to include.
+    unsigned int lineNumber;    //!< The line number of the directive.
 } verilog_include_directive;
 
 //! Handles the encounter of an include diretive.
 void verilog_preprocessor_include(
-    char * filename,
-    unsigned int lineNumber
+    char * filename,        //<! The file to include.
+    unsigned int lineNumber //!< The line number of the directive.
 );
 
 // ----------------------- `define Directives ---------------------------
 
 /*!
 @brief A simple container for macro directives
-@note Expect this to expand as macro processing is completed.
 */
 typedef struct verilog_macro_directive_t{
-    unsigned int line;
-    char * macro_id;
-    char * macro_value;
+    unsigned int line;      //!< Line number of the directive.
+    char * macro_id;        //!< The name of the macro.
+    char * macro_value;     //!< The value it expands to.
 } verilog_macro_directive;
 
-/*
+/*!
 @brief Instructs the preprocessor to register a new macro definition.
 */
 void verilog_preprocessor_macro_define(
@@ -151,6 +151,9 @@ verilog_preprocessor_conditional_context *
 /*!
 @brief Handles an ifdef statement being encountered.
 @param [in] macro_name - The macro to test if defined or not.
+@param [in] lineno - The line the directive occurs on.
+@param [in] is_ndef - TRUE IFF the directive is `ifndef. Else the directive
+is `ifdef and this should be FALSE.
 */
 void verilog_preprocessor_ifdef (
     char * macro_name,
@@ -161,16 +164,19 @@ void verilog_preprocessor_ifdef (
 /*!
 @brief Handles an elseif statement being encountered.
 @param [in] macro_name - The macro to test if defined or not.
+@param [in] lineno - The line the directive occurs on.
 */
 void verilog_preprocessor_elseif(char * macro_name, unsigned int lineno);
 
 /*!
 @brief Handles an else statement being encountered.
+@param [in] lineno - The line the directive occurs on.
 */
 void verilog_preprocessor_else  (unsigned int lineno);
 
 /*!
 @brief Handles an else statement being encountered.
+@param [in] lineno - The line the directive occurs on.
 */
 void verilog_preprocessor_endif (unsigned int lineno);
 
@@ -202,12 +208,22 @@ typedef struct verilog_preprocessor_context_t{
 } verilog_preprocessor_context;
 
 
-//! Stores all information needed for the preprocessor.
+/*! 
+@brief Stores all information needed for the preprocessor.
+@details This does not usually need to be accessed by the programmer, and
+certainly should never be written to unless you are defining your own
+default directives. For example, if I was writing my own simulated and
+wanted to add my own "__IS_MY_SIMULATOR__" pre-defined macro, it can be
+done by accessing this variable, and using the 
+verilog_preprocessor_macro_define function.
+@note This is a global variable. Treat it with care!
+*/
 extern verilog_preprocessor_context * yy_preproc;
 
 
 /*!
 @brief Creates a new pre-processor context.
+@details This is called *once* at the beginning of a parse call.
 */
 verilog_preprocessor_context * verilog_new_preprocessor_context();
 

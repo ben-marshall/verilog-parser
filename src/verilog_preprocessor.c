@@ -165,8 +165,7 @@ void verilog_preprocessor_macro_define(
 void verilog_preprocessor_macro_undefine(
     char * macro_name //!< The name of the macro to remove.
 ){
-    printf("Undefined %s\n", macro_name);
-    ast_hashtable_result r = ast_hashtable_delete(
+    ast_hashtable_delete(
         yy_preproc -> macrodefines,
         macro_name
     );
@@ -209,8 +208,8 @@ void verilog_preprocessor_ifdef (
     ast_hashtable_result r = ast_hashtable_get(yy_preproc -> macrodefines,
                                                macro_name, &data);
     
-    if(r == HASH_SUCCESS        && is_ndef == AST_FALSE ||
-       r == HASH_KEY_NOT_FOUND  && is_ndef == AST_TRUE  )
+    if((r == HASH_SUCCESS        && is_ndef == AST_FALSE) ||
+       (r == HASH_KEY_NOT_FOUND  && is_ndef == AST_TRUE ) )
     {
         // Push the context, with the condition true.
         topush -> condition_passed = AST_TRUE;
@@ -226,8 +225,6 @@ void verilog_preprocessor_ifdef (
         yy_preproc -> emit         = AST_TRUE;
         ast_stack_push(yy_preproc -> ifdefs, topush);
     }
-
-    printf("Ifdef stack depth: %d\n", yy_preproc -> ifdefs -> depth);
 }
 
 /*!
@@ -270,9 +267,6 @@ void verilog_preprocessor_elseif(char * macro_name, unsigned int lineno)
         yy_preproc -> emit = AST_FALSE;
         tocheck    -> condition_passed = AST_FALSE;
     }
-
-
-    printf("Ifdef stack depth: %d\n", yy_preproc -> ifdefs -> depth);
 }
 
 /*!
@@ -302,8 +296,6 @@ void verilog_preprocessor_else  (unsigned int lineno)
     }
 
     tocheck -> wait_for_endif = AST_TRUE;
-
-    printf("Ifdef stack depth: %d\n", yy_preproc -> ifdefs -> depth);
 }
 
 /*!
@@ -324,8 +316,6 @@ void verilog_preprocessor_endif (unsigned int lineno)
     free(tocheck);
 
     yy_preproc -> emit = AST_TRUE;
-
-    printf("Ifdef stack depth: %d\n", yy_preproc -> ifdefs -> depth);
 }
 
 
