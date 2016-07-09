@@ -227,11 +227,9 @@ DIGIT_OCTAL         [0-7]
 DIGIT_HEX           [0-9a-fA-F]
 
 BASE_DECIMAL        '[sS]?[dD]
-BASE_BINARY         '[s|S]?[b|B]
+BASE_BINARY         '[sS]?[bB]
 BASE_OCTAL          '[sS]?[oO]
 BASE_HEX            '[sS]?[hH]
-
-SIZE                {DIGIT_DECMIAL_NZ}+
 
 NUM_REAL_EXP        {NUM_UNSIGNED}({DOT}{NUM_UNSIGNED})?{EXP}({SIGN})?{NUM_UNSIGNED}
 
@@ -242,11 +240,8 @@ HEX_VALUE           {DIGIT_HEX}({UNDERSCORE}|{DIGIT_HEX})*
 %x in_hex_val
 %x in_oct_val
 %x in_bin_val
+%s in_number
 
-NUM_BINARY          {SIZE}?{BASE_BINARY}{BIN_VALUE}
-NUM_OCTAL           {SIZE}?{BASE_OCTAL}{OCT_VALUE}
-NUM_HEX             {SIZE}?{BASE_HEX}{HEX_VALUE}
-NUM_DECIMAL         {SIZE}?{BASE_DECIMAL}{NUM_UNSIGNED}
 NUM_REAL            {NUM_UNSIGNED}{DOT}{NUM_UNSIGNED}|{NUM_REAL_EXP}
 NUM_UNSIGNED        {DIGIT_DECIMAL}({UNDERSCORE}|{DIGIT_DECIMAL})*
 
@@ -592,15 +587,14 @@ TERNARY             "?"
 {B_NOR}                {EMIT_TOKEN(B_NOR);}
 {TERNARY}              {EMIT_TOKEN(TERNARY);}
 
-<in_bin_val>{BIN_VALUE} {BEGIN(INITIAL); EMIT_TOKEN(BIN_VALUE);}
-<in_oct_val>{OCT_VALUE} {BEGIN(INITIAL); EMIT_TOKEN(OCT_VALUE);}
-<in_hex_val>{HEX_VALUE} {BEGIN(INITIAL); EMIT_TOKEN(HEX_VALUE);}
-
 {BASE_DECIMAL}         {EMIT_TOKEN(DEC_BASE);}
 {BASE_HEX}             {BEGIN(in_hex_val); EMIT_TOKEN(HEX_BASE);}
 {BASE_OCTAL}           {BEGIN(in_oct_val); EMIT_TOKEN(OCT_BASE);}
 {BASE_BINARY}          {BEGIN(in_bin_val); EMIT_TOKEN(BIN_BASE);}
-{SIZE}                 {EMIT_TOKEN(NUM_SIZE);}
+
+<in_bin_val>{BIN_VALUE} {BEGIN(INITIAL); EMIT_TOKEN(BIN_VALUE);}
+<in_oct_val>{OCT_VALUE} {BEGIN(INITIAL); EMIT_TOKEN(OCT_VALUE);}
+<in_hex_val>{HEX_VALUE} {BEGIN(INITIAL); EMIT_TOKEN(HEX_VALUE);}
 
 {NUM_REAL}             {EMIT_TOKEN(NUM_REAL);}
 {NUM_UNSIGNED}         {EMIT_TOKEN(UNSIGNED_NUMBER);}

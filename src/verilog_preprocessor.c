@@ -275,7 +275,7 @@ void verilog_preprocessor_ifdef (
         // Push the context, with the condition false.
         topush -> condition_passed = AST_FALSE;
         topush -> wait_for_endif   = AST_FALSE;
-        yy_preproc -> emit         = AST_TRUE;
+        yy_preproc -> emit         = AST_FALSE;
         ast_stack_push(yy_preproc -> ifdefs, topush);
     }
 }
@@ -339,13 +339,13 @@ void verilog_preprocessor_else  (unsigned int lineno)
 
     if(yy_preproc -> emit == AST_TRUE)
     {
-        yy_preproc -> emit              = AST_TRUE;
-        tocheck    -> condition_passed  = AST_TRUE;
+        yy_preproc -> emit              = AST_FALSE;
+        tocheck    -> condition_passed  = AST_FALSE;
     }
     else
     {
-        yy_preproc -> emit              = AST_FALSE;
-        tocheck    -> condition_passed  = AST_FALSE;
+        yy_preproc -> emit              = AST_TRUE ;
+        tocheck    -> condition_passed  = AST_TRUE;
     }
 
     tocheck -> wait_for_endif = AST_TRUE;
@@ -367,8 +367,12 @@ void verilog_preprocessor_endif (unsigned int lineno)
     }
 
     free(tocheck);
+    tocheck = ast_stack_peek(yy_preproc -> ifdefs);
 
-    yy_preproc -> emit = AST_TRUE;
+    if(tocheck == NULL)
+        yy_preproc -> emit = AST_TRUE;
+    else
+        yy_preproc -> emit = tocheck -> condition_passed;
 }
 
 

@@ -1270,7 +1270,7 @@ module_item :
     $$ = ast_new_module_item($1, MOD_ITEM_PARAMETER_DECLARATION);
     $$ -> parameter_declaration = $2;
  }
- | attribute_instances parameter_declaration{
+ | attribute_instances parameter_declaration SEMICOLON{
     $$ = ast_new_module_item($1, MOD_ITEM_PARAMETER_DECLARATION);
     $$ -> parameter_declaration = $2;
  }
@@ -1377,7 +1377,7 @@ non_port_module_item :
 | attribute_instances module_or_generate_item{
     $$ = $2;
 }
-| attribute_instances parameter_declaration{
+| attribute_instances parameter_declaration SEMICOLON{
     $$ = ast_new_module_item($1,MOD_ITEM_PARAMETER_DECLARATION);
     $$ -> parameter_declaration = $2;
 }
@@ -1423,22 +1423,22 @@ local_parameter_declaration :
 ;
 
 parameter_declaration : 
-  KW_PARAMETER signed_o range_o list_of_param_assignments SEMICOLON{
+  KW_PARAMETER signed_o range_o list_of_param_assignments {
     $$ = ast_new_parameter_declarations($4,$2,AST_FALSE,$3,PARAM_GENERIC);
   }
-| KW_PARAMETER KW_INTEGER       list_of_param_assignments SEMICOLON{
+| KW_PARAMETER KW_INTEGER       list_of_param_assignments {
     $$ = ast_new_parameter_declarations($3,AST_FALSE,AST_FALSE,NULL,
         PARAM_INTEGER);
   }
-| KW_PARAMETER KW_REAL          list_of_param_assignments SEMICOLON{
+| KW_PARAMETER KW_REAL          list_of_param_assignments {
     $$ = ast_new_parameter_declarations($3,AST_FALSE,AST_FALSE,NULL,
         PARAM_REAL);
   }
-| KW_PARAMETER KW_REALTIME      list_of_param_assignments SEMICOLON{
+| KW_PARAMETER KW_REALTIME      list_of_param_assignments {
     $$ = ast_new_parameter_declarations($3,AST_FALSE,AST_FALSE,NULL,
         PARAM_REALTIME);
   }
-| KW_PARAMETER KW_TIME          list_of_param_assignments SEMICOLON{
+| KW_PARAMETER KW_TIME          list_of_param_assignments {
     $$ = ast_new_parameter_declarations($3,AST_FALSE,AST_FALSE,NULL,
         PARAM_TIME);
   }
@@ -1833,6 +1833,10 @@ list_of_param_assignments    :
     $$ = $1;
     ast_list_append($$,$3);
  }
+ | list_of_param_assignments COMMA KW_PARAMETER param_assignment{
+    $$ = $1;
+    ast_list_append($$,$3);
+ }
  ;
 
 list_of_port_identifiers     : 
@@ -2181,7 +2185,7 @@ block_item_declaration :
     $$ = ast_new_block_item_declaration(BLOCK_ITEM_PARAM, $1);
     $$ -> parameters = $2;
   }
-| attribute_instances parameter_declaration{
+| attribute_instances parameter_declaration SEMICOLON{
     $$ = ast_new_block_item_declaration(BLOCK_ITEM_PARAM, $1);
     $$ -> parameters = $2;
   }
@@ -3311,6 +3315,7 @@ statement :
 
 statement_or_null : statement {$$=$1;}
                   | attribute_instances SEMICOLON{$$=NULL;}
+                  | SEMICOLON{$$=NULL;}
                   ;
                   
 function_statement : 
@@ -4612,54 +4617,35 @@ unsigned_number :
   UNSIGNED_NUMBER {
     $$ = ast_new_number(BASE_DECIMAL, REP_BITS, $1);
   }
-| NUM_SIZE {
-    $$ = ast_new_number(BASE_DECIMAL, REP_BITS, $1);
-  }
 ;
 
 number :
-  decimal_number {$$ = $1;}
-| octal_number   {$$ = $1;}
-| binary_number  {$$ = $1;}
-| hex_number     {$$ = $1;}
-| real_number    {$$ = $1;}
-;
-
-decimal_number :
-  unsigned_number {$$ = $1;}
-| NUM_SIZE DEC_BASE unsigned_number{
-    $$ = $3;
-  }
-|          DEC_BASE unsigned_number{
-    $$ = $2;
-  }
-
-binary_number :
-  NUM_SIZE BIN_BASE BIN_VALUE{
-    $$ = ast_new_number(BASE_BINARY,REP_BITS,$3);
-  }
-|          BIN_BASE BIN_VALUE{
-    $$ = ast_new_number(BASE_BINARY,REP_BITS,$2);
-  }
-;
-
-hex_number :
-  NUM_SIZE HEX_BASE HEX_VALUE{
-    $$ = ast_new_number(BASE_HEX,REP_BITS,$3);
-  }
-|          HEX_BASE HEX_VALUE{
-    $$ = ast_new_number(BASE_HEX,REP_BITS,$2);
-  }
-;
-
-
-octal_number :
-  NUM_SIZE OCT_BASE OCT_VALUE{
-    $$ = ast_new_number(BASE_OCTAL,REP_BITS,$3);
-  }
-|          OCT_BASE OCT_VALUE{
-    $$ = ast_new_number(BASE_OCTAL,REP_BITS,$2);
-  }
+  real_number    {$$ = $1;}
+| BIN_BASE BIN_VALUE {
+    $$ = ast_new_number(BASE_BINARY, REP_BITS, $2);
+}
+| HEX_BASE HEX_VALUE {
+    $$ = ast_new_number(BASE_HEX, REP_BITS, $2);
+}
+| OCT_BASE OCT_VALUE {
+    $$ = ast_new_number(BASE_OCTAL, REP_BITS, $2);
+}
+| DEC_BASE UNSIGNED_NUMBER{
+    $$ = ast_new_number(BASE_DECIMAL, REP_BITS, $2);
+}
+| UNSIGNED_NUMBER BIN_BASE BIN_VALUE {
+    $$ = ast_new_number(BASE_BINARY, REP_BITS, $3);
+}
+| UNSIGNED_NUMBER HEX_BASE HEX_VALUE {
+    $$ = ast_new_number(BASE_HEX, REP_BITS, $3);
+}
+| UNSIGNED_NUMBER OCT_BASE OCT_VALUE {
+    $$ = ast_new_number(BASE_OCTAL, REP_BITS, $3);
+}
+| UNSIGNED_NUMBER DEC_BASE UNSIGNED_NUMBER{
+    $$ = ast_new_number(BASE_DECIMAL, REP_BITS, $3);
+}
+| UNSIGNED_NUMBER {$$ = $1;}
 ;
 
 real_number :

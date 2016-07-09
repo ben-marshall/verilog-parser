@@ -29,7 +29,6 @@ then
 else
     echo "Unzipping SPARC test set..."
     unzip ../bin/sparct1.zip
-    exit 0
 fi
 
 
