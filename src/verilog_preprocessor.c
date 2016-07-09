@@ -139,8 +139,6 @@ verilog_include_directive * verilog_preprocessor_include(
         strcat(full_name, dir);
         strcat(full_name, toadd -> filename);
 
-        printf("Searching %s\n", full_name);
-
         FILE * handle = fopen(full_name,"r");
         if(handle)
         {

@@ -800,6 +800,7 @@
 grammar_begin : library_text {$$ = ast_list_new();}
               | config_declaration {$$ = ast_list_new();}
               | source_text {$$= $1;}
+              | {$$ = ast_list_new();}
               ;
 
 /* 19.0 Compiler Directives */

@@ -15,7 +15,6 @@ void    verilog_parser_setup(FILE * input_file)
     if(yy_preproc == NULL) {
         yy_preproc = verilog_new_preprocessor_context();
     } else {
-        printf("Reusing old preproc. ");
     }
     yyrestart(input_file);
 }

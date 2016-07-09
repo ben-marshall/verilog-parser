@@ -435,9 +435,6 @@ TERNARY             "?"
 
     if(id -> file_found == AST_TRUE)
     {
-        printf("Found include file '%s' form line %d.\n", 
-            id -> filename, id -> lineNumber);
-        
         FILE * file = fopen(id -> filename, "r");
 
         YY_BUFFER_STATE n   = yy_create_buffer(file, YY_BUF_SIZE);
