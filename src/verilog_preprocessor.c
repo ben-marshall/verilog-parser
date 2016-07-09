@@ -162,11 +162,25 @@ void verilog_preprocessor_macro_define(
     memcpy(toadd -> macro_id,macro_name, name_len);
 
     if(text_len > 0){
+        // Make sure we exclude all comments from the macro text.
+        int i = 0;
+        for(i = 0; i < text_len-1; i++)
+        {
+            if(macro_text[i]   == '/' &&
+               macro_text[i+1] == '/')
+            {
+                text_len = (size_t)i;
+                break;
+            }
+        }
+
         toadd -> macro_value = calloc(text_len,sizeof(char));
         memcpy(toadd -> macro_value,macro_text,text_len);
     } else {
         toadd -> macro_value = NULL;
     }
+
+    //printf("MACRO: '%s' - '%s'\n", toadd -> macro_id, toadd -> macro_value);
 
     ast_hashtable_insert(
         yy_preproc -> macrodefines,
