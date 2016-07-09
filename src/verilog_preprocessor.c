@@ -18,6 +18,7 @@ verilog_preprocessor_context * verilog_new_preprocessor_context()
     tr -> net_types      = ast_list_new();
     tr -> unconnected_drive_pull = STRENGTH_NONE;
     tr -> macrodefines   = ast_hashtable_new();
+    tr -> ifdefs         = ast_stack_new();
 
     return tr;
 }
@@ -28,6 +29,7 @@ void verilog_free_preprocessor_context(verilog_preprocessor_context * tofree)
     ast_list_free(tofree -> includes);
     ast_list_free(tofree -> net_types);
     ast_hashtable_free(tofree -> macrodefines);
+    ast_stack_free(tofree -> ifdefs);
     free(tofree);
 }
 
@@ -172,47 +174,158 @@ void verilog_preprocessor_macro_undefine(
     return;
 }
 
+//! Creates and returns a new conditional context.
+verilog_preprocessor_conditional_context * 
+    verilog_preprocessor_new_conditional_context(
+    char        * condition,          //!< The definition to check for.
+    int           line_number         //!< Where the `ifdef came from.
+){
+    verilog_preprocessor_conditional_context * tr = 
+        calloc(1,sizeof(verilog_preprocessor_conditional_context));
+
+    tr -> line_number = line_number;
+    tr -> condition   = condition;
+
+    return tr;
+}
+
+
 /*!
 @brief Handles an ifdef statement being encountered.
 @param [in] macro_name - The macro to test if defined or not.
 */
-void verilog_preprocessor_ifdef (char * macro_name)
-{
+void verilog_preprocessor_ifdef (
+    char * macro_name,
+    unsigned int lineno,
+    ast_boolean is_ndef
+){
+    // Create a new ifdef context.
+    verilog_preprocessor_conditional_context * topush = 
+        verilog_preprocessor_new_conditional_context(macro_name,lineno);
 
-}
+    topush -> is_ndef = is_ndef;
 
-/*!
-@brief Handles an ifndef statement being encountered.
-@param [in] macro_name - The macro to test if defined or not.
-*/
-void verilog_preprocessor_ifndef(char * macro_name)
-{
+    void * data;
+    ast_hashtable_result r = ast_hashtable_get(yy_preproc -> macrodefines,
+                                               macro_name, &data);
+    
+    if(r == HASH_SUCCESS        && is_ndef == AST_FALSE ||
+       r == HASH_KEY_NOT_FOUND  && is_ndef == AST_TRUE  )
+    {
+        // Push the context, with the condition true.
+        topush -> condition_passed = AST_TRUE;
+        topush -> wait_for_endif   = AST_TRUE;
+        yy_preproc -> emit         = AST_TRUE;
+        ast_stack_push(yy_preproc -> ifdefs, topush);
+    }
+    else
+    {
+        // Push the context, with the condition false.
+        topush -> condition_passed = AST_FALSE;
+        topush -> wait_for_endif   = AST_FALSE;
+        yy_preproc -> emit         = AST_TRUE;
+        ast_stack_push(yy_preproc -> ifdefs, topush);
+    }
 
+    printf("Ifdef stack depth: %d\n", yy_preproc -> ifdefs -> depth);
 }
 
 /*!
 @brief Handles an elseif statement being encountered.
 @param [in] macro_name - The macro to test if defined or not.
 */
-void verilog_preprocessor_elseif(char * macro_name)
+void verilog_preprocessor_elseif(char * macro_name, unsigned int lineno)
 {
+    verilog_preprocessor_conditional_context * tocheck = 
+        ast_stack_peek(yy_preproc -> ifdefs);
 
+    if(tocheck == NULL)
+    {
+        printf("ERROR - `elseif without preceding `ifdef or `ifndef on line \
+            %d\n\tExpect it all to go wrong from here.\n", lineno);
+        return;
+    }
+
+    void * data;
+    ast_hashtable_result r = ast_hashtable_get(yy_preproc -> macrodefines,
+                                               macro_name, &data);
+
+    if(tocheck -> wait_for_endif == AST_FALSE)
+    {
+        if((tocheck -> is_ndef == AST_TRUE  && r == HASH_KEY_NOT_FOUND) ||
+           (tocheck -> is_ndef == AST_FALSE && r == HASH_SUCCESS      ))
+        {
+            tocheck -> condition_passed = AST_TRUE;
+            tocheck -> wait_for_endif   = AST_TRUE;
+            yy_preproc -> emit          = AST_TRUE;
+        }
+        else
+        {
+            yy_preproc -> emit = AST_FALSE;
+            tocheck    -> condition_passed = AST_FALSE;
+        }
+    }
+    else
+    {
+        yy_preproc -> emit = AST_FALSE;
+        tocheck    -> condition_passed = AST_FALSE;
+    }
+
+
+    printf("Ifdef stack depth: %d\n", yy_preproc -> ifdefs -> depth);
 }
 
 /*!
 @brief Handles an else statement being encountered.
 */
-void verilog_preprocessor_else  ()
+void verilog_preprocessor_else  (unsigned int lineno)
 {
+    verilog_preprocessor_conditional_context * tocheck = 
+        ast_stack_peek(yy_preproc -> ifdefs);
 
+    if(tocheck == NULL)
+    {
+        printf("ERROR - `else without preceding `ifdef or `ifndef on line \
+            %d\n\tExpect it all to go wrong from here.\n", lineno);
+        return;
+    }
+
+    if(yy_preproc -> emit == AST_TRUE)
+    {
+        yy_preproc -> emit              = AST_TRUE;
+        tocheck    -> condition_passed  = AST_TRUE;
+    }
+    else
+    {
+        yy_preproc -> emit              = AST_FALSE;
+        tocheck    -> condition_passed  = AST_FALSE;
+    }
+
+    tocheck -> wait_for_endif = AST_TRUE;
+
+    printf("Ifdef stack depth: %d\n", yy_preproc -> ifdefs -> depth);
 }
 
 /*!
 @brief Handles an else statement being encountered.
 */
-void verilog_preprocessor_endif ()
+void verilog_preprocessor_endif (unsigned int lineno)
 {
+    verilog_preprocessor_conditional_context * tocheck = 
+        ast_stack_pop(yy_preproc -> ifdefs);
 
+    if(tocheck == NULL)
+    {
+        printf("ERROR - `endif without preceding `ifdef or `ifndef on line \
+            %d\n\tExpect it all to go wrong from here.\n", lineno);
+        return;
+    }
+
+    free(tocheck);
+
+    yy_preproc -> emit = AST_TRUE;
+
+    printf("Ifdef stack depth: %d\n", yy_preproc -> ifdefs -> depth);
 }
 
 

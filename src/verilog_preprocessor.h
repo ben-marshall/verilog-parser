@@ -128,32 +128,51 @@ void verilog_preprocessor_macro_undefine(
 // ----------------------- Conditional Compilation Directives -----------
 
 /*!
+@brief Stores information regarding a particular level of conditional
+compilation.
+@brief A stack of these is maintained, each one relating to a different
+level of nested `ifdef or `ifndef statements.
+*/
+typedef struct verilog_preprocessor_conditional_context_t{
+    char        * condition;           //!< The definition to check for.
+    int           line_number;         //!< Where the `ifdef came from.
+    ast_boolean   condition_passed;    //!< Did the condition pass?
+    ast_boolean   is_ndef;             //!< True if directive was `ifndef
+    ast_boolean   wait_for_endif;      //!< Emit nothing more until `endif
+} verilog_preprocessor_conditional_context;
+
+//! Creates and returns a new conditional context.
+verilog_preprocessor_conditional_context * 
+    verilog_preprocessor_new_conditional_context(
+    char        * condition,          //!< The definition to check for.
+    int           line_number         //!< Where the `ifdef came from.
+);
+
+/*!
 @brief Handles an ifdef statement being encountered.
 @param [in] macro_name - The macro to test if defined or not.
 */
-void verilog_preprocessor_ifdef (char * macro_name);
-
-/*!
-@brief Handles an ifndef statement being encountered.
-@param [in] macro_name - The macro to test if defined or not.
-*/
-void verilog_preprocessor_ifndef(char * macro_name);
+void verilog_preprocessor_ifdef (
+    char * macro_name,
+    unsigned int lineno,    //!< line number of the directive.
+    ast_boolean is_ndef     //!< Is this an ifndef or ifdef directive.
+);
 
 /*!
 @brief Handles an elseif statement being encountered.
 @param [in] macro_name - The macro to test if defined or not.
 */
-void verilog_preprocessor_elseif(char * macro_name);
+void verilog_preprocessor_elseif(char * macro_name, unsigned int lineno);
 
 /*!
 @brief Handles an else statement being encountered.
 */
-void verilog_preprocessor_else  ();
+void verilog_preprocessor_else  (unsigned int lineno);
 
 /*!
 @brief Handles an else statement being encountered.
 */
-void verilog_preprocessor_endif ();
+void verilog_preprocessor_endif (unsigned int lineno);
 
 
 // ----------------------- Preprocessor Context -------------------------
@@ -179,6 +198,7 @@ typedef struct verilog_preprocessor_context_t{
     ast_list      * net_types;      //!< Storage for default nettype directives
     verilog_timescale_directive timescale; //!< Timescale information
     ast_primitive_strength unconnected_drive_pull; //!< nounconnectedrive
+    ast_stack     * ifdefs;         //!< Storage for conditional compile stack.
 } verilog_preprocessor_context;
 
 

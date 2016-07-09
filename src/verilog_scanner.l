@@ -391,7 +391,7 @@ TERNARY             "?"
     BEGIN(in_ifdef);
 }
 <in_ifdef>{SIMPLE_ID}    {
-    verilog_preprocessor_ifdef(yytext);
+    verilog_preprocessor_ifdef(yytext,yylineno,AST_FALSE);
     BEGIN(INITIAL);
 }
 
@@ -399,7 +399,7 @@ TERNARY             "?"
     BEGIN(in_ifndef);
 }
 <in_ifndef>{SIMPLE_ID}   {
-    verilog_preprocessor_ifndef(yytext);
+    verilog_preprocessor_ifdef(yytext,yylineno,AST_TRUE);
     BEGIN(INITIAL);
 }
 
@@ -407,16 +407,16 @@ TERNARY             "?"
     BEGIN(in_elseif);
 }
 <in_elseif>{SIMPLE_ID}   {
-    verilog_preprocessor_ifndef(yytext);
+    verilog_preprocessor_elseif(yytext, yylineno);
     BEGIN(INITIAL);
 }
 
 {CD_ELSE}                {
-    verilog_preprocessor_else();
+    verilog_preprocessor_else(yylineno);
 }
 
 {CD_ENDIF}               {
-    verilog_preprocessor_endif();
+    verilog_preprocessor_endif(yylineno);
 }
 
 {CD_INCLUDE}             {
