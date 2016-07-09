@@ -1,3 +1,6 @@
+
+`celldefine
+
 module test;
 `ifdef first_block
     `ifndef second_nest
@@ -18,3 +21,5 @@ module test;
     `endif
 `endif
 endmodule
+
+`endcelldefine
