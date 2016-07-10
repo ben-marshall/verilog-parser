@@ -173,7 +173,7 @@ void verilog_preprocessor_macro_define(
     
     toadd -> line = line;
 
-    //printf("\nEncountered macro '%s' on line %d ", toadd -> macro_id, line);
+    //printf("\nEncountered macro '%s' on line %d ",toadd->macro_id,line);
     //printf("with value '%s'\n", toadd -> macro_value);
     //fflush(stdout);
 
@@ -222,7 +222,7 @@ void verilog_preprocessor_macro_undefine(
         yy_preproc -> macrodefines,
         macro_name
     );
-
+    //printf("Removed Macro definition: '%s'\n", macro_name);
     return;
 }
 
@@ -261,6 +261,8 @@ void verilog_preprocessor_ifdef (
     ast_hashtable_result r = ast_hashtable_get(yy_preproc -> macrodefines,
                                                macro_name, &data);
     
+    //printf("Compilation conditional on '%s' ",macro_name);
+    
     if((r == HASH_SUCCESS        && is_ndef == AST_FALSE) ||
        (r == HASH_KEY_NOT_FOUND  && is_ndef == AST_TRUE ) )
     {
@@ -269,6 +271,7 @@ void verilog_preprocessor_ifdef (
         topush -> wait_for_endif   = AST_TRUE;
         yy_preproc -> emit         = AST_TRUE;
         ast_stack_push(yy_preproc -> ifdefs, topush);
+        //printf("Condition TRUE\n");
     }
     else
     {
@@ -277,6 +280,7 @@ void verilog_preprocessor_ifdef (
         topush -> wait_for_endif   = AST_FALSE;
         yy_preproc -> emit         = AST_FALSE;
         ast_stack_push(yy_preproc -> ifdefs, topush);
+        //printf("Condition FALSE\n");
     }
 }
 
@@ -337,7 +341,8 @@ void verilog_preprocessor_else  (unsigned int lineno)
         return;
     }
 
-    if(yy_preproc -> emit == AST_TRUE)
+    if(yy_preproc -> emit           == AST_TRUE && 
+        tocheck   -> wait_for_endif == AST_FALSE)
     {
         yy_preproc -> emit              = AST_FALSE;
         tocheck    -> condition_passed  = AST_FALSE;
