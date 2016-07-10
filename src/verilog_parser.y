@@ -2643,10 +2643,7 @@ pass_switchtype     :
 /* A.4.1 module instantiation */
 
 module_instantiation: 
-  module_identifier delay3 parameter_value_assignment_o module_instances SEMICOLON{
-    $$ = ast_new_module_instantiation($1,$3,$4);
-  }
-| module_identifier parameter_value_assignment_o module_instances SEMICOLON{
+ module_identifier parameter_value_assignment_o module_instances SEMICOLON{
     $$ = ast_new_module_instantiation($1,$2,$3);
   }
 ;
@@ -2694,7 +2691,9 @@ module_instances : module_instance{
   }
 ;
 
-ordered_parameter_assignment : expression{$$=$1;};
+ordered_parameter_assignment : expression{
+    $$=$1;
+};
 
 named_parameter_assignment : 
 DOT parameter_identifier OPEN_BRACKET expression_o CLOSE_BRACKET {

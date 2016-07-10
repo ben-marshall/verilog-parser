@@ -2,6 +2,19 @@
 
 module test_top();
 
+dbl_buf #(1,
+2,3,
+REG_WIDTH
++
+64)
+dbl_buf (.rst_l(rst_l),
+                .clk(clk),
+                .wr(dbl_buf_wr),
+                .din(c2i_packet),
+                .rd(dbl_buf_rd),
+                .dout(outdata_buf_in),
+                .vld(dbl_buf_vld),
+                .full(dbl_buf_full));
 
 module_being_instanced MODULE_NAME (
 .serial_in       ({serial_in[87:72] } ),

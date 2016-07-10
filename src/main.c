@@ -29,7 +29,7 @@ int main(int argc, char ** argv)
 
         for(F = 1; F < argc; F++)
         {
-            printf("%s", argv[F]);fflush(stdout);
+            printf("%s ", argv[F]);fflush(stdout);
 
             // Load the file.
             FILE * fh = fopen(argv[F], "r");
