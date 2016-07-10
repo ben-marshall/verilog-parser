@@ -4719,7 +4719,10 @@ escaped_arrayed_identifier      : escaped_identifier range_o{
 
 escaped_hierarchical_identifier : 
   escaped_hierarchical_branch escaped_hierarchical_identifiers{
-      $$=ast_append_identifier($1,$2);
+    $$ = ast_append_identifier($1,$2);
+}
+| escaped_hierarchical_branch {
+    $$ = $1;
 }
 ;
 
