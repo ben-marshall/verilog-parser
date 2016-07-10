@@ -297,6 +297,33 @@ void * ast_stack_peek(
     }
 }
 
+/*!
+@brief Peek at the item *below* the top item on the top of the stack.
+@param [inout] stack - The stack to peek into
+*/
+void * ast_stack_peek2(
+    ast_stack * stack
+){
+    assert(stack != NULL);
+    
+    if(stack -> items != NULL)
+    {
+        if(stack -> items -> next != NULL)
+        {
+            void * tr = stack -> items -> next -> data;
+            return tr;
+        }
+        else
+        {
+            return NULL;
+        }
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
 //! Creates and returns a new hashtable.
 ast_hashtable * ast_hashtable_new(){
     ast_hashtable * tr = calloc(1,sizeof(ast_hashtable));

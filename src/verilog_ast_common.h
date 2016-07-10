@@ -153,6 +153,14 @@ void * ast_stack_peek(
     ast_stack * stack
 );
 
+/*!
+@brief Peek at the item *below* the top item on the top of the stack.
+@param [inout] stack - The stack to peek into
+*/
+void * ast_stack_peek2(
+    ast_stack * stack
+);
+
 /*! @} */
 
 

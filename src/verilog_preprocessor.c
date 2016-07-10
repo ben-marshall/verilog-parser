@@ -263,8 +263,9 @@ void verilog_preprocessor_ifdef (
     
     //printf("Compilation conditional on '%s' ",macro_name);
     
-    if((r == HASH_SUCCESS        && is_ndef == AST_FALSE) ||
-       (r == HASH_KEY_NOT_FOUND  && is_ndef == AST_TRUE ) )
+    if(((r == HASH_SUCCESS        && is_ndef == AST_FALSE) ||
+        (r == HASH_KEY_NOT_FOUND  && is_ndef == AST_TRUE )) &&
+        yy_preproc -> emit == AST_FALSE)
     {
         // Push the context, with the condition true.
         topush -> condition_passed = AST_TRUE;
@@ -277,7 +278,10 @@ void verilog_preprocessor_ifdef (
     {
         // Push the context, with the condition false.
         topush -> condition_passed = AST_FALSE;
-        topush -> wait_for_endif   = AST_FALSE;
+        if(yy_preproc -> emit == AST_FALSE)
+            topush -> wait_for_endif   = AST_TRUE;
+        else
+            topush -> wait_for_endif   = AST_FALSE;
         yy_preproc -> emit         = AST_FALSE;
         ast_stack_push(yy_preproc -> ifdefs, topush);
         //printf("Condition FALSE\n");
@@ -304,7 +308,8 @@ void verilog_preprocessor_elseif(char * macro_name, unsigned int lineno)
     ast_hashtable_result r = ast_hashtable_get(yy_preproc -> macrodefines,
                                                macro_name, &data);
 
-    if(tocheck -> wait_for_endif == AST_FALSE)
+    if(tocheck -> wait_for_endif == AST_FALSE &&
+       yy_preproc -> emit        == AST_TRUE)
     {
         if((tocheck -> is_ndef == AST_TRUE  && r == HASH_KEY_NOT_FOUND) ||
            (tocheck -> is_ndef == AST_FALSE && r == HASH_SUCCESS      ))
@@ -334,13 +339,16 @@ void verilog_preprocessor_else  (unsigned int lineno)
     verilog_preprocessor_conditional_context * tocheck = 
         ast_stack_peek(yy_preproc -> ifdefs);
 
+    verilog_preprocessor_conditional_context * parent = 
+        ast_stack_peek2(yy_preproc -> ifdefs);
+
     if(tocheck == NULL)
     {
         printf("ERROR - `else without preceding `ifdef or `ifndef on line \
             %d\n\tExpect it all to go wrong from here.\n", lineno);
         return;
     }
-
+    
     if(yy_preproc -> emit           == AST_TRUE && 
         tocheck   -> wait_for_endif == AST_FALSE)
     {
@@ -349,8 +357,24 @@ void verilog_preprocessor_else  (unsigned int lineno)
     }
     else
     {
-        yy_preproc -> emit              = AST_TRUE ;
-        tocheck    -> condition_passed  = AST_TRUE;
+        if(parent != NULL)
+        {
+            if(parent -> condition_passed == AST_TRUE)
+            {
+                yy_preproc -> emit              = AST_TRUE;
+                tocheck    -> condition_passed  = AST_TRUE;
+            }
+            else
+            {
+                yy_preproc -> emit              = AST_FALSE;
+                tocheck    -> condition_passed  = AST_FALSE;
+            }
+        }
+        else
+        {
+            yy_preproc -> emit              = AST_TRUE;
+            tocheck    -> condition_passed  = AST_TRUE;
+        }
     }
 
     tocheck -> wait_for_endif = AST_TRUE;
