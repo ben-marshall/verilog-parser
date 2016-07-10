@@ -4793,8 +4793,14 @@ library_identifier              : identifier
     {$$=$1; $$ -> type = ID_LIBRARY;};
 module_identifier               : identifier 
     {$$=$1; $$ -> type = ID_MODULE;};
-net_identifier                  : identifier 
-    {$$=$1; $$ -> type = ID_NET;};
+net_identifier                  : 
+  identifier {
+    $$=$1; $$ -> type = ID_NET;
+  }
+| hierarchical_identifier {
+    $$=$1; $$ -> type = ID_NET;
+}
+;
 output_port_identifier          : identifier 
     {$$=$1; $$ -> type = ID_OUTPUT_PORT;};
 specparam_identifier            : identifier 
