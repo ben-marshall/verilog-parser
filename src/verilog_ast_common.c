@@ -154,6 +154,7 @@ as the correct type.
 */
 void *    ast_list_get(ast_list * list, unsigned int item)
 {
+    assert(list != NULL);
     if(item > list -> items - 1)
     {
         return NULL;
@@ -172,7 +173,14 @@ void *    ast_list_get(ast_list * list, unsigned int item)
             list -> current_item += 1;
         }
 
-        return list -> walker -> data;
+        if(list -> walker == NULL)
+        {
+            return NULL;
+        }
+        else
+        {
+            return list -> walker -> data;
+        }
     }
 }
 
@@ -349,12 +357,18 @@ ast_hashtable_result ast_hashtable_insert(
     char          * key,   //!< The key to insert with.
     void          * value  //!< The data being added.
 ){
+    assert(key != NULL);
+    assert(table != NULL);
+
     int i;
     for(i = 0; i < table -> elements -> items; i ++)
     {
         ast_hashtable_element * e = ast_list_get(table->elements, i);
-        if(strcmp(e -> key , key) == 0){
-            return HASH_KEY_COLLISION;
+        if(e != NULL)
+        {
+            if(strcmp(e -> key , key) == 0){
+                return HASH_KEY_COLLISION;
+            }
         }
     }
     ast_hashtable_element * toinsert = calloc(1,sizeof(ast_hashtable_element));
@@ -375,9 +389,12 @@ ast_hashtable_result ast_hashtable_get(
     for(i = 0; i < table -> elements -> items; i ++)
     {
         ast_hashtable_element * e = ast_list_get(table->elements, i);
-        if(strcmp(e -> key , key) == 0){
-            *value = (e -> data);
-            return HASH_SUCCESS;
+        if(e != NULL)
+        {
+            if(strcmp(e -> key , key) == 0){
+                *value = (e -> data);
+                return HASH_SUCCESS;
+            }
         }
     }
     return HASH_KEY_NOT_FOUND;
@@ -392,9 +409,12 @@ ast_hashtable_result ast_hashtable_delete(
     for(i = 0; i < table -> elements -> items; i ++)
     {
         ast_hashtable_element * e = ast_list_get(table->elements, i);
-        if(strcmp(e -> key , key) == 0){
-            ast_list_remove_at(table->elements, i);
-            return HASH_SUCCESS;
+        if(e != NULL)
+        {
+            if(strcmp(e -> key , key) == 0){
+                ast_list_remove_at(table->elements, i);
+                return HASH_SUCCESS;
+            }
         }
     }
     return HASH_KEY_NOT_FOUND;
