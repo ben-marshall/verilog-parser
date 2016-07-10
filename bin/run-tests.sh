@@ -15,7 +15,7 @@ echo "------------------------- Running Test Script -------------------------"
 rm -rf build/tests.log
 
 EXE=build/bin/verilog-app
-TEST_FILES=`ls tests/ | sort`
+TEST_FILES=`find tests/ -name *.v | sort`
 
 FAILED_TESTS=" "
 PASSED_TESTS=" "
@@ -23,7 +23,7 @@ PASSED_TESTS=" "
 for FILE in $TEST_FILES
 do
     # run the program and store the result.
-    $EXE tests/$FILE 2>> build/tests.log 1>> build/tests.log
+    $EXE $FILE 2>> build/tests.log 1>> build/tests.log
     RESULT=$?
 
     if [ "0" -eq "$RESULT" ]; then
