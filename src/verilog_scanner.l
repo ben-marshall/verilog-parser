@@ -223,8 +223,8 @@ Z                   "z"|"Z"|"?"
 DIGIT_DECIMAL       [0-9]
 DIGIT_DECMIAL_NZ    [1-9]
 DIGIT_BINARY        [0-1]|{X}|{Z}
-DIGIT_OCTAL         [0-7]
-DIGIT_HEX           [0-9a-fA-F]
+DIGIT_OCTAL         [0-7]|{X}|{Z}
+DIGIT_HEX           [0-9a-fA-F]|{X}|{Z}
 
 BASE_DECIMAL        '[sS]?[dD]
 BASE_BINARY         '[sS]?[bB]
