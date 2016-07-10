@@ -2643,9 +2643,13 @@ pass_switchtype     :
 /* A.4.1 module instantiation */
 
 module_instantiation: 
- module_identifier parameter_value_assignment_o module_instances SEMICOLON{
-    $$ = ast_new_module_instantiation($1,$2,$3);
-  }
+  module_identifier HASH delay_value parameter_value_assignment_o module_instances 
+  SEMICOLON{
+     $$ = ast_new_module_instantiation($1,$4,$5);
+   }
+| module_identifier parameter_value_assignment_o module_instances SEMICOLON{
+     $$ = ast_new_module_instantiation($1,$2,$3);
+   }
 ;
 
 parameter_value_assignment_o : parameter_value_assignment {$$=$1;} 
