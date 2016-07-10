@@ -3459,8 +3459,7 @@ wait_statement :
 /* A.6.6 Conditional Statemnets */
 
 conditional_statement : 
-  if_else_if_statement {$$ = $1;}
-| KW_IF OPEN_BRACKET expression CLOSE_BRACKET statement_or_null{
+  KW_IF OPEN_BRACKET expression CLOSE_BRACKET statement_or_null{
     ast_conditional_statement * first = ast_new_conditional_statement($5,$3);
     $$ = ast_new_if_else(first,NULL);
    }
@@ -3469,6 +3468,7 @@ conditional_statement :
     ast_conditional_statement * first = ast_new_conditional_statement($5,$3);
     $$ = ast_new_if_else(first,$7);
    }
+| if_else_if_statement {$$ = $1;}
 ;
 
 if_else_if_statement : 

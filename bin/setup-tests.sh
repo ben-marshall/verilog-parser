@@ -28,7 +28,7 @@ then
     echo "Not unpacking SPARC test set yet..."
 else
     echo "Unzipping SPARC test set..."
-    unzip ../bin/sparct1.zip
+    unzip -o ../bin/sparct1.zip
 fi
 
 
