@@ -4449,6 +4449,20 @@ primary :
       $$ = ast_new_primary(PRIMARY_NUMBER);
       $$ -> value.number = $1;
   }
+| function_call{
+      $$ = ast_new_primary_function_call($1);
+  }
+| hierarchical_identifier constant_function_call_pid{
+      $2 -> function= $1;
+      $$ = ast_new_primary_function_call($2);
+  }
+| SIMPLE_ID constant_function_call_pid{ // Weird quick, but it works.
+      $2 -> function= $1;
+      $$ = ast_new_primary_function_call($2);
+  }
+| system_function_call{
+      $$ = ast_new_primary_function_call($1);
+  }
 | hierarchical_identifier sq_bracket_expressions{
       $$ = ast_new_primary(PRIMARY_NUMBER);
       $$ -> value.identifier = $1;
@@ -4466,19 +4480,9 @@ primary :
       $$ = ast_new_primary(PRIMARY_CONCATENATION);
       $$ -> value.concatenation = $1;
   }
-| function_call{
-      $$ = ast_new_primary_function_call($1);
-  }
-| system_function_call{
-      $$ = ast_new_primary_function_call($1);
-  }
 | hierarchical_identifier{
       $$ = ast_new_primary(PRIMARY_IDENTIFIER);
       $$ -> value.identifier = $1;
-  }
-| hierarchical_identifier constant_function_call_pid{
-      $2 -> function= $1;
-      $$ = ast_new_primary_function_call($2);
   }
 | OPEN_BRACKET mintypmax_expression CLOSE_BRACKET{
       $$ = ast_new_primary(PRIMARY_MINMAX_EXP);
@@ -4822,9 +4826,10 @@ parameter_identifier            : identifier
     {$$=$1; $$ -> type = ID_PARAMETER;}
                                 ;
 port_identifier                 : 
- identifier 
-    {$$=$1; $$ -> type = ID_PORT;
-};
+ identifier {
+     $$=$1; $$ -> type = ID_PORT;
+  }
+;
 
 real_identifier                 : identifier 
     {$$=$1; $$ -> type = ID_REAL;};
