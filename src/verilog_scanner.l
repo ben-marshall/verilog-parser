@@ -171,9 +171,9 @@ TIME                "time"
 TRAN                "tran"
 TRANIF0             "tranif0"
 TRANIF1             "tranif1"
-TRI                 "tri"
 TRI0                "tri0"
 TRI1                "tri1"
+TRI                 "tri"
 TRIAND              "triand"
 TRIOR               "trior"
 TRIREG              "trireg"
@@ -320,21 +320,6 @@ TERNARY             "?"
 {CD_ENDCELLDEFINE}       {verilog_preproc_exit_cell_define();}
 
 {CD_DEFAULT_NETTYPE}     {BEGIN(in_default_nettype);}
-<in_default_nettype>{SUPPLY0} {
-    BEGIN(INITIAL); 
-    verilog_preproc_default_net(yy_preproc -> token_count, 
-        yylineno, NET_TYPE_SUPPLY0);
-    }
-<in_default_nettype>{SUPPLY1} {
-    BEGIN(INITIAL); 
-    verilog_preproc_default_net(yy_preproc -> token_count, 
-        yylineno, NET_TYPE_SUPPLY1);
-    }
-<in_default_nettype>{TRI}     {
-    BEGIN(INITIAL); 
-    verilog_preproc_default_net(yy_preproc -> token_count, 
-        yylineno, NET_TYPE_TRI    );
-    }
 <in_default_nettype>{TRIAND}  {
     BEGIN(INITIAL); 
     verilog_preproc_default_net(yy_preproc -> token_count, 
@@ -344,6 +329,21 @@ TERNARY             "?"
     BEGIN(INITIAL); 
     verilog_preproc_default_net(yy_preproc -> token_count, 
         yylineno, NET_TYPE_TRIOR  );
+    }
+<in_default_nettype>{TRIREG}     {
+    BEGIN(INITIAL); 
+    verilog_preproc_default_net(yy_preproc -> token_count, 
+        yylineno, NET_TYPE_TRIREG );
+    }
+<in_default_nettype>{TRI0}     {
+    BEGIN(INITIAL); 
+    verilog_preproc_default_net(yy_preproc -> token_count, 
+        yylineno, NET_TYPE_TRI    );
+    }
+<in_default_nettype>{TRI}     {
+    BEGIN(INITIAL); 
+    verilog_preproc_default_net(yy_preproc -> token_count, 
+        yylineno, NET_TYPE_TRI    );
     }
 <in_default_nettype>{WIRE}    {
     BEGIN(INITIAL); 
@@ -449,10 +449,12 @@ TERNARY             "?"
     BEGIN(INITIAL);
 }
 
-{CD_LINE}                {BEGIN(in_line_1);}
-<in_line_1>{INTEGER}     {BEGIN(in_line_2);}
-<in_line_2>{STRING}      {BEGIN(in_line_3);}
-<in_line_3>{INTEGER}     {BEGIN(INITIAL);}
+{CD_LINE}                 {BEGIN(in_line_1);}
+<in_line_1>{INTEGER}      {BEGIN(in_line_2);}
+<in_line_1>{NUM_UNSIGNED} {BEGIN(in_line_2);}
+<in_line_2>{STRING}       {BEGIN(in_line_3);}
+<in_line_3>{INTEGER}      {BEGIN(INITIAL);}
+<in_line_3>{NUM_UNSIGNED} {BEGIN(INITIAL);}
 
 {CD_NOUNCONNECTED_DRIVE} {
     verilog_preprocessor_nounconnected_drive(STRENGTH_NONE);
@@ -704,12 +706,12 @@ TERNARY             "?"
 {TRAN}                 {EMIT_TOKEN(KW_TRAN);} 
 {TRANIF0}              {EMIT_TOKEN(KW_TRANIF0);} 
 {TRANIF1}              {EMIT_TOKEN(KW_TRANIF1);} 
-{TRI}                  {EMIT_TOKEN(KW_TRI);} 
 {TRI0}                 {EMIT_TOKEN(KW_TRI0);} 
 {TRI1}                 {EMIT_TOKEN(KW_TRI1);} 
 {TRIAND}               {EMIT_TOKEN(KW_TRIAND);} 
 {TRIOR}                {EMIT_TOKEN(KW_TRIOR);} 
 {TRIREG}               {EMIT_TOKEN(KW_TRIREG);} 
+{TRI}                  {EMIT_TOKEN(KW_TRI);} 
 {UNSIGNED}             {EMIT_TOKEN(KW_UNSIGNED);} 
 {USE}                  {EMIT_TOKEN(KW_USE);} 
 {VECTORED}             {EMIT_TOKEN(KW_VECTORED);} 
