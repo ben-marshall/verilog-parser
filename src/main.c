@@ -55,5 +55,6 @@ int main(int argc, char ** argv)
         }
     }
     verilog_free_preprocessor_context(yy_preproc);
+    verilog_free_source_tree(yy_source_tree);
     return 0;
 }

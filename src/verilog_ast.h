@@ -2970,8 +2970,8 @@ used to represent a collection of other nodes.
 
 //! Describes the type of a item in the list of source entries.
 typedef enum ast_source_item_type_e{
-    SOURCE_MODULE,  //!< Refers to a module definition
-    SOURCE_UDP      //!< A User Defined Primitive (UDP) Declaration
+    SOURCE_MODULE = 0,  //!< Refers to a module definition
+    SOURCE_UDP    = 1   //!< A User Defined Primitive (UDP) Declaration
 } ast_source_item_type;
 
 //! Contains a source item and it's type.
@@ -2990,6 +2990,41 @@ typedef struct ast_source_item_t{
 set manually.
 */
 ast_source_item * ast_new_source_item(ast_source_item_type type);
+
+/*!
+@brief Top level container for parsed source code.
+@details All source code which the parser processes is placed inside an
+instance of this object. It contains lists of all top level objects which
+a verilog source file can contain.
+*/
+typedef struct verilog_source_tree_t{
+    ast_list    *   modules;
+    ast_list    *   primitives;
+    ast_list    *   configs;
+    ast_list    *   libraries;
+} verilog_source_tree;
+
+
+//! This is where we put all of the parsed constructs.
+extern verilog_source_tree * yy_source_tree;
+
+
+/*!
+@brief Creates and returns a new, empty source tree.
+@details This should be called ahead of parsing anything, so we will
+have an object to put parsed constructs into.
+*/
+verilog_source_tree * verilog_new_source_tree();
+
+/*!
+@brief Releases a source tree object from memory.
+@details Frees the top level source tree object, and all of it's child
+ast_* objects by calling the ast_free_all function.
+@param [in] tofree - The source tree to be free'd
+*/
+void verilog_free_source_tree(
+    verilog_source_tree * tofree
+);
 
 // --------------------------------------------------------------
 

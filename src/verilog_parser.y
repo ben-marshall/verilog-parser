@@ -9,6 +9,7 @@
 %{
     #include <stdio.h>
     #include <string.h>
+    #include <assert.h>
 
     #include "verilog_ast.h"
 
@@ -783,11 +784,50 @@
 %%
 /* Start variables */
 
-grammar_begin : library_text {$$ = ast_list_new();}
-              | config_declaration {$$ = ast_list_new();}
-              | source_text {$$= $1;}
-              | {$$ = ast_list_new();}
-              ;
+grammar_begin : 
+  library_text {
+    assert(yy_source_tree != NULL);
+    yy_source_tree -> libraries = 
+        ast_list_concat(yy_source_tree -> libraries, $1);
+}
+| config_declaration {
+    assert(yy_source_tree != NULL);
+    ast_list_append(yy_source_tree -> configs, $1);
+}
+| source_text {
+    assert(yy_source_tree != NULL);
+
+    int i;
+    for(i  = 0; i < $1 -> items; i ++)
+    {
+        ast_source_item * toadd = ast_list_get($1, i);
+
+        if(toadd -> type == SOURCE_MODULE)
+        {
+            ast_list_append(yy_source_tree -> modules, toadd -> module);
+            free(toadd);
+        }
+        else if (toadd -> type == SOURCE_UDP)
+        {
+            ast_list_append(yy_source_tree -> primitives, toadd -> udp);
+            free(toadd);
+        }
+        else
+        {
+            // Do nothing / unknown / unsupported type.
+            printf("line %d of %s - Unknown source item type: %d",
+                __LINE__,
+                __FILE__,
+                toadd -> type);
+            free(toadd);
+        }
+    }
+    ast_list_free($1);
+}
+| {
+    // Do nothing, it's an empty file.
+}
+;
 
 /* 19.0 Compiler Directives */
 

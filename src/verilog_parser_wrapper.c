@@ -4,6 +4,7 @@
 @brief Contains implementations of functions declared in verilog_parser.h
 */
 
+#include "verilog_ast.h"
 #include "verilog_parser.h"
 
 /*!
@@ -12,9 +13,15 @@
 */
 void    verilog_parser_setup(FILE * input_file)
 {
-    if(yy_preproc == NULL) {
+    if(yy_preproc == NULL) 
+    {
+        //printf("Added new preprocessor context\n");
         yy_preproc = verilog_new_preprocessor_context();
-    } else {
+    }
+    if(yy_source_tree == NULL)
+    {
+        //printf("Added new source tree\n");
+        yy_source_tree = verilog_new_source_tree();
     }
     yyrestart(input_file);
 }

@@ -63,6 +63,7 @@ void * ast_calloc(size_t num, size_t size)
 @ref head variable.
 @post @ref walker and @ref head are NULL. All memory allocated by ast_calloc
 has been freed.
+@bug Causes segmentation fault due to double free call on the same pointer.
 */
 void ast_free_all()
 {
@@ -73,7 +74,10 @@ void ast_free_all()
     {
         walker = head;
         head = head -> next;
-        free(walker -> data);
+        if(walker -> data != NULL)
+        {
+            free(walker -> data);
+        }
         free(walker);
     }
 
@@ -2263,4 +2267,47 @@ ast_number * ast_new_number(
     tr -> as_bits = digits;
 
     return tr;
+}
+
+
+// ----------------------------------------------------------------------------
+
+
+/*!
+@brief Global source tree object, used to store parsed constructs.
+@details This is a global variable, initialised prior to calling
+the verilog_parse function, into which all objects the parser finds are
+stored.
+*/
+verilog_source_tree * yy_source_tree;
+
+/*!
+@brief Creates and returns a new, empty source tree.
+@details This should be called ahead of parsing anything, so we will
+have an object to put parsed constructs into.
+*/
+verilog_source_tree * verilog_new_source_tree()
+{
+    verilog_source_tree * tr = ast_calloc(1,sizeof(verilog_source_tree));
+
+    tr -> modules       =   ast_list_new();
+    tr -> primitives    =   ast_list_new();
+    tr -> configs       =   ast_list_new();
+    tr -> libraries     =   ast_list_new();
+
+    return tr;
+}
+
+/*!
+@brief Releases a source tree object from memory.
+@param [in] tofree - The source tree to be free'd
+*/
+void verilog_free_source_tree(
+    verilog_source_tree * tofree
+){
+    ast_list_free(tofree -> modules   );
+    ast_list_free(tofree -> primitives);
+    ast_list_free(tofree -> configs   );
+    ast_list_free(tofree -> libraries );
+    free(tofree);
 }
