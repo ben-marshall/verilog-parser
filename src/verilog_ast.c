@@ -2279,7 +2279,7 @@ ast_number * ast_new_number(
 the verilog_parse function, into which all objects the parser finds are
 stored.
 */
-verilog_source_tree * yy_source_tree;
+verilog_source_tree * yy_verilog_source_tree;
 
 /*!
 @brief Creates and returns a new, empty source tree.

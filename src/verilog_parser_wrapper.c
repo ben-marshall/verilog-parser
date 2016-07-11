@@ -18,10 +18,10 @@ void    verilog_parser_setup(FILE * input_file)
         //printf("Added new preprocessor context\n");
         yy_preproc = verilog_new_preprocessor_context();
     }
-    if(yy_source_tree == NULL)
+    if(yy_verilog_source_tree == NULL)
     {
         //printf("Added new source tree\n");
-        yy_source_tree = verilog_new_source_tree();
+        yy_verilog_source_tree = verilog_new_source_tree();
     }
     yyrestart(input_file);
 }

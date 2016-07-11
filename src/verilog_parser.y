@@ -786,16 +786,16 @@
 
 grammar_begin : 
   library_text {
-    assert(yy_source_tree != NULL);
-    yy_source_tree -> libraries = 
-        ast_list_concat(yy_source_tree -> libraries, $1);
+    assert(yy_verilog_source_tree != NULL);
+    yy_verilog_source_tree -> libraries = 
+        ast_list_concat(yy_verilog_source_tree -> libraries, $1);
 }
 | config_declaration {
-    assert(yy_source_tree != NULL);
-    ast_list_append(yy_source_tree -> configs, $1);
+    assert(yy_verilog_source_tree != NULL);
+    ast_list_append(yy_verilog_source_tree -> configs, $1);
 }
 | source_text {
-    assert(yy_source_tree != NULL);
+    assert(yy_verilog_source_tree != NULL);
 
     int i;
     for(i  = 0; i < $1 -> items; i ++)
@@ -804,12 +804,14 @@ grammar_begin :
 
         if(toadd -> type == SOURCE_MODULE)
         {
-            ast_list_append(yy_source_tree -> modules, toadd -> module);
+            ast_list_append(yy_verilog_source_tree -> modules, 
+                toadd -> module);
             free(toadd);
         }
         else if (toadd -> type == SOURCE_UDP)
         {
-            ast_list_append(yy_source_tree -> primitives, toadd -> udp);
+            ast_list_append(yy_verilog_source_tree -> primitives, 
+                toadd -> udp);
             free(toadd);
         }
         else

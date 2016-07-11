@@ -3006,7 +3006,7 @@ typedef struct verilog_source_tree_t{
 
 
 //! This is where we put all of the parsed constructs.
-extern verilog_source_tree * yy_source_tree;
+extern verilog_source_tree * yy_verilog_source_tree;
 
 
 /*!
