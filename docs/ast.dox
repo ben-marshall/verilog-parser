@@ -2,6 +2,9 @@
 
 @defgroup ast Abstract Syntax Tree
 
+@brief Functions and data structures which build and represent the AST.
+
+@details
 This page describes the structure of the abstract syntax tree that the
 parser constructs. It includes the various root nodes, and how their
 child nodes are structured.

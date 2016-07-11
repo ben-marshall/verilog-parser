@@ -1,17 +1,14 @@
 
 /*!
-@file verilog_parser.c
+@file verilog_parser_wrapper.c
 @brief Contains implementations of functions declared in verilog_parser.h
 */
 
 #include "verilog_ast.h"
 #include "verilog_parser.h"
 
-/*!
-@brief Sets up the parser to accept more input from a new input file.
-@details Acts as a wrapper around yyrestart()
-*/
-void    verilog_parser_setup(FILE * input_file)
+
+void    verilog_parser_init()
 {
     if(yy_preproc == NULL) 
     {
@@ -23,15 +20,41 @@ void    verilog_parser_setup(FILE * input_file)
         //printf("Added new source tree\n");
         yy_verilog_source_tree = verilog_new_source_tree();
     }
-    yyrestart(input_file);
 }
 
 /*!
 @brief Perform a parsing operation on the currently selected buffer.
-@details Acts as a wrapper around yyparse().
 */
-int     verilog_parse_current_buffer()
+int     verilog_parse_file(FILE * to_parse)
 {
-    return yyparse();
+    YY_BUFFER_STATE new_buffer = yy_create_buffer(to_parse, YY_BUF_SIZE);
+    yy_switch_to_buffer(new_buffer);
+    
+    int result = yyparse();
+    return result;
 }
 
+/*!
+@brief Perform a parsing operation on the supplied in-memory string.
+*/
+int     verilog_parse_string(char * to_parse, int length)
+{
+    YY_BUFFER_STATE new_buffer = yy_scan_bytes(to_parse, length);
+    yy_switch_to_buffer(new_buffer);
+    
+    int result = yyparse();
+    return result;
+}
+
+
+/*!
+@brief Perform a parsing operation on the supplied in-memory string.
+*/
+int     verilog_parse_buffer(char * to_parse, int length)
+{
+    YY_BUFFER_STATE new_buffer = yy_scan_buffer(to_parse, length);
+    yy_switch_to_buffer(new_buffer);
+    
+    int result = yyparse();
+    return result;
+}

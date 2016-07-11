@@ -20,8 +20,8 @@ int main(int argc, char ** argv)
     {
         int F = 0;
             
-        // Create a new preprocessor instance.
-        yy_preproc = verilog_new_preprocessor_context();
+        // Initialise the parser.
+        verilog_parser_init();
 
         // Setup the preprocessor to look in ./tests/ for include files.
         char * sdir = "./tests/";
@@ -33,12 +33,9 @@ int main(int argc, char ** argv)
 
             // Load the file.
             FILE * fh = fopen(argv[F], "r");
-
-            // Setup the parser to read from this new file.
-            verilog_parser_setup(fh);
             
             // Parse the file and store the result.
-            int result = verilog_parse_current_buffer();
+            int result = verilog_parse_file(fh);
 
             // Close the file handle
             fclose(fh);
