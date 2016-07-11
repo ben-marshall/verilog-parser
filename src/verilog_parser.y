@@ -382,7 +382,6 @@
 %type   <assignment>                 blocking_assignment
 %type   <assignment>                 continuous_assign
 %type   <assignment>                 nonblocking_assignment
-%type   <single_assignment>          param_assignment
 %type   <assignment>                 procedural_continuous_assignments
 %type   <block_item_declaration>     block_item_declaration
 %type   <block_reg_declaration>      block_reg_declaration
@@ -416,6 +415,8 @@
 %type   <concatenation>              variable_concatenation
 %type   <concatenation>              variable_concatenation_cont
 %type   <concatenation>              variable_concatenation_value
+%type   <config_declaration>         config_declaration
+%type   <config_rule_statement>      config_rule_statement
 %type   <delay2>                     delay2
 %type   <delay2>                     delay2_o
 %type   <delay3>                     delay3
@@ -470,8 +471,10 @@
 %type   <identifier>                 attr_name
 %type   <identifier>                 block_identifier
 %type   <identifier>                 block_variable_type
+%type   <identifier>                 cell_clause
 %type   <identifier>                 cell_identifier
 %type   <identifier>                 config_identifier
+%type   <identifier>                 design_statement
 %type   <identifier>                 escaped_arrayed_identifier
 %type   <identifier>                 escaped_hierarchical_branch
 %type   <identifier>                 escaped_hierarchical_identifier
@@ -501,7 +504,6 @@
 %type   <identifier>                 instance_identifier_os
 %type   <identifier>                 lib_cell_identifier_os
 %type   <identifier>                 library_identifier
-%type   <list>                       library_identifier_os
 %type   <identifier>                 module_identifier
 %type   <identifier>                 module_instance_identifier
 %type   <identifier>                 name_of_gate_instance
@@ -525,10 +527,11 @@
 %type   <identifier>                 system_function_identifier
 %type   <identifier>                 system_task_identifier
 %type   <identifier>                 task_identifier
-%type   <identifier>                 text_macro_name
+%type   <identifier>                 text_macro_usage
 %type   <identifier>                 topmodule_identifier
 %type   <identifier>                 udp_identifier
 %type   <identifier>                 udp_instance_identifier
+%type   <identifier>                 use_clause
 %type   <identifier>                 variable_identifier
 %type   <identifier>                 variable_type
 %type   <ifelse>                     conditional_statement
@@ -537,11 +540,13 @@
 %type   <ifelse>                     generate_conditional_statement
 %type   <ifelse>                     if_else_if_statement
 %type   <level_symbol>               level_symbol
+%type   <library_declaration>        library_declaration
+%type   <library_descriptions>       library_descriptions
 %type   <list>                       block_item_declarations
 %type   <list>                       case_items
 %type   <list>                       cmos_switch_instances
 %type   <list>                       combinational_entrys
-%type   <list>                       compiler_directives
+%type   <list>                       config_rule_statement_os
 %type   <list>                       constant_expressions
 %type   <list>                       dimensions
 %type   <list>                       dimensions_o
@@ -565,10 +570,12 @@
 %type   <list>                       input_terminals
 %type   <list>                       level_symbols
 %type   <list>                       level_symbols_o
+%type   <list>                       liblist_clause
+%type   <list>                       library_identifier_os
+%type   <list>                       library_text
 %type   <list>                       list_of_actual_arguments
 %type   <list>                       list_of_block_variable_identifiers
 %type   <list>                       list_of_event_identifiers
-%type   <list>                       list_of_formal_arguments
 %type   <list>                       list_of_genvar_identifiers
 %type   <list>                       list_of_net_assignments
 %type   <list>                       list_of_net_decl_assignments
@@ -650,31 +657,10 @@
 %type   <net_type>                   net_type
 %type   <net_type>                   net_type_o
 %type   <node>                       actual_argument
-%type   <identifier>                 cell_clause
-%type   <node>                       compiler_directive
-%type   <node>                       conditional_compile_directive
-%type   <config_declaration>         config_declaration
-%type   <config_rule_statement>      config_rule_statement
-%type   <list>                       config_rule_statement_os
-%type   <node>                       default_net_type_cd
-%type   <identifier>                 design_statement
-%type   <node>                       ifdef_directive
-%type   <node>                       ifndef_directive
-%type   <string>                     include_statement
-%type   <list>                       liblist_clause
-%type   <library_declaration>        library_declaration
-%type   <library_descriptions>       library_descriptions
-%type   <list>                       library_text
-%type   <node>                       line_directive
 %type   <node>                       pulsestyle_declaration
 %type   <node>                       showcancelled_declaration
 %type   <node>                       specify_item
 %type   <node>                       system_timing_check
-%type   <node>                       text_macro_definition
-%type   <node>                       time
-%type   <node>                       timescale_directive
-%type   <node>                       undefine_compiler_directive
-%type   <identifier>                 use_clause
 %type   <node_attributes>            attr_spec
 %type   <node_attributes>            attr_specs
 %type   <node_attributes>            attribute_instances
@@ -727,6 +713,7 @@
 %type   <single_assignment>          genvar_assignment
 %type   <single_assignment>          net_assignment
 %type   <single_assignment>          net_decl_assignment
+%type   <single_assignment>          param_assignment
 %type   <single_assignment>          specparam_assignment
 %type   <single_assignment>          variable_assignment
 %type   <source_item>                description
@@ -744,10 +731,9 @@
 %type   <string>                     comment
 %type   <string>                     file_path
 %type   <string>                     file_path_spec
-%type   <string>                     macro_text
+%type   <string>                     include_statement
 %type   <string>                     one_line_comment
 %type   <string>                     string
-%type   <identifier>                 text_macro_usage
 %type   <string>                     white_space
 %type   <switch_gate>                cmos_switchtype
 %type   <switch_gate>                mos_switchtype
@@ -805,17 +791,6 @@ grammar_begin : library_text {$$ = ast_list_new();}
 
 /* 19.0 Compiler Directives */
 
-/* 
-These are not properly handled at the moment and are completely
-ignored by the parser.
-*/
-
-compiler_directives : compiler_directive
-                    | compiler_directives compiler_directive
-                    ;
-
-compiler_directive  : conditional_compile_directive
-                    ;
 
 text_macro_usage : MACRO_IDENTIFIER list_of_actual_arguments
                  | MACRO_IDENTIFIER
@@ -827,14 +802,6 @@ list_of_actual_arguments : actual_argument
 
 actual_argument : expression
                 ; 
-
-conditional_compile_directive   : ifdef_directive
-                                | ifndef_directive
-                                | CD_ENDIF
-                                ;
-
-ifdef_directive : CD_IFDEF SIMPLE_ID;
-ifndef_directive: CD_IFNDEF SIMPLE_ID;
 
 
 /* A.1.1 Library Source Text */
@@ -863,9 +830,6 @@ library_descriptions :
     $$ = ast_new_library_description(LIB_CONFIG);
     $$ -> config = $1;
   }
-| compiler_directives {
-    $$ = NULL;
-}
 ;
 
 library_declaration : 
@@ -1054,9 +1018,6 @@ description :
 | udp_declaration     {
     $$ = ast_new_source_item(SOURCE_UDP);
     $$ -> udp = $1;
-}
-| compiler_directives {
-    $$ = NULL;
 }
 ;
 
@@ -1316,10 +1277,6 @@ module_or_generate_item :
     $$ = ast_new_module_item($1, MOD_ITEM_ALWAYS_CONSTRUCT);
     $$ -> always_construct = $2;
   }
-| compiler_directives {
-    $$ = NULL;
-    printf("%s:%d - Deprecate this.\n",__FILE__,__LINE__);
-}
 ;
 
 module_or_generate_item_declaration : 
