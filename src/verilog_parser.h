@@ -15,6 +15,11 @@ as well as an easy way to change the input stream.
 
 #ifndef H_VERILOG_PARSER
 #define H_VERILOG_PARSER
+
+#ifndef YY_TYPEDEF_YY_SIZE_T
+#define YY_TYPEDEF_YY_SIZE_T
+typedef size_t yy_size_t;
+#endif
  
 #ifndef YY_BUF_SIZE
     #define YY_BUF_SIZE 16384
@@ -24,7 +29,7 @@ extern void yyrestart (FILE *input_file  );
 extern void yy_switch_to_buffer (YY_BUFFER_STATE new_buffer  );
 extern YY_BUFFER_STATE yy_create_buffer (FILE *file,int size  );
 extern YY_BUFFER_STATE yy_scan_buffer (char *base,yy_size_t size  );
-extern YY_BUFFER_STATE yy_scan_bytes (yyconst char *bytes,int len  );
+extern YY_BUFFER_STATE yy_scan_bytes (const char *bytes,int len  );
 extern void yy_delete_buffer (YY_BUFFER_STATE b  );
 
 /*!
