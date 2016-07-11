@@ -1351,8 +1351,6 @@ typedef enum ast_statement_type_e{
 when first instantiating the structure. It is used to set the data content
 and nothing more. This is *very* bad practice and knowing this code is here
 pains me dearly.
-@todo Write 10 functions which set the correct type of the statement and
-accept only corresponding valid types as the data argument.
 */
 struct ast_statement_t{
     ast_statement_type      type;

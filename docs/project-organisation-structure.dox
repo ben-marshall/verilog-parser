@@ -7,6 +7,50 @@ tries to map this to the file structure.
 
 @tableofcontents
 
-@todo This page - once everything is stable.
+@section poc-api API Access & High Level
+
+The code representing the "user facing" side of the parser library is
+located in src/verilog_parser.h and the corresponding 
+src/verilog_parser_wrapper.c files.
+
+The API functions themselves documented in @ref parser-api
+
+It is also useful to look at the datastructures in src/verilog_ast.h, since
+it is a collection of these which is ultimately returned to the programmer
+after parsing a collection of source codes.
+
+@section poc-lexing Lexical Analysis
+
+Lexical analysis is done mainly using the src/verilog_scanner.l flex
+file. Accompanying this is the @ref verilog_preprocessor_context object,
+found in verilog_preprocessor.h/c. All of the preprocessing and macro
+expansion is done at the lexical analysis stage of the parser, before it
+gets to the syntax analysis stage.
+
+The preprocessor is available to the user via the @ref yy_preproc global
+variable.
+
+@section poc-parsing Parsing
+
+Parsing is split across several large files, and forms the bulk of the
+source code in the project.
+
+@subsection poc-parsing-grammar Parser Grammar
+
+The verilog grammar definition is found in the src/verilog_parser.y Bison
+file. This has been written to very closely mirror the syntax specification in
+the IEEE Verilog 2001 standard. While this means that the code is more verbose
+than is strictly required, it is much easier to read and relate to the
+specification.
+
+@subsection poc-parsing-ast Abstract Syntax Tree
+
+Construction of the AST is done *during* parsing, with post-grammar-rule
+calls to functions in src/verilog_ast.h/c. Each rule will usually create an
+AST node or object representing it's sub-rules or terminals, and then pass
+this up to the next level of the parser.
+
+The AST is available to the user via the @ref yy_verilog_source_tree global
+variable.
 
 */
