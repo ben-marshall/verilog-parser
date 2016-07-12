@@ -26,7 +26,6 @@ script:
 
 after_success:
  - make coverage-report &> coverage-report-log.txt
- - cd ./src/CMakeFiles/verilogparser.dir/
  - bash <(curl -s https://codecov.io/bash)
 
 after_failure:
