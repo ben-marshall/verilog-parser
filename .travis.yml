@@ -17,9 +17,11 @@ install:
  - sudo pip install cpp-coveralls
 
 before_script:
- - make setup
+ - ./bin/project.sh
 
 script:
+ - cd build
+ - make parser
  - make test
 
 after_success:
