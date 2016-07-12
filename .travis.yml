@@ -25,9 +25,9 @@ script:
  - make test
 
 after_success:
- - cd ./build/debug/
  - make coverage-report &> coverage-report-log.txt
- - bash <(curl -s https://codecov.io/bash) -X gcov
+ - head coverage-report-log.txt
+ - bash <(curl -s https://codecov.io/bash) -X gcov -v -s ./build -R .
 
 after_failure:
  - echo "Failure"
