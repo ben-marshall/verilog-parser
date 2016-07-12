@@ -1,0 +1,98 @@
+cmake_minimum_required(VERSION 2.8)
+
+project(verilog-parser-src)
+
+message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
+
+set(LIBRARY_NAME    verilogparser)
+set(EXECUTABLE_NAME parser)
+
+FIND_PACKAGE(BISON REQUIRED)
+FIND_PACKAGE(FLEX REQUIRED)
+
+set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
+
+set(FLEX_INPUT  verilog_scanner.l)
+set(FLEX_OUTPUT verilog_scanner.c)
+
+set(BISON_INPUT  verilog_parser.y)
+set(BISON_OUTPUT verilog_parser.tab.c)
+
+SET(CMAKE_C_FLAGS_DEBUG "-g -O0 -Wall -W -fprofile-arcs -ftest-coverage")
+SET(CMAKE_EXE_LINKER_FLAGS_DEBUG "-fprofile-arcs -ftest-coverage")
+
+SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
+SET(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
+
+# ------------------------------------------------------------------------
+
+ADD_CUSTOM_COMMAND(
+    SOURCE ${SOURCE_DIR}/${BISON_INPUT}
+    COMMAND ${BISON_EXECUTABLE} 
+    ARGS -y ${SOURCE_DIR}/${BISON_INPUT} -o ${BINARY_DIR}/${BISON_OUTPUT}
+    TARGET PARSER_LIB
+    OUTPUTS ${BINARY_DIR}/${BISON_OUTPUT}
+)
+
+ADD_CUSTOM_COMMAND(
+    SOURCE  ${SOURCE_DIR}/${FLEX_INPUT}
+    COMMAND ${FLEX_EXECUTABLE} 
+    ARGS    -o ${BINARY_DIR}/${FLEX_OUTPUT} ${SOURCE_DIR}/${FLEX_INPUT}
+    TARGET  PARSER_LIB
+    DEPENDS ${BINARY_DIR}/${BISON_OUTPUT}
+    OUTPUTS ${BINARY_DIR}/${FLEX_OUTPUT}
+)
+
+SET_SOURCE_FILES_PROPERTIES(${BINARY_DIR}/${FLEX_OUTPUT}  GENERATED)
+SET_SOURCE_FILES_PROPERTIES(${BINARY_DIR}/${BISON_OUTPUT} GENERATED)
+
+# ------------------------------------------------------------------------
+
+INCLUDE_DIRECTORIES(${BINARY_DIR})
+INCLUDE_DIRECTORIES(${SOURCE_DIR})
+
+set(PARSER_LIB_SRC ${BINARY_DIR}/${FLEX_OUTPUT}
+                   ${BINARY_DIR}/${BISON_OUTPUT}
+                   ${SOURCE_DIR}/verilog_ast.c
+                   ${SOURCE_DIR}/verilog_ast_common.c
+                   ${SOURCE_DIR}/verilog_parser_wrapper.c
+                   ${SOURCE_DIR}/verilog_preprocessor.c
+)
+
+add_library(${LIBRARY_NAME} ${PARSER_LIB_SRC})
+
+set(CMAKE_C_OUTPUT_EXTENSION_REPLACE 1)
+
+add_executable(${EXECUTABLE_NAME} main.c)
+target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME})
+
+# ------------------------------------------------------------------------
+
+file(GLOB COVERAGE_TEST_FILE_LIST "../tests/*.v")
+
+file(GLOB COVERAGE_SRC_FILES "./*.c")
+
+set(COVERAGE_GEN_FILES 
+    ${BINARY_DIR}/${FLEX_OUTPUT} ${BINARY_DIR}/${BISON_OUTPUT}
+)
+
+add_custom_target(coverage-tests
+    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/parser ${COVERAGE_TEST_FILE_LIST}
+    WORKING_DIRECTORY ../
+    DEPENDS ${EXECUTABLE_NAME}
+    COMMENT "Running Coverage Tests"
+    VERBATIM
+)
+
+# -s ../../src/*.c ./src/*.c
+
+add_custom_target(coverage-report
+    COMMAND gcov -f -b -c -o ../../build/debug/src/CMakeFiles/verilogparser.dir -s ${COVERAGE_SRC_FILES} ${COVERAGE_GEN_FILES}
+    COMMAND lcov --directory . -c -o coverage.info -t "Verilog Parser"
+    COMMAND genhtml -o ./coverage -t "Verilog Parser Test Coverage" --num-spaces 4 coverage.info
+    DEPENDS coverage-tests
+    COMMENT "Generating Coverage Report With GCOV"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../
+    VERBATIM
+)

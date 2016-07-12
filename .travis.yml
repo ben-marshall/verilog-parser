@@ -17,14 +17,19 @@ install:
  - sudo pip install cpp-coveralls
 
 before_script:
- - make setup
+ - ./bin/project.sh
 
 script:
+ - cd ./build/debug/
+ - make parser
  - make test
 
 after_success:
+ - pwd
  - make coverage-report
- - coveralls -b build/ -e build/bin -e build/lib -i build/coverage -i build/gen -i src/ --gcov-options "-f -b -c"
+ - pwd
+ - coveralls -i ../../src/ -i ./src -b .src/CMakeFiles/verilogparser.dir/ 
+
 
 after_failure:
  - echo "Failure"
