@@ -25,6 +25,11 @@ script:
  - make test
  - make coverage-report
 
+after_success:
+ - pwd
+ - coveralls
+
+
 after_failure:
  - echo "Failure"
 
