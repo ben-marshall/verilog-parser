@@ -23,6 +23,7 @@ script:
  - cd ./build/debug/
  - make parser
  - make test
+ - make coverage-report
 
 after_failure:
  - echo "Failure"
