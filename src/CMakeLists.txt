@@ -2,16 +2,53 @@ cmake_minimum_required(VERSION 2.8)
 
 project(verilog-parser-src)
 
+set(LIBRARY_NAME    verilogparser)
+set(EXECUTABLE_NAME parser)
 
 FIND_PACKAGE(BISON REQUIRED)
 FIND_PACKAGE(FLEX REQUIRED)
 
+set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
+
+set(FLEX_INPUT  verilog_scanner.l)
+set(FLEX_OUTPUT verilog_scanner.c)
+
+set(BISON_INPUT  verilog_parser.y)
+set(BISON_OUTPUT verilog_parser.tab.c)
+
 ADD_CUSTOM_COMMAND(
-    SOURCE  ${Foo_SOURCE_DIR}/src/verilog_scanner.l
-    COMMAND ${FLEX_EXECUTABLE} 
-    ARGS    -o${Foo_BINARY_DIR}/src/verilog_scanner.c 
-        ${Foo_SOURCE_DIR}/src/verilog_scanner.l
-    TARGET  PARSER_LIB
-    OUTPUTS ${Foo_BINARY_DIR}/src/verilog_scanner.c
+    SOURCE ${SOURCE_DIR}/${BISON_INPUT}
+    COMMAND ${BISON_EXECUTABLE} 
+    ARGS -y ${SOURCE_DIR}/${BISON_INPUT} -o ${BINARY_DIR}/${BISON_OUTPUT}
+    TARGET PARSER_LIB
+    OUTPUTS ${BINARY_DIR}/${BISON_OUTPUT}
 )
 
+ADD_CUSTOM_COMMAND(
+    SOURCE  ${SOURCE_DIR}/${FLEX_INPUT}
+    COMMAND ${FLEX_EXECUTABLE} 
+    ARGS    -o ${BINARY_DIR}/${FLEX_OUTPUT} ${SOURCE_DIR}/${FLEX_INPUT}
+    TARGET  PARSER_LIB
+    DEPENDS ${BINARY_DIR}/${BISON_OUTPUT}
+    OUTPUTS ${BINARY_DIR}/${FLEX_OUTPUT}
+)
+
+SET_SOURCE_FILES_PROPERTIES(${BINARY_DIR}/${FLEX_OUTPUT}  GENERATED)
+SET_SOURCE_FILES_PROPERTIES(${BINARY_DIR}/${BISON_OUTPUT} GENERATED)
+
+INCLUDE_DIRECTORIES(${BINARY_DIR})
+INCLUDE_DIRECTORIES(${SOURCE_DIR})
+
+set(PARSER_LIB_SRC ${BINARY_DIR}/${FLEX_OUTPUT}
+                   ${BINARY_DIR}/${BISON_OUTPUT}
+                   ${SOURCE_DIR}/verilog_ast.c
+                   ${SOURCE_DIR}/verilog_ast_common.c
+                   ${SOURCE_DIR}/verilog_parser_wrapper.c
+                   ${SOURCE_DIR}/verilog_preprocessor.c
+)
+
+add_library(${LIBRARY_NAME} ${PARSER_LIB_SRC})
+
+add_executable(${EXECUTABLE_NAME} main.c)
+target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME})
