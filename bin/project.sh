@@ -9,10 +9,11 @@ cd ../
 
 # Create build directory structure.
 mkdir -p build
-mkdir -p build/obj
-mkdir -p build/gen
-mkdir -p build/lib
-mkdir -p build/bin
+mkdir -p build/docs
+
+cd ./build
+cmake ..
+cd ..
 
 echo " "
 echo "Project workspace setup complete."
