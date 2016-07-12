@@ -23,9 +23,10 @@ script:
  - cd ./build/debug/
  - make parser
  - make test
- - make coverage-report
 
 after_success:
+ - pwd
+ - make coverage-report
  - pwd
  - coveralls
 
