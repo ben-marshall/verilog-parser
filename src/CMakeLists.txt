@@ -17,6 +17,12 @@ set(FLEX_OUTPUT verilog_scanner.c)
 set(BISON_INPUT  verilog_parser.y)
 set(BISON_OUTPUT verilog_parser.tab.c)
 
+SET(CMAKE_C_FLAGS_DEBUG "-g -O0 -Wall -W -fprofile-arcs -ftest-coverage")
+SET(CMAKE_EXE_LINKER_FLAGS_DEBUG "-fprofile-arcs -ftest-coverage")
+
+SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
+SET(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
+
 ADD_CUSTOM_COMMAND(
     SOURCE ${SOURCE_DIR}/${BISON_INPUT}
     COMMAND ${BISON_EXECUTABLE} 

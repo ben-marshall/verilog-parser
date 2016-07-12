@@ -14,7 +14,7 @@ echo "------------------------- Running Test Script -------------------------"
 
 rm -rf build/tests.log
 
-EXE=./build/src/parser
+EXE=./build/debug/src/parser
 TEST_FILES=`find tests/ -name *.v | sort`
 
 FAILED_TESTS=" "
