@@ -24,11 +24,6 @@ script:
  - make parser
  - make test
 
-after_success:
- - make coverage-report &> coverage-report-log.txt
- - head coverage-report-log.txt
- - bash <(curl -s https://codecov.io/bash) -X gcov -v -s ./build -R .
-
 after_failure:
  - echo "Failure"
 

@@ -24,55 +24,17 @@ and source code.
 
 @section build-system Build System
 
-The build system is purely GNU Make. There is a top level Makefile with
-the most common commands needed for the project included. These are:
+The build system uses CMake, and is split into debug and release builds.
+These are setup by the `bin/project.sh` script, and are found in the
+`build/debug` or `build/release` directories.
 
-- `all` - This builds the parser library, tester app and documentation.
-- `app` - Builds the library and test app only.
-- `docs` - Builds the documentation for the project.
-- `setup` - Initialises the project workspace.
+From either of those directories, we can run the following commands:
 
-The `app` and `docs` commands recurse into the `build/` and `docs/`
-subdirectories respectively.
-
-@subsection build-system-docs Documentation
-
-All documentation is built using Doxygen. The command to do so is
-wrapped in a Makefile with the single command `make docs` in
-`docs/Makefile`.
-
-@subsection build-system-source Compilation
-
-Compilation of the source code is handled by the makefile in the `build/`
-directory. This makefile should be self explanatory, but is essentially
-responsible for generating the flex and bison parsers, compiling object
-code, linking into a static library, and creating the test app which
-uses this library.
-
-The `build/` folder contains five sub-folders (assuming that `make all`
-has been run from the top of the project). These are:
-
-- `bin` - Contains exectuable binaries like the test app.
-- `lib` - Static and dynamic libraries, once compiled.
-- `obj` - All intermediate object files.
-- `gen` - Generated C source code, like the Bison and Flex code.
-- `docs` - Documentation Generator output.
-- `coverage` - See @ref coverage-info
-
-@subsection coverage-info Coverage
-
-The project uses `gcov` to generate coverage information and `lcov` to
-create html reports. The following `make` commands are useful in this case:
-
-- `make app-with-coverage` - This is infact an alias for the 
-  `make with-coverage` in `build/Makefile`. It simply builds the parser
-  library and test app with the appropriate coverage flags set.
-- `make coverage-report` - This runs the script `bin/test-coverage.sh` which
-  runs all of the available test programs through the test app. The coverage
-  results are then compiled into the `build/coverage` folder, and the
-  html reports are generated with lcov.
-- `make view-coverage-report` - Opens the generated html coverage reports
-  in your default html file viewer.
+- `make all`
+- `make parser` - Builds the library and a small tester app
+- `make test` - Runs the test suite against the most recent build.
+- `make coverage-report` - Runs the coverage suite against the most recent
+build, and puts the results in `./build/coverage/`
 
 @section ci-tool Continuous Integration
 
@@ -80,6 +42,6 @@ This project uses the Travis-CI tool for continuous integration. This is
 a service that plugs into github, meaning that every commit, fork and
 pull request automatically triggers a build. This build is configured using
 the `.travis.yml` file in the root of the project. As a minium, all builds
-must complete successfully, and tests should also be run.
+must complete successfully, and all of the test should be run without errors.
 
 */

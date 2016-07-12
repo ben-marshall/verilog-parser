@@ -23,7 +23,8 @@ Standard.
 This will get you going workspace wise.
 
     ```sh
-    $> make setup
+    $> ./bin/project
+    $> cd ./build/debug
     $> make test
     ```
 
