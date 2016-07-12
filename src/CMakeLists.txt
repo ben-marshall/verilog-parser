@@ -25,6 +25,8 @@ SET(CMAKE_EXE_LINKER_FLAGS_DEBUG "-fprofile-arcs -ftest-coverage")
 SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
 SET(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
 
+# ------------------------------------------------------------------------
+
 ADD_CUSTOM_COMMAND(
     SOURCE ${SOURCE_DIR}/${BISON_INPUT}
     COMMAND ${BISON_EXECUTABLE} 
@@ -45,6 +47,8 @@ ADD_CUSTOM_COMMAND(
 SET_SOURCE_FILES_PROPERTIES(${BINARY_DIR}/${FLEX_OUTPUT}  GENERATED)
 SET_SOURCE_FILES_PROPERTIES(${BINARY_DIR}/${BISON_OUTPUT} GENERATED)
 
+# ------------------------------------------------------------------------
+
 INCLUDE_DIRECTORIES(${BINARY_DIR})
 INCLUDE_DIRECTORIES(${SOURCE_DIR})
 
@@ -58,5 +62,37 @@ set(PARSER_LIB_SRC ${BINARY_DIR}/${FLEX_OUTPUT}
 
 add_library(${LIBRARY_NAME} ${PARSER_LIB_SRC})
 
+set(CMAKE_C_OUTPUT_EXTENSION_REPLACE 1)
+
 add_executable(${EXECUTABLE_NAME} main.c)
 target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME})
+
+# ------------------------------------------------------------------------
+
+file(GLOB COVERAGE_TEST_FILE_LIST "../tests/*.v")
+
+file(GLOB COVERAGE_SRC_FILES "./*.c")
+
+set(COVERAGE_GEN_FILES 
+    ${BINARY_DIR}/${FLEX_OUTPUT} ${BINARY_DIR}/${BISON_OUTPUT}
+)
+
+add_custom_target(coverage-tests
+    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/parser ${COVERAGE_TEST_FILE_LIST}
+    WORKING_DIRECTORY ../
+    DEPENDS ${EXECUTABLE_NAME}
+    COMMENT "Running Coverage Tests"
+    VERBATIM
+)
+
+# -s ../../src/*.c ./src/*.c
+
+add_custom_target(coverage-report
+    COMMAND gcov -f -b -c -o ../../build/debug/src/CMakeFiles/verilogparser.dir -s ${COVERAGE_SRC_FILES} ${COVERAGE_GEN_FILES}
+    COMMAND lcov --directory . -c -o coverage.info -t "Verilog Parser"
+    COMMAND genhtml -o ./coverage -t "Verilog Parser Test Coverage" --num-spaces 4 coverage.info
+    DEPENDS coverage-tests
+    COMMENT "Generating Coverage Report With GCOV"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../
+    VERBATIM
+)

@@ -26,7 +26,7 @@ script:
 
 after_success:
  - make coverage-report
- - coveralls -b build/ -e build/bin -e build/lib -i build/coverage -i build/gen -i src/ --gcov-options "-f -b -c"
+ - echo "coveralls -b build/ -e build/bin -e build/lib -i build/coverage -i build/gen -i src/ --gcov-options \"-f -b -c\""
 
 after_failure:
  - echo "Failure"
