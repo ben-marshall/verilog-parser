@@ -28,7 +28,7 @@ after_success:
  - pwd
  - make coverage-report
  - pwd
- - coveralls
+ - coveralls -i ../../src/ -i ./src -b .src/CMakeFiles/verilogparser.dir/ 
 
 
 after_failure:
