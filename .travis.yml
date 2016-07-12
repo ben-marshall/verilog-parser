@@ -20,7 +20,7 @@ before_script:
  - ./bin/project.sh
 
 script:
- - cd build
+ - cd ./build/debug/
  - make parser
  - make test
 

@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8)
 
 project(verilog-parser-src)
 
+message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
+
 set(LIBRARY_NAME    verilogparser)
 set(EXECUTABLE_NAME parser)
 
