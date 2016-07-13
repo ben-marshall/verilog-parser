@@ -57,6 +57,10 @@ You can keep calling `verilog_parse_file(fh)` on as many different file
 handles as you like to build up a multi-file project AST representation.
 The parser will automatically follow any `include` directives it finds.
 
+For an example of using the library in a real*ish* situation, the
+[verilog-dot](https://github.com/ben-marshall/verilog-dot) project shows how
+the library can be integrated into an existing project and used.
+
 ## Testing
 
 The test suite is comprised of example code taken from
