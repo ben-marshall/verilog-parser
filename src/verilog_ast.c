@@ -1837,7 +1837,7 @@ ast_port_declaration * ast_new_port_declaration(
     ast_list          * port_names      //!< [in] The names of the ports.
 ){
     ast_port_declaration * tr = ast_calloc(1,sizeof(ast_port_declaration));
-    
+
     tr -> direction   =  direction  ;
     tr -> net_type    =  net_type   ;
     tr -> net_signed  =  net_signed ;
@@ -2141,9 +2141,12 @@ ast_identifier ast_new_identifier(
     unsigned int   from_line  
 ){
     ast_identifier tr = ast_calloc(1,sizeof(struct ast_identifier_t));
+    
+    size_t length = strlen(identifier);
+    tr -> identifier = calloc(length, sizeof(char));
+    strcat(tr -> identifier, identifier);
 
     tr -> from_line = from_line;
-    tr -> identifier = identifier;
     tr -> type = ID_UNKNOWN;
     tr -> next = NULL;
     tr -> range_or_idx = ID_HAS_NONE;
