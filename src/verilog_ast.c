@@ -2141,9 +2141,12 @@ ast_identifier ast_new_identifier(
     unsigned int   from_line  
 ){
     ast_identifier tr = ast_calloc(1,sizeof(struct ast_identifier_t));
+    
+    size_t length = strlen(identifier);
+    tr -> identifier = calloc(length, sizeof(char));
+    strcat(tr -> identifier, identifier);
 
     tr -> from_line = from_line;
-    tr -> identifier = identifier;
     tr -> type = ID_UNKNOWN;
     tr -> next = NULL;
     tr -> range_or_idx = ID_HAS_NONE;
