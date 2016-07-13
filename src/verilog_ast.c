@@ -1837,7 +1837,7 @@ ast_port_declaration * ast_new_port_declaration(
     ast_list          * port_names      //!< [in] The names of the ports.
 ){
     ast_port_declaration * tr = ast_calloc(1,sizeof(ast_port_declaration));
-    
+
     tr -> direction   =  direction  ;
     tr -> net_type    =  net_type   ;
     tr -> net_signed  =  net_signed ;
