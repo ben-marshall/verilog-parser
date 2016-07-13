@@ -2142,7 +2142,7 @@ ast_identifier ast_new_identifier(
 ){
     ast_identifier tr = ast_calloc(1,sizeof(struct ast_identifier_t));
     
-    size_t length = strlen(identifier);
+    size_t length = strlen(identifier) + 1;
     tr -> identifier = calloc(length, sizeof(char));
     strcat(tr -> identifier, identifier);
 
