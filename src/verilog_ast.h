@@ -153,7 +153,7 @@ ast_number * ast_new_number(
     char  * digits  //!< The string token representing the number.
 );
 
-/*! }@ */
+/*! @} */
 
 
 //-------------- attributes ------------------------------------
