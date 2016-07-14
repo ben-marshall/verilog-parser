@@ -2210,9 +2210,137 @@ ast_module_declaration * ast_new_module_declaration(
 
     tr -> attributes = attributes;
     tr -> identifier = identifier;
-    tr -> parameters = parameters;
-    tr -> ports      = ports;
-    tr -> constructs = constructs;
+    tr -> module_parameters = parameters;
+    tr -> module_ports      = ports;
+    
+    tr -> always_blocks          = ast_list_new();
+    tr -> continuous_assignments = ast_list_new();
+    tr -> event_declarations     = ast_list_new();
+    tr -> function_declarations  = ast_list_new();
+    tr -> gate_instantiations    = ast_list_new();
+    tr -> genvar_declarations    = ast_list_new();
+    tr -> generate_blocks        = ast_list_new();
+    tr -> initial_blocks         = ast_list_new();
+    tr -> integer_declarations   = ast_list_new();
+    tr -> local_parameters       = ast_list_new();
+    tr -> module_instantiations  = ast_list_new();
+    tr -> net_declarations       = ast_list_new();
+    tr -> parameter_overrides    = ast_list_new();
+    tr -> real_declarations      = ast_list_new();
+    tr -> realtime_declarations  = ast_list_new();
+    tr -> reg_declarations       = ast_list_new();
+    tr -> specify_blocks         = ast_list_new();
+    tr -> specparams             = ast_list_new();
+    tr -> task_declarations      = ast_list_new();
+    tr -> time_declarations      = ast_list_new();
+    tr -> udp_instantiations     = ast_list_new();
+
+    int i;
+
+    for(i = 0; i < constructs -> items; i++)
+    {
+        ast_module_item * construct = ast_list_get(constructs, i);
+
+        if(construct -> type == MOD_ITEM_PORT_DECLARATION){
+            ast_list_append(tr -> module_ports, 
+                            construct -> port_declaration);
+        }
+        else if(construct -> type == MOD_ITEM_GENERATED_INSTANTIATION){
+            ast_list_append(tr -> generate_blocks,
+                            construct -> generated_instantiation);
+        } 
+        else if(construct -> type == MOD_ITEM_PARAMETER_DECLARATION) {
+            ast_list_append(tr -> module_parameters,
+                            construct -> parameter_declaration);
+        } 
+        else if(construct -> type == MOD_ITEM_SPECIFY_BLOCK){
+            ast_list_append(tr -> specify_blocks,
+                            construct -> specify_block);
+        } 
+        else if(construct -> type == MOD_ITEM_SPECPARAM_DECLARATION){
+            ast_list_append(tr -> specparams,
+                            construct -> specparam_declaration);
+        } 
+        else if(construct -> type == MOD_ITEM_PARAMETER_OVERRIDE){
+            ast_list_append(tr -> parameter_overrides,
+                            construct -> parameter_override);
+        } 
+        else if(construct -> type == MOD_ITEM_CONTINOUS_ASSIGNMENT){
+            ast_list_append(tr -> continuous_assignments,
+                            construct -> continuous_assignment);
+            // FIXME
+        } 
+        else if(construct -> type == MOD_ITEM_GATE_INSTANTIATION){
+            ast_list_append(tr -> gate_instantiations,
+                            construct -> gate_instantiation);
+            // FIXME?
+        } 
+        else if(construct -> type == MOD_ITEM_UDP_INSTANTIATION){
+            ast_list_append(tr -> udp_instantiations,
+                            construct -> udp_instantiation);
+        } 
+        else if(construct -> type == MOD_ITEM_MODULE_INSTANTIATION){
+            ast_list_append(tr -> module_instantiations,
+                            construct -> module_instantiation);
+            // FIXME
+        } 
+        else if(construct -> type == MOD_ITEM_INITIAL_CONSTRUCT){
+            ast_list_append(tr -> initial_blocks,
+                            construct -> initial_construct);
+        } 
+        else if(construct -> type == MOD_ITEM_ALWAYS_CONSTRUCT){
+            ast_list_append(tr -> always_blocks,
+                            construct -> always_construct);
+        } 
+        else if(construct -> type == MOD_ITEM_NET_DECLARATION){
+            ast_list_append(tr -> net_declarations,
+                            construct -> net_declaration);
+            // FIXME
+        } 
+        else if(construct -> type == MOD_ITEM_REG_DECLARATION){
+            ast_list_append(tr -> reg_declarations,
+                            construct -> reg_declaration);
+        } 
+        else if(construct -> type == MOD_ITEM_INTEGER_DECLARATION){
+            ast_list_append(tr -> integer_declarations,
+                            construct -> integer_declaration);
+        } 
+        else if(construct -> type == MOD_ITEM_REAL_DECLARATION){
+            ast_list_append(tr -> real_declarations,
+                            construct -> real_declaration);
+        } 
+        else if(construct -> type == MOD_ITEM_TIME_DECLARATION){
+            ast_list_append(tr -> time_declarations,
+                            construct -> time_declaration);
+        } 
+        else if(construct -> type == MOD_ITEM_REALTIME_DECLARATION){
+            ast_list_append(tr -> realtime_declarations,
+                            construct -> realtime_declaration);
+        } 
+        else if(construct -> type == MOD_ITEM_EVENT_DECLARATION){
+            ast_list_append(tr -> event_declarations,
+                            construct -> event_declaration);
+        } 
+        else if(construct -> type == MOD_ITEM_GENVAR_DECLARATION){
+            ast_list_append(tr -> genvar_declarations,
+                            construct -> genvar_declaration);
+        } 
+        else if(construct -> type == MOD_ITEM_TASK_DECLARATION){
+            ast_list_append(tr -> task_declarations,
+                            construct -> task_declaration);
+        } 
+        else if(construct -> type == MOD_ITEM_FUNCTION_DECLARATION){
+            ast_list_append(tr -> function_declarations,
+                            construct -> function_declaration);
+        } 
+        else
+        {
+            printf("ERROR: Unsupported module construct type: %d\n",
+                construct -> type);
+            assert(0); // Fail out because this should *never* happen
+        }
+        free(construct);
+    }
 
     return tr;
 }

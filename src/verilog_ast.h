@@ -2669,7 +2669,7 @@ module instantiations.
 
 //! Describes the type of data structure representing a module item.
 typedef enum ast_module_item_type_e{
-    MOD_ITEM_PORT_DECLARATION,
+    MOD_ITEM_PORT_DECLARATION, //!< port_declaration
     MOD_ITEM_GENERATED_INSTANTIATION,
     MOD_ITEM_PARAMETER_DECLARATION, //!< Local or global.
     MOD_ITEM_SPECIFY_BLOCK,
@@ -2750,14 +2750,36 @@ ast_module_item * ast_new_module_item(
 /*!
 @brief Fully describes a single module declaration in terms of parameters
 ports and internal constructs.
+@details
 */
 typedef struct ast_module_declaration_t{
     ast_metadata    meta;   //!< Node metadata.
     ast_node_attributes * attributes; //!< Tool specific attributes.
     ast_identifier        identifier; //!< The name of the module.
-    ast_list            * parameters; //!< Parameters to the module.
-    ast_list            * ports;      //!< IO ports for the module.
-    ast_list            * constructs; //!< Internal wires, tasks & behaviours.
+    ast_list * always_blocks; //!< ast_statement
+    ast_list * continuous_assignments; //!< ast_single_assignment
+    ast_list * event_declarations; //!< ast_type_declaration
+    ast_list * function_declarations; //!< ast_task_declaration
+    ast_list * gate_instantiations; //!< ast_gate_instantiation
+    ast_list * genvar_declarations; //!< ast_type_declaration
+    ast_list * generate_blocks; //!< ast_generate_block
+    ast_list * initial_blocks; //!< ast_statement
+    ast_list * integer_declarations; //!< ast_type_declaration
+    ast_list * local_parameters; //!< ast_parameter_declaration
+    ast_list * module_instantiations; //!< ast_module_instantiation
+    ast_list * module_parameters; //!< ast_parameter_declaration
+    ast_list * module_ports; //!< ast_port_declaration
+    ast_list * net_declarations; //!< ast_type_declaration
+    ast_list * parameter_overrides; //!< ast_single_assignment
+    ast_list * real_declarations; //!< ast_type_declaration
+    ast_list * realtime_declarations; //!< ast_type_declaration
+    ast_list * reg_declarations; //!< ast_type_declaration
+    ast_list * specify_blocks; //!< Not Supported
+    ast_list * specparams; //!< ast_parameter_declaration
+    ast_list * task_declarations; //!< ast_task_declaration
+    ast_list * time_declarations; //!< ast_type_declaration
+    ast_list * udp_instantiations; //!< ast_udp_instantiation
+
 } ast_module_declaration;
 
 /*!
