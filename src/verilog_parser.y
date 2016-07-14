@@ -1307,7 +1307,7 @@ module_or_generate_item :
   }
 | attribute_instances continuous_assign{
     $$ = ast_new_module_item($1, MOD_ITEM_CONTINOUS_ASSIGNMENT);
-    $$ -> continuous_assignment = $2;
+    $$ -> continuous_assignment = $2 -> continuous;
   }
 | attribute_instances gate_instantiation{
     $$ = ast_new_module_item($1, MOD_ITEM_GATE_INSTANTIATION);
