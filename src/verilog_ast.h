@@ -12,6 +12,8 @@
 #ifndef VERILOG_AST_H
 #define VERILOG_AST_H
 
+extern int yylineno;
+
 //! Iterates over all allocated memory and frees it.
 void ast_free_all();
 
@@ -56,31 +58,17 @@ typedef struct ast_assignment_t ast_assignment;
 typedef struct ast_single_assignment_t ast_single_assignment;
 //! Generate block (of statements) type.
 typedef struct ast_generate_block_t ast_generate_block;
-//! \b Temporary typedef.
 typedef struct ast_delay3_t ast_delay3;
-//! \b Temporary typedef.
 typedef struct ast_delay2_t ast_delay2;
-//! \b Temporary typedef.
 typedef struct ast_delay_value_t ast_delay_value  ;
-//! \b Temporary typedef.
 typedef struct ast_pull_strength_t ast_drive_strength;
-//! \b Temporary typedef.
 typedef void * ast_macro_use    ;
-//! \b Temporary typedef.
 typedef void * ast_minmax_exp   ;
 //! Number data structure.
 typedef struct ast_number_t ast_number ;
-//! \b Temporary typedef.
 typedef struct ast_range_t ast_range ;
-//! \b Temporary typedef.
-typedef void * ast_output_symbol;
-//! \b Temporary typedef.
-typedef void * ast_module_or_generate_item;
-
 typedef struct ast_block_item_declaration_t ast_block_item_declaration;
 typedef void * ast_tf_input_declaration;
-
-//! \b Temporary typedef.
 typedef struct ast_statement_t ast_statement;
 
 //! Stores the values of booleans.
@@ -105,6 +93,28 @@ typedef enum ast_port_direction_e{
     PORT_INOUT,     //!< Bi-directional port.
     PORT_NONE,  //!< Used for when we don't know at declaration time.
 } ast_port_direction;
+
+/*!
+@defgroup ast-node-meta Meta Data
+@{
+@ingroup ast-construction
+@brief Objects used to represent meta data about a particular construct.
+*/
+
+//! Refers to a source code file line number.
+typedef int ast_line;
+//! Refers to a source code file name.
+typedef char * ast_file;
+
+/*!
+@brief Stores "meta" information and other tagging stuff about nodes.
+*/
+typedef struct ast_metadata_t{
+    ast_line line;  //!< The line number the construct came from.
+    ast_file file;  //!< The file the construct came from.
+} ast_metadata;
+
+/*! @} */
 
 //-------------- Numbers ---------------------------------------
 
@@ -134,6 +144,7 @@ typedef enum ast_number_representation_e{
 @brief Stores the base, value and width (in bits) of a number.
 */
 struct ast_number_t{
+    ast_metadata    meta;   //!< Node metadata.
     unsigned int    width; //!< Width of the number in bits.
     ast_number_base base; //!< Hex, octal, binary, decimal.
     ast_number_representation   representation; //!< How is it expressed?
@@ -172,6 +183,7 @@ assignments.
 typedef struct ast_node_attributes_t ast_node_attributes;
 struct ast_node_attributes_t
 {
+    ast_metadata    meta;   //!< Node metadata.
     ast_identifier        attr_name;    //!< Name of the attribute
     ast_expression      * attr_value;   //!< Value of the attribute.
 
@@ -229,6 +241,7 @@ typedef enum ast_concatenation_type_e
 
 //! Fully describes a concatenation in terms of type and data.
 struct ast_concatenation_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_concatenation_type   type;  //!< The type of concatenation
     ast_expression         * repeat;//!< The number of repetitions. Normally 1.
     ast_list               * items; //!< sequence of items.
@@ -308,6 +321,7 @@ typedef union ast_lvalue_data_u
 */
 typedef struct ast_lvalue_t
 {
+    ast_metadata    meta;   //!< Node metadata.
     ast_lvalue_data data; //!< The identifier or concattenation being assigned.
     ast_lvalue_type type; //!< The type of the L Value assignment.
 } ast_lvalue;
@@ -342,6 +356,7 @@ destinct from a function declaration.
 system fucntion.
 */
 struct ast_function_call_t {
+    ast_metadata    meta;   //!< Node metadata.
     ast_boolean         constant;   //!< Constant function call?
     ast_boolean         system;     //!< System function call?
     ast_identifier      function;   //!< Function identifier
@@ -428,6 +443,7 @@ ast_primary_value_members:
 */
 typedef struct ast_primary_t
 {
+    ast_metadata    meta;   //!< Node metadata.
     ast_primary_type        primary_type;   //!< @see ast_primary_type
     ast_primary_value_type  value_type;     //!< @see ast_primary_value_type
     ast_primary_value       value;          //!< @see ast_primary_value
@@ -504,6 +520,7 @@ re-writing it. That will be post the first "release" though.
 */
 struct ast_expression_t
 {
+    ast_metadata    meta;   //!< Node metadata.
     ast_expression_type type;           //!< What sort of expression is this?
     ast_node_attributes * attributes;   //!< Additional expression attributes.
     ast_expression * left;              //!< LHS of operation
@@ -645,6 +662,7 @@ typedef enum ast_path_declaration_type_e{
 
 //! Describes the declaration of a path.
 typedef struct ast_simple_parallel_path_declaration_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_identifier      input_terminal;
     ast_operator        polarity;
     ast_identifier      output_terminal;
@@ -654,6 +672,7 @@ typedef struct ast_simple_parallel_path_declaration_t{
 
 //! Describes the declaration of a path.
 typedef struct ast_simple_full_path_declaration_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_list        *   input_terminals;
     ast_operator        polarity;
     ast_list        *   output_terminals;
@@ -663,6 +682,7 @@ typedef struct ast_simple_full_path_declaration_t{
 
 //! Describes a single edge sensitive path declaration
 typedef struct ast_edge_sensitive_parallel_path_declaration_t {
+    ast_metadata    meta;   //!< Node metadata.
     ast_edge            edge;               //!< edge_identifier
     ast_identifier      input_terminal;     //!< specify_input_terminal_descriptor
     ast_operator        polarity;           //!< polarity_operator
@@ -673,6 +693,7 @@ typedef struct ast_edge_sensitive_parallel_path_declaration_t {
 
 //! Describes a parallel edge sensitive path declaration
 typedef struct ast_edge_sensitive_full_path_declaration_t {
+    ast_metadata    meta;   //!< Node metadata.
     ast_edge            edge;               //!< edge_identifier
     ast_list        *   input_terminal;     //!< list_of_path_inputs
     ast_operator        polarity;           //!< polarity_operator
@@ -683,6 +704,7 @@ typedef struct ast_edge_sensitive_full_path_declaration_t {
 
 //! Struct which holds the type and data of a path declaration.
 typedef struct ast_path_declaration_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_path_declaration_type   type;
     ast_expression        * state_expression; //!< Used iff type == state_dependent_*
     union {
@@ -762,6 +784,7 @@ ast_edge_sensitive_full_path_declaration *
 
 //! Fully describes a task enable statement.
 typedef struct ast_task_enable_statement_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_list        * expressions;  //!< Arguments to the task
     ast_identifier    identifier;   //!< Task identifier.
     ast_boolean       is_system;    //!< Is this a system task?
@@ -798,6 +821,7 @@ typedef enum ast_loop_type_e{
 
 //! Fully describes a single loop statement.
 typedef struct ast_loop_statement_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_loop_type   type;            //!< The type of loop
     union{
         ast_statement * inner_statement; //!< Loop body.
@@ -899,6 +923,7 @@ typedef enum ast_case_statement_type_e{
 
 //! Describes a single exeuctable item in a case statement.
 typedef struct ast_case_item_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_list    * conditions; //!< A list of condtions, one must be met.
     ast_statement * body;     //!< What to execute if the condition is met.
     ast_boolean     is_default; //!< This is the default item.
@@ -906,6 +931,7 @@ typedef struct ast_case_item_t{
 
 //! Describes the top level of a case statement in terms of its items.
 typedef struct ast_case_statement_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_expression  * expression;   //!< The thing to be evaluated.
     ast_list        * cases;        //!< Statements, conditionally run.
     ast_statement   * default_item; //!< Default IFF no item matches.
@@ -945,12 +971,14 @@ ast_case_statement * ast_new_case_statement(ast_expression * expression,
 
 //! Describes a single if-then-do statement.
 typedef struct ast_conditional_statement_t {
+    ast_metadata    meta;   //!< Node metadata.
     ast_statement   * statement; //!< What should be executed.
     ast_expression  * condition; //!< Execute iff true.
 } ast_conditional_statement;
 
 //! Describes a complete set of if-elseif-else statements
 typedef struct ast_if_else_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_list * conditional_statements; //!< Ordered list of if-elseifs
     ast_statement * else_condition;    //!< Execute iff no conditonals are met.
 } ast_if_else;
@@ -1008,6 +1036,7 @@ void  ast_extend_if_else(
 
 //! Describes a single wait statement.
 typedef struct ast_wait_statement_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_expression * expression; //!< How long to wait for.
     ast_statement  * statement;  //!< What to execute after waiting.
 } ast_wait_statement;
@@ -1021,6 +1050,7 @@ typedef enum ast_event_expression_type_e{
 
 //! Describes a single event expression
 typedef struct ast_event_expression_t ast_event_expression;
+    ast_metadata    meta;   //!< Node metadata.
 struct ast_event_expression_t {
     ast_event_expression_type type;
     union{
@@ -1040,6 +1070,7 @@ typedef enum ast_event_control_type_e{
 
 //! Describes the type of event triggers.
 typedef struct ast_event_control_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_event_control_type type;
     ast_event_expression * expression;
 } ast_event_control;
@@ -1059,6 +1090,7 @@ typedef enum ast_delay_ctrl_type_e{
 
 //! Describes a single delay control statement
 typedef struct ast_delay_ctrl_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_delay_ctrl_type type;
     union{
         ast_delay_value * value;
@@ -1068,6 +1100,7 @@ typedef struct ast_delay_ctrl_t{
 
 //! Describes a single procedural timing control statement.
 typedef struct ast_timing_control_statement_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_timing_control_statement_type type;
     union{
         ast_delay_ctrl    * delay;
@@ -1157,6 +1190,7 @@ ast_timing_control_statement * ast_new_timing_control_statement_event(
 
 //! Contains the identifier from a disable statement.
 typedef struct ast_disable_statement_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_identifier   id;
 } ast_disable_statement;
 
@@ -1173,6 +1207,7 @@ typedef enum ast_block_type_e{
 
 //! Fully describes a single block of statements.
 typedef struct ast_statement_block_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_block_type   type;
     ast_identifier   block_identifier;
     ast_list       * declarations;
@@ -1213,6 +1248,7 @@ typedef enum ast_assignment_type_e{
 @brief encodes a single assignment.
 */
 struct ast_single_assignment_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_lvalue      * lval;         //!< The thing being assigned to.
     ast_expression  * expression;   //!< The value it takes on.
 };
@@ -1229,6 +1265,7 @@ ast_single_assignment * ast_new_single_assignment(
 @brief Describes a set of assignments with the same drive strength and delay.
 */
 typedef struct ast_continuous_assignment_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_list           * assignments; //!< A list of @ref ast_single_assignment.
     ast_drive_strength * drive_strength; //!< Drive strength of the assignment.
     ast_delay3         * delay; //!< Signal propagation delay in the assignment.
@@ -1238,6 +1275,7 @@ typedef struct ast_continuous_assignment_t{
 @brief Describes a single procedural assignment, can be blocking or nonblocking.
 */
 typedef struct ast_procedural_assignment_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_lvalue      * lval;
     ast_expression  * expression;
     ast_timing_control_statement * delay_or_event;
@@ -1261,6 +1299,7 @@ programatic / statement sense, but are continous in the time domain during a
 simulation.
 */
 typedef struct ast_hybrid_assignment_t{
+    ast_metadata    meta;   //!< Node metadata.
     union
     {
         ast_single_assignment * assignment; //!< The assignment being made.
@@ -1271,6 +1310,7 @@ typedef struct ast_hybrid_assignment_t{
 
 //! Top level descriptor for an assignment.
 struct ast_assignment_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_assignment_type type;   //!< Which element of the internal union to use.
     union{
         ast_continuous_assignment * continuous; //!< The continuous assignment.
@@ -1353,6 +1393,7 @@ and nothing more. This is *very* bad practice and knowing this code is here
 pains me dearly.
 */
 struct ast_statement_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_statement_type      type;
     ast_boolean             is_function_statement;
     ast_node_attributes   * attributes;
@@ -1391,6 +1432,7 @@ ast_statement * ast_new_statement(
 @brief Describes the pulse characteristics in signal transmission?
 */
 typedef struct ast_pulse_control_specparam_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_expression * reject_limit;
     ast_expression * error_limit;
     ast_identifier   input_terminal;
@@ -1476,6 +1518,7 @@ typedef enum ast_udp_next_state_e{
 
 //! Describes a single port for a user defined primitive.
 typedef struct ast_udp_port_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_port_direction    direction;
     union{
         ast_identifier        identifier;  //! IFF direction != input
@@ -1488,12 +1531,14 @@ typedef struct ast_udp_port_t{
 
 //! Describes the initial statement of a sequential udp body.
 typedef struct ast_udp_initial_statement_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_identifier    output_port;
     ast_number      * initial_value;
 } ast_udp_initial_statement;
 
 //! Describes a single UDP body sequentially or combinatorially.
 typedef struct ast_udp_body_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_list *        entries;    
     ast_udp_initial_statement * initial; //!< IFF body_type = sequential
     ast_udp_body_type body_type;
@@ -1501,12 +1546,14 @@ typedef struct ast_udp_body_t{
 
 //! Describes a single combinatorial entry in the UDP ast tree.
 typedef struct ast_udp_combinatorial_entry_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_list * input_levels;
     ast_udp_next_state  output_symbol;
 } ast_udp_combinatorial_entry;
 
 //! describes a sequential entry in a udp body.
 typedef struct ast_udp_sequential_entry_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_udp_seqential_entry_prefix entry_prefix;
     union {
         ast_list * edges; //!< iff entry_prefix == PREFIX_EDGES
@@ -1523,6 +1570,7 @@ in the grammar. This means that the first element is the output terminal,
 while the subsequent elements are input terminals.
 */
 typedef struct ast_udp_declaration_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_identifier        identifier;
     ast_node_attributes * attributes;
     ast_list            * ports;
@@ -1533,6 +1581,7 @@ typedef struct ast_udp_declaration_t{
 
 //! Describes a single instance of a UDP
 typedef struct ast_udp_instance_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_identifier        identifier;
     ast_range           * range;
     ast_lvalue          * output;
@@ -1541,6 +1590,7 @@ typedef struct ast_udp_instance_t{
 
 //! Describes an a list of instances of a particular kind of UDP.
 typedef struct ast_udp_instantiation_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_list            * instances; //!< list of ast_udp_instance
     ast_identifier        identifier;
     ast_drive_strength  * drive_strength;
@@ -1654,6 +1704,7 @@ ast_udp_instantiation * ast_new_udp_instantiation(
 
 //! Simple wrapper and placeholder for generate associated meta-data.
 struct ast_generate_block_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_identifier   identifier;
     ast_list       * generate_items;
 };
@@ -1691,6 +1742,7 @@ ast_statement * ast_new_generate_item(
 the same parameters.
 */
 typedef struct ast_module_instantiation_t {
+    ast_metadata    meta;   //!< Node metadata.
     ast_identifier          module_identifer; //!< The module being instanced.
     ast_list              * module_parameters;
     ast_list              * module_instances;
@@ -1712,6 +1764,7 @@ ast_module_instantiation * ast_new_module_instantiation(
 collection of ast_module_instance with the same parameters.
 */
 typedef struct ast_module_instance_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_identifier          instance_identifier;
     ast_list              * port_connections;
 } ast_module_instance;
@@ -1731,6 +1784,7 @@ ast_module_instance * ast_new_module_instance(
 @note This is also used to represent parameter assignments.
 */
 typedef struct ast_port_connection_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_identifier   port_name;
     ast_expression * expression;
 } ast_port_connection;
@@ -1772,6 +1826,7 @@ typedef enum ast_switchtype_e{
 
 //! Describes a single gate type along with it's delay properties.
 typedef struct ast_switch_gate_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_switchtype type;
     union {
         ast_delay3 * delay3;
@@ -1815,6 +1870,7 @@ typedef enum ast_pull_direction_e{
 
 //! Fully describes the pull's of a net going up and down.
  typedef struct ast_pull_strength_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_primitive_strength strength_1;
     ast_primitive_strength strength_2;
  } ast_pull_strength;
@@ -1827,6 +1883,7 @@ ast_pull_strength * ast_new_pull_stregth(
 
 //! Describes the pull strength and direction of a primitive.
 typedef struct ast_primitive_pull_strength_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_pull_direction       direction;
     ast_primitive_strength   strength_1;
     ast_primitive_strength   strength_0;
@@ -1841,12 +1898,14 @@ ast_primitive_pull_strength * ast_new_primitive_pull_strength(
 
 //! Describes a single pull gate instance.
 typedef struct ast_pull_gate_instance_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_identifier      name;
     ast_lvalue        * output_terminal;
 } ast_pull_gate_instance;
 
 //! A single pass transistor instance.
 typedef struct ast_pass_switch_instance_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_identifier      name;
     ast_lvalue        * terminal_1;
     ast_lvalue        * terminal_2;
@@ -1864,6 +1923,7 @@ typedef enum ast_gatetype_n_input_e{
 
 //! A collection of n-input gates with the same type and delay properties.
 typedef struct ast_n_input_gate_instances_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_gatetype_n_input    type;
     ast_delay3            * delay;
     ast_drive_strength    * drive_strength;
@@ -1880,6 +1940,7 @@ ast_n_input_gate_instances * ast_new_n_input_gate_instances(
 
 //! An N-input gate instance. e.g. 3-to-1 NAND.
 typedef struct ast_n_input_gate_instance_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_identifier      name;
     ast_list          * input_terminals;
     ast_lvalue        * output_terminal;
@@ -1895,6 +1956,7 @@ typedef enum ast_enable_gatetype_e{
 
 //! A collection of enable gates with the same type and delay properties.
 typedef struct ast_enable_gate_instances{
+    ast_metadata    meta;   //!< Node metadata.
     ast_enable_gatetype     type;
     ast_delay3            * delay;
     ast_drive_strength    * drive_strength;
@@ -1911,6 +1973,7 @@ ast_enable_gate_instances * ast_new_enable_gate_instances(
 
 //! A single enable gate
 typedef struct ast_enable_gate_instance_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_identifier      name;
     ast_lvalue        * output_terminal;
     ast_expression    * enable_terminal;
@@ -1919,6 +1982,7 @@ typedef struct ast_enable_gate_instance_t{
 
 //! A single MOS switch (transistor) instance.
 typedef struct ast_mos_switch_instance_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_identifier      name;
     ast_lvalue        * output_terminal;
     ast_expression    * enable_terminal;
@@ -1927,6 +1991,7 @@ typedef struct ast_mos_switch_instance_t{
 
 //! A single CMOS switch (transistor) instance.
 typedef struct ast_cmos_switch_instance_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_identifier      name;
     ast_lvalue        * output_terminal;
     ast_expression    * ncontrol_terminal;
@@ -1936,6 +2001,7 @@ typedef struct ast_cmos_switch_instance_t{
 
 //! A single pass enable switch with pass and enable terminals.
 typedef struct ast_pass_enable_switch_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_identifier      name;
     ast_lvalue        * terminal_1;
     ast_lvalue        * terminal_2;
@@ -1955,6 +2021,7 @@ typedef enum ast_pass_enable_switchtype_e{
 delay characteristics.
 */
 typedef struct ast_pass_enable_switches_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_pass_enable_switchtype    type;
     ast_delay2                  * delay;
     ast_list                    * switches;
@@ -1968,12 +2035,14 @@ typedef enum ast_n_output_gatetype_e{
 
 //! Describes a single gate with one input and several outputs.
 typedef struct ast_n_output_gate_instance_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_identifier                name;
     ast_list                    * outputs;
     ast_expression              * input;
 } ast_n_output_gate_instance;
 
 typedef struct ast_n_output_gate_instances_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_n_output_gatetype         type;
     ast_delay2                  * delay;
     ast_drive_strength          * drive_strength;
@@ -2066,6 +2135,7 @@ ast_cmos_switch_instance * ast_new_cmos_switch_instance(
 
 //! A collection of CMOS, MOS or PASS switches of the same type.
 typedef struct ast_switches_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_switch_gate * type;
     ast_list        * switches;
 } ast_switches;
@@ -2093,6 +2163,7 @@ typedef enum ast_gate_type_e{
 @brief Fully describes the instantiation of one or more gate level primitives.
 */
 typedef struct ast_gate_instantiation_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_gate_type type;
     union{
         ast_switches * switches;
@@ -2135,6 +2206,7 @@ typedef enum ast_delay_value_type_e{
 
 //! Describes the type and value of a delay specifier.
 typedef struct ast_delay_value_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_delay_value_type type;
     union{
         ast_identifier parameter_id;
@@ -2147,6 +2219,7 @@ typedef struct ast_delay_value_t{
 
 //! Describes a 3 point delay distribution.
 struct ast_delay3_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_delay_value * min;
     ast_delay_value * max;
     ast_delay_value * avg;
@@ -2154,6 +2227,7 @@ struct ast_delay3_t{
 
 //! Describes a 2 point delay distribution.
 struct ast_delay2_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_delay_value * min;
     ast_delay_value * max;
 };
@@ -2248,6 +2322,7 @@ typedef enum ast_net_type_e{
 
 //! Fully describes a single port declaration
 typedef struct ast_port_declaration_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_port_direction  direction;      //!< Input / output / inout etc.
     ast_net_type        net_type;       //!< Wire/reg etc
     ast_boolean         net_signed;     //!< Signed value?
@@ -2300,6 +2375,7 @@ module.
 @todo Clean this up to avoid accessing members which are mutually exclusive
 */
 typedef struct ast_type_declaration_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_declaration_type  type;
     ast_net_type          net_type;
     ast_list            * identifiers;
@@ -2350,6 +2426,7 @@ typedef enum ast_parameter_type_e{
 
 //! Stores the type and characteristics of one or more parameter declarations.
 typedef struct ast_parameter_declarations_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_list        * assignments;
     ast_boolean       signed_values; //!< Valid IFF type==PARAM_GENERIC
     ast_boolean       local;        //!< Local parameter or global.
@@ -2385,6 +2462,7 @@ ast_parameter_declarations * ast_new_parameter_declarations(
 
 //! Describes the declaration of a set of registers within a block.
 typedef struct ast_block_reg_declaration_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_boolean   is_signed;     //!< Do they represent signed values?
     ast_range   * range;         //!< Are these vectors of registers?
     ast_list    * identifiers;   //!< list of reg names with same properties.
@@ -2408,6 +2486,7 @@ typedef enum ast_block_item_declaration_type_e{
 
 //! Describes the declaration of a block item.
 struct ast_block_item_declaration_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_block_item_declaration_type type;
     ast_node_attributes             * attributes;
     union{
@@ -2450,6 +2529,7 @@ typedef enum ast_task_port_type_e{
 
 //! Holds either a range or a type data item.
 typedef struct ast_range_or_type_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_boolean is_range;   //!< iff true use range, else type.
     union{
         ast_range * range;  //!< The range strucure.
@@ -2469,6 +2549,7 @@ ast_range_or_type * ast_new_range_or_type(ast_boolean is_range);
 @brief Fully describes the declaration of a verilog function.
 */
 typedef struct ast_function_declaration_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_boolean         automatic;         //!< Is automatic?
     ast_boolean         is_signed;         //!< Is the returned value signed?
     ast_boolean         function_or_block; //!< IFF true statements is list of function_item_declaration else list of block_item_declaration.
@@ -2495,6 +2576,7 @@ ast_function_declaration * ast_new_function_declaration(
 @brief Fully describes a set of task arguments with the same properties.
 */
 typedef struct ast_task_port_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_port_direction direction;   //!< Input or output to the port.
     ast_boolean        reg;         //!< Is is a registered value?
     ast_boolean        is_signed;   //!< Does it represent a signed value?
@@ -2522,6 +2604,7 @@ ast_task_port * ast_new_task_port(
 item or port declaration.
 */
 typedef struct ast_function_item_declaration_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_boolean is_port_declaration; //!< True IFF an argument to the function.
     union{
         ast_block_item_declaration  * block_item; //!< Standard body statements.
@@ -2551,6 +2634,7 @@ ast_function_item_declaration * ast_new_function_item_declaration();
 @brief Creates and returns a new task declaration statement.
 */
 typedef struct ast_task_declaration_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_boolean         automatic;      //!< Automatic iff TRUE
     ast_identifier      identifier;     //!< The task name.
     ast_list        *   ports;          //!< Arguments to the task.
@@ -2611,6 +2695,7 @@ typedef enum ast_module_item_type_e{
 
 //! Describes a single module item, its type and data structure.
 struct ast_module_item_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_module_item_type type;
     ast_node_attributes *attributes;
     union{
@@ -2667,6 +2752,7 @@ ast_module_item * ast_new_module_item(
 ports and internal constructs.
 */
 typedef struct ast_module_declaration_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_node_attributes * attributes; //!< Tool specific attributes.
     ast_identifier        identifier; //!< The name of the module.
     ast_list            * parameters; //!< Parameters to the module.
@@ -2774,6 +2860,7 @@ typedef enum ast_id_range_or_index_e{
 @brief Structure containing all information on an identifier.
 */
 struct ast_identifier_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_identifier_type   type;         //!< What construct does it identify?
     char                * identifier;   //!< The identifier value.
     unsigned int          from_line;    //!< The line number of the file.
@@ -2857,6 +2944,7 @@ void ast_identifier_set_index(
 
 //! Fully describes a config rule statemnet. See Annex 1.2
 typedef struct ast_config_rule_statement_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_boolean    is_default;
     ast_identifier clause_1;    //!< The first grammar clause.
     ast_identifier clause_2;    //!< The second grammar clause.
@@ -2875,6 +2963,7 @@ ast_config_rule_statement * ast_new_config_rule_statement(
 
 //! Describes a single config declaration in it's entirety.
 typedef struct ast_config_declaration_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_identifier  identifier;
     ast_identifier  design_statement;
     ast_list      * rule_statements;
@@ -2904,6 +2993,7 @@ ast_config_declaration * ast_new_config_declaration(
 @brief Describes a library declaration of file and include paths.
 */
 typedef struct ast_library_declaration_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_identifier  identifier;
     ast_list      * file_paths;
     ast_list      * incdirs;
@@ -2927,6 +3017,7 @@ typedef enum ast_library_item_type_e{
 
 //! Super structure for different library construct types.
 typedef struct ast_library_descriptions_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_library_item_type type;
     union{
         ast_library_declaration * library;
@@ -2974,6 +3065,7 @@ typedef enum ast_source_item_type_e{
 
 //! Contains a source item and it's type.
 typedef struct ast_source_item_t{
+    ast_metadata    meta;   //!< Node metadata.
     ast_source_item_type type;  //!< Which member of the union to access.
     union{
         ast_module_declaration * module; //!< IFF type == SOURCE_MODULE
