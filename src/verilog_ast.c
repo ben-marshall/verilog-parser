@@ -1957,6 +1957,99 @@ ast_type_declaration * ast_new_type_declaration(ast_declaration_type type)
     return tr;
 }   
 
+/*!
+@brief Creates a new net declaration object.
+@details Turns a generic "type declaration" object into a net_declration
+object and discards un-needed member fields.
+@returns A set of ast_net_declaration types as a list, one for each identifer
+in the original type declaration object.
+*/
+ast_list * ast_new_net_declaration(
+    ast_type_declaration * type_dec
+){
+    printf("Net declaration on line %d\n", type_dec->meta.line);
+    assert(type_dec != NULL);
+    assert(type_dec -> identifiers != NULL);
+
+    ast_list * tr = ast_list_new();
+    
+    unsigned int i = 0;
+    for (i = 0; i < type_dec -> identifiers -> items; i ++)
+    {
+        ast_net_declaration * toadd =ast_calloc(1,sizeof(ast_net_declaration));
+        toadd -> meta       = type_dec -> meta;
+
+        toadd -> identifier = ast_list_get(type_dec -> identifiers, i);
+        toadd -> type       = type_dec -> net_type;
+        toadd -> delay      = type_dec -> delay;
+        toadd -> drive      = type_dec -> drive_strength;
+        toadd -> range      = type_dec -> range;
+        toadd -> vectored   = type_dec -> vectored;
+        toadd -> scalared   = type_dec -> scalared;
+        toadd -> is_signed  = type_dec -> is_signed;
+        toadd -> value      = NULL;
+
+        ast_list_append(tr,toadd);
+    }
+
+    return tr;
+}
+
+/*!
+@brief Creates a new reg declaration object.
+@details Turns a generic "type declaration" object into a reg_declration
+object and discards un-needed member fields.
+@returns A set of ast_reg_declaration types as a list, one for each identifer
+in the original type declaration object.
+*/
+ast_list * ast_new_reg_declaration(
+    ast_type_declaration * type_dec
+){
+    ast_list * tr = ast_list_new();
+    
+    unsigned int i = 0;
+    for (i = 0; i < type_dec -> identifiers -> items; i ++)
+    {
+        ast_reg_declaration * toadd =ast_calloc(1,sizeof(ast_reg_declaration));
+        toadd -> meta       = type_dec -> meta;
+
+        toadd -> identifier = ast_list_get(type_dec -> identifiers, i);
+        toadd -> range      = type_dec -> range;
+        toadd -> is_signed  = type_dec -> is_signed;
+        toadd -> value      = NULL;
+
+        ast_list_append(tr,toadd);
+    }
+
+    return tr;
+}
+
+/*!
+@brief Creates a new variable declaration object.
+@details Turns a generic "var declaration" object into a var_declration
+object and discards un-needed member fields.
+@returns A set of ast_var_declaration types as a list, one for each identifer
+in the original type declaration object.
+*/
+ast_list * ast_new_var_declaration(
+    ast_type_declaration * type_dec
+){
+    ast_list * tr = ast_list_new();
+    
+    unsigned int i = 0;
+    for (i = 0; i < type_dec -> identifiers -> items; i ++)
+    {
+        ast_var_declaration * toadd =ast_calloc(1,sizeof(ast_var_declaration));
+        toadd -> meta       = type_dec -> meta;
+
+        toadd -> identifier = ast_list_get(type_dec -> identifiers,i);
+        toadd -> type       = type_dec -> type;
+
+        ast_list_append(tr,toadd);
+    }
+
+    return tr;
+}
 
 /*!
 @brief Create a new delay value.
@@ -2235,7 +2328,7 @@ ast_module_declaration * ast_new_module_declaration(
     tr -> time_declarations      = ast_list_new();
     tr -> udp_instantiations     = ast_list_new();
 
-    int i;
+    unsigned int i;
 
     for(i = 0; i < constructs -> items; i++)
     {
@@ -2293,9 +2386,9 @@ ast_module_declaration * ast_new_module_declaration(
                             construct -> always_construct);
         } 
         else if(construct -> type == MOD_ITEM_NET_DECLARATION){
-            ast_list_append(tr -> net_declarations,
-                            construct -> net_declaration);
-            // FIXME
+            tr -> net_declarations = ast_list_concat(
+                tr -> net_declarations,
+                ast_new_net_declaration(construct -> net_declaration));
         } 
         else if(construct -> type == MOD_ITEM_REG_DECLARATION){
             ast_list_append(tr -> reg_declarations,

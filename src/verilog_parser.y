@@ -1551,16 +1551,16 @@ net_declaration :
     $$ -> drive_strength = $3;
   }
 | KW_TRIREG                 net_dec_p_ds{
-    $$ = ast_new_type_declaration(DECLARE_NET);
+    $$ = $2;
     $$ -> net_type = NET_TYPE_TRIREG;
   }
 | KW_TRIREG OPEN_BRACKET drive_strength  net_dec_p_ds{
-    $$ = ast_new_type_declaration(DECLARE_NET);
+    $$ = $4;
     $$ -> drive_strength = $3;
     $$ -> net_type = NET_TYPE_TRIREG;
   }
 | KW_TRIREG charge_strength net_dec_p_ds{
-    $$ = ast_new_type_declaration(DECLARE_NET);
+    $$ = $3;
     $$ -> charge_strength = $2;
     $$ -> net_type = NET_TYPE_TRIREG;
   }

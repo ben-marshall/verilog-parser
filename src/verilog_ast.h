@@ -1266,13 +1266,13 @@ ast_single_assignment * ast_new_single_assignment(
 */
 typedef struct ast_continuous_assignment_t{
     ast_metadata    meta;   //!< Node metadata.
-    ast_list           * assignments; //!< A list of @ref ast_single_assignment.
+    ast_list          * assignments; //!< A list of @ref ast_single_assignment.
     ast_drive_strength * drive_strength; //!< Drive strength of the assignment.
-    ast_delay3         * delay; //!< Signal propagation delay in the assignment.
+    ast_delay3        * delay; //!< Signal propagation delay in the assignment.
 } ast_continuous_assignment;
 
 /*!
-@brief Describes a single procedural assignment, can be blocking or nonblocking.
+@brief Describes a procedural assignment, can be blocking or nonblocking.
 */
 typedef struct ast_procedural_assignment_t{
     ast_metadata    meta;   //!< Node metadata.
@@ -1311,7 +1311,7 @@ typedef struct ast_hybrid_assignment_t{
 //! Top level descriptor for an assignment.
 struct ast_assignment_t{
     ast_metadata    meta;   //!< Node metadata.
-    ast_assignment_type type;   //!< Which element of the internal union to use.
+    ast_assignment_type type;  //!< Which element of the internal union to use.
     union{
         ast_continuous_assignment * continuous; //!< The continuous assignment.
         ast_procedural_assignment * procedural; //!< The procedural assignment.
@@ -2387,6 +2387,71 @@ typedef struct ast_type_declaration_t{
     ast_boolean           is_signed;
     ast_range           * range;
 } ast_type_declaration;
+
+//! Describes a single net declaration.
+typedef struct ast_net_declaration_t{
+    ast_metadata         meta;       //!< Node metadata.
+    ast_net_type         type;       //!< What sort of net is this?
+    ast_identifier       identifier; //!< What is the net called?
+    ast_delay3         * delay;      //!< Delay characteristics.
+    ast_drive_strength * drive;      //!< Drive strength.
+    ast_range          * range;      //!< Width of the net.
+    ast_boolean          vectored;
+    ast_boolean          scalared;
+    ast_boolean          is_signed;
+    ast_expression     * value;      //!< Default assigned value.
+} ast_net_declaration;
+
+
+//! Describes a single reg declaration.
+typedef struct ast_reg_declaration_t{
+    ast_metadata         meta;       //!< Node metadata.
+    ast_identifier       identifier; //!< What is the reg called?
+    ast_range          * range;      //!< Width of the reg.
+    ast_boolean          is_signed;
+    ast_expression     * value;      //!< Default assigned value.
+} ast_reg_declaration;
+
+//! Describes a simple set of declarations of a particular type.
+typedef struct ast_var_declaration_t{
+    ast_metadata        meta;       //!< Metadata
+    ast_identifier      identifier; //!< The variable identifier.
+    ast_declaration_type type;      //!< What sort of variable is this?
+} ast_var_declaration;
+
+/*!
+@brief Creates a new net declaration object.
+@details Turns a generic "type declaration" object into a net_declration
+object and discards un-needed member fields.
+@returns A set of ast_net_declaration types as a list, one for each identifer
+in the original type declaration object.
+*/
+ast_list * ast_new_net_declaration(
+    ast_type_declaration * type_dec
+);
+
+/*!
+@brief Creates a new reg declaration object.
+@details Turns a generic "type declaration" object into a reg_declration
+object and discards un-needed member fields.
+@returns A set of ast_reg_declaration types as a list, one for each identifer
+in the original type declaration object.
+*/
+ast_list * ast_new_reg_declaration(
+    ast_type_declaration * type_dec
+);
+
+/*!
+@brief Creates a new variable declaration object.
+@details Turns a generic "var declaration" object into a var_declration
+object and discards un-needed member fields.
+@returns A set of ast_var_declaration types as a list, one for each identifer
+in the original type declaration object.
+*/
+ast_list * ast_new_var_declaration(
+    ast_type_declaration * type_dec
+);
+
 
 /*!
 @brief Creates and returns a node to represent the declaration of a new
