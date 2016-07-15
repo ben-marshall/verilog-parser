@@ -1251,14 +1251,16 @@ struct ast_single_assignment_t{
     ast_metadata    meta;   //!< Node metadata.
     ast_lvalue      * lval;         //!< The thing being assigned to.
     ast_expression  * expression;   //!< The value it takes on.
+    ast_drive_strength * drive_strength; //!< Drive strength of the assignment.
+    ast_delay3         * delay; //!< Signal propagation delay.
 };
 
 /*!
 @brief Creates and returns a new continuous assignment.
 */
 ast_single_assignment * ast_new_single_assignment(
-    ast_lvalue * lval,          //!< The thing being assigned to.
-    ast_expression * expression //!< The value it takes on.
+    ast_lvalue         * lval,          //!< The thing being assigned to.
+    ast_expression     * expression //!< The value it takes on.
 );
 
 /*!
@@ -1267,8 +1269,6 @@ ast_single_assignment * ast_new_single_assignment(
 typedef struct ast_continuous_assignment_t{
     ast_metadata    meta;   //!< Node metadata.
     ast_list          * assignments; //!< A list of @ref ast_single_assignment.
-    ast_drive_strength * drive_strength; //!< Drive strength of the assignment.
-    ast_delay3        * delay; //!< Signal propagation delay in the assignment.
 } ast_continuous_assignment;
 
 /*!

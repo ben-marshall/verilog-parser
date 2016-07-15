@@ -1193,10 +1193,17 @@ ast_assignment * ast_new_continuous_assignment(
     ast_continuous_assignment * trc = ast_calloc(1,
                 sizeof(ast_continuous_assignment));
     trc -> assignments = assignments;
-    trc -> drive_strength = strength;
-    trc -> delay = delay;
+
+    int i;
+    for(i = 0; i < assignments -> items;  i++)
+    {
+        ast_single_assignment * item = ast_list_get(assignments,i);
+        item -> drive_strength = strength;
+        item -> delay    = delay;
+    }
 
     ast_assignment * tr = ast_calloc(1, sizeof(ast_assignment));
+
     tr -> meta.line = yylineno;
 
     tr -> type = ASSIGNMENT_CONTINUOUS;
@@ -2360,12 +2367,10 @@ ast_module_declaration * ast_new_module_declaration(
         else if(construct -> type == MOD_ITEM_CONTINOUS_ASSIGNMENT){
             ast_list_append(tr -> continuous_assignments,
                             construct -> continuous_assignment);
-            // FIXME
         } 
         else if(construct -> type == MOD_ITEM_GATE_INSTANTIATION){
             ast_list_append(tr -> gate_instantiations,
                             construct -> gate_instantiation);
-            // FIXME?
         } 
         else if(construct -> type == MOD_ITEM_UDP_INSTANTIATION){
             ast_list_append(tr -> udp_instantiations,
@@ -2374,7 +2379,6 @@ ast_module_declaration * ast_new_module_declaration(
         else if(construct -> type == MOD_ITEM_MODULE_INSTANTIATION){
             ast_list_append(tr -> module_instantiations,
                             construct -> module_instantiation);
-            // FIXME
         } 
         else if(construct -> type == MOD_ITEM_INITIAL_CONSTRUCT){
             ast_list_append(tr -> initial_blocks,
