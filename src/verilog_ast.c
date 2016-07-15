@@ -1967,7 +1967,6 @@ in the original type declaration object.
 ast_list * ast_new_net_declaration(
     ast_type_declaration * type_dec
 ){
-    printf("Net declaration on line %d\n", type_dec->meta.line);
     assert(type_dec != NULL);
     assert(type_dec -> identifiers != NULL);
 
@@ -2391,32 +2390,39 @@ ast_module_declaration * ast_new_module_declaration(
                 ast_new_net_declaration(construct -> net_declaration));
         } 
         else if(construct -> type == MOD_ITEM_REG_DECLARATION){
-            ast_list_append(tr -> reg_declarations,
-                            construct -> reg_declaration);
+            tr -> reg_declarations = ast_list_concat(
+                tr -> reg_declarations,
+                ast_new_reg_declaration(construct -> reg_declaration));
         } 
         else if(construct -> type == MOD_ITEM_INTEGER_DECLARATION){
-            ast_list_append(tr -> integer_declarations,
-                            construct -> integer_declaration);
+            tr -> integer_declarations = ast_list_concat(
+                tr -> integer_declarations,
+                ast_new_var_declaration(construct -> integer_declaration));
         } 
         else if(construct -> type == MOD_ITEM_REAL_DECLARATION){
-            ast_list_append(tr -> real_declarations,
-                            construct -> real_declaration);
+            tr -> real_declarations = ast_list_concat(
+                tr -> real_declarations,
+                ast_new_var_declaration(construct -> real_declaration));
         } 
         else if(construct -> type == MOD_ITEM_TIME_DECLARATION){
-            ast_list_append(tr -> time_declarations,
-                            construct -> time_declaration);
+            tr -> time_declarations = ast_list_concat(
+                tr -> time_declarations,
+                ast_new_var_declaration(construct -> time_declaration));
         } 
         else if(construct -> type == MOD_ITEM_REALTIME_DECLARATION){
-            ast_list_append(tr -> realtime_declarations,
-                            construct -> realtime_declaration);
+            tr -> realtime_declarations = ast_list_concat(
+                tr -> realtime_declarations,
+                ast_new_var_declaration(construct -> realtime_declaration));
         } 
         else if(construct -> type == MOD_ITEM_EVENT_DECLARATION){
-            ast_list_append(tr -> event_declarations,
-                            construct -> event_declaration);
+            tr -> event_declarations = ast_list_concat(
+                tr -> event_declarations,
+                ast_new_var_declaration(construct -> event_declaration));
         } 
         else if(construct -> type == MOD_ITEM_GENVAR_DECLARATION){
-            ast_list_append(tr -> genvar_declarations,
-                            construct -> genvar_declaration);
+            tr -> genvar_declarations = ast_list_concat(
+                tr -> genvar_declarations,
+                ast_new_var_declaration(construct -> genvar_declaration));
         } 
         else if(construct -> type == MOD_ITEM_TASK_DECLARATION){
             ast_list_append(tr -> task_declarations,
