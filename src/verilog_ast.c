@@ -1516,6 +1516,7 @@ ast_module_instantiation * ast_new_module_instantiation(
         ast_calloc(1,sizeof(ast_module_instantiation));
     tr -> meta.line = yylineno;
     
+    tr -> resolved = AST_FALSE;
     tr -> module_identifer  = module_identifer;
     tr -> module_parameters = module_parameters;
     tr -> module_instances  = module_instances;

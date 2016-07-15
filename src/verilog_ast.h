@@ -71,6 +71,7 @@ typedef struct ast_range_t ast_range ;
 typedef struct ast_block_item_declaration_t ast_block_item_declaration;
 typedef void * ast_tf_input_declaration;
 typedef struct ast_statement_t ast_statement;
+typedef struct ast_module_declaration_t ast_module_declaration;
 
 //! Stores the values of booleans.
 typedef enum  ast_boolean_e
@@ -1741,10 +1742,18 @@ ast_statement * ast_new_generate_item(
 /*! 
 @brief Describes the instantiation of one or more modules of the same type with
 the same parameters.
+@details If the resolved member is true, then you can access the declaration
+member, and find out everything about the module being instanced. Otherwise,
+you must access the module_identifier member, and can only know what the
+module is called.
 */
 typedef struct ast_module_instantiation_t {
     ast_metadata    meta;   //!< Node metadata.
-    ast_identifier          module_identifer; //!< The module being instanced.
+    ast_boolean     resolved; //!< Is the name resolved to a declaration?
+    union{
+        ast_identifier  module_identifer; //!< The module being instanced.
+        ast_module_declaration * declaration; //!< The module instanced.
+    };
     ast_list              * module_parameters;
     ast_list              * module_instances;
 } ast_module_instantiation;
@@ -2818,7 +2827,7 @@ ast_module_item * ast_new_module_item(
 ports and internal constructs.
 @details
 */
-typedef struct ast_module_declaration_t{
+struct ast_module_declaration_t{
     ast_metadata    meta;   //!< Node metadata.
     ast_node_attributes * attributes; //!< Tool specific attributes.
     ast_identifier        identifier; //!< The name of the module.
@@ -2846,7 +2855,7 @@ typedef struct ast_module_declaration_t{
     ast_list * time_declarations; //!< ast_type_declaration
     ast_list * udp_instantiations; //!< ast_udp_instantiation
 
-} ast_module_declaration;
+} ;
 
 /*!
 @brief Creates a new module instantiation.
