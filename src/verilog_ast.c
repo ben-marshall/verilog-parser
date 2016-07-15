@@ -2458,6 +2458,37 @@ ast_source_item * ast_new_source_item(ast_source_item_type type){
     return tr;
 }
 
+
+/*!
+@brief Simply returns the fully qualified representation of an identifier as
+a string.
+@details Where the identifier is "simple" or a system id, then the identifier
+will just be returned as a character array. Where it is a hierarchical
+idenifier, then a dot separated string of all identifiers in the hierarchy
+will be returned.
+@param [in] id - The identifier object to return a string representation of.
+@returns A copy of the identifiers full name, as a null terminated character
+array.
+*/
+char * ast_identifier_tostring(ast_identifier id)
+{
+    size_t len = strlen(id -> identifier+1);
+    char * tr = calloc(len,sizeof(char));
+    memcpy(tr, id -> identifier, len);
+    
+    ast_identifier walker = id;
+
+    while(walker -> next != NULL)
+    {
+        walker = walker -> next;
+
+        size_t len = strlen(walker -> identifier+1) + len;
+        tr = realloc(tr,len);
+        strcat(tr, walker -> identifier);
+    }
+    return tr;
+}
+
 ast_identifier ast_new_identifier(
     char         * identifier, 
     unsigned int   from_line  

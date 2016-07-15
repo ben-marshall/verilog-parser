@@ -6,6 +6,7 @@
 
 #include <stdarg.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "verilog_ast_common.h"
 
@@ -2960,6 +2961,19 @@ struct ast_identifier_t{
         ast_expression  * index; //!< Iff range_or_idx == ID_HAS_INDEX
     };
 };
+
+/*!
+@brief Simply returns the fully qualified representation of an identifier as
+a string.
+@details Where the identifier is "simple" or a system id, then the identifier
+will just be returned as a character array. Where it is a hierarchical
+idenifier, then a dot separated string of all identifiers in the hierarchy
+will be returned.
+@param [in] id - The identifier object to return a string representation of.
+@returns A copy of the identifiers full name, as a null terminated character
+array.
+*/
+char * ast_identifier_tostring(ast_identifier id);
 
 /*!
 @brief Creates and returns a new node representing an identifier.
