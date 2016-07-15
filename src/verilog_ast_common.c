@@ -194,11 +194,29 @@ original head pointer is returned, with all data items still in tact.
 */
 ast_list *    ast_list_concat(ast_list * head, ast_list * tail)
 {
+    assert(head != NULL);
+    assert(tail != NULL);
+
     // Perform the concatenation.
-    if(tail -> head != NULL)
+
+    if(head -> tail == NULL)
+    {
+        head -> tail = tail -> head;
+        head -> head = tail -> head;
+    }
+    else if(head -> tail -> next == NULL)
     {
         head -> tail -> next = tail -> head;
-        head -> items        = head -> items + tail -> items;
+        head -> tail = tail -> tail;
+    }
+    else
+    {
+        while(head -> tail -> next != NULL)
+        {
+            head -> tail = head -> tail -> next;
+        }
+        head -> tail -> next = tail -> head;
+        head -> tail = tail -> tail;
     }
 
     // Free only the tail data-structure, not it's elements.
