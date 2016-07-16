@@ -8,6 +8,7 @@
 #include "verilog_parser.h"
 #include "verilog_ast_common.h"
 #include "verilog_preprocessor.h"
+#include "verilog_ast_util.h"
 
 int main(int argc, char ** argv)
 {
@@ -51,6 +52,7 @@ int main(int argc, char ** argv)
             }
         }
     }
+    verilog_resolve_modules(yy_verilog_source_tree);
     verilog_free_preprocessor_context(yy_preproc);
     verilog_free_source_tree(yy_verilog_source_tree);
     return 0;

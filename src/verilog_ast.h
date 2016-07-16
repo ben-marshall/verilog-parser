@@ -2985,6 +2985,14 @@ array.
 char * ast_identifier_tostring(ast_identifier id);
 
 /*!
+@brief Acts like strcmp but works on ast identifiers.
+*/
+int ast_identifier_cmp(
+    ast_identifier a,
+    ast_identifier b
+);
+
+/*!
 @brief Creates and returns a new node representing an identifier.
 @details By default, the returned identifier has the ID_UNKNOWN type,
 and this is set later when the parser winds back up and knows which rules

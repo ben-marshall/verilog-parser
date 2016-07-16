@@ -2473,7 +2473,7 @@ array.
 */
 char * ast_identifier_tostring(ast_identifier id)
 {
-    size_t len = strlen(id -> identifier+1);
+    size_t len = strlen(id -> identifier)+1;
     char * tr = calloc(len,sizeof(char));
     memcpy(tr, id -> identifier, len);
     
@@ -2483,11 +2483,28 @@ char * ast_identifier_tostring(ast_identifier id)
     {
         walker = walker -> next;
 
-        size_t len = strlen(walker -> identifier+1) + len;
+        size_t len = strlen(walker -> identifier)+1 + len;
         tr = realloc(tr,len);
         strcat(tr, walker -> identifier);
     }
     return tr;
+}
+
+/*!
+@brief Acts like strcmp but works on ast identifiers.
+*/
+int ast_identifier_cmp(
+    ast_identifier a,
+    ast_identifier b
+){
+    char * s1 = ast_identifier_tostring(a);
+    char * s2 = ast_identifier_tostring(b);
+
+    int result = strcmp(s1,s2);
+    free(s1);
+    free(s2);
+
+    return result;
 }
 
 ast_identifier ast_new_identifier(
