@@ -13,6 +13,6 @@ module bus_snooper(
 
 `undef BUS_WIDTH
 
-endmodule
-
 `undef BUS_RANGE
+
+endmodule
