@@ -90,6 +90,20 @@ original head pointer is returned, with all data items still in tact.
 */
 ast_list *    ast_list_concat(ast_list * head, ast_list * tail);
 
+
+/*!
+@brief Searches the list, returning true or false if the data item supplied is
+contained within it.
+@details Performs a *pointer* comparison. That is, if the internal list
+pointer has the same address as the supplied data pointer, the item is
+considered to be found.
+*/
+int ast_list_contains(
+    ast_list * list,
+    void * data
+);
+
+
 /*! @} */
 
 // ----------------------- Stack --------------------------------------

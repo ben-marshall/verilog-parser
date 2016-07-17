@@ -100,3 +100,63 @@ void verilog_resolve_modules(
     //printf("Resolved Modules: %d\t Unresolved Modules: %d\n", 
     //    resolved,unresolved);
 }
+
+
+/*!
+@brief Returns a list of module declarations, representing the different types
+of module which this parent instantiates.
+*/
+ast_list * verilog_module_get_children(
+    ast_module_declaration * module
+){
+    ast_list * tr = ast_list_new();
+    
+    int m;
+    for(m = 0; m < module -> module_instantiations -> items; m++)
+    {
+        ast_module_declaration * child = 
+                            ast_list_get(module -> module_instantiations, m);
+
+        int added_already = ast_list_contains(tr, child);
+
+        if(added_already)
+        {
+            continue;
+        }
+        else
+        {
+            ast_list_append(tr,child);
+        }
+    }
+
+    return tr;
+}
+
+
+/*!
+@brief Finds the child modules for all modules in a source tree.
+@returns A hash table, keyed by the module identifiers, of lists of
+module children.
+@pre The verilog_resolve_modules function has been called on the source tree
+to which the passed module belongs.
+@see verilog_module_get_children
+*/
+ast_hashtable * verilog_modules_get_children(
+    verilog_source_tree * source
+){
+    ast_hashtable * tr = ast_hashtable_new();
+
+    int m;
+    for(m = 0; m < source -> modules -> items; m++)
+    {
+        ast_module_declaration * module = ast_list_get(source -> modules, m);
+
+        ast_list * children = verilog_module_get_children(module);
+
+        char * key = ast_identifier_tostring(module -> identifier);
+
+        ast_hashtable_insert(tr,key,children);
+    }
+
+    return tr;
+}

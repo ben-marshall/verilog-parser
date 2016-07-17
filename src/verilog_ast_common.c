@@ -184,6 +184,46 @@ void *    ast_list_get(ast_list * list, unsigned int item)
     }
 }
 
+
+/*!
+@brief Searches the list, returning true or false if the data item supplied is
+contained within it.
+@details Performs a *pointer* comparison. That is, if the internal list
+pointer has the same address as the supplied data pointer, the item is
+considered to be found.
+*/
+int ast_list_contains(
+    ast_list * list,
+    void * data
+){
+    assert(list != NULL);
+    if(list -> items  <= 0)
+    {
+        return 0;
+    }
+    else
+    {
+        list -> current_item = 0;
+        list -> walker = list -> head;
+
+        while(list -> walker != NULL)
+        {
+            if(list -> walker -> data == data)
+            {
+                return 1;
+            }
+            else
+            {
+                list -> walker = list -> walker -> next;
+                list -> current_item += 1;
+            }
+        }
+
+        return 0;
+    }
+}
+
+
 /*!
 @brief concatenates the two supplied lists into one.
 @param head - This will form the "front" of the new list.
