@@ -117,7 +117,28 @@ ast_list * verilog_module_get_children(
         ast_module_instantiation * child = 
                             ast_list_get(module -> module_instantiations, m);
 
-        int added_already = ast_list_contains(tr, child);
+        int c;
+        int added_already = 0;
+        for(c = 0; c < tr -> items; c++)
+        {
+            ast_module_instantiation * maybe = ast_list_get(tr,c);
+            ast_identifier i1, i2;
+            if(maybe -> resolved)
+                i1 = maybe -> declaration -> identifier;
+            else
+                i1 = maybe -> module_identifer;
+            
+            if(child -> resolved)
+                i2 = child -> declaration -> identifier;
+            else
+                i2 = child-> module_identifer;
+
+            if(ast_identifier_cmp(i1,i2) == 0)
+            {
+                added_already = 1;
+                break;
+            }
+        }
 
         if(added_already)
         {
