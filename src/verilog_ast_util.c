@@ -103,23 +103,18 @@ void verilog_resolve_modules(
 
 
 /*!
-@brief Returns a list of module declarations, representing the different types
-of module which this parent instantiates.
+@brief Returns a list of module instantiations, representing the different 
+types of module which this parent instantiates.
 */
 ast_list * verilog_module_get_children(
     ast_module_declaration * module
 ){
     ast_list * tr = ast_list_new();
-   
-    if(module == NULL)
-    {
-        return tr;
-    }
-
+    
     int m;
     for(m = 0; m < module -> module_instantiations -> items; m++)
     {
-        ast_module_declaration * child = 
+        ast_module_instantiation * child = 
                             ast_list_get(module -> module_instantiations, m);
 
         int added_already = ast_list_contains(tr, child);
