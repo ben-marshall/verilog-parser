@@ -1,7 +1,13 @@
 
 LOGFILE=./build/valgrind-log.txt
 BINARY=./build/debug/src/parser
-TESTS=`find ./tests/ -name *.v`
+TESTS=`find ./tests/ -name *sparc*.v`
+
+echo ">> Building Library..."
+
+cd ./build/debug
+make
+cd -
 
 echo ">> Running Valgrind..."
 
@@ -9,8 +15,10 @@ valgrind --track-origins=yes --leak-check=full --leak-resolution=high \
     --show-leak-kinds=all --log-file=$LOGFILE $BINARY $TESTS
 
 
-echo ">> Invalid Reads: `egrep "Invalid read of size" -c $LOGFILE`"
-echo ">> Leaked Blocks: `egrep "blocks are still reachable" -c $LOGFILE`"
+echo ">> Invalid Reads:          `egrep "Invalid read of size" -c $LOGFILE`"
+echo ">> Leaked Blocks:          `egrep "blocks are still reachable" -c $LOGFILE`"
+echo ">> Indirectly Lost Blocks: `egrep "blocks are indirectly lost" -c $LOGFILE`"
+echo ">> Definitely Lost Blocks: `egrep "blocks are definitely lost" -c $LOGFILE`"
 
 tail -n 10 $LOGFILE
 
