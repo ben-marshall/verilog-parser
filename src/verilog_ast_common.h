@@ -8,6 +8,8 @@
 #include "stdlib.h"
 #include "string.h"
 
+#include "verilog_ast_mem.h"
+
 #ifndef VERILOG_AST_COMMON_H
 #define VERILOG_AST_COMMON_H
 

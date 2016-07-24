@@ -12,7 +12,7 @@ cd -
 echo ">> Running Valgrind..."
 
 valgrind --track-origins=yes --leak-check=full --leak-resolution=high \
-    --show-leak-kinds=all --log-file=$LOGFILE $BINARY $TESTS
+    --show-leak-kinds=all --log-file=$LOGFILE $BINARY $TESTS &> ./build/log.txt
 
 
 echo ">> Invalid Reads:          `egrep "Invalid read of size" -c $LOGFILE`"
