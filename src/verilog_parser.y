@@ -821,7 +821,6 @@ grammar_begin :
                 toadd -> type);
         }
     }
-    ast_list_free($1);
 }
 | {
     // Do nothing, it's an empty file.
