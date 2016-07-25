@@ -36,6 +36,15 @@ From either of those directories, we can run the following commands:
 - `make coverage-report` - Runs the coverage suite against the most recent
 build, and puts the results in `./build/coverage/`
 
+@section memory-leaks Memory Leaks
+
+There is a tool script in `bin/` called `leakcheck-report.sh` which should be
+run from the project root directory.
+
+It runs a subset of the tests through the parser, assisted by valgrind. It
+checks for all memory leaks and their origins, putting the resulting log
+into the `build` folder.
+
 @section ci-tool Continuous Integration
 
 This project uses the Travis-CI tool for continuous integration. This is
