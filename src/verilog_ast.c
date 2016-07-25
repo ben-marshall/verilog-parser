@@ -10,84 +10,6 @@
 #include "verilog_ast.h"
 
 /*!
-@defgroup ast-utility-mem-manage Memory Management
-@{
-    @brief Helps to manage memory allocated during AST construction.
-@ingroup ast-utility
-*/
-
-/*!
-@brief A simple linked list element holder for just about everything.
-*/
-typedef struct ast_alloc_t ast_alloc;
-struct ast_alloc_t{
-    ast_alloc * next;   //!< Next element in the linked list.
-    void * data;        //!< Data held in the list.
-};
-
-//! Used to store the head of the linked list of allocated data.
-ast_alloc * head = NULL;
-//! Used to walk along the list when adding or freeing.
-ast_alloc * walker = NULL;
-
-/*!
-@brief A simple wrapper around calloc.
-@details This function is identical to calloc, but uses the head and
-walker variables above to keep a linked list of all heap memory that the
-AST construction allocates. This makes it very easy to clean up afterward
-using the @ref ast_free_all function.
-@param [in] num - Number of elements to allocate space for.
-@param [in] size - The size of each element being allocated.
-@returns A pointer to the start of the block of memory allocated.
-*/
-void * ast_calloc(size_t num, size_t size)
-{
-    if(head == NULL)
-    {
-        head =  calloc(1,sizeof(ast_alloc));
-        walker = head;
-    }
-    else
-    {
-        walker -> next = calloc(1,sizeof(ast_alloc));
-        walker = walker -> next;
-    }
-
-    walker -> data = calloc(num,size);
-    return walker -> data;
-}
-
-/*!
-@brief Frees all memory allocated using @ref ast_calloc.
-@details Free's all data stored in the linked list pointed to by the
-@ref head variable.
-@post @ref walker and @ref head are NULL. All memory allocated by ast_calloc
-has been freed.
-@bug Causes segmentation fault due to double free call on the same pointer.
-*/
-void ast_free_all()
-{
-    if(head == NULL)
-        return; // No memory was allocated in the first place.
-
-    while(head -> next != NULL)
-    {
-        walker = head;
-        head = head -> next;
-        if(walker -> data != NULL)
-        {
-            free(walker -> data);
-        }
-        free(walker);
-    }
-
-    walker = NULL;
-    head = NULL;
-}
-
-/*!@}*/
-
-/*!
 @brief Creates a new empty ast_node and returns it.
 @deprecated Do not use!
 */
@@ -825,18 +747,22 @@ ast_case_statement * ast_new_case_statement(ast_expression * expression,
     tr -> type       = type;
     tr -> is_function = AST_FALSE;
 
-    int i;
-    for(i = 0; i < tr -> cases -> items; i ++)
+    if(tr -> cases != NULL)
     {
-        ast_case_item * the_case = (ast_case_item*)ast_list_get(tr->cases,i);
-
-        if(the_case == NULL)
-            break;
-
-        if(the_case -> is_default == AST_TRUE)
+        int i;
+        for(i = 0; i < tr -> cases -> items; i ++)
         {
-            tr -> default_item = ast_list_get(tr -> cases, i);
-            break;
+            ast_case_item * the_case = ast_list_get(tr->cases,i);
+
+            if(the_case == NULL){
+                break;
+            }
+
+            if(the_case -> is_default == AST_TRUE)
+            {
+                tr -> default_item = the_case;
+                break;
+            }
         }
     }
 
@@ -1334,8 +1260,6 @@ ast_udp_declaration * ast_new_udp_declaration(
     tr -> body_entries  = body -> entries;
     tr -> initial       = body -> initial;
     tr -> body_type     = body -> body_type;
-
-    free(body);
 
     return tr;
 }
@@ -1841,7 +1765,7 @@ ast_n_output_gate_instances * ast_new_n_output_gate_instances(
 */
 ast_switches * ast_new_switches(ast_switch_gate * type, ast_list * switches)
 {
-    ast_switches * tr = calloc(1,sizeof(ast_switches));
+    ast_switches * tr = ast_calloc(1,sizeof(ast_switches));
     tr -> meta.line = yylineno;
 
     tr -> type = type;
@@ -1855,7 +1779,7 @@ ast_pull_strength * ast_new_pull_stregth(
     ast_primitive_strength strength_1,
     ast_primitive_strength strength_2
 ){
-    ast_pull_strength * tr = calloc(1,sizeof(ast_pull_strength));
+    ast_pull_strength * tr =ast_calloc(1,sizeof(ast_pull_strength));
     tr -> meta.line = yylineno;
 
     tr -> strength_1 = strength_1;
@@ -1871,7 +1795,7 @@ is returned.
 */
 ast_gate_instantiation * ast_new_gate_instantiation(ast_gate_type type)
 {
-    ast_gate_instantiation * tr = calloc(1,sizeof(ast_gate_instantiation));
+    ast_gate_instantiation * tr = ast_calloc(1,sizeof(ast_gate_instantiation));
     tr -> meta.line = yylineno;
     tr -> type = type;
     return tr;
@@ -2117,7 +2041,7 @@ ast_pulse_control_specparam * ast_new_pulse_control_specparam(
     ast_expression * error_limit
 ){
     ast_pulse_control_specparam * tr =
-        calloc(1,sizeof(ast_pulse_control_specparam));
+        ast_calloc(1,sizeof(ast_pulse_control_specparam));
 
     tr -> reject_limit = reject_limit;
     tr -> error_limit  = error_limit;
@@ -2285,7 +2209,7 @@ ast_module_item * ast_new_module_item(
     ast_node_attributes * attributes,
     ast_module_item_type  type
 ){
-    ast_module_item * tr = calloc(1,sizeof(ast_module_item));
+    ast_module_item * tr = ast_calloc(1,sizeof(ast_module_item));
     tr -> meta.line = yylineno;
 
     tr -> type       = type;
@@ -2443,7 +2367,6 @@ ast_module_declaration * ast_new_module_declaration(
                 construct -> type);
             assert(0); // Fail out because this should *never* happen
         }
-        free(construct);
     }
 
     return tr;
@@ -2473,10 +2396,7 @@ array.
 */
 char * ast_identifier_tostring(ast_identifier id)
 {
-    size_t len = strlen(id -> identifier)+1;
-    char * tr = calloc(len,sizeof(char));
-    memcpy(tr, id -> identifier, len);
-    
+    char * tr = ast_strdup(id -> identifier);   
     ast_identifier walker = id;
 
     while(walker -> next != NULL)
@@ -2501,8 +2421,6 @@ int ast_identifier_cmp(
     char * s2 = ast_identifier_tostring(b);
 
     int result = strcmp(s1,s2);
-    free(s1);
-    free(s2);
 
     return result;
 }
@@ -2514,10 +2432,7 @@ ast_identifier ast_new_identifier(
     ast_identifier tr = ast_calloc(1,sizeof(struct ast_identifier_t));
     tr -> meta.line = yylineno;
     
-    size_t length = strlen(identifier) + 1;
-    tr -> identifier = calloc(length, sizeof(char));
-    strcat(tr -> identifier, identifier);
-
+    tr -> identifier = ast_strdup(identifier);
     tr -> from_line = from_line;
     tr -> type = ID_UNKNOWN;
     tr -> next = NULL;
@@ -2684,9 +2599,4 @@ verilog_source_tree * verilog_new_source_tree()
 void verilog_free_source_tree(
     verilog_source_tree * tofree
 ){
-    ast_list_free(tofree -> modules   );
-    ast_list_free(tofree -> primitives);
-    ast_list_free(tofree -> configs   );
-    ast_list_free(tofree -> libraries );
-    free(tofree);
 }

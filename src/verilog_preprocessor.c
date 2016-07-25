@@ -30,12 +30,6 @@ verilog_preprocessor_context * verilog_new_preprocessor_context()
 
 void verilog_free_preprocessor_context(verilog_preprocessor_context * tofree)
 {
-    ast_list_free(tofree -> includes);
-    ast_list_free(tofree -> net_types);
-    ast_hashtable_free(tofree -> macrodefines);
-    ast_stack_free(tofree -> ifdefs);
-    ast_list_free(tofree -> search_dirs);
-    free(tofree);
 }
 
 void verilog_preproc_enter_cell_define()
@@ -122,8 +116,8 @@ verilog_include_directive * verilog_preprocessor_include(
     filename = filename + 1; // Remove leading quote mark.
     size_t length = strlen(filename);
     
-    toadd -> filename = calloc(length,sizeof(char));
-    memcpy(toadd -> filename, filename, length-1); // Remove trailing quote.
+    toadd -> filename = ast_strdup(filename);
+    toadd -> filename[length-1] = '\0';
     toadd -> lineNumber = lineNumber;
 
     ast_list_append(yy_preproc -> includes, toadd);
@@ -134,7 +128,7 @@ verilog_include_directive * verilog_preprocessor_include(
         char * dir       = ast_list_get(yy_preproc -> search_dirs, d);
         size_t dirlen    = strlen(dir)+1;
         size_t namelen   = strlen(toadd -> filename);
-        char * full_name = calloc(dirlen+namelen, sizeof(char));
+        char * full_name = ast_calloc(dirlen+namelen, sizeof(char));
 
         strcat(full_name, dir);
         strcat(full_name, toadd -> filename);
@@ -143,7 +137,6 @@ verilog_include_directive * verilog_preprocessor_include(
         if(handle)
         {
             fclose(handle);
-            free(toadd -> filename);
             toadd -> filename = full_name;
             toadd -> file_found = AST_TRUE;
             break;
@@ -151,7 +144,6 @@ verilog_include_directive * verilog_preprocessor_include(
         else
         {   
             toadd -> file_found = AST_FALSE;
-            free(full_name);
         }
     }
 
@@ -179,8 +171,7 @@ void verilog_preprocessor_macro_define(
 
     // Make space for, and duplicate, the macro text, into the thing
     // we will put into the hashtable.
-    toadd -> macro_id    = calloc(name_len,sizeof(char));
-    memcpy(toadd -> macro_id,macro_name, name_len);
+    toadd -> macro_id    = ast_strdup(macro_name);
 
     if(text_len > 0){
         // Make sure we exclude all comments from the macro text.
@@ -195,10 +186,9 @@ void verilog_preprocessor_macro_define(
             }
         }
 
-        toadd -> macro_value = calloc(text_len,sizeof(char));
-        memcpy(toadd -> macro_value,macro_text,text_len);
+        toadd -> macro_value = ast_strdup(macro_text);
     } else {
-        toadd -> macro_value = NULL;
+        toadd -> macro_value = "";
     }
 
     //printf("MACRO: '%s' - '%s'\n", toadd -> macro_id, toadd -> macro_value);
@@ -233,7 +223,7 @@ verilog_preprocessor_conditional_context *
     int           line_number         //!< Where the `ifdef came from.
 ){
     verilog_preprocessor_conditional_context * tr = 
-        calloc(1,sizeof(verilog_preprocessor_conditional_context));
+        ast_calloc(1,sizeof(verilog_preprocessor_conditional_context));
 
     tr -> line_number = line_number;
     tr -> condition   = condition;
@@ -395,7 +385,6 @@ void verilog_preprocessor_endif (unsigned int lineno)
         return;
     }
 
-    free(tocheck);
     tocheck = ast_stack_peek(yy_preproc -> ifdefs);
 
     if(tocheck == NULL)

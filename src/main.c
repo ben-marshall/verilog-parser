@@ -25,8 +25,8 @@ int main(int argc, char ** argv)
         verilog_parser_init();
 
         // Setup the preprocessor to look in ./tests/ for include files.
-        char * sdir = "./tests/";
-        ast_list_append(yy_preproc -> search_dirs, sdir);
+        ast_list_append(yy_preproc -> search_dirs, "./tests/");
+        ast_list_append(yy_preproc -> search_dirs, "./");
 
         for(F = 1; F < argc; F++)
         {
@@ -53,7 +53,6 @@ int main(int argc, char ** argv)
         }
     }
     verilog_resolve_modules(yy_verilog_source_tree);
-    verilog_free_preprocessor_context(yy_preproc);
-    verilog_free_source_tree(yy_verilog_source_tree);
+    ast_free_all();
     return 0;
 }
