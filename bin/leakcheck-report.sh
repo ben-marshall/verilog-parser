@@ -13,7 +13,6 @@ echo ">> Running Valgrind..."
 
 CMD="valgrind --track-origins=yes --leak-check=full --leak-resolution=high \
     --show-leak-kinds=all --log-file=$LOGFILE $BINARY $TESTS"
-echo $CMD
 $CMD  &> ./build/log.txt
 
 

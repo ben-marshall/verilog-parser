@@ -747,18 +747,22 @@ ast_case_statement * ast_new_case_statement(ast_expression * expression,
     tr -> type       = type;
     tr -> is_function = AST_FALSE;
 
-    int i;
-    for(i = 0; i < tr -> cases -> items; i ++)
+    if(tr -> cases != NULL)
     {
-        ast_case_item * the_case = (ast_case_item*)ast_list_get(tr->cases,i);
-
-        if(the_case == NULL)
-            break;
-
-        if(the_case -> is_default == AST_TRUE)
+        int i;
+        for(i = 0; i < tr -> cases -> items; i ++)
         {
-            tr -> default_item = ast_list_get(tr -> cases, i);
-            break;
+            ast_case_item * the_case = ast_list_get(tr->cases,i);
+
+            if(the_case == NULL){
+                break;
+            }
+
+            if(the_case -> is_default == AST_TRUE)
+            {
+                tr -> default_item = the_case;
+                break;
+            }
         }
     }
 

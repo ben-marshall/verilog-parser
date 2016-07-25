@@ -476,9 +476,7 @@ TERNARY             "?"
 }
 
 <in_define>{SIMPLE_ID}   {
-    if(yy_preproc -> scratch != NULL)
-        free(yy_preproc -> scratch);
-    yy_preproc -> scratch = strdup(yytext);
+    yy_preproc -> scratch = ast_strdup(yytext);
     BEGIN(in_define_t);
 }
 

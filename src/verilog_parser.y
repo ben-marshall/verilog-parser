@@ -3567,7 +3567,7 @@ case_items      :
   }
 | case_items case_item{
     $$ = $1;
-    ast_list_append($$, $1);
+    ast_list_append($$, $2);
   }
                 ;
 
@@ -3612,15 +3612,16 @@ function_case_items     :
     $$ = ast_list_new();
     ast_list_append($$, $1);
   }
-| function_case_items case_item{
+| function_case_items function_case_item{
     $$ = $1;
-    ast_list_append($$, $1);
+    ast_list_append($$, $2);
   }
 ;
 
 function_case_item      : 
   expressions COLON function_statement_or_null{
     $$ = ast_new_case_item($1, $3);
+    $$ -> is_default = AST_FALSE;
   }
 | KW_DEFAULT function_statement_or_null{
     $$ = ast_new_case_item(NULL, $2);

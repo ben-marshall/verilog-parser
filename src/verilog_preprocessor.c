@@ -116,8 +116,8 @@ verilog_include_directive * verilog_preprocessor_include(
     filename = filename + 1; // Remove leading quote mark.
     size_t length = strlen(filename);
     
-    toadd -> filename = calloc(length,sizeof(char));
-    memcpy(toadd -> filename, filename, length-1); // Remove trailing quote.
+    toadd -> filename = ast_strdup(filename);
+    toadd -> filename[length-1] = '\0';
     toadd -> lineNumber = lineNumber;
 
     ast_list_append(yy_preproc -> includes, toadd);
@@ -128,7 +128,7 @@ verilog_include_directive * verilog_preprocessor_include(
         char * dir       = ast_list_get(yy_preproc -> search_dirs, d);
         size_t dirlen    = strlen(dir)+1;
         size_t namelen   = strlen(toadd -> filename);
-        char * full_name = calloc(dirlen+namelen, sizeof(char));
+        char * full_name = ast_calloc(dirlen+namelen, sizeof(char));
 
         strcat(full_name, dir);
         strcat(full_name, toadd -> filename);
@@ -137,7 +137,6 @@ verilog_include_directive * verilog_preprocessor_include(
         if(handle)
         {
             fclose(handle);
-            free(toadd -> filename);
             toadd -> filename = full_name;
             toadd -> file_found = AST_TRUE;
             break;
@@ -145,7 +144,6 @@ verilog_include_directive * verilog_preprocessor_include(
         else
         {   
             toadd -> file_found = AST_FALSE;
-            free(full_name);
         }
     }
 
@@ -225,7 +223,7 @@ verilog_preprocessor_conditional_context *
     int           line_number         //!< Where the `ifdef came from.
 ){
     verilog_preprocessor_conditional_context * tr = 
-        calloc(1,sizeof(verilog_preprocessor_conditional_context));
+        ast_calloc(1,sizeof(verilog_preprocessor_conditional_context));
 
     tr -> line_number = line_number;
     tr -> condition   = condition;
