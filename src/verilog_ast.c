@@ -1763,7 +1763,7 @@ ast_n_output_gate_instances * ast_new_n_output_gate_instances(
 */
 ast_switches * ast_new_switches(ast_switch_gate * type, ast_list * switches)
 {
-    ast_switches * tr = calloc(1,sizeof(ast_switches));
+    ast_switches * tr = ast_calloc(1,sizeof(ast_switches));
     tr -> meta.line = yylineno;
 
     tr -> type = type;
@@ -1777,7 +1777,7 @@ ast_pull_strength * ast_new_pull_stregth(
     ast_primitive_strength strength_1,
     ast_primitive_strength strength_2
 ){
-    ast_pull_strength * tr = calloc(1,sizeof(ast_pull_strength));
+    ast_pull_strength * tr =ast_calloc(1,sizeof(ast_pull_strength));
     tr -> meta.line = yylineno;
 
     tr -> strength_1 = strength_1;
@@ -1793,7 +1793,7 @@ is returned.
 */
 ast_gate_instantiation * ast_new_gate_instantiation(ast_gate_type type)
 {
-    ast_gate_instantiation * tr = calloc(1,sizeof(ast_gate_instantiation));
+    ast_gate_instantiation * tr = ast_calloc(1,sizeof(ast_gate_instantiation));
     tr -> meta.line = yylineno;
     tr -> type = type;
     return tr;
@@ -2039,7 +2039,7 @@ ast_pulse_control_specparam * ast_new_pulse_control_specparam(
     ast_expression * error_limit
 ){
     ast_pulse_control_specparam * tr =
-        calloc(1,sizeof(ast_pulse_control_specparam));
+        ast_calloc(1,sizeof(ast_pulse_control_specparam));
 
     tr -> reject_limit = reject_limit;
     tr -> error_limit  = error_limit;
@@ -2207,7 +2207,7 @@ ast_module_item * ast_new_module_item(
     ast_node_attributes * attributes,
     ast_module_item_type  type
 ){
-    ast_module_item * tr = calloc(1,sizeof(ast_module_item));
+    ast_module_item * tr = ast_calloc(1,sizeof(ast_module_item));
     tr -> meta.line = yylineno;
 
     tr -> type       = type;
@@ -2395,10 +2395,7 @@ array.
 */
 char * ast_identifier_tostring(ast_identifier id)
 {
-    size_t len = strlen(id -> identifier)+1;
-    char * tr = calloc(len,sizeof(char));
-    memcpy(tr, id -> identifier, len);
-    
+    char * tr = strdup(id -> identifier);   
     ast_identifier walker = id;
 
     while(walker -> next != NULL)
@@ -2436,10 +2433,7 @@ ast_identifier ast_new_identifier(
     ast_identifier tr = ast_calloc(1,sizeof(struct ast_identifier_t));
     tr -> meta.line = yylineno;
     
-    size_t length = strlen(identifier) + 1;
-    tr -> identifier = calloc(length, sizeof(char));
-    strcat(tr -> identifier, identifier);
-
+    tr -> identifier = strdup(identifier);
     tr -> from_line = from_line;
     tr -> type = ID_UNKNOWN;
     tr -> next = NULL;

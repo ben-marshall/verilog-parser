@@ -179,8 +179,7 @@ void verilog_preprocessor_macro_define(
 
     // Make space for, and duplicate, the macro text, into the thing
     // we will put into the hashtable.
-    toadd -> macro_id    = calloc(name_len,sizeof(char));
-    memcpy(toadd -> macro_id,macro_name, name_len);
+    toadd -> macro_id    = strdup(macro_name);
 
     if(text_len > 0){
         // Make sure we exclude all comments from the macro text.
@@ -195,10 +194,9 @@ void verilog_preprocessor_macro_define(
             }
         }
 
-        toadd -> macro_value = calloc(text_len,sizeof(char));
-        memcpy(toadd -> macro_value,macro_text,text_len);
+        toadd -> macro_value = strdup(macro_text);
     } else {
-        toadd -> macro_value = NULL;
+        toadd -> macro_value = "";
     }
 
     //printf("MACRO: '%s' - '%s'\n", toadd -> macro_id, toadd -> macro_value);
