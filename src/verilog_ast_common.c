@@ -17,7 +17,7 @@
 */
 ast_list * ast_list_new ()
 {
-    ast_list * tr = calloc(1, sizeof(ast_list));
+    ast_list * tr = ast_calloc(1, sizeof(ast_list));
     tr -> head          = NULL;
     tr -> tail          = NULL;
     tr -> walker        = NULL;
@@ -60,7 +60,7 @@ void       ast_list_append(ast_list * list, void * data)
 {
     if(list -> items == 0)
     {
-        list -> head         = calloc(1,sizeof(ast_list_element));
+        list -> head         = ast_calloc(1,sizeof(ast_list_element));
         list -> head -> next = NULL;
         list -> head -> data = data;
 
@@ -71,7 +71,7 @@ void       ast_list_append(ast_list * list, void * data)
     }
     else
     {
-        list -> tail -> next = calloc(1, sizeof(ast_list_element));
+        list -> tail -> next = ast_calloc(1, sizeof(ast_list_element));
         list -> tail = list -> tail -> next;
         list -> tail -> data = data;
 
@@ -107,11 +107,11 @@ void      ast_list_remove_at(ast_list * list, unsigned int i)
             ast_list_element * toremove =  list -> walker -> next;
             list -> walker -> next = list -> walker -> next -> next;
             list -> items -= 1;
-            free(toremove);
+            //free(toremove);
         } else {
             ast_list_element * toremove =  list -> head;
             list -> head = list -> head -> next;
-            free(toremove);
+            //free(toremove);
             list -> items -= 1;
         }
     }
@@ -125,7 +125,7 @@ void       ast_list_preappend(ast_list * list, void * data)
 {
     if(list -> items == 0)
     {
-        list -> head         = calloc(1,sizeof(ast_list_element));
+        list -> head         = ast_calloc(1,sizeof(ast_list_element));
         list -> head -> next = NULL;
         list -> head -> data = data;
 
@@ -136,7 +136,7 @@ void       ast_list_preappend(ast_list * list, void * data)
     }
     else
     {
-        ast_list_element * to_add = calloc(1, sizeof(ast_list_element));
+        ast_list_element * to_add = ast_calloc(1, sizeof(ast_list_element));
         to_add -> data = data;
 
         to_add -> next = list -> head;
@@ -260,7 +260,7 @@ ast_list *    ast_list_concat(ast_list * head, ast_list * tail)
     }
 
     // Free only the tail data-structure, not it's elements.
-    free(tail);
+    //free(tail);
 
     // return the new list.
     return head;
@@ -270,7 +270,7 @@ ast_list *    ast_list_concat(ast_list * head, ast_list * tail)
 @brief Creates and returns a new stack object.
 */
 ast_stack * ast_stack_new(){
-    ast_stack * tr = calloc(1,sizeof(ast_stack));
+    ast_stack * tr = ast_calloc(1,sizeof(ast_stack));
     tr -> depth = 0;
     return tr;
 }
@@ -303,12 +303,12 @@ void ast_stack_push(
 
     if(stack -> items == NULL)
     {
-        stack -> items = calloc(1,sizeof(ast_stack_element));
+        stack -> items = ast_calloc(1,sizeof(ast_stack_element));
         stack -> items -> data = item;
     } 
     else
     {
-        ast_stack_element * toadd = calloc(1,sizeof(ast_stack_element));
+        ast_stack_element * toadd = ast_calloc(1,sizeof(ast_stack_element));
         toadd -> data = item;
         toadd -> next = stack -> items;
         stack -> items = toadd;
@@ -333,7 +333,6 @@ void * ast_stack_pop(
         void * tr = stack -> items -> data;
         ast_stack_element * tofree = stack -> items;
         stack -> items = stack -> items -> next;
-        free(tofree);
         stack -> depth --;
         return tr;
     }
@@ -392,7 +391,7 @@ void * ast_stack_peek2(
 
 //! Creates and returns a new hashtable.
 ast_hashtable * ast_hashtable_new(){
-    ast_hashtable * tr = calloc(1,sizeof(ast_hashtable));
+    ast_hashtable * tr = ast_calloc(1,sizeof(ast_hashtable));
 
     tr -> size = 0;
     tr -> elements = ast_list_new();
@@ -429,7 +428,7 @@ ast_hashtable_result ast_hashtable_insert(
             }
         }
     }
-    ast_hashtable_element * toinsert = calloc(1,sizeof(ast_hashtable_element));
+    ast_hashtable_element * toinsert = ast_calloc(1,sizeof(ast_hashtable_element));
     toinsert -> key = key;
     toinsert -> data = value;
     ast_list_append(table -> elements, toinsert);;
