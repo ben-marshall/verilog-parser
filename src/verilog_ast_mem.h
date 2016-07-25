@@ -26,6 +26,9 @@ struct ast_memory_t{
 //! Iterates over all allocated memory and frees it.
 void ast_free_all();
 
+//! Duplicates the supplied null terminated string.
+char * ast_strdup(char * in);
+
 /*!
 @brief A simple wrapper around calloc.
 @details This function is identical to calloc, but uses the head and

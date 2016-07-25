@@ -2392,7 +2392,7 @@ array.
 */
 char * ast_identifier_tostring(ast_identifier id)
 {
-    char * tr = strdup(id -> identifier);   
+    char * tr = ast_strdup(id -> identifier);   
     ast_identifier walker = id;
 
     while(walker -> next != NULL)
@@ -2417,8 +2417,6 @@ int ast_identifier_cmp(
     char * s2 = ast_identifier_tostring(b);
 
     int result = strcmp(s1,s2);
-    free(s1);
-    free(s2);
 
     return result;
 }
@@ -2430,7 +2428,7 @@ ast_identifier ast_new_identifier(
     ast_identifier tr = ast_calloc(1,sizeof(struct ast_identifier_t));
     tr -> meta.line = yylineno;
     
-    tr -> identifier = strdup(identifier);
+    tr -> identifier = ast_strdup(identifier);
     tr -> from_line = from_line;
     tr -> type = ID_UNKNOWN;
     tr -> next = NULL;

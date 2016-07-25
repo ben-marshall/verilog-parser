@@ -173,7 +173,7 @@ void verilog_preprocessor_macro_define(
 
     // Make space for, and duplicate, the macro text, into the thing
     // we will put into the hashtable.
-    toadd -> macro_id    = strdup(macro_name);
+    toadd -> macro_id    = ast_strdup(macro_name);
 
     if(text_len > 0){
         // Make sure we exclude all comments from the macro text.
@@ -188,7 +188,7 @@ void verilog_preprocessor_macro_define(
             }
         }
 
-        toadd -> macro_value = strdup(macro_text);
+        toadd -> macro_value = ast_strdup(macro_text);
     } else {
         toadd -> macro_value = "";
     }

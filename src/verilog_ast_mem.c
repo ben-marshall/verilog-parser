@@ -93,5 +93,14 @@ void ast_free_all()
     printf("\tBytes remaining: %lu\n", total_allocated - total_freed);
 }
 
+
+char * ast_strdup(char * in)
+{
+    size_t len = strlen(in);
+    char * tr = ast_calloc(len+1,sizeof(char));
+    memcpy(tr,in,len);
+    return tr;
+}
+
 /*!@}*/
 
