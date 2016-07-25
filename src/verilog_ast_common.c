@@ -33,7 +33,7 @@ the list construct itself.
 */
 void       ast_list_free(ast_list * list)
 {
-    if(list -> items > 0);
+    if(list -> items > 0)
     {
         list -> walker = list -> head;
         
