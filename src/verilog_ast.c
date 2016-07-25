@@ -1257,8 +1257,6 @@ ast_udp_declaration * ast_new_udp_declaration(
     tr -> initial       = body -> initial;
     tr -> body_type     = body -> body_type;
 
-    free(body);
-
     return tr;
 }
 
@@ -2365,7 +2363,6 @@ ast_module_declaration * ast_new_module_declaration(
                 construct -> type);
             assert(0); // Fail out because this should *never* happen
         }
-        free(construct);
     }
 
     return tr;
@@ -2600,9 +2597,4 @@ verilog_source_tree * verilog_new_source_tree()
 void verilog_free_source_tree(
     verilog_source_tree * tofree
 ){
-    ast_list_free(tofree -> modules   );
-    ast_list_free(tofree -> primitives);
-    ast_list_free(tofree -> configs   );
-    ast_list_free(tofree -> libraries );
-    free(tofree);
 }

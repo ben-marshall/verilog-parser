@@ -30,12 +30,6 @@ verilog_preprocessor_context * verilog_new_preprocessor_context()
 
 void verilog_free_preprocessor_context(verilog_preprocessor_context * tofree)
 {
-    ast_list_free(tofree -> includes);
-    ast_list_free(tofree -> net_types);
-    ast_hashtable_free(tofree -> macrodefines);
-    ast_stack_free(tofree -> ifdefs);
-    ast_list_free(tofree -> search_dirs);
-    free(tofree);
 }
 
 void verilog_preproc_enter_cell_define()
@@ -393,7 +387,6 @@ void verilog_preprocessor_endif (unsigned int lineno)
         return;
     }
 
-    free(tocheck);
     tocheck = ast_stack_peek(yy_preproc -> ifdefs);
 
     if(tocheck == NULL)

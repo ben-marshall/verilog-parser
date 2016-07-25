@@ -16,6 +16,9 @@ manage dynamic memory allocation within the library.
 //! The total number of memory allocations made.
 unsigned int memory_allocations = 0;
 
+//! The total number of bytes ever allocated using ast_alloc
+size_t       total_allocated = 0;
+
 //! Head of the linked list of allocated memory.
 ast_memory * memory_head = NULL;
 
@@ -43,6 +46,7 @@ void * ast_calloc(size_t num, size_t size)
     {
         memory_head = calloc(1,sizeof(ast_memory));
         memory_head -> size = num * size;
+        total_allocated += memory_head -> size;
         memory_head -> data = data;
         memory_head -> next = NULL;
         walker      = memory_head;
@@ -51,10 +55,12 @@ void * ast_calloc(size_t num, size_t size)
     {
         walker -> next = calloc(1,sizeof(ast_memory));
         walker -> next -> size = num * size;
+        total_allocated += walker -> size;
         walker -> next -> data = data;
         walker -> next -> next = NULL;
         walker         = walker -> next;
     }
+
 
     return data;
 }
@@ -69,8 +75,22 @@ has been freed.
 void ast_free_all()
 {
     printf("Freeing data for %u memory allocations.\n", memory_allocations);
-    printf("ERROR: ast_free_all() on line %d of %s not implemented.\n",
-        __LINE__,__FILE__);
+    size_t total_freed = 0;
+
+    while(memory_head != NULL)
+    {
+        walker = memory_head -> next;
+        total_freed += memory_head -> size;
+
+        free(memory_head -> data);
+        free(memory_head);
+        
+        memory_head = walker;
+    }
+
+    printf("\tFree'd %lu bytes of %lu bytes allocated.\n", 
+        total_freed, total_allocated);
+    printf("\tBytes remaining: %lu\n", total_allocated - total_freed);
 }
 
 /*!@}*/

@@ -806,13 +806,11 @@ grammar_begin :
         {
             ast_list_append(yy_verilog_source_tree -> modules, 
                 toadd -> module);
-            free(toadd);
         }
         else if (toadd -> type == SOURCE_UDP)
         {
             ast_list_append(yy_verilog_source_tree -> primitives, 
                 toadd -> udp);
-            free(toadd);
         }
         else
         {
@@ -821,7 +819,6 @@ grammar_begin :
                 __LINE__,
                 __FILE__,
                 toadd -> type);
-            free(toadd);
         }
     }
     ast_list_free($1);

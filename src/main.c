@@ -53,8 +53,6 @@ int main(int argc, char ** argv)
         }
     }
     verilog_resolve_modules(yy_verilog_source_tree);
-    verilog_free_preprocessor_context(yy_preproc);
-    verilog_free_source_tree(yy_verilog_source_tree);
     ast_free_all();
     return 0;
 }
