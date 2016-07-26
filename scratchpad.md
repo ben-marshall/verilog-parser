@@ -19,7 +19,7 @@ A file of todo-lists, notes, and other useful stuff.
 - [ ] Better mechanism for building with & without coverage.
 - [ ] Re-instate coveralls service.
 - [ ] Rename various "reserved" makefile targets
-- [ ] Version checking in CMake for FLEX and BISON
+- [X] Version checking in CMake for FLEX and BISON
 
 ### Small but important
 
