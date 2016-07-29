@@ -24,7 +24,7 @@ function downloadModelTest {
 }
 
 echo "Unzipping SPARC test set..."
-unzip -o ../bin/sparct1.zip
+unzip -o ../bin/sparct1.zip -d ./
 
 echo "Downloading Tests..."
 
