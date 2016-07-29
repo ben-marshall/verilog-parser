@@ -55,7 +55,7 @@ message(STATUS "Parser Link Flags Release: ${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
 
 # ------------------------------------------------------------------------
 
-cmake_policy(SET CMP0050 OLD)
+#cmake_policy(SET CMP0050 OLD)
 
 ADD_CUSTOM_COMMAND(
     SOURCE ${SOURCE_DIR}/${BISON_INPUT}
@@ -74,7 +74,7 @@ ADD_CUSTOM_COMMAND(
     OUTPUTS ${BINARY_DIR}/${FLEX_OUTPUT}
 )
 
-cmake_policy(SET CMP0050 NEW)
+#cmake_policy(SET CMP0050 NEW)
 
 SET_SOURCE_FILES_PROPERTIES(${BINARY_DIR}/${FLEX_OUTPUT}  GENERATED)
 SET_SOURCE_FILES_PROPERTIES(${BINARY_DIR}/${BISON_OUTPUT} GENERATED)

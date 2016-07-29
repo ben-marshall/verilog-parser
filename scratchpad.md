@@ -16,9 +16,9 @@ A file of todo-lists, notes, and other useful stuff.
 
 ### Build & Flow
 
-- [ ] Better mechanism for building with & without coverage.
-- [ ] Re-instate coveralls service.
-- [ ] Rename various "reserved" makefile targets
+- [X] Better mechanism for building with & without coverage.
+- [X] Re-instate coveralls service.
+- [X] Rename various "reserved" makefile targets
 - [X] Version checking in CMake for FLEX and BISON
 
 ### Small but important

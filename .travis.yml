@@ -20,7 +20,6 @@ before_script:
  - make setup
 
 script:
- - make docs
  - make debug
  - make release
  - make coverage
