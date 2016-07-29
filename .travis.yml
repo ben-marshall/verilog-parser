@@ -29,7 +29,7 @@ script:
 
 after_success:
  - echo "Success"
- - coveralls --verbose -b ./build/coverage/src/CMakeFiles/verilogparser.dir/
+ - coveralls -b ./build/coverage/src/CMakeFiles/verilogparser.dir/
 
 after_failure:
  - echo "Failure"
