@@ -11,6 +11,11 @@ mkdir -p build/debug
 mkdir -p build/coverage
 mkdir -p build/docs
 
+# Download tests - must happen before CMake is run.
+cd tests
+source ../bin/setup-tests.sh
+cd ../
+
 echo "----------------- Setup Debug Build Environment ---------------------"
 
 cd ./build/debug
@@ -28,11 +33,6 @@ echo "----------------- Setup Coverage Build Environment ------------------"
 cd ./build/coverage
 cmake -DCMAKE_BUILD_TYPE=Debug -DWITH_COVERAGE=YES ../../
 cd -
-
-# Download tests
-cd tests
-source ../bin/setup-tests.sh
-cd ../
 
 
 echo " "
