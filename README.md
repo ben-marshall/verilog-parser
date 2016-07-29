@@ -23,9 +23,8 @@ Standard.
 This will get you going workspace wise.
 
     ```sh
-    $> ./bin/project.sh
-    $> cd ./build/debug
-    $> make test
+    $> make all
+    $> make test-all
     ```
 
 This will download the test suite files, setup the build directory, and
