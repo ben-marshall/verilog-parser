@@ -30,6 +30,7 @@ script:
 
 after_success:
  - echo "Success"
+ - coveralls --verbose --gcov-options "-abcf" -b ./build/coverage/src/CMakeFiles/verilogparser.dir/
 
 after_failure:
  - echo "Failure"

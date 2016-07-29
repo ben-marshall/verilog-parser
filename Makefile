@@ -39,3 +39,11 @@ test-release: release
 	
 test-coverage: coverage 
 	$(MAKE) -C ./build/coverage test
+
+test-coverage-report: test-coverage
+	cd ./build/coverage/src/CMakeFiles/verilogparser.dir/ ; \
+	gcov -abcf *.o  ; \
+    lcov --directory . -c -o cov.info -t "verilogparser" ; \
+	genhtml -o ../../../../cov-report -t "verilogparser" --num-spaces 4 cov.info
+	@echo "Coverage report available in:"
+	@echo "./build/cov-report/index.html"
