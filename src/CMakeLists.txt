@@ -19,10 +19,28 @@ set(FLEX_OUTPUT verilog_scanner.c)
 set(BISON_INPUT  verilog_parser.y)
 set(BISON_OUTPUT verilog_parser.tab.c)
 
-SET(CMAKE_C_FLAGS_DEBUG 
-    "${CMAKE_C_FLAGS_DEBUG} -O0 -Wall -W")
-SET(CMAKE_EXE_LINKER_FLAGS_DEBUG 
-    "${CMAKE_C_FLAGS_RELEASE}")
+# ------------------------------------------------------------------------
+
+
+option(WITH_COVERAGE "If YES, build the debug executable with coverage." NO)
+
+SET(COV_FLAGS_C     "-fprofile-arcs -ftest-coverage")
+SET(COV_FLAGS_LINK  "-fprofile-arcs -ftest-coverage")
+
+# ------------------------------------------------------------------------
+    
+SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -Wall -W")
+SET(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_C_FLAGS_RELEASE}")
+
+if(${WITH_COVERAGE} == "YES" and ${CMAKE_BUILD_TYPE} == "Debug")
+    message(STATUS "Building with coverage flags set.")
+    SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${COV_FLAGS_C}")
+    SET(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_C_FLAGS_RELEASE} 
+        ${COV_FLAGS_LINK}")
+else
+    message(STATUS "Building without coverage.")
+endif
+
 
 SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
 SET(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
