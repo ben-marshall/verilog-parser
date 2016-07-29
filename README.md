@@ -169,5 +169,5 @@ like this, I am more than happy to help!
 - This could even feed into a rough power & energy estimation tool. 
 - A simple hierarchy visualiser, which you can feed all your project files into 
   and which will spit out a digested view of the module hierarchy. 
-- Proper Doxygen support for Verilog. This will be the first thing I try after 
-  the parser is finished. 
+- Proper Doxygen support for Verilog, or failing that, a 
+  [Doxygen like tool](https://github.com/ben-marshall/verilog-doc) for Verilog
