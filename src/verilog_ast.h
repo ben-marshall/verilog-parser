@@ -220,13 +220,6 @@ struct ast_node_attributes_t
 
 
 /*!
-@brief Creates and returns a new attribute node with the specified value
-       and name.
-@param [in] value - The attribute value being set to add to the node.
-*/
-ast_node * ast_new_attribute_node( ast_node_attributes* value);
-
-/*!
 @brief Creates and returns as a pointer a new attribute descriptor.
 @param [in] name - The name of the parameter/attribute.
 @param [in] value - The value the attribute should take.

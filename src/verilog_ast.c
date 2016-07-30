@@ -22,22 +22,6 @@ void ast_set_meta_info(ast_metadata * meta)
 }
 
 /*!
-@brief Creates a new empty ast_node and returns it.
-@deprecated Do not use!
-*/
-ast_node * ast_node_new()
-{
-    ast_node * tr = ast_calloc(1, sizeof(ast_node));;
-
-    tr-> type         = NONE;
-    tr-> parent       = NULL;
-    tr-> children     = NULL;
-    tr-> child_count  = 0;
-    
-    return tr;
-}
-
-/*!
 @brief Creates and returns as a pointer a new attribute descriptor.
 */
 ast_node_attributes * ast_new_attributes(ast_identifier name, 
@@ -46,21 +30,6 @@ ast_node_attributes * ast_new_attributes(ast_identifier name,
     ast_node_attributes * tr = ast_calloc(1, sizeof(ast_node_attributes));
     tr->attr_name   = name;
     tr->attr_value  = value;
-    return tr;
-}
-
-
-/*!
-@brief Creates and returns a new attribute node with the specified value
-       and name.
-*/
-ast_node * ast_new_attribute_node(ast_node_attributes * value)
-{
-    ast_node * tr = ast_node_new();
-
-    tr -> type = ATTRIBUTE_LIST;
-    tr -> attributes = value;
-
     return tr;
 }
 
@@ -76,7 +45,7 @@ void ast_append_attribute(ast_node_attributes * parent,
 {
     // Add the new attribute to the end of the list.
 
-    ast_node_attributes * walker = parent -> next;
+    ast_node_attributes * walker = parent;
     while(walker -> next != NULL)
         walker = walker -> next;
     walker -> next = toadd;
@@ -286,12 +255,14 @@ char * ast_operator_tostring(ast_operator op)
 /*!
 @brief A utility function for converting an ast expression tree back into
 a string representation.
+@returns The string representation of the passed expression or an empty string
+if exp is NULL.
 @param [in] exp - The expression to turn into a string.
 */
 char * ast_expression_tostring(
     ast_expression * exp
 ){
-    assert(exp!=NULL);
+    if(exp == NULL){return "";}
     char * tr;
     char * lhs;
     char * rhs;
@@ -409,6 +380,10 @@ ast_expression * ast_new_unary_expression(ast_primary    * operand,
     tr -> type          = UNARY_EXPRESSION;
     tr -> constant      = constant;
 
+    #ifdef VERILOG_PARSER_COVERAGE_ON
+        printf("Unary Expression: '%s'\n", ast_expression_tostring(tr));
+    #endif
+
     return tr;
 }
 
@@ -426,6 +401,10 @@ ast_expression * ast_new_range_expression(ast_expression * left,
     tr -> left          = left;
     tr -> aux           = NULL;
     tr -> type          = RANGE_EXPRESSION_UP_DOWN;
+    
+    #ifdef VERILOG_PARSER_COVERAGE_ON
+        printf("Range Expression: '%s'\n", ast_expression_tostring(tr));
+    #endif
 
     return tr;
 }
@@ -443,6 +422,10 @@ ast_expression * ast_new_index_expression(ast_expression * left)
     tr -> left          = left;
     tr -> aux           = NULL;
     tr -> type          = RANGE_EXPRESSION_INDEX;
+    
+    #ifdef VERILOG_PARSER_COVERAGE_ON
+        printf("Index Expression: '%s'\n", ast_expression_tostring(tr));
+    #endif
 
     return tr;
 }
@@ -468,6 +451,10 @@ ast_expression * ast_new_binary_expression(ast_expression * left,
     tr -> aux           = NULL;
     tr -> type          = BINARY_EXPRESSION;
     tr -> constant      = constant;
+    
+    #ifdef VERILOG_PARSER_COVERAGE_ON
+        printf("Binary Expression: '%s'\n", ast_expression_tostring(tr));
+    #endif
 
     return tr;
 }
@@ -488,6 +475,10 @@ ast_expression * ast_new_string_expression(ast_string string)
     tr -> type          = STRING_EXPRESSION;
     tr -> constant      = AST_TRUE;
     tr -> string        = string;
+    
+    #ifdef VERILOG_PARSER_COVERAGE_ON
+        printf("String Expression: '%s'\n", ast_expression_tostring(tr));
+    #endif
     
     return tr;
 }
