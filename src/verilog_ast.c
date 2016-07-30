@@ -286,7 +286,6 @@ char * ast_operator_tostring(ast_operator op)
 @brief A utility function for converting an ast expression tree back into
 a string representation.
 @param [in] exp - The expression to turn into a string.
-@todo Finish implementing this.
 */
 char * ast_expression_tostring(
     ast_expression * exp
@@ -400,10 +399,6 @@ ast_expression * ast_new_unary_expression(ast_primary    * operand,
     ast_expression * tr = ast_calloc(1, sizeof(ast_expression));
     ast_set_meta_info(&(tr->meta));
 
-    printf("Unary Expression: '%s' '%s'\n",
-        ast_operator_tostring(operation),
-        ast_primary_tostring(operand));
-    
     tr -> operation     = operation;
     tr -> attributes    = attr;
     tr -> primary       = operand;
@@ -2755,8 +2750,6 @@ ast_number * ast_new_number(
     tr -> base = base;
     tr -> representation = representation;
     tr -> as_bits = digits;
-
-    printf("New Number: '%s'\n", digits); fflush(stdout);
 
     return tr;
 }
