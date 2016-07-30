@@ -252,8 +252,13 @@ a string representation.
 char * ast_expression_tostring(
     ast_expression * exp
 ){
-    assert(0);
     char * tr;
+    char * lhs;
+    char * rhs;
+    char * pri;
+    char * cond;
+    char * mid;
+    size_t len;
 
     switch(exp -> type)
     {
@@ -261,11 +266,72 @@ char * ast_expression_tostring(
         case MODULE_PATH_PRIMARY_EXPRESSION:
             tr = ast_primary_tostring(exp -> primary);
             break;
-        case STRING_EXPRESSION;
+        case STRING_EXPRESSION:
             tr = ast_strdup(exp -> string);
             break;
+        case UNARY_EXPRESSION:  
+        case MODULE_PATH_UNARY_EXPRESSION:
+            pri = ast_primary_tostring(exp -> primary);
+            tr = ast_calloc(strlen(pri)+1,sizeof(char));
+            strcat(tr,exp -> operation);
+            strcat(tr,pri);
+            break;
+        case BINARY_EXPRESSION:
+        case MODULE_PATH_BINARY_EXPRESSION:
+            lhs = ast_expression_tostring(exp -> left);
+            rhs = ast_expression_tostring(exp -> right);
+            len =1+strlen(lhs)+ strlen(rhs) + strlen(exp -> operation);
+            tr = ast_calloc(len,sizeof(char));
+            strcat(tr,lhs);
+            strcat(tr,exp -> operation);
+            strcat(tr,rhs);
+            break;
+        case RANGE_EXPRESSION_UP_DOWN:
+            lhs = ast_expression_tostring(exp -> left);
+            rhs = ast_expression_tostring(exp -> right);
+            len =1+strlen(lhs)+ strlen(rhs) + strlen(exp -> operation);
+            tr = ast_calloc(len,sizeof(char));
+            strcat(tr,lhs);
+            strcat(tr,":");
+            strcat(tr,rhs);
+            break;
+        case RANGE_EXPRESSION_INDEX:
+            tr = ast_expression_tostring(exp -> left);
+            break;
+        case MODULE_PATH_MINTYPMAX_EXPRESSION:
+        case MINTYPMAX_EXPRESSION: 
+            lhs = ast_expression_tostring(exp -> left);
+            rhs = ast_expression_tostring(exp -> right);
+            mid = ast_expression_tostring(exp -> aux);
+            len = 3 +
+                  strlen(lhs) + 
+                  strlen(rhs) + 
+                  strlen(mid);
+            tr = ast_calloc(len,sizeof(char));
+            strcat(tr,lhs);
+            strcat(tr,":");
+            strcat(tr,mid);
+            strcat(tr,":");
+            strcat(tr,rhs);
+            break;
+        case CONDITIONAL_EXPRESSION: 
+        case MODULE_PATH_CONDITIONAL_EXPRESSION:
+            lhs = ast_expression_tostring(exp -> left);
+            rhs = ast_expression_tostring(exp -> right);
+            cond= ast_expression_tostring(exp -> aux);
+            len = 3 +
+                  strlen(lhs) + 
+                  strlen(rhs) + 
+                  strlen(cond);
+            tr = ast_calloc(len,sizeof(char));
+            strcat(tr,cond);
+            strcat(tr,"?");
+            strcat(tr,lhs);
+            strcat(tr,":");
+            strcat(tr,rhs);
+            break;
         default:
-            printf("ERROR Expression type to string not supported. %d of %s",
+            printf("ERROR: Expression type to string not supported. %d of %s",
                 __LINE__,__FILE__);
             tr = "<unsupported>";
             break;
