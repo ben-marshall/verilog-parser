@@ -577,7 +577,7 @@ ast_expression * ast_new_binary_expression(ast_expression * left,
 @param [in] attr - Expression attributes.
 @param [in] constant - Is this a constant expression we can simplify?
 */
-ast_expression * ast_new_unary_expression(ast_expression * operand,
+ast_expression * ast_new_unary_expression(ast_primary    * operand,
                                           ast_operator     operation,
                                           ast_node_attributes * attr,
                                           ast_boolean       constant);

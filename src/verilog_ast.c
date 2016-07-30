@@ -128,7 +128,7 @@ char * ast_primary_tostring(
     ast_primary * p
 ){
     char * tr;
-    
+
     switch (p -> value_type)
     {
         case PRIMARY_NUMBER:
@@ -271,10 +271,12 @@ char * ast_expression_tostring(
             break;
         case UNARY_EXPRESSION:  
         case MODULE_PATH_UNARY_EXPRESSION:
-            pri = ast_primary_tostring(exp -> primary);
-            tr = ast_calloc(strlen(pri)+1,sizeof(char));
+            pri = ast_expression_tostring(exp -> right);
+            tr = ast_calloc(strlen(pri)+4,sizeof(char));
+            strcat(tr,"(");
             strcat(tr,exp -> operation);
             strcat(tr,pri);
+            strcat(tr,")");
             break;
         case BINARY_EXPRESSION:
         case MODULE_PATH_BINARY_EXPRESSION:
@@ -345,17 +347,22 @@ char * ast_expression_tostring(
 /*!
 @brief Creates a new unary expression with the supplied operation.
 */
-ast_expression * ast_new_unary_expression(ast_expression * operand,
+ast_expression * ast_new_unary_expression(ast_primary    * operand,
                                           ast_operator     operation,
                                           ast_node_attributes * attr,
                                           ast_boolean       constant)
 {
     ast_expression * tr = ast_calloc(1, sizeof(ast_expression));
     ast_set_meta_info(&(tr->meta));
+
+    printf("Unary exp: op: '%s', data:'%s'\n",
+            operation, 
+            ast_primary_tostring(operand));
     
-    tr -> operation     = operation;
+    tr -> operation     = ast_strdup(operation);
     tr -> attributes    = attr;
-    tr -> right         = operand;
+    tr -> primary       = operand;
+    tr -> right         = NULL;
     tr -> left          = NULL;
     tr -> aux           = NULL;
     tr -> type          = UNARY_EXPRESSION;
@@ -412,7 +419,7 @@ ast_expression * ast_new_binary_expression(ast_expression * left,
 {
     ast_expression * tr = ast_calloc(1, sizeof(ast_expression));
     ast_set_meta_info(&(tr->meta));
-    
+ 
     tr -> operation     = operation;
     tr -> attributes    = attr;
     tr -> right         = right;
@@ -2581,6 +2588,8 @@ ast_identifier ast_new_identifier(
     tr -> type = ID_UNKNOWN;
     tr -> next = NULL;
     tr -> range_or_idx = ID_HAS_NONE;
+
+    printf("New Identifier: '%s'\n", tr -> identifier);
 
     return tr;
 }

@@ -546,7 +546,7 @@ TERNARY             "?"
 {COMMA}                {EMIT_TOKEN(COMMA);}
 {HASH}                 {EMIT_TOKEN(HASH);}
 {DOT}                  {EMIT_TOKEN(DOT);}
-{EQ}                   {EMIT_TOKEN(EQ);}
+{EQ}                   {yylval.string = yytext;EMIT_TOKEN(EQ);}
 {COLON}                {EMIT_TOKEN(COLON);}
 {IDX_PRT_SEL}          {EMIT_TOKEN(IDX_PRT_SEL);}
 {SEMICOLON}            {EMIT_TOKEN(SEMICOLON);}
@@ -722,11 +722,20 @@ TERNARY             "?"
 {XNOR}                 {EMIT_TOKEN(KW_XNOR);} 
 {XOR}                  {EMIT_TOKEN(KW_XOR);} 
 
-{SYSTEM_ID}            {EMIT_TOKEN(SYSTEM_ID);}
-{ESCAPED_ID}           {yylval.string= yytext; EMIT_TOKEN(ESCAPED_ID);}
-{SIMPLE_ID}            {yylval.string= yytext; EMIT_TOKEN(SIMPLE_ID);}
+{SYSTEM_ID}            {
+    yylval.identifier = ast_new_identifier(yytext,yylineno); 
+    EMIT_TOKEN(SYSTEM_ID);
+}
+{ESCAPED_ID}           {
+    yylval.identifier = ast_new_identifier(yytext,yylineno); 
+    EMIT_TOKEN(ESCAPED_ID);
+}
+{SIMPLE_ID}            {
+    yylval.identifier = ast_new_identifier(yytext,yylineno); 
+    EMIT_TOKEN(SIMPLE_ID);
+}
 
-{STRING}               {EMIT_TOKEN(STRING);                 }
+{STRING}               {yylval.string= yytext;EMIT_TOKEN(STRING);}
 
 <*>{NEWLINE}              {/*EMIT_TOKEN(NEWLINE); IGNORE */   }
 <*>{SPACE}                {/*EMIT_TOKEN(SPACE);   IGNORE */   }
