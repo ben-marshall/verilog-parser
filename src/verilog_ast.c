@@ -314,7 +314,7 @@ char * ast_expression_tostring(
         case MODULE_PATH_UNARY_EXPRESSION:
             pri = ast_primary_tostring(exp -> primary);
             op  = ast_operator_tostring(exp -> operation);
-            tr = ast_calloc(strlen(pri)+4,sizeof(char));
+            tr = ast_calloc(strlen(pri)+5,sizeof(char));
             strcat(tr,"(");
             strcat(tr, op); 
             strcat(tr,pri);
@@ -464,13 +464,6 @@ ast_expression * ast_new_binary_expression(ast_expression * left,
 {
     ast_expression * tr = ast_calloc(1, sizeof(ast_expression));
     ast_set_meta_info(&(tr->meta));
-        
-    char * l = ast_expression_tostring(left);
-    printf("l: %s\n", l);
-    char * o = ast_operator_tostring(operation);
-    printf("o: %s\n", o);
-    char * r = ast_expression_tostring(right);
-    printf("r: %s\n", o);
 
     tr -> operation     = operation;
     tr -> attributes    = attr;
@@ -2606,7 +2599,7 @@ char * ast_identifier_tostring(ast_identifier id)
     {
         walker = walker -> next;
 
-        size_t len = strlen(walker -> identifier)+1 + len;
+        size_t len = strlen(walker -> identifier)+1 + strlen(tr);
         tr = realloc(tr,len);
         strcat(tr, walker -> identifier);
     }
