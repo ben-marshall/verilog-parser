@@ -520,6 +520,15 @@ struct ast_expression_t
 };
 
 /*!
+@brief A utility function for converting an ast expression tree back into
+a string representation.
+@param [in] exp - The expression to turn into a string.
+*/
+char * ast_expression_tostring(
+    ast_expression * exp
+);
+
+/*!
 @brief Creates and returns a new expression primary.
 @details This is simply an expression instance wrapped around a
 primary instance for the purposes of mirroring the expression tree gramamr.

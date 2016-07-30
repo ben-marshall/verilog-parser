@@ -209,6 +209,30 @@ ast_expression * ast_new_expression_primary(ast_primary * p)
     return tr;
 }
 
+/*!
+@brief A utility function for converting an ast expression tree back into
+a string representation.
+@param [in] exp - The expression to turn into a string.
+@warning Not implemented.
+@todo Implement this.
+*/
+char * ast_expression_tostring(
+    ast_expression * exp
+){
+    char * tr;
+
+    switch(exp -> type)
+    {
+
+        default:
+            // Do nothing.
+            break;
+
+    }
+    
+    return tr;
+}
+
 
 /*!
 @brief Creates a new unary expression with the supplied operation.
@@ -2243,9 +2267,6 @@ ast_module_declaration * ast_new_module_declaration(
 ){
     ast_module_declaration * tr = ast_calloc(1,sizeof(ast_module_declaration));
     ast_set_meta_info(&(tr->meta));
-
-    printf("Module %s at line %d of file %s\n", identifier -> identifier,
-        tr -> meta.line, tr -> meta.file);
 
     tr -> attributes = attributes;
     tr -> identifier = identifier;
