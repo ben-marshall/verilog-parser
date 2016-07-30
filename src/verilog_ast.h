@@ -35,8 +35,40 @@ typedef struct ast_function_call_t ast_function_call;
 //! An item within a module. Duh.
 typedef struct ast_module_item_t ast_module_item;
     
-//! \b Temporary typedef.
-typedef char * ast_operator     ;
+//! Stores different Operators.
+typedef enum ast_operator_e{
+    OPERATOR_STAR    , //!<
+    OPERATOR_PLUS    , //!<
+    OPERATOR_MINUS   , //!<
+    OPERATOR_ASL     , //!< Arithmetic shift left
+    OPERATOR_ASR     , //!< Arithmetic shift right
+    OPERATOR_LSL     , //!< logical shift left
+    OPERATOR_LSR     , //!< logical shift right
+    OPERATOR_DIV     , //!< divide
+    OPERATOR_POW     , //!< pow
+    OPERATOR_MOD     , //!< mod
+    OPERATOR_GTE     , //!< greater than or equal to
+    OPERATOR_LTE     , //!<
+    OPERATOR_GT      , //!<
+    OPERATOR_LT      , //!<
+    OPERATOR_L_NEG   , //!<
+    OPERATOR_L_AND   , //!<
+    OPERATOR_L_OR    , //!<
+    OPERATOR_C_EQ    , //!<
+    OPERATOR_L_EQ    , //!<
+    OPERATOR_C_NEQ   , //!<
+    OPERATOR_L_NEQ   , //!<
+    OPERATOR_B_NEG   , //!<
+    OPERATOR_B_AND   , //!<
+    OPERATOR_B_OR    , //!<
+    OPERATOR_B_XOR   , //!<
+    OPERATOR_B_EQU   , //!<
+    OPERATOR_B_NAND  , //!<
+    OPERATOR_B_NOR   , //!<
+    OPERATOR_TERNARY , //!<
+    OPERATOR_NONE = 0
+} ast_operator;
+
 typedef char * ast_string       ;
 //! A set of lvalue and corresponding assigned expressions
 typedef struct ast_assignment_t ast_assignment;
@@ -511,6 +543,9 @@ typedef enum ast_expression_type_e
     STRING_EXPRESSION                 //!< Just a normal string. No operations.
 } ast_expression_type;
 
+
+//! Returns the string representation of an operator;
+char * ast_operator_tostring(ast_operator op);
 
 /*! 
 @brief Storage type for an entire expression / subexpression tree.

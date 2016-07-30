@@ -243,6 +243,45 @@ ast_expression * ast_new_expression_primary(ast_primary * p)
     return tr;
 }
 
+//! Returns the string representation of an operator;
+char * ast_operator_tostring(ast_operator op)
+{
+    switch(op)
+    {
+
+        case OPERATOR_STAR   : return "*"; 
+        case OPERATOR_PLUS   : return "+"; 
+        case OPERATOR_MINUS  : return "-"; 
+        case OPERATOR_ASL    : return "<<<"; 
+        case OPERATOR_ASR    : return ">>>"; 
+        case OPERATOR_LSL    : return "<<"; 
+        case OPERATOR_LSR    : return ">>>"; 
+        case OPERATOR_DIV    : return "/"; 
+        case OPERATOR_POW    : return "^"; 
+        case OPERATOR_MOD    : return "%"; 
+        case OPERATOR_GTE    : return ">="; 
+        case OPERATOR_LTE    : return "<="; 
+        case OPERATOR_GT     : return ">"; 
+        case OPERATOR_LT     : return "<"; 
+        case OPERATOR_L_NEG  : return "!"; 
+        case OPERATOR_L_AND  : return "&&"; 
+        case OPERATOR_L_OR   : return "||"; 
+        case OPERATOR_C_EQ   : return "=="; 
+        case OPERATOR_L_EQ   : return "="; 
+        case OPERATOR_C_NEQ  : return "!="; 
+        case OPERATOR_L_NEQ  : return "!="; 
+        case OPERATOR_B_NEG  : return "~"; 
+        case OPERATOR_B_AND  : return "&"; 
+        case OPERATOR_B_OR   : return "|"; 
+        case OPERATOR_B_XOR  : return "^"; 
+        case OPERATOR_B_EQU  : return "==="; 
+        case OPERATOR_B_NAND : return "~&"; 
+        case OPERATOR_B_NOR  : return "~|"; 
+        case OPERATOR_TERNARY: return "?"; 
+        default: return " ";
+    }
+}
+
 /*!
 @brief A utility function for converting an ast expression tree back into
 a string representation.
@@ -252,12 +291,14 @@ a string representation.
 char * ast_expression_tostring(
     ast_expression * exp
 ){
+    assert(exp!=NULL);
     char * tr;
     char * lhs;
     char * rhs;
     char * pri;
     char * cond;
     char * mid;
+    char * op;
     size_t len;
 
     switch(exp -> type)
@@ -271,10 +312,11 @@ char * ast_expression_tostring(
             break;
         case UNARY_EXPRESSION:  
         case MODULE_PATH_UNARY_EXPRESSION:
-            pri = ast_expression_tostring(exp -> right);
+            pri = ast_primary_tostring(exp -> primary);
+            op  = ast_operator_tostring(exp -> operation);
             tr = ast_calloc(strlen(pri)+4,sizeof(char));
             strcat(tr,"(");
-            strcat(tr,exp -> operation);
+            strcat(tr, op); 
             strcat(tr,pri);
             strcat(tr,")");
             break;
@@ -282,16 +324,19 @@ char * ast_expression_tostring(
         case MODULE_PATH_BINARY_EXPRESSION:
             lhs = ast_expression_tostring(exp -> left);
             rhs = ast_expression_tostring(exp -> right);
-            len =1+strlen(lhs)+ strlen(rhs) + strlen(exp -> operation);
+            op  = ast_operator_tostring(exp -> operation);
+            len =5+strlen(lhs)+ strlen(rhs);
             tr = ast_calloc(len,sizeof(char));
+            strcat(tr,"(");
             strcat(tr,lhs);
-            strcat(tr,exp -> operation);
+            strcat(tr, op); 
             strcat(tr,rhs);
+            strcat(tr,")");
             break;
         case RANGE_EXPRESSION_UP_DOWN:
             lhs = ast_expression_tostring(exp -> left);
             rhs = ast_expression_tostring(exp -> right);
-            len =1+strlen(lhs)+ strlen(rhs) + strlen(exp -> operation);
+            len =3+strlen(lhs)+ strlen(rhs);
             tr = ast_calloc(len,sizeof(char));
             strcat(tr,lhs);
             strcat(tr,":");
@@ -355,11 +400,11 @@ ast_expression * ast_new_unary_expression(ast_primary    * operand,
     ast_expression * tr = ast_calloc(1, sizeof(ast_expression));
     ast_set_meta_info(&(tr->meta));
 
-    printf("Unary exp: op: '%s', data:'%s'\n",
-            operation, 
-            ast_primary_tostring(operand));
+    printf("Unary Expression: '%s' '%s'\n",
+        ast_operator_tostring(operation),
+        ast_primary_tostring(operand));
     
-    tr -> operation     = ast_strdup(operation);
+    tr -> operation     = operation;
     tr -> attributes    = attr;
     tr -> primary       = operand;
     tr -> right         = NULL;
@@ -419,7 +464,14 @@ ast_expression * ast_new_binary_expression(ast_expression * left,
 {
     ast_expression * tr = ast_calloc(1, sizeof(ast_expression));
     ast_set_meta_info(&(tr->meta));
- 
+        
+    char * l = ast_expression_tostring(left);
+    printf("l: %s\n", l);
+    char * o = ast_operator_tostring(operation);
+    printf("o: %s\n", o);
+    char * r = ast_expression_tostring(right);
+    printf("r: %s\n", o);
+
     tr -> operation     = operation;
     tr -> attributes    = attr;
     tr -> right         = right;
@@ -2589,8 +2641,6 @@ ast_identifier ast_new_identifier(
     tr -> next = NULL;
     tr -> range_or_idx = ID_HAS_NONE;
 
-    printf("New Identifier: '%s'\n", tr -> identifier);
-
     return tr;
 }
 
@@ -2713,6 +2763,8 @@ ast_number * ast_new_number(
     tr -> representation = representation;
     tr -> as_bits = digits;
 
+    printf("New Number: '%s'\n", digits); fflush(stdout);
+
     return tr;
 }
 
@@ -2723,12 +2775,15 @@ ast_number * ast_new_number(
 char * ast_number_tostring(
     ast_number * n
 ){
+    assert(n!=NULL);
     char * tr;
 
-    switch(n -> representation)
+    ast_number_representation rep = n -> representation;
+
+    switch(rep)
     {
         case REP_BITS:
-            tr = ast_strdup(n -> as_bits);
+            tr = n -> as_bits;
             break;
         case REP_INTEGER:
             tr = calloc(11,sizeof(char));

@@ -3886,7 +3886,7 @@ state_dependent_path_declaration :
 ;
 
 polarity_operator_o : polarity_operator  {$$=$1;}
-                    |  {$$="";}
+                    |  {$$=OPERATOR_NONE;}
                     ;
 
 polarity_operator : PLUS  {$$=$1;}
@@ -4613,7 +4613,9 @@ unsigned_number :
 ;
 
 number :
-  real_number    {$$ = $1;}
+  NUM_REAL{
+    $$ = ast_new_number(BASE_DECIMAL,REP_BITS,$1);
+  }
 | BIN_BASE BIN_VALUE {
     $$ = ast_new_number(BASE_BINARY, REP_BITS, $2);
 }
@@ -4638,14 +4640,8 @@ number :
 | UNSIGNED_NUMBER DEC_BASE UNSIGNED_NUMBER{
     $$ = ast_new_number(BASE_DECIMAL, REP_BITS, $3);
 }
-| UNSIGNED_NUMBER {$$ = $1;}
+| unsigned_number {$$ = $1;}
 ;
-
-real_number :
-   NUM_REAL{
-    $$ = ast_new_number(BASE_DECIMAL,REP_BITS,$1);
-  }
-; 
 
 
 /* A.8.8 Strings */

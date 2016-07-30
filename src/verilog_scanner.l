@@ -528,6 +528,8 @@ TERNARY             "?"
     {
         // Switch buffers to expand the macro.
 
+        printf("Scanning Macro '%s'\n", macroName);
+        printf("with value: '%s'\n", macro->macro_value);
         YY_BUFFER_STATE cur = YY_CURRENT_BUFFER;
         YY_BUFFER_STATE n   = yy_scan_string(macro -> macro_value);
         
@@ -546,7 +548,7 @@ TERNARY             "?"
 {COMMA}                {EMIT_TOKEN(COMMA);}
 {HASH}                 {EMIT_TOKEN(HASH);}
 {DOT}                  {EMIT_TOKEN(DOT);}
-{EQ}                   {yylval.string = yytext;EMIT_TOKEN(EQ);}
+{EQ}                   {yylval.operator = OPERATOR_L_EQ; EMIT_TOKEN(EQ);}
 {COLON}                {EMIT_TOKEN(COLON);}
 {IDX_PRT_SEL}          {EMIT_TOKEN(IDX_PRT_SEL);}
 {SEMICOLON}            {EMIT_TOKEN(SEMICOLON);}
@@ -556,47 +558,47 @@ TERNARY             "?"
 {CLOSE_SQ_BRACKET}     {EMIT_TOKEN(CLOSE_SQ_BRACKET);}
 {OPEN_SQ_BRACE}        {EMIT_TOKEN(OPEN_SQ_BRACE);}
 {CLOSE_SQ_BRACE}       {EMIT_TOKEN(CLOSE_SQ_BRACE);}
-{STAR}                 {EMIT_TOKEN(STAR);}
-{PLUS}                 {EMIT_TOKEN(PLUS);}
-{MINUS}                {EMIT_TOKEN(MINUS);}
-{ASL}                  {EMIT_TOKEN(ASL);}
-{ASR}                  {EMIT_TOKEN(ASR);}
-{LSL}                  {EMIT_TOKEN(LSL);}
-{LSR}                  {EMIT_TOKEN(LSR);}
-{DIV}                  {EMIT_TOKEN(DIV);}
-{POW}                  {EMIT_TOKEN(POW);}
-{MOD}                  {EMIT_TOKEN(MOD);}
-{GTE}                  {EMIT_TOKEN(GTE);}
-{LTE}                  {EMIT_TOKEN(LTE);}
-{GT}                   {EMIT_TOKEN(GT);}
-{LT}                   {EMIT_TOKEN(LT);}
-{L_NEG}                {EMIT_TOKEN(L_NEG);}
-{L_AND}                {EMIT_TOKEN(L_AND);}
-{L_OR}                 {EMIT_TOKEN(L_OR);}
-{C_EQ}                 {EMIT_TOKEN(C_EQ);}
-{L_EQ}                 {EMIT_TOKEN(L_EQ);}
-{C_NEQ}                {EMIT_TOKEN(C_NEQ);}
-{L_NEQ}                {EMIT_TOKEN(L_NEQ);}
-{B_NEG}                {EMIT_TOKEN(B_NEG);}
-{B_AND}                {EMIT_TOKEN(B_AND);}
-{B_OR}                 {EMIT_TOKEN(B_OR);}
-{B_XOR}                {EMIT_TOKEN(B_XOR);}
-{B_EQU}                {EMIT_TOKEN(B_EQU);}
-{B_NAND}               {EMIT_TOKEN(B_NAND);}
-{B_NOR}                {EMIT_TOKEN(B_NOR);}
-{TERNARY}              {EMIT_TOKEN(TERNARY);}
+{STAR}                 {yylval.operator=OPERATOR_STAR   ; EMIT_TOKEN(STAR);}
+{PLUS}                 {yylval.operator=OPERATOR_PLUS   ; EMIT_TOKEN(PLUS);}
+{MINUS}                {yylval.operator=OPERATOR_MINUS  ; EMIT_TOKEN(MINUS);}
+{ASL}                  {yylval.operator=OPERATOR_ASL    ; EMIT_TOKEN(ASL);}
+{ASR}                  {yylval.operator=OPERATOR_ASR    ; EMIT_TOKEN(ASR);}
+{LSL}                  {yylval.operator=OPERATOR_LSL    ; EMIT_TOKEN(LSL);}
+{LSR}                  {yylval.operator=OPERATOR_LSR    ; EMIT_TOKEN(LSR);}
+{DIV}                  {yylval.operator=OPERATOR_DIV    ; EMIT_TOKEN(DIV);}
+{POW}                  {yylval.operator=OPERATOR_POW    ; EMIT_TOKEN(POW);}
+{MOD}                  {yylval.operator=OPERATOR_MOD    ; EMIT_TOKEN(MOD);}
+{GTE}                  {yylval.operator=OPERATOR_GTE    ; EMIT_TOKEN(GTE);}
+{LTE}                  {yylval.operator=OPERATOR_LTE    ; EMIT_TOKEN(LTE);}
+{GT}                   {yylval.operator=OPERATOR_GT     ; EMIT_TOKEN(GT);}
+{LT}                   {yylval.operator=OPERATOR_LT     ; EMIT_TOKEN(LT);}
+{L_NEG}                {yylval.operator=OPERATOR_L_NEG  ; EMIT_TOKEN(L_NEG);}
+{L_AND}                {yylval.operator=OPERATOR_L_AND  ; EMIT_TOKEN(L_AND);}
+{L_OR}                 {yylval.operator=OPERATOR_L_OR   ; EMIT_TOKEN(L_OR);}
+{C_EQ}                 {yylval.operator=OPERATOR_C_EQ   ; EMIT_TOKEN(C_EQ);}
+{L_EQ}                 {yylval.operator=OPERATOR_L_EQ   ; EMIT_TOKEN(L_EQ);}
+{C_NEQ}                {yylval.operator=OPERATOR_C_NEQ  ; EMIT_TOKEN(C_NEQ);}
+{L_NEQ}                {yylval.operator=OPERATOR_L_NEQ  ; EMIT_TOKEN(L_NEQ);}
+{B_NEG}                {yylval.operator=OPERATOR_B_NEG  ; EMIT_TOKEN(B_NEG);}
+{B_AND}                {yylval.operator=OPERATOR_B_AND  ; EMIT_TOKEN(B_AND);}
+{B_OR}                 {yylval.operator=OPERATOR_B_OR   ; EMIT_TOKEN(B_OR);}
+{B_XOR}                {yylval.operator=OPERATOR_B_XOR  ; EMIT_TOKEN(B_XOR);}
+{B_EQU}                {yylval.operator=OPERATOR_B_EQU  ; EMIT_TOKEN(B_EQU);}
+{B_NAND}               {yylval.operator=OPERATOR_B_NAND ; EMIT_TOKEN(B_NAND);}
+{B_NOR}                {yylval.operator=OPERATOR_B_NOR  ; EMIT_TOKEN(B_NOR);}
+{TERNARY}              {yylval.operator=OPERATOR_TERNARY; EMIT_TOKEN(TERNARY);}
 
 {BASE_DECIMAL}         {EMIT_TOKEN(DEC_BASE);}
 {BASE_HEX}             {BEGIN(in_hex_val); EMIT_TOKEN(HEX_BASE);}
 {BASE_OCTAL}           {BEGIN(in_oct_val); EMIT_TOKEN(OCT_BASE);}
 {BASE_BINARY}          {BEGIN(in_bin_val); EMIT_TOKEN(BIN_BASE);}
 
-<in_bin_val>{BIN_VALUE} {BEGIN(INITIAL); EMIT_TOKEN(BIN_VALUE);}
-<in_oct_val>{OCT_VALUE} {BEGIN(INITIAL); EMIT_TOKEN(OCT_VALUE);}
-<in_hex_val>{HEX_VALUE} {BEGIN(INITIAL); EMIT_TOKEN(HEX_VALUE);}
+<in_bin_val>{BIN_VALUE} {BEGIN(INITIAL); yylval.string = yytext; EMIT_TOKEN(BIN_VALUE);}
+<in_oct_val>{OCT_VALUE} {BEGIN(INITIAL); yylval.string = yytext; EMIT_TOKEN(OCT_VALUE);}
+<in_hex_val>{HEX_VALUE} {BEGIN(INITIAL); yylval.string = yytext; EMIT_TOKEN(HEX_VALUE);}
 
-{NUM_REAL}             {EMIT_TOKEN(NUM_REAL);}
-{NUM_UNSIGNED}         {EMIT_TOKEN(UNSIGNED_NUMBER);}
+{NUM_REAL}             {yylval.string=yytext;EMIT_TOKEN(NUM_REAL);}
+{NUM_UNSIGNED}         {yylval.string=yytext;EMIT_TOKEN(UNSIGNED_NUMBER);}
 
 {ALWAYS}               {EMIT_TOKEN(KW_ALWAYS);} 
 {AND}                  {EMIT_TOKEN(KW_AND);} 
