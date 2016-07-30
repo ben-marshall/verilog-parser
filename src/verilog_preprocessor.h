@@ -203,6 +203,7 @@ typedef struct verilog_preprocessor_context_t{
 
     char *          scratch;        //!< A scratch variable. DO NOT USE.
     
+    ast_stack     * current_file;   //!< Stack of files currently being parsed.
     ast_hashtable * macrodefines;   //!< `define kvp matching.
     ast_list      * includes;       //!< Include directives.
     ast_list      * net_types;      //!< Storage for default nettype directives
@@ -232,6 +233,24 @@ extern verilog_preprocessor_context * yy_preproc;
 */
 verilog_preprocessor_context * verilog_new_preprocessor_context();
 
+/*!
+@brief Clears the stack of files being parsed, and sets the current file to
+the supplied string.
+@param [inout] preproc - The context who's file name is being set.
+@param [in] file - The file path to put as the current file.
+*/
+void verilog_preprocessor_set_file(
+    verilog_preprocessor_context * preproc,
+    char * file
+);
+
+/*!
+@brief Returns the file currently being parsed by the context, or NULL 
+@param [in] preproc - The context to get the current file for.
+*/
+char * verilog_preprocessor_current_file(
+    verilog_preprocessor_context * preproc
+);
 
 /*!
 @brief Frees a preprocessor context and all child constructs.

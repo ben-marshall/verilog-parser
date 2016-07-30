@@ -34,6 +34,8 @@ int main(int argc, char ** argv)
 
             // Load the file.
             FILE * fh = fopen(argv[F], "r");
+
+            verilog_preprocessor_set_file(yy_preproc, argv[F]);
             
             // Parse the file and store the result.
             int result = verilog_parse_file(fh);

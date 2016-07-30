@@ -10,7 +10,7 @@ A file of todo-lists, notes, and other useful stuff.
 ### Features
 
 - [ ] `ast_expression_tostring()` function
-- [ ] Track source *file* of a construct, as well as line number.
+- [X] Track source *file* of a construct, as well as line number.
 - [ ] Track macro evaluations.
 - [ ] Freeing of individual memory structures, rather than all at once.
 

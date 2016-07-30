@@ -736,6 +736,10 @@ TERNARY             "?"
 
     yypop_buffer_state();
 
+    // We are exiting a file, so pop from the the preprocessor stack of files
+    // being parsed.
+    ast_stack_pop(yy_preproc -> current_file);
+
 
     if ( !YY_CURRENT_BUFFER )
     {

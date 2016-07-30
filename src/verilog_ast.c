@@ -8,6 +8,18 @@
 #include <stdio.h>
 
 #include "verilog_ast.h"
+#include "verilog_preprocessor.h"
+
+/*!
+@brief Responsible for setting the line number and file of each node's
+meta data member.
+@param [inout] meta - A pointer to the metadata member to modify.
+*/
+void ast_set_meta_info(ast_metadata * meta)
+{
+    meta -> line = yylineno;
+    meta -> file = verilog_preprocessor_current_file(yy_preproc);
+}
 
 /*!
 @brief Creates a new empty ast_node and returns it.
@@ -84,7 +96,7 @@ ast_lvalue * ast_new_lvalue_id(ast_lvalue_type type, ast_identifier id)
         || type == SPECPARAM_ID
         || type == PARAM_ID);
     ast_lvalue * tr = ast_calloc(1, sizeof(ast_lvalue));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
     tr -> type = type;
     tr -> data.identifier = id;
     return tr;
@@ -101,7 +113,7 @@ ast_lvalue * ast_new_lvalue_concat(ast_lvalue_type type,
     assert(type == NET_CONCATENATION 
         || type == VAR_CONCATENATION);
     ast_lvalue * tr = ast_calloc(1, sizeof(ast_lvalue));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
     tr -> type = type;
     tr -> data.concatenation = concat;
     return tr;
@@ -114,7 +126,7 @@ ast_lvalue * ast_new_lvalue_concat(ast_lvalue_type type,
 ast_primary * ast_new_constant_primary(ast_primary_value_type type)
 {
     ast_primary * tr = ast_calloc(1, sizeof(ast_primary));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> primary_type  = CONSTANT_PRIMARY;
     tr -> value_type    = type;
@@ -129,7 +141,7 @@ ast_primary * ast_new_constant_primary(ast_primary_value_type type)
 ast_primary * ast_new_primary_function_call(ast_function_call * call)
 {
     ast_primary * tr = ast_calloc(1, sizeof(ast_primary));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
     assert(tr!=NULL);
 
     tr -> primary_type  = PRIMARY;
@@ -147,7 +159,7 @@ ast_primary * ast_new_primary_function_call(ast_function_call * call)
 ast_primary * ast_new_primary(ast_primary_value_type type)
 {
     ast_primary * tr = ast_calloc(1, sizeof(ast_primary));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> primary_type  = PRIMARY;
     tr -> value_type    = type;
@@ -163,7 +175,7 @@ ast_primary * ast_new_module_path_primary(ast_primary_value_type type)
                                           
 {
     ast_primary * tr = ast_calloc(1, sizeof(ast_primary));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> primary_type  = MODULE_PATH_PRIMARY;
     tr -> value_type    = type;
@@ -182,7 +194,7 @@ ast_expression * ast_new_expression_primary(ast_primary * p)
 {
     assert(sizeof(ast_expression) != 0);
     ast_expression * tr = ast_calloc(1, sizeof(ast_expression));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
     assert(tr != NULL);
     
     tr -> attributes    = NULL;
@@ -207,7 +219,7 @@ ast_expression * ast_new_unary_expression(ast_expression * operand,
                                           ast_boolean       constant)
 {
     ast_expression * tr = ast_calloc(1, sizeof(ast_expression));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
     
     tr -> operation     = operation;
     tr -> attributes    = attr;
@@ -227,7 +239,7 @@ ast_expression * ast_new_range_expression(ast_expression * left,
                                           ast_expression * right)
 {
     ast_expression * tr = ast_calloc(1, sizeof(ast_expression));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
     
     tr -> attributes    = NULL;
     tr -> right         = right;
@@ -244,7 +256,7 @@ ast_expression * ast_new_range_expression(ast_expression * left,
 ast_expression * ast_new_index_expression(ast_expression * left)
 {
     ast_expression * tr = ast_calloc(1, sizeof(ast_expression));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
     
     tr -> attributes    = NULL;
     tr -> right         = NULL;
@@ -267,7 +279,7 @@ ast_expression * ast_new_binary_expression(ast_expression * left,
                                            ast_boolean      constant)
 {
     ast_expression * tr = ast_calloc(1, sizeof(ast_expression));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
     
     tr -> operation     = operation;
     tr -> attributes    = attr;
@@ -287,7 +299,7 @@ ast_expression * ast_new_binary_expression(ast_expression * left,
 ast_expression * ast_new_string_expression(ast_string string)
 {
     ast_expression * tr = ast_calloc(1, sizeof(ast_expression));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> attributes    = NULL;
     tr -> right         = NULL;
@@ -312,7 +324,7 @@ ast_expression * ast_new_conditional_expression(ast_expression * condition,
                                                 ast_node_attributes * attr)
 {
     ast_expression * tr = ast_calloc(1, sizeof(ast_expression));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> attributes    = attr;
     tr -> right         = if_false;
@@ -333,7 +345,7 @@ ast_expression * ast_new_mintypmax_expression(ast_expression * min,
                                               ast_expression * max)
 {
     ast_expression * tr = ast_calloc(1, sizeof(ast_expression));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> attributes    = NULL;
     tr -> right         = max;
@@ -363,7 +375,7 @@ ast_function_call * ast_new_function_call(ast_identifier  id,
                                           ast_list      * arguments)
 {
     ast_function_call * tr = ast_calloc(1, sizeof(ast_function_call));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> function  = id;
     tr -> constant  = constant;
@@ -400,7 +412,7 @@ ast_concatenation * ast_new_concatenation(ast_concatenation_type type,
                                           void * first_value)
 {
     ast_concatenation * tr = ast_calloc(1,sizeof(ast_concatenation));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> repeat = repeat;
     tr -> type   = type;
@@ -416,7 +428,7 @@ ast_concatenation * ast_new_concatenation(ast_concatenation_type type,
 ast_concatenation * ast_new_empty_concatenation(ast_concatenation_type type)
 {
     ast_concatenation * tr = ast_calloc(1,sizeof(ast_concatenation));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> repeat = NULL;
     tr -> type   = type;
@@ -447,7 +459,7 @@ be filled in manually;
 ast_path_declaration * ast_new_path_declaration(ast_path_declaration_type type)
 {
     ast_path_declaration * tr = ast_calloc(1,sizeof(ast_path_declaration));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> type = type;
     tr -> state_expression = NULL;
@@ -469,7 +481,7 @@ ast_simple_parallel_path_declaration * ast_new_simple_parallel_path_declaration
     ast_simple_parallel_path_declaration * tr = 
             ast_calloc(1, 
             sizeof(ast_simple_parallel_path_declaration));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> input_terminal = input_terminal;
     tr -> polarity       = polarity;
@@ -494,7 +506,7 @@ ast_simple_full_path_declaration * ast_new_simple_full_path_declaration
     ast_simple_full_path_declaration * tr = 
             ast_calloc(1, 
             sizeof(ast_simple_full_path_declaration));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> input_terminals= input_terminals;
     tr -> polarity       = polarity;
@@ -520,7 +532,7 @@ ast_edge_sensitive_parallel_path_declaration *
 {
     ast_edge_sensitive_parallel_path_declaration * tr = 
         ast_calloc(1,sizeof(ast_edge_sensitive_parallel_path_declaration));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> edge            = edge           ;
     tr -> input_terminal  = input_terminal ;
@@ -548,7 +560,7 @@ ast_edge_sensitive_full_path_declaration *
 {
     ast_edge_sensitive_full_path_declaration * tr = 
         ast_calloc(1,sizeof(ast_edge_sensitive_full_path_declaration));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> edge            = edge           ;
     tr -> input_terminal  = input_terminal ;
@@ -572,7 +584,7 @@ ast_task_enable_statement * ast_new_task_enable_statement(
 {
     ast_task_enable_statement * tr = ast_calloc(1,
                                         sizeof(ast_task_enable_statement));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> expressions = expressions;
     tr -> identifier  = identifier;
@@ -592,7 +604,7 @@ ast_loop_statement * ast_new_forever_loop_statement(
 )
 {
     ast_loop_statement * tr = ast_calloc(1,sizeof(ast_loop_statement));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
     
     tr -> type              = LOOP_FOREVER;
     tr -> inner_statement   = inner_statement;
@@ -622,7 +634,7 @@ ast_loop_statement * ast_new_for_loop_statement(
 )
 {
     ast_loop_statement * tr = ast_calloc(1,sizeof(ast_loop_statement));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
     
     tr -> type              = LOOP_FOR;
     tr -> inner_statement   = inner_statement;
@@ -654,7 +666,7 @@ ast_loop_statement * ast_new_generate_loop_statement(
                                                          initial_condition,
                                                          modify_assignment,
                                                          continue_condition);
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
     
     tr -> type = LOOP_GENERATE;
     tr -> generate_items = inner_statements;
@@ -675,7 +687,7 @@ ast_loop_statement * ast_new_while_loop_statement(
 )
 {
     ast_loop_statement * tr = ast_calloc(1,sizeof(ast_loop_statement));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
     
     tr -> type              = LOOP_WHILE;
     tr -> inner_statement   = inner_statement;
@@ -699,7 +711,7 @@ ast_loop_statement * ast_new_repeat_loop_statement(
 )
 {
     ast_loop_statement * tr = ast_calloc(1,sizeof(ast_loop_statement));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
     
     tr -> type              = LOOP_REPEAT;
     tr -> inner_statement   = inner_statement;
@@ -720,7 +732,7 @@ ast_case_item * ast_new_case_item(ast_list      * conditions,
                                   ast_statement * body)
 {
     ast_case_item * tr = ast_calloc(1,sizeof(ast_case_item));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
     
     tr -> conditions = conditions;
     tr -> body       = body;
@@ -740,7 +752,7 @@ ast_case_statement * ast_new_case_statement(ast_expression * expression,
                                             ast_case_statement_type type)
 {
     ast_case_statement * tr = ast_calloc(1,sizeof(ast_case_statement));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> expression = expression;
     tr -> cases      = cases;
@@ -782,7 +794,7 @@ ast_conditional_statement * ast_new_conditional_statement(
 {
     ast_conditional_statement * tr = 
         ast_calloc(1,sizeof(ast_conditional_statement));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> statement = statement;
     tr -> condition = condition;
@@ -807,7 +819,7 @@ ast_if_else * ast_new_if_else(
 )
 {
     ast_if_else * tr = ast_calloc(1, sizeof(ast_if_else));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> else_condition         = else_condition;
     tr -> conditional_statements = ast_list_new();
@@ -847,7 +859,7 @@ ast_wait_statement * ast_new_wait_statement(
 )
 {
     ast_wait_statement * tr = ast_calloc(1, sizeof(ast_wait_statement));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
     
     tr -> expression = wait_for;
     tr -> statement  = statement;
@@ -918,7 +930,7 @@ ast_event_control * ast_new_event_control(
 )
 {
     ast_event_control * tr = ast_calloc(1,sizeof(ast_event_control));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     if(type == EVENT_CTRL_ANY)
         assert(expression == NULL);
@@ -935,7 +947,7 @@ ast_event_control * ast_new_event_control(
 ast_delay_ctrl * ast_new_delay_ctrl_value(ast_delay_value * value)
 {
     ast_delay_ctrl * tr = ast_calloc(1,sizeof(ast_event_control));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> type = DELAY_CTRL_VALUE;
     tr -> value = value;
@@ -951,7 +963,7 @@ ast_delay_ctrl * ast_new_delay_ctrl_mintypmax(
 )
 {
     ast_delay_ctrl * tr = ast_calloc(1,sizeof(ast_event_control));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> type = DELAY_CTRL_MINTYPMAX;
     tr -> mintypmax = mintypmax;
@@ -970,7 +982,7 @@ ast_timing_control_statement * ast_new_timing_control_statement_delay(
 {
     ast_timing_control_statement * tr = 
         ast_calloc(1,sizeof(ast_timing_control_statement));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     assert(type == TIMING_CTRL_DELAY_CONTROL);
 
@@ -995,7 +1007,7 @@ ast_timing_control_statement * ast_new_timing_control_statement_event(
 {
     ast_timing_control_statement * tr = 
         ast_calloc(1,sizeof(ast_timing_control_statement));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     assert(type == TIMING_CTRL_EVENT_CONTROL ||
            type == TIMING_CTRL_EVENT_CONTROL_REPEAT);
@@ -1017,7 +1029,7 @@ ast_single_assignment * ast_new_single_assignment(
 )
 {
     ast_single_assignment * tr = ast_calloc(1,sizeof(ast_single_assignment));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> lval = lval;
     tr -> expression = expression;
@@ -1034,7 +1046,7 @@ ast_assignment * ast_new_hybrid_assignment(
 )
 {
     ast_assignment * tr = ast_calloc(1,sizeof(ast_assignment));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> type = ASSIGNMENT_HYBRID;
     tr -> hybrid = ast_calloc(1,sizeof(ast_hybrid_assignment));
@@ -1054,7 +1066,7 @@ ast_assignment * ast_new_hybrid_lval_assignment(
 )
 {
     ast_assignment * tr = ast_calloc(1,sizeof(ast_assignment));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> type = ASSIGNMENT_HYBRID;
     tr -> hybrid = ast_calloc(1,sizeof(ast_hybrid_assignment));
@@ -1074,7 +1086,7 @@ ast_assignment * ast_new_blocking_assignment(
 )
 {
     ast_assignment * tr = ast_calloc(1,sizeof(ast_assignment));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
     tr -> type          = ASSIGNMENT_BLOCKING;
 
     tr -> procedural    =  ast_calloc(1,sizeof(ast_procedural_assignment));
@@ -1095,7 +1107,7 @@ ast_assignment * ast_new_nonblocking_assignment(
 )
 {
     ast_assignment * tr = ast_calloc(1,sizeof(ast_assignment));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
     tr -> type          = ASSIGNMENT_NONBLOCKING;
 
     tr -> procedural    =  ast_calloc(1,sizeof(ast_procedural_assignment));
@@ -1130,7 +1142,7 @@ ast_assignment * ast_new_continuous_assignment(
 
     ast_assignment * tr = ast_calloc(1, sizeof(ast_assignment));
 
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> type = ASSIGNMENT_CONTINUOUS;
     tr -> continuous = trc;
@@ -1150,7 +1162,7 @@ ast_statement_block * ast_new_statement_block(
 )
 {
     ast_statement_block * tr = ast_calloc(1,sizeof(ast_statement_block));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> type = type;
     tr -> block_identifier = block_identifier;
@@ -1164,7 +1176,7 @@ ast_statement_block * ast_new_statement_block(
 ast_disable_statement * ast_new_disable_statement(ast_identifier   id)
 {
     ast_disable_statement * tr = ast_calloc(1, sizeof(ast_disable_statement));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
     tr -> id = id;
     return tr;
 }
@@ -1182,7 +1194,7 @@ ast_statement * ast_new_statement(
 )
 {
     ast_statement * tr = ast_calloc(1,sizeof(ast_statement));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> type = type;
     tr -> is_function_statement = is_function_statement;
@@ -1208,7 +1220,7 @@ ast_udp_port * ast_new_udp_port(
 )
 {
     ast_udp_port * tr = ast_calloc(1,sizeof(ast_udp_port));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
     tr -> direction     = direction;
     assert(direction != PORT_INPUT);
     tr -> identifier    = identifier;
@@ -1230,7 +1242,7 @@ ast_udp_port * ast_new_udp_input_port(
 )
 {
     ast_udp_port * tr = ast_calloc(1,sizeof(ast_udp_port));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
     tr -> direction     = PORT_INPUT;
     tr -> identifiers   = identifiers;
     tr -> attributes    = attributes;
@@ -1252,7 +1264,7 @@ ast_udp_declaration * ast_new_udp_declaration(
 )
 {
     ast_udp_declaration * tr = ast_calloc(1,sizeof(ast_udp_declaration));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> attributes    = attributes;
     tr -> identifier    = identifier;
@@ -1276,7 +1288,7 @@ ast_udp_instance * ast_new_udp_instance(
     ast_list            * inputs
 ){
     ast_udp_instance * tr = ast_calloc(1,sizeof(ast_udp_instance));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> identifier    = identifier;
     tr -> range         = range;
@@ -1298,7 +1310,7 @@ ast_udp_instantiation * ast_new_udp_instantiation(
     ast_delay2          * delay
 ){
     ast_udp_instantiation * tr = ast_calloc(1,sizeof(ast_udp_instantiation));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> instances     = instances;
     tr -> identifier    = identifier;
@@ -1329,7 +1341,7 @@ ast_udp_body * ast_new_udp_sequential_body(
     ast_list                  * sequential_entries
 ){
     ast_udp_body * tr = ast_calloc(1,sizeof(ast_udp_body));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
     
     tr -> body_type = UDP_BODY_SEQUENTIAL;
     tr -> initial   = initial_statement;
@@ -1343,7 +1355,7 @@ ast_udp_body * ast_new_udp_combinatoral_body(
     ast_list                  * combinatorial_entries
 ){
     ast_udp_body * tr = ast_calloc(1,sizeof(ast_udp_body));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> body_type = UDP_BODY_COMBINATORIAL;
     tr -> entries = combinatorial_entries;
@@ -1358,7 +1370,7 @@ ast_udp_combinatorial_entry * ast_new_udp_combinatoral_entry(
 ){
     ast_udp_combinatorial_entry * tr = 
         ast_calloc(1,sizeof(ast_udp_combinatorial_entry));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> input_levels = input_levels;
     tr -> output_symbol = output_symbol;
@@ -1375,7 +1387,7 @@ ast_udp_sequential_entry * ast_new_udp_sequential_entry(
 ){
     ast_udp_sequential_entry * tr = ast_calloc(1,
                                         sizeof(ast_udp_sequential_entry));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> entry_prefix = prefix_type;
 
@@ -1404,7 +1416,7 @@ ast_statement * ast_new_generate_item(
     void    *          construct
 ){
     ast_statement * tr = ast_new_statement(NULL, AST_FALSE, construct,type);
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> is_generate_statement = AST_TRUE;
 
@@ -1418,7 +1430,7 @@ ast_generate_block * ast_new_generate_block(
     ast_list       * generate_items
 ){
     ast_generate_block * tr = ast_calloc(1,sizeof(ast_generate_block));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> generate_items = generate_items;
     tr -> identifier     = identifier;
@@ -1438,7 +1450,7 @@ ast_module_instantiation * ast_new_module_instantiation(
 ){
     ast_module_instantiation * tr = 
         ast_calloc(1,sizeof(ast_module_instantiation));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
     
     tr -> resolved = AST_FALSE;
     tr -> module_identifer  = module_identifer;
@@ -1457,7 +1469,7 @@ ast_module_instance * ast_new_module_instance(
     ast_list              * port_connections
 ){
     ast_module_instance * tr = ast_calloc(1,sizeof(ast_module_instance));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> instance_identifier = instance_identifier;
     tr -> port_connections    = port_connections;
@@ -1475,7 +1487,7 @@ ast_port_connection * ast_new_named_port_connection(
     ast_expression * expression
 ){
     ast_port_connection * tr = ast_calloc(1,sizeof(ast_port_connection));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> port_name = port_name;
     tr -> expression = expression;
@@ -1491,7 +1503,7 @@ ast_switch_gate * ast_new_switch_gate_d3(
 ){
     assert(type != SWITCH_TRAN && type != SWITCH_RTRAN);
     ast_switch_gate * tr = ast_calloc(1,sizeof(ast_switch_gate));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> type   = type;
     tr -> delay3 = delay;
@@ -1506,7 +1518,7 @@ ast_switch_gate * ast_new_switch_gate_d2(
 ){
     assert(type == SWITCH_TRAN || type == SWITCH_RTRAN);
     ast_switch_gate * tr = ast_calloc(1,sizeof(ast_switch_gate));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> type   = type;
     tr -> delay2 = delay;
@@ -1522,7 +1534,7 @@ ast_primitive_pull_strength * ast_new_primitive_pull_strength(
 ){
     ast_primitive_pull_strength * tr = 
         ast_calloc(1,sizeof(ast_primitive_pull_strength));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> direction  = direction;
     tr -> strength_1 = strength_1;
@@ -1537,7 +1549,7 @@ ast_pull_gate_instance * ast_new_pull_gate_instance(
     ast_lvalue        * output_terminal
 ){
     ast_pull_gate_instance * tr = ast_calloc(1,sizeof(ast_pull_gate_instance));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> name = name;
     tr -> output_terminal = output_terminal;
@@ -1553,7 +1565,7 @@ ast_pass_switch_instance * ast_new_pass_switch_instance(
 ){
     ast_pass_switch_instance * tr = 
                         ast_calloc(1,sizeof(ast_pass_switch_instance));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> name = name;
     tr -> terminal_1 = terminal_1;
@@ -1587,7 +1599,7 @@ ast_enable_gate_instance * ast_new_enable_gate_instance(
 ){
     ast_enable_gate_instance * tr = 
         ast_calloc(1,sizeof(ast_enable_gate_instance));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> name = name;
     tr -> output_terminal = output_terminal;
@@ -1606,7 +1618,7 @@ ast_mos_switch_instance * ast_new_mos_switch_instance(
 ){
     ast_mos_switch_instance * tr = 
         ast_calloc(1,sizeof(ast_mos_switch_instance));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> name = name;
     tr -> output_terminal = output_terminal;
@@ -1626,7 +1638,7 @@ ast_cmos_switch_instance * ast_new_cmos_switch_instance(
 ){
     ast_cmos_switch_instance * tr = 
         ast_calloc(1,sizeof(ast_cmos_switch_instance));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> name = name;
     tr -> output_terminal = output_terminal;
@@ -1648,7 +1660,7 @@ ast_pass_enable_switch * ast_new_pass_enable_switch(
 ){
     ast_pass_enable_switch * tr = 
         ast_calloc(1,sizeof(ast_pass_enable_switch));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> name = name;
     tr -> terminal_1 = terminal_1;
@@ -1669,7 +1681,7 @@ ast_pass_enable_switches * ast_new_pass_enable_switches(
 ){
     ast_pass_enable_switches * tr = 
                               ast_calloc(1,sizeof(ast_pass_enable_switches));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> type = type;
     tr -> delay = delay;
@@ -1690,7 +1702,7 @@ ast_n_input_gate_instances * ast_new_n_input_gate_instances(
 ){
     ast_n_input_gate_instances * tr = 
                             ast_calloc(1,sizeof(ast_n_input_gate_instances));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> type = type;
     tr -> delay = delay;
@@ -1709,7 +1721,7 @@ ast_enable_gate_instances * ast_new_enable_gate_instances(
 ){
     ast_enable_gate_instances * tr = 
                             ast_calloc(1,sizeof(ast_enable_gate_instances));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> type = type;
     tr -> delay = delay;
@@ -1750,7 +1762,7 @@ ast_n_output_gate_instances * ast_new_n_output_gate_instances(
 ){
     ast_n_output_gate_instances * tr = 
                           ast_calloc(1,sizeof(ast_n_output_gate_instances));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> type = type;
     tr -> delay = delay;
@@ -1766,7 +1778,7 @@ ast_n_output_gate_instances * ast_new_n_output_gate_instances(
 ast_switches * ast_new_switches(ast_switch_gate * type, ast_list * switches)
 {
     ast_switches * tr = ast_calloc(1,sizeof(ast_switches));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> type = type;
     tr -> switches = switches;
@@ -1780,7 +1792,7 @@ ast_pull_strength * ast_new_pull_stregth(
     ast_primitive_strength strength_2
 ){
     ast_pull_strength * tr =ast_calloc(1,sizeof(ast_pull_strength));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> strength_1 = strength_1;
     tr -> strength_2 = strength_2;
@@ -1796,7 +1808,7 @@ is returned.
 ast_gate_instantiation * ast_new_gate_instantiation(ast_gate_type type)
 {
     ast_gate_instantiation * tr = ast_calloc(1,sizeof(ast_gate_instantiation));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
     tr -> type = type;
     return tr;
 }
@@ -1817,7 +1829,7 @@ ast_parameter_declarations * ast_new_parameter_declarations(
 ){
     ast_parameter_declarations * tr = 
             ast_calloc(1,sizeof(ast_parameter_declarations));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
 
     tr -> assignments = assignments;
@@ -1847,7 +1859,7 @@ ast_port_declaration * ast_new_port_declaration(
     ast_list          * port_names      //!< [in] The names of the ports.
 ){
     ast_port_declaration * tr = ast_calloc(1,sizeof(ast_port_declaration));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> direction   =  direction  ;
     tr -> net_type    =  net_type   ;
@@ -1873,7 +1885,7 @@ initially be false.
 ast_type_declaration * ast_new_type_declaration(ast_declaration_type type)
 {
     ast_type_declaration * tr = ast_calloc(1,sizeof(ast_type_declaration));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> type = type;
     tr -> identifiers = NULL;
@@ -1990,7 +2002,7 @@ ast_delay_value * ast_new_delay_value(
     void * data
 ){
     ast_delay_value * tr = ast_calloc(1,sizeof(ast_delay_value));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
     
     tr -> type = type;
     tr -> data = data;
@@ -2007,7 +2019,7 @@ ast_delay3 * ast_new_delay3(
     ast_delay_value * max
 ){
     ast_delay3 * tr = ast_calloc(1,sizeof(ast_delay3));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> min = min;
     tr -> avg = avg;
@@ -2024,7 +2036,7 @@ ast_delay2 * ast_new_delay2(
     ast_delay_value * max
 ){
     ast_delay2 * tr = ast_calloc(1,sizeof(ast_delay2));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> min = min;
     tr -> max = max;
@@ -2074,7 +2086,7 @@ else false.
 ast_range_or_type * ast_new_range_or_type(ast_boolean is_range)
 {
     ast_range_or_type * tr = ast_calloc(1,sizeof(ast_range_or_type));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> is_range = is_range;
 
@@ -2095,7 +2107,7 @@ ast_function_declaration * ast_new_function_declaration(
 ){
     ast_function_declaration * tr = ast_calloc(
         1,sizeof(ast_function_declaration));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
     
     tr -> automatic         = automatic;
     tr -> is_signed         = is_signed;
@@ -2130,7 +2142,7 @@ ast_task_port * ast_new_task_port(
     ast_list         * identifiers //!< The list of port names.
 ){
     ast_task_port * tr = ast_calloc(1,sizeof(ast_task_port));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> direction   = direction;
     tr -> reg         = reg;
@@ -2153,7 +2165,7 @@ ast_task_declaration * ast_new_task_declaration(
     ast_statement   *   statements
 ){
     ast_task_declaration * tr = ast_calloc(1,sizeof(ast_task_declaration));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> automatic  = automatic;
     tr -> identifier = identifier;
@@ -2193,7 +2205,7 @@ ast_block_item_declaration * ast_new_block_item_declaration(
 ){
     ast_block_item_declaration * tr = 
         ast_calloc(1,sizeof(ast_block_item_declaration));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> type = type;
     tr -> attributes = attributes;
@@ -2210,7 +2222,7 @@ ast_module_item * ast_new_module_item(
     ast_module_item_type  type
 ){
     ast_module_item * tr = ast_calloc(1,sizeof(ast_module_item));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> type       = type;
     tr -> attributes = attributes;
@@ -2230,7 +2242,10 @@ ast_module_declaration * ast_new_module_declaration(
     ast_list            * constructs
 ){
     ast_module_declaration * tr = ast_calloc(1,sizeof(ast_module_declaration));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
+
+    printf("Module %s at line %d of file %s\n", identifier -> identifier,
+        tr -> meta.line, tr -> meta.file);
 
     tr -> attributes = attributes;
     tr -> identifier = identifier;
@@ -2375,7 +2390,7 @@ ast_module_declaration * ast_new_module_declaration(
 //! Creates and returns a new source item representation.
 ast_source_item * ast_new_source_item(ast_source_item_type type){
     ast_source_item * tr = ast_calloc(1,sizeof(ast_source_item));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> type = type;
 
@@ -2430,7 +2445,7 @@ ast_identifier ast_new_identifier(
     unsigned int   from_line  
 ){
     ast_identifier tr = ast_calloc(1,sizeof(struct ast_identifier_t));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
     
     tr -> identifier = ast_strdup(identifier);
     tr -> from_line = from_line;
@@ -2446,7 +2461,7 @@ ast_identifier ast_new_system_identifier(
     unsigned int   from_line    //!< THe line the idenifier came from.
 ){
     ast_identifier tr = ast_new_identifier(identifier,from_line);
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
     
     tr -> is_system = AST_TRUE;
 
@@ -2503,7 +2518,7 @@ ast_config_declaration * ast_new_config_declaration(
     ast_list      * rule_statements
 ){
     ast_config_declaration * tr = ast_calloc(1,sizeof(ast_config_declaration));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> identifier = identifier;
     tr -> design_statement = design_statement;
@@ -2536,7 +2551,7 @@ ast_library_descriptions * ast_new_library_description(
 ){
     ast_library_descriptions * tr = 
                 ast_calloc(1,sizeof(ast_library_descriptions));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> type = type;
 
@@ -2554,7 +2569,7 @@ ast_number * ast_new_number(
     char  * digits  //!< The string token representing the number.
 ){
     ast_number * tr = ast_calloc(1,sizeof(ast_number));
-    tr -> meta.line = yylineno;
+    ast_set_meta_info(&(tr->meta));
 
     tr -> base = base;
     tr -> representation = representation;

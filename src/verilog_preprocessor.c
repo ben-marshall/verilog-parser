@@ -14,6 +14,7 @@ verilog_preprocessor_context * verilog_new_preprocessor_context()
     tr -> in_cell_define = AST_FALSE;
     tr -> emit           = AST_TRUE;
 
+    tr -> current_file   = ast_stack_new();
     tr -> includes       = ast_list_new();
     tr -> net_types      = ast_list_new();
     tr -> unconnected_drive_pull = STRENGTH_NONE;
@@ -25,6 +26,34 @@ verilog_preprocessor_context * verilog_new_preprocessor_context()
     ast_list_append(tr -> search_dirs,"./");
 
     return tr;
+}
+
+
+/*!
+@brief Clears the stack of files being parsed, and sets the current file to
+the supplied string.
+@param [inout] preproc - The context who's file name is being set.
+@param [in] file - The file path to put as the current file.
+*/
+void verilog_preprocessor_set_file(
+    verilog_preprocessor_context * preproc,
+    char * file
+){
+    while(ast_stack_peek(preproc -> current_file) != NULL)
+    {
+        ast_stack_pop(preproc -> current_file);
+    }
+    ast_stack_push(preproc -> current_file, file);
+}
+
+/*!
+@brief Returns the file currently being parsed by the context, or NULL 
+@param [in] preproc - The context to get the current file for.
+*/
+char * verilog_preprocessor_current_file(
+    verilog_preprocessor_context * preproc
+){
+    return ast_stack_peek(preproc -> current_file);
 }
 
 
@@ -122,6 +151,7 @@ verilog_include_directive * verilog_preprocessor_include(
 
     ast_list_append(yy_preproc -> includes, toadd);
 
+    // Search the possible include paths to find a match.
     unsigned int d = 0;
     for(d = 0; d < yy_preproc -> search_dirs -> items; d ++)
     {
@@ -139,6 +169,11 @@ verilog_include_directive * verilog_preprocessor_include(
             fclose(handle);
             toadd -> filename = full_name;
             toadd -> file_found = AST_TRUE;
+            
+            // Since we are diving into an include file, update the stack of
+            // files currently being parsed.
+            ast_stack_push(yy_preproc -> current_file, filename);
+
             break;
         }
         else

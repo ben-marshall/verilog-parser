@@ -29,6 +29,7 @@ int     verilog_parse_file(FILE * to_parse)
 {
     YY_BUFFER_STATE new_buffer = yy_create_buffer(to_parse, YY_BUF_SIZE);
     yy_switch_to_buffer(new_buffer);
+    yylineno = 0; // Reset the global line counter, we are in a new file!
     
     int result = yyparse();
     return result;
