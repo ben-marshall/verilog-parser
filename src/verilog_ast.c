@@ -247,7 +247,7 @@ ast_expression * ast_new_expression_primary(ast_primary * p)
 @brief A utility function for converting an ast expression tree back into
 a string representation.
 @param [in] exp - The expression to turn into a string.
-@warning Not implemented.
+@todo Finish implementing this.
 */
 char * ast_expression_tostring(
     ast_expression * exp
@@ -257,9 +257,17 @@ char * ast_expression_tostring(
 
     switch(exp -> type)
     {
-
+        case PRIMARY_EXPRESSION:
+        case MODULE_PATH_PRIMARY_EXPRESSION:
+            tr = ast_primary_tostring(exp -> primary);
+            break;
+        case STRING_EXPRESSION;
+            tr = ast_strdup(exp -> string);
+            break;
         default:
-            // Do nothing.
+            printf("ERROR Expression type to string not supported. %d of %s",
+                __LINE__,__FILE__);
+            tr = "<unsupported>";
             break;
 
     }
