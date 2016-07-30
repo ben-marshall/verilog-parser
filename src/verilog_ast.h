@@ -451,7 +451,7 @@ typedef union ast_primary_value_e
     ast_identifier      identifier;     //!< Net or variable identifier.
     ast_concatenation * concatenation;  //!< Concatenation of expressions.
     ast_function_call * function_call;  //!< Call to a function.
-    ast_minmax_exp      minmax;
+    ast_expression    * minmax;
     ast_macro_use       macro;          //!< A MACRO expansion.
     char              * string;
 } ast_primary_value;

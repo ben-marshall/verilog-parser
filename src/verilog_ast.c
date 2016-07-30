@@ -141,7 +141,8 @@ char * ast_primary_tostring(
             tr = ast_identifier_tostring(p ->value.function_call -> function);
             break;
         case PRIMARY_MINMAX_EXP:
-        case PRIMARY_MACRO_USAGE:
+            tr = ast_expression_tostring(p -> value.minmax);
+            break;
         case PRIMARY_CONCATENATION:
         default:
             printf("primary type to string not supported: %d %s\n",
