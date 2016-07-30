@@ -120,6 +120,40 @@ ast_lvalue * ast_new_lvalue_concat(ast_lvalue_type type,
 }
 
 /*!
+@brief A utility function for converting an ast expression primaries back into
+a string representation.
+@param [in] p - The expression primary to turn into a string.
+*/
+char * ast_primary_tostring(
+    ast_primary * p
+){
+    char * tr;
+    
+    switch (p -> value_type)
+    {
+        case PRIMARY_NUMBER:
+            tr = ast_number_tostring(p -> value.number);
+            break;
+        case PRIMARY_IDENTIFIER:
+            tr = ast_identifier_tostring(p -> value.identifier);
+            break;
+        case PRIMARY_FUNCTION_CALL:
+            tr = ast_identifier_tostring(p ->value.function_call -> function);
+            break;
+        case PRIMARY_MINMAX_EXP:
+        case PRIMARY_MACRO_USAGE:
+        case PRIMARY_CONCATENATION:
+        default:
+            printf("primary type to string not supported: %d %s\n",
+                __LINE__,__FILE__);
+            tr = "<unsupported>";
+            break;
+    }
+
+    return tr;
+}
+
+/*!
 @brief Creates a new ast primary which is part of a constant expression tree
        with the supplied type and value.
 */
@@ -214,11 +248,11 @@ ast_expression * ast_new_expression_primary(ast_primary * p)
 a string representation.
 @param [in] exp - The expression to turn into a string.
 @warning Not implemented.
-@todo Implement this.
 */
 char * ast_expression_tostring(
     ast_expression * exp
 ){
+    assert(0);
     char * tr;
 
     switch(exp -> type)
@@ -2595,6 +2629,36 @@ ast_number * ast_new_number(
     tr -> base = base;
     tr -> representation = representation;
     tr -> as_bits = digits;
+
+    return tr;
+}
+
+/*!
+@brief A utility function for converting an ast number into a string.
+@param [in] n - The number to turn into a string.
+*/
+char * ast_number_tostring(
+    ast_number * n
+){
+    char * tr;
+
+    switch(n -> representation)
+    {
+        case REP_BITS:
+            tr = ast_strdup(n -> as_bits);
+            break;
+        case REP_INTEGER:
+            tr = calloc(11,sizeof(char));
+            sprintf(tr, "%d", n-> as_int);
+            break;
+        case REP_FLOAT:
+            tr = calloc(21,sizeof(char));
+            sprintf(tr, "%20f", n -> as_float);
+            break;
+        default:
+            tr = "NULL";
+            break;
+    }
 
     return tr;
 }

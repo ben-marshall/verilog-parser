@@ -151,6 +151,15 @@ ast_number * ast_new_number(
     char  * digits  //!< The string token representing the number.
 );
 
+/*!
+@brief A utility function for converting an ast number into a string.
+@param [in] n - The number to turn into a string.
+*/
+char * ast_number_tostring(
+    ast_number * n
+);
+
+
 /*! @} */
 
 
@@ -436,6 +445,15 @@ typedef struct ast_primary_t
     ast_primary_value       value;          //!< @see ast_primary_value
 } ast_primary;
 
+
+/*!
+@brief A utility function for converting an ast expression primaries back into
+a string representation.
+@param [in] p - The expression primary to turn into a string.
+*/
+char * ast_primary_tostring(
+    ast_primary * p
+);
 
 /*!
 @brief Creates a new ast primary which is part of a constant expression tree
