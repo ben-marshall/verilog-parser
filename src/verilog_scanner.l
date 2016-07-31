@@ -520,7 +520,7 @@ TERNARY             "?"
     char * macroName = (yytext)+1;
     ast_hashtable_result r = ast_hashtable_get(yy_preproc -> macrodefines,
                                                macroName,
-                                               &macro);
+                                               (void**)&macro);
     
     if(r == HASH_SUCCESS)
     {
