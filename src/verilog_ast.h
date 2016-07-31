@@ -3104,8 +3104,12 @@ void ast_identifier_set_index(
 typedef struct ast_config_rule_statement_t{
     ast_metadata    meta;   //!< Node metadata.
     ast_boolean    is_default;
+    ast_boolean    multiple_clauses; //<! IFF TRUE use clauses, else clause_2
     ast_identifier clause_1;    //!< The first grammar clause.
-    ast_identifier clause_2;    //!< The second grammar clause.
+    union{
+        ast_identifier clause_2;    //!< The second grammar clause.
+        ast_list     * clauses;     //!< List of ast_identifier.
+    };
 } ast_config_rule_statement;
 
 

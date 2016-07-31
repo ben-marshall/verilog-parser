@@ -13,6 +13,7 @@
 
     #include "verilog_ast.h"
 
+    extern int yylex();
     extern int yylineno;
     extern char * yytext;
 
@@ -478,7 +479,7 @@
 %type   <identifier>                 hierarchical_task_identifier
 %type   <identifier>                 hierarchical_variable_identifier
 %type   <identifier>                 identifier
-%type   <identifier>                 identifier_csv
+%type   <list>                       identifier_csv
 %type   <identifier>                 inout_port_identifier
 %type   <identifier>                 input_identifier
 %type   <identifier>                 input_port_identifier
@@ -780,7 +781,7 @@ grammar_begin :
 | source_text {
     assert(yy_verilog_source_tree != NULL);
 
-    int i;
+    unsigned int i;
     for(i  = 0; i < $1 -> items; i ++)
     {
         ast_source_item * toadd = ast_list_get($1, i);
@@ -892,7 +893,7 @@ config_declaration :
 ;
 
 design_statement : KW_DESIGN lib_cell_identifier_os SEMICOLON{
-    $$ == $2;
+    $$ = $2;
 }
 ;
 
@@ -936,16 +937,22 @@ config_rule_statement_os : {
 
 config_rule_statement : 
   KW_DEFAULT liblist_clause{
-    $$ = ast_new_config_rule_statement(AST_TRUE,$2,NULL);
+    $$ = ast_new_config_rule_statement(AST_TRUE,NULL,NULL);
+    $$ -> multiple_clauses = AST_TRUE;
+    $$ -> clauses = $2;
   }
 | inst_clause liblist_clause{
-    $$ = ast_new_config_rule_statement(AST_FALSE,$1,$2);
+    $$ = ast_new_config_rule_statement(AST_FALSE,NULL,NULL);
+    $$ -> multiple_clauses = AST_TRUE;
+    $$ -> clauses = $2;
   }
 | inst_clause use_clause{
     $$ = ast_new_config_rule_statement(AST_FALSE,$1,$2);
   }
 | cell_clause liblist_clause{
-    $$ = ast_new_config_rule_statement(AST_FALSE,$1,$2);
+    $$ = ast_new_config_rule_statement(AST_FALSE,NULL,NULL);
+    $$ -> multiple_clauses = AST_TRUE;
+    $$ -> clauses = $2;
   }
 | cell_clause use_clause{
     $$ = ast_new_config_rule_statement(AST_FALSE,$1,$2);
@@ -1192,7 +1199,7 @@ ports           : {$$ = ast_list_new();}
 
 port            : 
   port_expression{
-    $$ = $1;
+    $<list>$ = $1;
   }
 | DOT port_identifier OPEN_BRACKET port_expression CLOSE_BRACKET{
     $$ = $2;
@@ -1251,7 +1258,7 @@ module_item :
     $$ = $1;
  }
  | port_declaration SEMICOLON{
-    $$ = ast_new_module_item($1, MOD_ITEM_PORT_DECLARATION);
+    $$ = ast_new_module_item(NULL, MOD_ITEM_PORT_DECLARATION);
     $$ -> port_declaration = $1;
  }
  | attribute_instances generated_instantiation{
@@ -1525,7 +1532,7 @@ net_declaration :
     $$ -> net_type = $1;
   }
 | net_type OPEN_BRACKET  drive_strength  net_dec_p_ds{
-    $$ = $3;
+    $$ = $4;
     $$ -> net_type = $1;
     $$ -> drive_strength = $3;
   }
@@ -1644,7 +1651,7 @@ real_type : real_identifier {$$=$1; /* TODO FIXME */}
     $$=$1; 
     $$ -> range_or_idx = ID_HAS_RANGES;
     ast_list_preappend($3,$2);
-    $$ -> ranges = $2; 
+    $$ -> ranges = $3; 
   }          ;
 
 dimensions          : 
@@ -1670,7 +1677,7 @@ variable_type :
     $$=$1; 
     $$ -> range_or_idx = ID_HAS_RANGES;
     ast_list_preappend($3,$2);
-    $$ -> ranges = $2; 
+    $$ -> ranges = $3; 
   }
 ;
 
@@ -1920,7 +1927,7 @@ specparam_assignment    :
     $$= ast_new_single_assignment(ast_new_lvalue_id(SPECPARAM_ID,$1),$3);
   }
 | pulse_control_specparam{
-    $$ = ast_new_single_assignment($1,NULL);
+    $<pulse_control_specparam>$ = $1;
 }
 ;
 
@@ -4353,7 +4360,7 @@ module_path_expression :
   }
 | unary_module_path_operator attribute_instances module_path_primary{
     $$ = ast_new_unary_expression($3,$1,$2,AST_FALSE);
-    $$ -> type == MODULE_PATH_UNARY_EXPRESSION;
+    $$ -> type = MODULE_PATH_UNARY_EXPRESSION;
 }
 | module_path_expression binary_module_path_operator attribute_instances
   module_path_expression{
@@ -4851,11 +4858,11 @@ simple_hierarchical_identifier  :
 ;
 
 system_function_identifier      : SYSTEM_ID {
-    $$ = ast_new_system_identifier($1,yylineno);
+    $$ = $1;
     $$ -> type = ID_SYSTEM_FUNCTION;
 };
 system_task_identifier          : SYSTEM_ID {
-    $$ = ast_new_system_identifier($1,yylineno);
+    $$ = $1;
     $$ -> type = ID_SYSTEM_TASK;
 };
 
