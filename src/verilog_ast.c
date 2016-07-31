@@ -1,7 +1,7 @@
 /*!
 @file verilog_ast.c
-@brief Contains definitions of functions which 
-       operate on the Verilog Abstract Syntax Tree (AST)
+@brief Contains definitions of functions which operate on the Verilog Abstract
+Syntax Tree (AST)
 */
 
 #include <assert.h>
@@ -619,6 +619,7 @@ void                ast_extend_concatenation(ast_concatenation * element,
                                              ast_expression * repeat,
                                              void * data)
 {
+    element -> repeat = repeat;
     ast_list_preappend(element -> items, data);
 }
 
@@ -932,7 +933,7 @@ ast_case_statement * ast_new_case_statement(ast_expression * expression,
 
     if(tr -> cases != NULL)
     {
-        int i;
+        unsigned int i;
         for(i = 0; i < tr -> cases -> items; i ++)
         {
             ast_case_item * the_case = ast_list_get(tr->cases,i);
@@ -943,7 +944,8 @@ ast_case_statement * ast_new_case_statement(ast_expression * expression,
 
             if(the_case -> is_default == AST_TRUE)
             {
-                tr -> default_item = the_case;
+                // Set the default *ast_statement*
+                tr -> default_item = the_case -> body;
                 break;
             }
         }
@@ -1303,7 +1305,7 @@ ast_assignment * ast_new_continuous_assignment(
                 sizeof(ast_continuous_assignment));
     trc -> assignments = assignments;
 
-    int i;
+    unsigned int i;
     for(i = 0; i < assignments -> items;  i++)
     {
         ast_single_assignment * item = ast_list_get(assignments,i);
@@ -2815,4 +2817,5 @@ verilog_source_tree * verilog_new_source_tree()
 void verilog_free_source_tree(
     verilog_source_tree * tofree
 ){
+    printf("ERROR: Function not implemented. Source tree at %p not freed.\n", tofree);
 }
