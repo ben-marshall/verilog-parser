@@ -20,7 +20,7 @@ ast_module_declaration * verilog_find_module_declaration(
     verilog_source_tree * source,
     ast_identifier module_name
 ){
-    int m;
+    unsigned int m;
     for(m = 0; m < source -> modules -> items; m++)
     {
         ast_module_declaration * candidate = ast_list_get(source -> modules,m);
@@ -48,7 +48,7 @@ void verilog_resolve_modules(
     int resolved = 0;
     int unresolved = 0;
 
-    int m;
+    unsigned int m;
     for(m = 0; m < source -> modules -> items; m++)
     {
         ast_module_declaration * module = ast_list_get(source -> modules, m);
@@ -66,7 +66,7 @@ void verilog_resolve_modules(
         //printf("%s\n", ast_identifier_tostring(module -> identifier));
 
         
-        int sm;
+        unsigned int sm;
         for(sm = 0; sm < module -> module_instantiations -> items; sm ++)
         {
             ast_module_instantiation * submod = 
@@ -111,14 +111,14 @@ ast_list * verilog_module_get_children(
 ){
     ast_list * tr = ast_list_new();
     
-    int m;
+    unsigned int m;
     for(m = 0; m < module -> module_instantiations -> items; m++)
     {
         ast_module_instantiation * child = 
                             ast_list_get(module -> module_instantiations, m);
 
-        int c;
-        int added_already = 0;
+        unsigned int c;
+        unsigned char added_already = 0;
         for(c = 0; c < tr -> items; c++)
         {
             ast_module_instantiation * maybe = ast_list_get(tr,c);
@@ -167,7 +167,7 @@ ast_hashtable * verilog_modules_get_children(
 ){
     ast_hashtable * tr = ast_hashtable_new();
 
-    int m;
+    unsigned int m;
     for(m = 0; m < source -> modules -> items; m++)
     {
         ast_module_declaration * module = ast_list_get(source -> modules, m);
