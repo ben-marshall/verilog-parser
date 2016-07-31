@@ -526,8 +526,6 @@ TERNARY             "?"
     {
         // Switch buffers to expand the macro.
 
-        printf("Scanning Macro '%s'\n", macroName);
-        printf("with value: '%s'\n", macro->macro_value);
         YY_BUFFER_STATE cur = YY_CURRENT_BUFFER;
         YY_BUFFER_STATE n   = yy_scan_string(macro -> macro_value);
         
