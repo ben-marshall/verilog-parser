@@ -104,13 +104,13 @@ void      ast_list_remove_at(ast_list * list, unsigned int i)
         }
         if(i > 0){
             assert(i-1 == list -> current_item);
-            ast_list_element * toremove =  list -> walker -> next;
             list -> walker -> next = list -> walker -> next -> next;
             list -> items -= 1;
+            //ast_list_element * toremove =  list -> walker -> next;
             //free(toremove);
         } else {
-            ast_list_element * toremove =  list -> head;
             list -> head = list -> head -> next;
+            //ast_list_element * toremove =  list -> head;
             //free(toremove);
             list -> items -= 1;
         }
@@ -331,9 +331,10 @@ void * ast_stack_pop(
     if(stack -> items != NULL)
     {
         void * tr = stack -> items -> data;
-        ast_stack_element * tofree = stack -> items;
+        // ast_stack_element * tofree = stack -> items;
         stack -> items = stack -> items -> next;
         stack -> depth --;
+        // free(tofree);
         return tr;
     }
     else
@@ -417,7 +418,7 @@ ast_hashtable_result ast_hashtable_insert(
     assert(key != NULL);
     assert(table != NULL);
 
-    int i;
+    unsigned int i;
     for(i = 0; i < table -> elements -> items; i ++)
     {
         ast_hashtable_element * e = ast_list_get(table->elements, i);
@@ -442,7 +443,7 @@ ast_hashtable_result ast_hashtable_get(
     char          * key,   //!< The key of the data to fetch.
     void         ** value  //!< [out] The data being returned.
 ){
-    int i;
+    unsigned int i;
     for(i = 0; i < table -> elements -> items; i ++)
     {
         ast_hashtable_element * e = ast_list_get(table->elements, i);
@@ -462,7 +463,7 @@ ast_hashtable_result ast_hashtable_delete(
     ast_hashtable * table, //!< The table to delete from.
     char          * key    //!< The key to delete.
 ){
-    int i;
+    unsigned int i;
     for(i = 0; i < table -> elements -> items; i ++)
     {
         ast_hashtable_element * e = ast_list_get(table->elements, i);
@@ -483,7 +484,7 @@ ast_hashtable_result ast_hashtable_update(
     char          * key,   //!< The key to update with.
     void          * value  //!< The new data item to update.
 ){
-    int i;
+    unsigned int i;
     for(i = 0; i < table -> elements -> items; i ++)
     {
         ast_hashtable_element * e = ast_list_get(table->elements, i);
