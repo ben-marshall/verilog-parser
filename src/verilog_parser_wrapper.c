@@ -7,6 +7,8 @@
 #include "verilog_ast.h"
 #include "verilog_parser.h"
 
+//! This is defined in the generated bison parser code.
+extern int yyparse();
 
 void    verilog_parser_init()
 {
