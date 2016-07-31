@@ -487,7 +487,6 @@ TERNARY             "?"
         verilog_preprocessor_macro_define(
             yylineno-1,
             yy_preproc -> scratch,
-            strlen(yy_preproc -> scratch),
             NULL,
             0); // -1 to avoid including the newline.
     }
@@ -497,7 +496,6 @@ TERNARY             "?"
         verilog_preprocessor_macro_define(
             yylineno-1,
             yy_preproc -> scratch,
-            strlen(yy_preproc -> scratch),
             yytext+1,
             yyleng-2); // -1 to avoid including the newline.
     }

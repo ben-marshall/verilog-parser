@@ -59,6 +59,7 @@ char * verilog_preprocessor_current_file(
 
 void verilog_free_preprocessor_context(verilog_preprocessor_context * tofree)
 {
+    printf("ERROR: Function not implemented. preprocessor context at %p not freed.\n", tofree);
 }
 
 void verilog_preproc_enter_cell_define()
@@ -191,7 +192,6 @@ verilog_include_directive * verilog_preprocessor_include(
 void verilog_preprocessor_macro_define(
     unsigned int line,  //!< The line the defininition comes from.
     char * macro_name,  //!< The macro identifier.
-    size_t name_len  ,  //!< Length in bytes of macro_name.
     char * macro_text,  //!< The value the macro expands to.
     size_t text_len     //!< Length in bytes of macro_text.
 ){
@@ -210,7 +210,7 @@ void verilog_preprocessor_macro_define(
 
     if(text_len > 0){
         // Make sure we exclude all comments from the macro text.
-        int i = 0;
+        unsigned int i = 0;
         for(i = 0; i < text_len-1; i++)
         {
             if(macro_text[i]   == '/' &&

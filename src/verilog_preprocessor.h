@@ -117,7 +117,6 @@ typedef struct verilog_macro_directive_t{
 void verilog_preprocessor_macro_define(
     unsigned int line,  //!< The line the defininition comes from.
     char * macro_name,  //!< The macro identifier.
-    size_t name_len  ,  //!< Length in bytes of macro_name.
     char * macro_text,  //!< The value the macro expands to.
     size_t text_len     //!< Length in bytes of macro_text.
 );
