@@ -128,24 +128,24 @@
 
 %token <string> ANY
 %token END
-%token NEWLINE
-%token SPACE
-%token TAB
+%token <string> NEWLINE
+%token <string> SPACE
+%token <string> TAB
 
-%token AT
-%token COMMA
-%token HASH               
-%token DOT                
-%token EQ
-%token COLON              
-%token IDX_PRT_SEL
-%token SEMICOLON          
-%token OPEN_BRACKET       
-%token CLOSE_BRACKET      
-%token OPEN_SQ_BRACKET    
-%token CLOSE_SQ_BRACKET   
-%token OPEN_SQ_BRACE      
-%token CLOSE_SQ_BRACE     
+%token <string> AT
+%token <string> COMMA
+%token <string> HASH               
+%token <string> DOT                
+%token <string> EQ
+%token <string> COLON              
+%token <string> IDX_PRT_SEL
+%token <string> SEMICOLON          
+%token <string> OPEN_BRACKET       
+%token <string> CLOSE_BRACKET      
+%token <string> OPEN_SQ_BRACKET    
+%token <string> CLOSE_SQ_BRACKET   
+%token <string> OPEN_SQ_BRACE      
+%token <string> CLOSE_SQ_BRACE     
 
 %token <string> BIN_VALUE
 %token <string> OCT_VALUE
@@ -166,13 +166,13 @@
 %type  <number> octal_number
 %type  <number> real_number
 
-%token <string> SYSTEM_ID
-%token <string> SIMPLE_ID
-%token <string> ESCAPED_ID
-%token <string> DEFINE_ID
+%token <identifier> SYSTEM_ID
+%token <identifier> SIMPLE_ID
+%token <identifier> ESCAPED_ID
+%token <identifier> DEFINE_ID
 
-%token ATTRIBUTE_START
-%token ATTRIBUTE_END
+%token <string> ATTRIBUTE_START
+%token <string> ATTRIBUTE_END
 
 %token <string> COMMENT_LINE
 %token <string> COMMENT_BLOCK
@@ -211,7 +211,7 @@
 %token <operator> B_NOR   
 %token <operator> TERNARY 
 
-%token UNARY_OP
+%token <operator> UNARY_OP
 
 /* Operator Precedence */
 
@@ -228,27 +228,10 @@
 %left   PLUS MINUS
 %left   STAR DIV MOD
 %left   POW
-%left   L_NEG B_NEG UNARY_OP    /* Highest Precedence. */
+%right  L_NEG B_NEG UNARY_OP    /* Highest Precedence. */
 
 
 /* Compiler / Preprocessor tokens */
-
-%token CD_CELLDEFINE
-%token CD_DEFAULT_NETTYPE
-%token CD_DEFINE
-%token CD_ELSE
-%token CD_ELSIF
-%token CD_ENDCELLDEFINE
-%token CD_ENDIF
-%token CD_IFDEF
-%token CD_IFNDEF
-%token CD_INCLUDE
-%token CD_LINE
-%token CD_NOUNCONNECTED_DRIVE
-%token CD_RESETALL
-%token CD_TIMESCALE
-%token CD_UNCONNECTED_DRIVE
-%token CD_UNDEF
 
 %token <string>     MACRO_TEXT
 %token <identifier> MACRO_IDENTIFIER
@@ -3903,7 +3886,7 @@ state_dependent_path_declaration :
 ;
 
 polarity_operator_o : polarity_operator  {$$=$1;}
-                    |  {$$="";}
+                    |  {$$=OPERATOR_NONE;}
                     ;
 
 polarity_operator : PLUS  {$$=$1;}
@@ -4154,8 +4137,7 @@ conditional_expression :
 constant_expression:
   constant_primary {$$ = ast_new_expression_primary($1);}
 | unary_operator attribute_instances constant_primary{
-    $$ = ast_new_unary_expression(ast_new_expression_primary($3),
-                                  $1,$2,AST_TRUE);
+    $$ = ast_new_unary_expression($3,$1,$2,AST_TRUE);
   }
 | constant_expression PLUS  attribute_instances constant_expression{
     $$ = ast_new_binary_expression($1,$4,$2,$3,AST_TRUE);
@@ -4262,9 +4244,8 @@ expression :
   primary {
     $$ = ast_new_expression_primary($1);
   }
-| unary_operator attribute_instances primary %prec UNARY_OP{
-    $$ = ast_new_unary_expression(ast_new_expression_primary($3),
-                                  $1,$2, AST_FALSE);
+| unary_operator attribute_instances primary{
+    $$ = ast_new_unary_expression($3,$1,$2, AST_FALSE);
   }
 | expression PLUS  attribute_instances expression{
     $$ = ast_new_binary_expression($1,$4,$2,$3,AST_FALSE);
@@ -4371,8 +4352,7 @@ module_path_expression :
     $$ -> type = MODULE_PATH_PRIMARY_EXPRESSION;
   }
 | unary_module_path_operator attribute_instances module_path_primary{
-    $$ = ast_new_unary_expression(ast_new_expression_primary($3),
-                                  $1,$2,AST_FALSE);
+    $$ = ast_new_unary_expression($3,$1,$2,AST_FALSE);
     $$ -> type == MODULE_PATH_UNARY_EXPRESSION;
 }
 | module_path_expression binary_module_path_operator attribute_instances
@@ -4470,7 +4450,7 @@ primary :
       $$ = ast_new_primary_function_call($1);
   }
 | hierarchical_identifier sq_bracket_expressions{
-      $$ = ast_new_primary(PRIMARY_NUMBER);
+      $$ = ast_new_primary(PRIMARY_IDENTIFIER);
       $$ -> value.identifier = $1;
   }
 | hierarchical_identifier sq_bracket_expressions OPEN_SQ_BRACKET
@@ -4633,7 +4613,9 @@ unsigned_number :
 ;
 
 number :
-  real_number    {$$ = $1;}
+  NUM_REAL{
+    $$ = ast_new_number(BASE_DECIMAL,REP_BITS,$1);
+  }
 | BIN_BASE BIN_VALUE {
     $$ = ast_new_number(BASE_BINARY, REP_BITS, $2);
 }
@@ -4658,14 +4640,8 @@ number :
 | UNSIGNED_NUMBER DEC_BASE UNSIGNED_NUMBER{
     $$ = ast_new_number(BASE_DECIMAL, REP_BITS, $3);
 }
-| UNSIGNED_NUMBER {$$ = $1;}
+| unsigned_number {$$ = $1;}
 ;
-
-real_number :
-   NUM_REAL{
-    $$ = ast_new_number(BASE_DECIMAL,REP_BITS,$1);
-  }
-; 
 
 
 /* A.8.8 Strings */
@@ -4848,7 +4824,7 @@ identifier :
 
 simple_identifier: 
   SIMPLE_ID {
-    $$ = ast_new_identifier($1, yylineno);
+    $$ = $1;
 }
 | text_macro_usage {
     $$ = $1;
@@ -4857,7 +4833,7 @@ simple_identifier:
 ;
 
 escaped_identifier  : ESCAPED_ID {
-    $$=ast_new_identifier($1,yylineno);
+    $$=$1;
 };
 
 simple_arrayed_identifier       : simple_identifier range_o {
@@ -4890,14 +4866,14 @@ in the closed brackets reduces to an "unsigned_number" */
 
 simple_hierarchical_branch : 
   SIMPLE_ID {
-      $$=ast_new_identifier($1,yylineno);
+      $$ = $1;
   }
 | SIMPLE_ID OPEN_SQ_BRACKET expression CLOSE_SQ_BRACKET{
-      $$=ast_new_identifier($1,yylineno);
+      $$=$1;
       ast_identifier_set_index($$,$3);
   }
 | SIMPLE_ID OPEN_SQ_BRACKET range_expression CLOSE_SQ_BRACKET{
-      $$=ast_new_identifier($1,yylineno);
+      $$=$1;
       ast_identifier_set_index($$,$3);
   }
 | simple_hierarchical_branch DOT simple_identifier{
@@ -4905,13 +4881,13 @@ simple_hierarchical_branch :
   }
 | simple_hierarchical_branch DOT SIMPLE_ID OPEN_SQ_BRACKET expression 
   CLOSE_SQ_BRACKET {
-      $$=ast_new_identifier($3,yylineno);
+      $$=$3;
       ast_identifier_set_index($$,$5);
       $$ = ast_append_identifier($1,$$);
   }
 | simple_hierarchical_branch DOT SIMPLE_ID OPEN_SQ_BRACKET range_expression 
   CLOSE_SQ_BRACKET{
-      $$=ast_new_identifier($3,yylineno);
+      $$=$3;
       ast_identifier_set_index($$,$5);
       $$ = ast_append_identifier($1,$$);
   }

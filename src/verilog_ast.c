@@ -22,22 +22,6 @@ void ast_set_meta_info(ast_metadata * meta)
 }
 
 /*!
-@brief Creates a new empty ast_node and returns it.
-@deprecated Do not use!
-*/
-ast_node * ast_node_new()
-{
-    ast_node * tr = ast_calloc(1, sizeof(ast_node));;
-
-    tr-> type         = NONE;
-    tr-> parent       = NULL;
-    tr-> children     = NULL;
-    tr-> child_count  = 0;
-    
-    return tr;
-}
-
-/*!
 @brief Creates and returns as a pointer a new attribute descriptor.
 */
 ast_node_attributes * ast_new_attributes(ast_identifier name, 
@@ -46,21 +30,6 @@ ast_node_attributes * ast_new_attributes(ast_identifier name,
     ast_node_attributes * tr = ast_calloc(1, sizeof(ast_node_attributes));
     tr->attr_name   = name;
     tr->attr_value  = value;
-    return tr;
-}
-
-
-/*!
-@brief Creates and returns a new attribute node with the specified value
-       and name.
-*/
-ast_node * ast_new_attribute_node(ast_node_attributes * value)
-{
-    ast_node * tr = ast_node_new();
-
-    tr -> type = ATTRIBUTE_LIST;
-    tr -> attributes = value;
-
     return tr;
 }
 
@@ -76,7 +45,7 @@ void ast_append_attribute(ast_node_attributes * parent,
 {
     // Add the new attribute to the end of the list.
 
-    ast_node_attributes * walker = parent -> next;
+    ast_node_attributes * walker = parent;
     while(walker -> next != NULL)
         walker = walker -> next;
     walker -> next = toadd;
@@ -116,6 +85,41 @@ ast_lvalue * ast_new_lvalue_concat(ast_lvalue_type type,
     ast_set_meta_info(&(tr->meta));
     tr -> type = type;
     tr -> data.concatenation = concat;
+    return tr;
+}
+
+/*!
+@brief A utility function for converting an ast expression primaries back into
+a string representation.
+@param [in] p - The expression primary to turn into a string.
+*/
+char * ast_primary_tostring(
+    ast_primary * p
+){
+    char * tr;
+
+    switch (p -> value_type)
+    {
+        case PRIMARY_NUMBER:
+            tr = ast_number_tostring(p -> value.number);
+            break;
+        case PRIMARY_IDENTIFIER:
+            tr = ast_identifier_tostring(p -> value.identifier);
+            break;
+        case PRIMARY_FUNCTION_CALL:
+            tr = ast_identifier_tostring(p ->value.function_call -> function);
+            break;
+        case PRIMARY_MINMAX_EXP:
+            tr = ast_expression_tostring(p -> value.minmax);
+            break;
+        case PRIMARY_CONCATENATION:
+        default:
+            printf("primary type to string not supported: %d %s\n",
+                __LINE__,__FILE__);
+            tr = "<unsupported>";
+            break;
+    }
+
     return tr;
 }
 
@@ -209,23 +213,145 @@ ast_expression * ast_new_expression_primary(ast_primary * p)
     return tr;
 }
 
+//! Returns the string representation of an operator;
+char * ast_operator_tostring(ast_operator op)
+{
+    switch(op)
+    {
+
+        case OPERATOR_STAR   : return "*"; 
+        case OPERATOR_PLUS   : return "+"; 
+        case OPERATOR_MINUS  : return "-"; 
+        case OPERATOR_ASL    : return "<<<"; 
+        case OPERATOR_ASR    : return ">>>"; 
+        case OPERATOR_LSL    : return "<<"; 
+        case OPERATOR_LSR    : return ">>>"; 
+        case OPERATOR_DIV    : return "/"; 
+        case OPERATOR_POW    : return "^"; 
+        case OPERATOR_MOD    : return "%"; 
+        case OPERATOR_GTE    : return ">="; 
+        case OPERATOR_LTE    : return "<="; 
+        case OPERATOR_GT     : return ">"; 
+        case OPERATOR_LT     : return "<"; 
+        case OPERATOR_L_NEG  : return "!"; 
+        case OPERATOR_L_AND  : return "&&"; 
+        case OPERATOR_L_OR   : return "||"; 
+        case OPERATOR_C_EQ   : return "=="; 
+        case OPERATOR_L_EQ   : return "="; 
+        case OPERATOR_C_NEQ  : return "!="; 
+        case OPERATOR_L_NEQ  : return "!="; 
+        case OPERATOR_B_NEG  : return "~"; 
+        case OPERATOR_B_AND  : return "&"; 
+        case OPERATOR_B_OR   : return "|"; 
+        case OPERATOR_B_XOR  : return "^"; 
+        case OPERATOR_B_EQU  : return "==="; 
+        case OPERATOR_B_NAND : return "~&"; 
+        case OPERATOR_B_NOR  : return "~|"; 
+        case OPERATOR_TERNARY: return "?"; 
+        default: return " ";
+    }
+}
+
 /*!
 @brief A utility function for converting an ast expression tree back into
 a string representation.
+@returns The string representation of the passed expression or an empty string
+if exp is NULL.
 @param [in] exp - The expression to turn into a string.
-@warning Not implemented.
-@todo Implement this.
 */
 char * ast_expression_tostring(
     ast_expression * exp
 ){
+    if(exp == NULL){return "";}
     char * tr;
+    char * lhs;
+    char * rhs;
+    char * pri;
+    char * cond;
+    char * mid;
+    char * op;
+    size_t len;
 
     switch(exp -> type)
     {
-
+        case PRIMARY_EXPRESSION:
+        case MODULE_PATH_PRIMARY_EXPRESSION:
+            tr = ast_primary_tostring(exp -> primary);
+            break;
+        case STRING_EXPRESSION:
+            tr = ast_strdup(exp -> string);
+            break;
+        case UNARY_EXPRESSION:  
+        case MODULE_PATH_UNARY_EXPRESSION:
+            pri = ast_primary_tostring(exp -> primary);
+            op  = ast_operator_tostring(exp -> operation);
+            tr = ast_calloc(strlen(pri)+5,sizeof(char));
+            strcat(tr,"(");
+            strcat(tr, op); 
+            strcat(tr,pri);
+            strcat(tr,")");
+            break;
+        case BINARY_EXPRESSION:
+        case MODULE_PATH_BINARY_EXPRESSION:
+            lhs = ast_expression_tostring(exp -> left);
+            rhs = ast_expression_tostring(exp -> right);
+            op  = ast_operator_tostring(exp -> operation);
+            len =5+strlen(lhs)+ strlen(rhs);
+            tr = ast_calloc(len,sizeof(char));
+            strcat(tr,"(");
+            strcat(tr,lhs);
+            strcat(tr, op); 
+            strcat(tr,rhs);
+            strcat(tr,")");
+            break;
+        case RANGE_EXPRESSION_UP_DOWN:
+            lhs = ast_expression_tostring(exp -> left);
+            rhs = ast_expression_tostring(exp -> right);
+            len =3+strlen(lhs)+ strlen(rhs);
+            tr = ast_calloc(len,sizeof(char));
+            strcat(tr,lhs);
+            strcat(tr,":");
+            strcat(tr,rhs);
+            break;
+        case RANGE_EXPRESSION_INDEX:
+            tr = ast_expression_tostring(exp -> left);
+            break;
+        case MODULE_PATH_MINTYPMAX_EXPRESSION:
+        case MINTYPMAX_EXPRESSION: 
+            lhs = ast_expression_tostring(exp -> left);
+            rhs = ast_expression_tostring(exp -> right);
+            mid = ast_expression_tostring(exp -> aux);
+            len = 3 +
+                  strlen(lhs) + 
+                  strlen(rhs) + 
+                  strlen(mid);
+            tr = ast_calloc(len,sizeof(char));
+            strcat(tr,lhs);
+            strcat(tr,":");
+            strcat(tr,mid);
+            strcat(tr,":");
+            strcat(tr,rhs);
+            break;
+        case CONDITIONAL_EXPRESSION: 
+        case MODULE_PATH_CONDITIONAL_EXPRESSION:
+            lhs = ast_expression_tostring(exp -> left);
+            rhs = ast_expression_tostring(exp -> right);
+            cond= ast_expression_tostring(exp -> aux);
+            len = 3 +
+                  strlen(lhs) + 
+                  strlen(rhs) + 
+                  strlen(cond);
+            tr = ast_calloc(len,sizeof(char));
+            strcat(tr,cond);
+            strcat(tr,"?");
+            strcat(tr,lhs);
+            strcat(tr,":");
+            strcat(tr,rhs);
+            break;
         default:
-            // Do nothing.
+            printf("ERROR: Expression type to string not supported. %d of %s",
+                __LINE__,__FILE__);
+            tr = "<unsupported>";
             break;
 
     }
@@ -237,21 +363,26 @@ char * ast_expression_tostring(
 /*!
 @brief Creates a new unary expression with the supplied operation.
 */
-ast_expression * ast_new_unary_expression(ast_expression * operand,
+ast_expression * ast_new_unary_expression(ast_primary    * operand,
                                           ast_operator     operation,
                                           ast_node_attributes * attr,
                                           ast_boolean       constant)
 {
     ast_expression * tr = ast_calloc(1, sizeof(ast_expression));
     ast_set_meta_info(&(tr->meta));
-    
+
     tr -> operation     = operation;
     tr -> attributes    = attr;
-    tr -> right         = operand;
+    tr -> primary       = operand;
+    tr -> right         = NULL;
     tr -> left          = NULL;
     tr -> aux           = NULL;
     tr -> type          = UNARY_EXPRESSION;
     tr -> constant      = constant;
+
+    #ifdef VERILOG_PARSER_COVERAGE_ON
+        printf("Unary Expression: '%s'\n", ast_expression_tostring(tr));
+    #endif
 
     return tr;
 }
@@ -270,6 +401,10 @@ ast_expression * ast_new_range_expression(ast_expression * left,
     tr -> left          = left;
     tr -> aux           = NULL;
     tr -> type          = RANGE_EXPRESSION_UP_DOWN;
+    
+    #ifdef VERILOG_PARSER_COVERAGE_ON
+        printf("Range Expression: '%s'\n", ast_expression_tostring(tr));
+    #endif
 
     return tr;
 }
@@ -287,6 +422,10 @@ ast_expression * ast_new_index_expression(ast_expression * left)
     tr -> left          = left;
     tr -> aux           = NULL;
     tr -> type          = RANGE_EXPRESSION_INDEX;
+    
+    #ifdef VERILOG_PARSER_COVERAGE_ON
+        printf("Index Expression: '%s'\n", ast_expression_tostring(tr));
+    #endif
 
     return tr;
 }
@@ -304,7 +443,7 @@ ast_expression * ast_new_binary_expression(ast_expression * left,
 {
     ast_expression * tr = ast_calloc(1, sizeof(ast_expression));
     ast_set_meta_info(&(tr->meta));
-    
+
     tr -> operation     = operation;
     tr -> attributes    = attr;
     tr -> right         = right;
@@ -312,6 +451,10 @@ ast_expression * ast_new_binary_expression(ast_expression * left,
     tr -> aux           = NULL;
     tr -> type          = BINARY_EXPRESSION;
     tr -> constant      = constant;
+    
+    #ifdef VERILOG_PARSER_COVERAGE_ON
+        printf("Binary Expression: '%s'\n", ast_expression_tostring(tr));
+    #endif
 
     return tr;
 }
@@ -332,6 +475,10 @@ ast_expression * ast_new_string_expression(ast_string string)
     tr -> type          = STRING_EXPRESSION;
     tr -> constant      = AST_TRUE;
     tr -> string        = string;
+    
+    #ifdef VERILOG_PARSER_COVERAGE_ON
+        printf("String Expression: '%s'\n", ast_expression_tostring(tr));
+    #endif
     
     return tr;
 }
@@ -2439,7 +2586,7 @@ char * ast_identifier_tostring(ast_identifier id)
     {
         walker = walker -> next;
 
-        size_t len = strlen(walker -> identifier)+1 + len;
+        size_t len = strlen(walker -> identifier)+1 + strlen(tr);
         tr = realloc(tr,len);
         strcat(tr, walker -> identifier);
     }
@@ -2595,6 +2742,39 @@ ast_number * ast_new_number(
     tr -> base = base;
     tr -> representation = representation;
     tr -> as_bits = digits;
+
+    return tr;
+}
+
+/*!
+@brief A utility function for converting an ast number into a string.
+@param [in] n - The number to turn into a string.
+*/
+char * ast_number_tostring(
+    ast_number * n
+){
+    assert(n!=NULL);
+    char * tr;
+
+    ast_number_representation rep = n -> representation;
+
+    switch(rep)
+    {
+        case REP_BITS:
+            tr = n -> as_bits;
+            break;
+        case REP_INTEGER:
+            tr = calloc(11,sizeof(char));
+            sprintf(tr, "%d", n-> as_int);
+            break;
+        case REP_FLOAT:
+            tr = calloc(21,sizeof(char));
+            sprintf(tr, "%20f", n -> as_float);
+            break;
+        default:
+            tr = "NULL";
+            break;
+    }
 
     return tr;
 }

@@ -35,8 +35,40 @@ typedef struct ast_function_call_t ast_function_call;
 //! An item within a module. Duh.
 typedef struct ast_module_item_t ast_module_item;
     
-//! \b Temporary typedef.
-typedef char * ast_operator     ;
+//! Stores different Operators.
+typedef enum ast_operator_e{
+    OPERATOR_STAR    , //!<
+    OPERATOR_PLUS    , //!<
+    OPERATOR_MINUS   , //!<
+    OPERATOR_ASL     , //!< Arithmetic shift left
+    OPERATOR_ASR     , //!< Arithmetic shift right
+    OPERATOR_LSL     , //!< logical shift left
+    OPERATOR_LSR     , //!< logical shift right
+    OPERATOR_DIV     , //!< divide
+    OPERATOR_POW     , //!< pow
+    OPERATOR_MOD     , //!< mod
+    OPERATOR_GTE     , //!< greater than or equal to
+    OPERATOR_LTE     , //!<
+    OPERATOR_GT      , //!<
+    OPERATOR_LT      , //!<
+    OPERATOR_L_NEG   , //!<
+    OPERATOR_L_AND   , //!<
+    OPERATOR_L_OR    , //!<
+    OPERATOR_C_EQ    , //!<
+    OPERATOR_L_EQ    , //!<
+    OPERATOR_C_NEQ   , //!<
+    OPERATOR_L_NEQ   , //!<
+    OPERATOR_B_NEG   , //!<
+    OPERATOR_B_AND   , //!<
+    OPERATOR_B_OR    , //!<
+    OPERATOR_B_XOR   , //!<
+    OPERATOR_B_EQU   , //!<
+    OPERATOR_B_NAND  , //!<
+    OPERATOR_B_NOR   , //!<
+    OPERATOR_TERNARY , //!<
+    OPERATOR_NONE = 0
+} ast_operator;
+
 typedef char * ast_string       ;
 //! A set of lvalue and corresponding assigned expressions
 typedef struct ast_assignment_t ast_assignment;
@@ -151,6 +183,15 @@ ast_number * ast_new_number(
     char  * digits  //!< The string token representing the number.
 );
 
+/*!
+@brief A utility function for converting an ast number into a string.
+@param [in] n - The number to turn into a string.
+*/
+char * ast_number_tostring(
+    ast_number * n
+);
+
+
 /*! @} */
 
 
@@ -177,13 +218,6 @@ struct ast_node_attributes_t
     ast_node_attributes * next;         //!< Next one in a linked list.
 };
 
-
-/*!
-@brief Creates and returns a new attribute node with the specified value
-       and name.
-@param [in] value - The attribute value being set to add to the node.
-*/
-ast_node * ast_new_attribute_node( ast_node_attributes* value);
 
 /*!
 @brief Creates and returns as a pointer a new attribute descriptor.
@@ -410,7 +444,7 @@ typedef union ast_primary_value_e
     ast_identifier      identifier;     //!< Net or variable identifier.
     ast_concatenation * concatenation;  //!< Concatenation of expressions.
     ast_function_call * function_call;  //!< Call to a function.
-    ast_minmax_exp      minmax;
+    ast_expression    * minmax;
     ast_macro_use       macro;          //!< A MACRO expansion.
     char              * string;
 } ast_primary_value;
@@ -436,6 +470,15 @@ typedef struct ast_primary_t
     ast_primary_value       value;          //!< @see ast_primary_value
 } ast_primary;
 
+
+/*!
+@brief A utility function for converting an ast expression primaries back into
+a string representation.
+@param [in] p - The expression primary to turn into a string.
+*/
+char * ast_primary_tostring(
+    ast_primary * p
+);
 
 /*!
 @brief Creates a new ast primary which is part of a constant expression tree
@@ -493,6 +536,9 @@ typedef enum ast_expression_type_e
     STRING_EXPRESSION                 //!< Just a normal string. No operations.
 } ast_expression_type;
 
+
+//! Returns the string representation of an operator;
+char * ast_operator_tostring(ast_operator op);
 
 /*! 
 @brief Storage type for an entire expression / subexpression tree.
@@ -559,7 +605,7 @@ ast_expression * ast_new_binary_expression(ast_expression * left,
 @param [in] attr - Expression attributes.
 @param [in] constant - Is this a constant expression we can simplify?
 */
-ast_expression * ast_new_unary_expression(ast_expression * operand,
+ast_expression * ast_new_unary_expression(ast_primary    * operand,
                                           ast_operator     operation,
                                           ast_node_attributes * attr,
                                           ast_boolean       constant);
