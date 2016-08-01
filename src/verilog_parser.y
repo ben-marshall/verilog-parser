@@ -1068,7 +1068,9 @@ module_declaration :
   SEMICOLON
   module_item_os
   KW_ENDMODULE{
-    $$ = ast_new_module_declaration($1,$3,$4,$5,$7);
+    // Old style of port declaration, don't pass them directly into the 
+    // function.
+    $$ = ast_new_module_declaration($1,$3,$4,NULL,$7);
 }
 ;
 

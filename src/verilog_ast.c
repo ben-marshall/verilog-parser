@@ -2406,6 +2406,9 @@ ast_module_item * ast_new_module_item(
 
 /*!
 @brief Creates a new module instantiation.
+@param [in] ports - This should be a list of ast_port_declaration if we are
+using the new style of port declaration, or NULL if the port declarations are
+contained within the module items list.
 */
 ast_module_declaration * ast_new_module_declaration(
     ast_node_attributes * attributes,
@@ -2420,7 +2423,15 @@ ast_module_declaration * ast_new_module_declaration(
     tr -> attributes = attributes;
     tr -> identifier = identifier;
     tr -> module_parameters = parameters;
-    tr -> module_ports      = ports;
+
+    // Are we using the old or new style of port declaration?
+    if(ports == NULL) {
+        // Old style - search in internal module items for ports.
+        tr -> module_ports      = ast_list_new();
+    } else {
+        // New style, just use the passed ports.
+        tr -> module_ports      = ports;
+    }
     
     tr -> always_blocks          = ast_list_new();
     tr -> continuous_assignments = ast_list_new();
@@ -2450,7 +2461,10 @@ ast_module_declaration * ast_new_module_declaration(
     {
         ast_module_item * construct = ast_list_get(constructs, i);
 
-        if(construct -> type == MOD_ITEM_PORT_DECLARATION){
+        if(construct -> type == MOD_ITEM_PORT_DECLARATION && ports == NULL){
+            // Only accept ports declared this way iff the ports argument to
+            // this function is NULL, signifying the old style of port 
+            // declaration.
             ast_list_append(tr -> module_ports, 
                             construct -> port_declaration);
         }
