@@ -259,6 +259,8 @@ ast_list *    ast_list_concat(ast_list * head, ast_list * tail)
         head -> tail = tail -> tail;
     }
 
+    head -> items += tail -> items;
+
     // Free only the tail data-structure, not it's elements.
     //free(tail);
 
