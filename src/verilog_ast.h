@@ -2873,26 +2873,26 @@ struct ast_module_declaration_t{
     ast_identifier        identifier; //!< The name of the module.
     ast_list * always_blocks; //!< ast_statement
     ast_list * continuous_assignments; //!< ast_single_assignment
-    ast_list * event_declarations; //!< ast_type_declaration
+    ast_list * event_declarations; //!< ast_var_declaration
     ast_list * function_declarations; //!< ast_task_declaration
     ast_list * gate_instantiations; //!< ast_gate_instantiation
-    ast_list * genvar_declarations; //!< ast_type_declaration
+    ast_list * genvar_declarations; //!< ast_var_declaration
     ast_list * generate_blocks; //!< ast_generate_block
     ast_list * initial_blocks; //!< ast_statement
-    ast_list * integer_declarations; //!< ast_type_declaration
+    ast_list * integer_declarations; //!< ast_var_declaration
     ast_list * local_parameters; //!< ast_parameter_declaration
     ast_list * module_instantiations; //!< ast_module_instantiation
     ast_list * module_parameters; //!< ast_parameter_declaration
     ast_list * module_ports; //!< ast_port_declaration
-    ast_list * net_declarations; //!< ast_type_declaration
+    ast_list * net_declarations; //!< ast_net_declaration
     ast_list * parameter_overrides; //!< ast_single_assignment
-    ast_list * real_declarations; //!< ast_type_declaration
-    ast_list * realtime_declarations; //!< ast_type_declaration
-    ast_list * reg_declarations; //!< ast_type_declaration
+    ast_list * real_declarations; //!< ast_var_declaration
+    ast_list * realtime_declarations; //!< ast_var_declaration
+    ast_list * reg_declarations; //!< ast_reg_declaration
     ast_list * specify_blocks; //!< Not Supported
     ast_list * specparams; //!< ast_parameter_declaration
     ast_list * task_declarations; //!< ast_task_declaration
-    ast_list * time_declarations; //!< ast_type_declaration
+    ast_list * time_declarations; //!< ast_var_declaration
     ast_list * udp_instantiations; //!< ast_udp_instantiation
 
 } ;
