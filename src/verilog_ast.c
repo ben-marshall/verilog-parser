@@ -2587,12 +2587,12 @@ ast_module_declaration * ast_new_module_declaration(
         } 
         else if(construct -> type == MOD_ITEM_INITIAL_CONSTRUCT){
             ast_statement_block * toadd = ast_extract_statement_block(
-               STM_BLOCK_INITIAL, construct -> initial_construct);
+               BLOCK_SEQUENTIAL_INITIAL, construct -> initial_construct);
             ast_list_append(tr -> initial_blocks ,toadd);
         } 
         else if(construct -> type == MOD_ITEM_ALWAYS_CONSTRUCT){
             ast_statement_block * toadd = ast_extract_statement_block(
-               STM_BLOCK_ALWAYS, construct -> always_construct);
+               BLOCK_SEQUENTIAL_ALWAYS, construct -> always_construct);
             ast_list_append(tr -> always_blocks,toadd);
         } 
         else if(construct -> type == MOD_ITEM_NET_DECLARATION){
