@@ -2891,14 +2891,14 @@ struct ast_module_declaration_t{
     ast_metadata    meta;   //!< Node metadata.
     ast_node_attributes * attributes; //!< Tool specific attributes.
     ast_identifier        identifier; //!< The name of the module.
-    ast_list * always_blocks; //!< ast_procedure_statement
+    ast_list * always_blocks; //!< ast_statement_block
     ast_list * continuous_assignments; //!< ast_single_assignment
     ast_list * event_declarations; //!< ast_var_declaration
     ast_list * function_declarations; //!< ast_task_declaration
     ast_list * gate_instantiations; //!< ast_gate_instantiation
     ast_list * genvar_declarations; //!< ast_var_declaration
     ast_list * generate_blocks; //!< ast_generate_block
-    ast_list * initial_blocks; //!< ast_procedure_statement
+    ast_list * initial_blocks; //!< ast_statement_block
     ast_list * integer_declarations; //!< ast_var_declaration
     ast_list * local_parameters; //!< ast_parameter_declaration
     ast_list * module_instantiations; //!< ast_module_instantiation
