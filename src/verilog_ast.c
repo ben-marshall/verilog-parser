@@ -2411,6 +2411,8 @@ ast_statement_block * ast_extract_statement_block(
     ast_statement_type  type,
     ast_statement     * body
 ){
+    //printf("Reforming block from line %d of %s\n", body -> meta.line,body -> meta.file);
+
     if(body -> type == STM_BLOCK)
     {
         // Extract the statement block, and return that. There are no timing
@@ -2434,11 +2436,16 @@ ast_statement_block * ast_extract_statement_block(
         ast_timing_control_statement * trigger = body    -> timing_control;
         ast_statement                * stm     = trigger -> statement;
 
+        //printf("\t Refactoring timing statement. Type: %d\n", stm->type);
+
         if(stm  -> type == STM_BLOCK)
         {
-            body -> block -> trigger = trigger;
-            body -> block -> type    = type;
-            return body -> block;
+            ast_statement_block * block = stm -> block;
+            
+            block -> trigger = trigger;
+            block -> type    = type;
+
+            return block;
         }
         else
         {

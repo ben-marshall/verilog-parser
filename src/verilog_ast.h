@@ -1420,21 +1420,21 @@ ast_assignment * ast_new_continuous_assignment(
 
 //! Describes the kind of statement in a statement struct.
 typedef enum ast_statement_type_e{
-    STM_GENERATE,           //!< 
-    STM_ASSIGNMENT,         //!< Blocking, non-blocking, continuous
-    STM_CASE,               //!< 
-    STM_CONDITIONAL,        //!< if/if-else/if-elseif-else
-    STM_DISABLE,            //!<
-    STM_EVENT_TRIGGER,      //!<
-    STM_LOOP,               //!< While, for, repeat
-    STM_BLOCK,              //!< Par, sequential
-    STM_BLOCK_ALWAYS,       //!< always @ blocks
-    STM_BLOCK_INITIAL,      //!< Initial blocks
-    STM_TIMING_CONTROL,     //!< 
-    STM_FUNCTION_CALL,      //!< 
-    STM_TASK_ENABLE,        //!< System, user
-    STM_WAIT,               //!< 
-    STM_MODULE_ITEM         //!< 
+    STM_GENERATE=0,           //!< 
+    STM_ASSIGNMENT=1,         //!< Blocking, non-blocking, continuous
+    STM_CASE=2,               //!< 
+    STM_CONDITIONAL=3,        //!< if/if-else/if-elseif-else
+    STM_DISABLE=4,            //!<
+    STM_EVENT_TRIGGER=5,      //!<
+    STM_LOOP=6,               //!< While, for, repeat
+    STM_BLOCK=7,              //!< Par, sequential
+    STM_BLOCK_ALWAYS=8,       //!< always @ blocks
+    STM_BLOCK_INITIAL=9,      //!< Initial blocks
+    STM_TIMING_CONTROL=10,    //!< 
+    STM_FUNCTION_CALL=11,     //!< 
+    STM_TASK_ENABLE=12,       //!< System, user
+    STM_WAIT=13,              //!< 
+    STM_MODULE_ITEM=14        //!< 
 } ast_statement_type;
 
 
