@@ -2403,6 +2403,80 @@ ast_module_item * ast_new_module_item(
     return tr;
 }
 
+/*!
+@brief Takes a body statement (type = STM_BLK) and splits it into it's event
+trigger and statements.
+*/
+ast_statement_block * ast_extract_statement_block(
+    ast_statement_type  type,
+    ast_statement     * body
+){
+    if(body -> type == STM_BLOCK)
+    {
+        // Extract the statement block, and return that. There are no timing
+        // control statements, so just set the type and return it.
+        ast_statement_block * block = body -> block;
+
+        block -> trigger = NULL;
+        block -> type    = type;
+
+        return block;
+    }
+    else if(body -> type == STM_TIMING_CONTROL)
+    {
+        // The trigger is the main parent the the block, since the grammar
+        // dictates any subsequent statements (including begin/end blocks) are
+        // childrent of the timing control statement.
+        // Here we essentially switch the trigger/block parent/child 
+        // relationship to create one object with all of the appropriate
+        // information immediately available.
+        
+        ast_timing_control_statement * trigger = body    -> timing_control;
+        ast_statement                * stm     = trigger -> statement;
+
+        if(stm  -> type == STM_BLOCK)
+        {
+            body -> block -> trigger = trigger;
+            body -> block -> type    = type;
+            return body -> block;
+        }
+        else
+        {
+            // Corner case where the child of the timing control statement
+            // is a single statement on it's own, not surrounded by begin..end
+            ast_list * stm_list = ast_list_new();
+            ast_list_append(stm_list, stm);
+
+            ast_statement_block * tr = ast_new_statement_block(
+                STM_BLOCK,
+                ast_new_identifier("Unnamed block", body -> meta.line),
+                ast_list_new(), // Empty list, no declarations are made.
+                stm_list
+            );
+
+            return tr;
+        }
+    }
+    else
+    {
+        // Nothing is as expected, so wrap the supplied statement in a block
+        // object of the desired type. This is usually when you get code
+        // like: `initial do_setup_task();`
+
+        ast_list * stm_list = ast_list_new();
+        ast_list_append(stm_list, body);
+
+        ast_statement_block * tr = ast_new_statement_block(
+            STM_BLOCK,
+            ast_new_identifier("Unnamed block", body -> meta.line),
+            ast_list_new(), // Empty list, no declarations are made.
+            stm_list
+        );
+
+        return tr;
+    }
+}
+
 
 /*!
 @brief Creates a new module instantiation.
@@ -2505,12 +2579,14 @@ ast_module_declaration * ast_new_module_declaration(
                             construct -> module_instantiation);
         } 
         else if(construct -> type == MOD_ITEM_INITIAL_CONSTRUCT){
-            ast_list_append(tr -> initial_blocks,
-                            construct -> initial_construct);
+            ast_statement_block * toadd = ast_extract_statement_block(
+               STM_BLOCK_INITIAL, construct -> initial_construct);
+            ast_list_append(tr -> initial_blocks ,toadd);
         } 
         else if(construct -> type == MOD_ITEM_ALWAYS_CONSTRUCT){
-            ast_list_append(tr -> always_blocks,
-                            construct -> always_construct);
+            ast_statement_block * toadd = ast_extract_statement_block(
+               STM_BLOCK_ALWAYS, construct -> always_construct);
+            ast_list_append(tr -> always_blocks,toadd);
         } 
         else if(construct -> type == MOD_ITEM_NET_DECLARATION){
             tr -> net_declarations = ast_list_concat(

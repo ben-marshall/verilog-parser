@@ -1148,8 +1148,8 @@ typedef struct ast_timing_control_statement_t{
         ast_delay_ctrl    * delay;
         ast_event_control * event_ctrl;
     };
-    ast_expression    * repeat;     //! NULL unless part of repeat statement.
-    ast_statement     * statement;  //! What to execute after the control.
+    ast_expression    * repeat;     //!< NULL unless part of repeat statement.
+    ast_statement     * statement;  //!< What to execute after the control.
 } ast_timing_control_statement;
 
 /*!
@@ -1243,21 +1243,31 @@ ast_disable_statement * ast_new_disable_statement(ast_identifier   id);
 //! Describes the type of a block of statements.
 typedef enum ast_block_type_e{
     BLOCK_SEQUENTIAL,
+    BLOCK_SEQUENTIAL_INITIAL,
+    BLOCK_SEQUENTIAL_ALWAYS,
     BLOCK_FUNCTION_SEQUENTIAL,
     BLOCK_PARALLEL,
 } ast_block_type;
 
-//! Fully describes a single block of statements.
+/*! 
+@brief Fully describes a single block of statements.
+@details this is used to represent begin...end constructs, always, initial
+blocks, and collections of statements in the body of a function or task.
+*/
 typedef struct ast_statement_block_t{
     ast_metadata    meta;   //!< Node metadata.
     ast_block_type   type;
     ast_identifier   block_identifier;
     ast_list       * declarations;
     ast_list       * statements;
+    ast_timing_control_statement * trigger; //<! Use if this is an always block
 } ast_statement_block;
 
 /*!
 @brief Creates and returns a new statement block of the specified type
+@note The `trigger` member of the returned ast_statement_block will always be
+NULL. This is because we don't find out what sort of block this is until
+further up the parse tree.
 */
 ast_statement_block * ast_new_statement_block(
     ast_block_type   type,
@@ -1410,19 +1420,21 @@ ast_assignment * ast_new_continuous_assignment(
 
 //! Describes the kind of statement in a statement struct.
 typedef enum ast_statement_type_e{
-    STM_GENERATE,
+    STM_GENERATE,           //!< 
     STM_ASSIGNMENT,         //!< Blocking, non-blocking, continuous
-    STM_CASE,
+    STM_CASE,               //!< 
     STM_CONDITIONAL,        //!< if/if-else/if-elseif-else
-    STM_DISABLE,
-    STM_EVENT_TRIGGER,
+    STM_DISABLE,            //!<
+    STM_EVENT_TRIGGER,      //!<
     STM_LOOP,               //!< While, for, repeat
     STM_BLOCK,              //!< Par, sequential
-    STM_TIMING_CONTROL,
-    STM_FUNCTION_CALL,
+    STM_BLOCK_ALWAYS,       //!< always @ blocks
+    STM_BLOCK_INITIAL,      //!< Initial blocks
+    STM_TIMING_CONTROL,     //!< 
+    STM_FUNCTION_CALL,      //!< 
     STM_TASK_ENABLE,        //!< System, user
-    STM_WAIT,
-    STM_MODULE_ITEM
+    STM_WAIT,               //!< 
+    STM_MODULE_ITEM         //!< 
 } ast_statement_type;
 
 
@@ -2850,8 +2862,16 @@ ast_module_item * ast_new_module_item(
     ast_module_item_type  type
 );
 
-
 /*! @} */
+
+/*!
+@brief Takes a body statement (type = STM_BLK) and splits it into it's event
+trigger and statements.
+*/
+ast_statement_block * ast_extract_statement_block(
+    ast_statement_type  type,
+    ast_statement     * body
+);
 
 // -------------------------------- Module Declarations ----------------------
 
@@ -2871,14 +2891,14 @@ struct ast_module_declaration_t{
     ast_metadata    meta;   //!< Node metadata.
     ast_node_attributes * attributes; //!< Tool specific attributes.
     ast_identifier        identifier; //!< The name of the module.
-    ast_list * always_blocks; //!< ast_statement
+    ast_list * always_blocks; //!< ast_statement_block
     ast_list * continuous_assignments; //!< ast_single_assignment
     ast_list * event_declarations; //!< ast_var_declaration
     ast_list * function_declarations; //!< ast_task_declaration
     ast_list * gate_instantiations; //!< ast_gate_instantiation
     ast_list * genvar_declarations; //!< ast_var_declaration
     ast_list * generate_blocks; //!< ast_generate_block
-    ast_list * initial_blocks; //!< ast_statement
+    ast_list * initial_blocks; //!< ast_statement_block
     ast_list * integer_declarations; //!< ast_var_declaration
     ast_list * local_parameters; //!< ast_parameter_declaration
     ast_list * module_instantiations; //!< ast_module_instantiation
