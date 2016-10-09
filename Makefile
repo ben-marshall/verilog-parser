@@ -3,7 +3,7 @@
 # This is a simple top-level wrapper makefile for the rest of the project.
 #
 
-all: docs debug release coverage
+all: setup docs debug release coverage
 
 .PHONY: docs setup clean
 
