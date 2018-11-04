@@ -79,7 +79,7 @@ void verilog_preprocessor_resetall();
 @param [in] direction -  Where should an unconnected line be pulled?
 */
 void verilog_preprocessor_nounconnected_drive(
-    ast_primitive_strength direction;
+    ast_primitive_strength direction
 );
 
 // ----------------------- Include Directives ---------------------------
