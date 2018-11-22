@@ -74,6 +74,7 @@ set(PARSER_LIB_SRC ${BINARY_DIR}/${FLEX_OUTPUT}
 )
 
 add_library(${LIBRARY_NAME} ${PARSER_LIB_SRC})
+add_library(${PROJECT_NAME}::${LIBRARY_NAME} ALIAS ${LIBRARY_NAME})
 
 target_compile_options(${LIBRARY_NAME} PRIVATE -Wall)
 target_compile_options(${LIBRARY_NAME} PRIVATE -W)
