@@ -123,6 +123,13 @@ install(EXPORT ${LIBRARY_NAME}Targets
   DESTINATION lib/cmake/${LIBRARY_NAME}
 )
 
+export(TARGETS ${LIBRARY_NAME}
+  NAMESPACE ${PROJECT_NAME}::
+  FILE ${LIBRARY_NAME}Targets.cmake
+)
+
+export(PACKAGE ${PROJECT_NAME})
+
 # ------------------------------------------------------------------------
 
 if( ${DISABLE_VERILOG_PARSER_TESTS} )
