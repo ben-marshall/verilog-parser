@@ -1,7 +1,3 @@
-cmake_minimum_required(VERSION 2.8)
-
-project(verilog-parser-src)
-
 message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 
 set(LIBRARY_NAME    verilogparser)
@@ -21,32 +17,24 @@ set(BISON_OUTPUT verilog_parser.tab.c)
 
 # ------------------------------------------------------------------------
 
-
 option(WITH_COVERAGE "If YES, build the debug executable with coverage." NO)
 
 SET(COV_FLAGS_C     "-fprofile-arcs -ftest-coverage")
 SET(COV_FLAGS_LINK  "-fprofile-arcs -ftest-coverage")
 
 # ------------------------------------------------------------------------
-    
-SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -Wall -W")
-SET(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_C_FLAGS_RELEASE}")
 
-if( ${WITH_COVERAGE} )
+if(${WITH_COVERAGE})
 
-message(STATUS "Building with coverage flags set.")
-SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${COV_FLAGS_C} -DVERILOG_PARSER_COVERAGE_ON")
-SET(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_C_FLAGS_RELEASE} ${COV_FLAGS_LINK}")
+  message(STATUS "Building with coverage flags set.")
+  SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} ${COV_FLAGS_C} -DVERILOG_PARSER_COVERAGE_ON")
+  SET(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_C_FLAGS_RELEASE} ${COV_FLAGS_LINK}")
 
 else()
 
-message(STATUS "NOT building with coverage.")
+  message(STATUS "NOT building with coverage.")
 
 endif()
-
-
-SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
-SET(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
 
 message(STATUS "Parser Build Flags Debug:   ${CMAKE_C_FLAGS_DEBUG}")
 message(STATUS "Parser Link Flags Debug:   ${CMAKE_EXE_LINKER_FLAGS_DEBUG}")
@@ -55,34 +43,25 @@ message(STATUS "Parser Link Flags Release: ${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
 
 # ------------------------------------------------------------------------
 
-#cmake_policy(SET CMP0050 OLD)
-
-ADD_CUSTOM_COMMAND(
-    SOURCE ${SOURCE_DIR}/${BISON_INPUT}
-    COMMAND ${BISON_EXECUTABLE} 
-    ARGS -y ${SOURCE_DIR}/${BISON_INPUT} -o ${BINARY_DIR}/${BISON_OUTPUT}
-    TARGET PARSER_LIB
-    OUTPUTS ${BINARY_DIR}/${BISON_OUTPUT}
+add_custom_command(
+  COMMAND ${BISON_EXECUTABLE}
+  ARGS -y ${SOURCE_DIR}/${BISON_INPUT} -o ${BINARY_DIR}/${BISON_OUTPUT}
+  OUTPUT ${BINARY_DIR}/${BISON_OUTPUT}
+  WORKING_DIRECTORY ${SOURCE_DIR} #/${BISON_INPUT}
 )
 
-ADD_CUSTOM_COMMAND(
-    SOURCE  ${SOURCE_DIR}/${FLEX_INPUT}
-    COMMAND ${FLEX_EXECUTABLE} 
-    ARGS    -o ${BINARY_DIR}/${FLEX_OUTPUT} ${SOURCE_DIR}/${FLEX_INPUT}
-    TARGET  PARSER_LIB
-    DEPENDS ${BINARY_DIR}/${BISON_OUTPUT}
-    OUTPUTS ${BINARY_DIR}/${FLEX_OUTPUT}
+add_custom_command(
+  COMMAND ${FLEX_EXECUTABLE}
+  ARGS -o ${BINARY_DIR}/${FLEX_OUTPUT} ${SOURCE_DIR}/${FLEX_INPUT}
+  OUTPUT ${BINARY_DIR}/${FLEX_OUTPUT}
+  WORKING_DIRECTORY ${SOURCE_DIR} #/${FLEX_INPUT}
+  DEPENDS ${BINARY_DIR}/${BISON_OUTPUT}
 )
-
-#cmake_policy(SET CMP0050 NEW)
 
 SET_SOURCE_FILES_PROPERTIES(${BINARY_DIR}/${FLEX_OUTPUT}  GENERATED)
 SET_SOURCE_FILES_PROPERTIES(${BINARY_DIR}/${BISON_OUTPUT} GENERATED)
 
 # ------------------------------------------------------------------------
-
-INCLUDE_DIRECTORIES(${BINARY_DIR})
-INCLUDE_DIRECTORIES(${SOURCE_DIR})
 
 set(PARSER_LIB_SRC ${BINARY_DIR}/${FLEX_OUTPUT}
                    ${BINARY_DIR}/${BISON_OUTPUT}
@@ -96,10 +75,52 @@ set(PARSER_LIB_SRC ${BINARY_DIR}/${FLEX_OUTPUT}
 
 add_library(${LIBRARY_NAME} ${PARSER_LIB_SRC})
 
-set(CMAKE_C_OUTPUT_EXTENSION_REPLACE 1)
+target_compile_options(${LIBRARY_NAME} PRIVATE -Wall)
+target_compile_options(${LIBRARY_NAME} PRIVATE -W)
+
+set_target_properties(${LIBRARY_NAME} PROPERTIES C_EXTENSIONS OFF)
+
+target_include_directories(${LIBRARY_NAME}
+  PUBLIC
+    $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+)
+
+# ------------------------------------------------------------------------
 
 add_executable(${EXECUTABLE_NAME} main.c)
+
+target_compile_options(${EXECUTABLE_NAME} PRIVATE -Wall)
+target_compile_options(${EXECUTABLE_NAME} PRIVATE -W)
+
 target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME})
+
+target_include_directories(${EXECUTABLE_NAME} 
+    PRIVATE ${PROJECT_SOURCE_DIR}/include
+)
+
+# ------------------------------------------------------------------------
+
+install(TARGETS ${LIBRARY_NAME} ${EXECUTABLE_NAME}
+  EXPORT ${LIBRARY_NAME}Targets
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+)
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+  ${LIBRARY_NAME}ConfigVersion.cmake
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY AnyNewerVersion
+)
+
+install(EXPORT ${LIBRARY_NAME}Targets
+  FILE ${LIBRARY_NAME}Targets.cmake
+  NAMESPACE ${LIBRARY_NAME}::
+  DESTINATION lib/cmake/${LIBRARY_NAME}
+)
 
 # ------------------------------------------------------------------------
 
