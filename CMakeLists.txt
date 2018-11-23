@@ -20,6 +20,8 @@ set(VLOG_PARSER_CMAKE_PROJECT_TARGETS_FILE  "${PROJECT_NAME}Targets.cmake")
 
 # ------------------------------------------------------------------------
 
+set(LIBRARY_NAME ${PROJECT_NAME}) 
+
 add_subdirectory(./src)
 
 # ------------------------------------------------------------------------
