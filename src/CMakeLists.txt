@@ -103,32 +103,18 @@ target_include_directories(${EXECUTABLE_NAME}
 # ------------------------------------------------------------------------
 
 install(TARGETS ${LIBRARY_NAME} ${EXECUTABLE_NAME}
-  EXPORT ${LIBRARY_NAME}Targets
+  EXPORT ${VLOG_PARSER_TARGETS_EXPORT_NAME}
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   RUNTIME DESTINATION bin
-  INCLUDES DESTINATION include
+  INCLUDES DESTINATION ${VLOG_PARSER_INCLUDE_INSTALL_DIR}
 )
 
-include(CMakePackageConfigHelpers)
-write_basic_package_version_file(
-  ${LIBRARY_NAME}ConfigVersion.cmake
-  VERSION ${PROJECT_VERSION}
-  COMPATIBILITY AnyNewerVersion
+install(
+  DIRECTORY ${VLOG_PARSER_INCLUDE_BUILD_DIR}
+  DESTINATION ${VLOG_PARSER_INCLUDE_INSTALL_DIR}
 )
 
-install(EXPORT ${LIBRARY_NAME}Targets
-  FILE ${LIBRARY_NAME}Targets.cmake
-  NAMESPACE ${LIBRARY_NAME}::
-  DESTINATION lib/cmake/${LIBRARY_NAME}
-)
-
-export(TARGETS ${LIBRARY_NAME}
-  NAMESPACE ${PROJECT_NAME}::
-  FILE ${LIBRARY_NAME}Targets.cmake
-)
-
-export(PACKAGE ${PROJECT_NAME})
 
 # ------------------------------------------------------------------------
 
