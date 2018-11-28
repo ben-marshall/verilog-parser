@@ -4,6 +4,7 @@ project(verilogparser VERSION 1.0 LANGUAGES C)
 
 option(VLOG_PARSER_BUILD_DOCS "Build documents." OFF)
 option(VLOG_PARSER_BUILD_TEST "Build test." OFF)
+option(VLOG_PARSER_EXPORT_PACAKGE "Export package if enabled." OFF)
 
 # ------------------------------------------------------------------------
 set(VLOG_PARSER_TARGET_NAME                 ${PROJECT_NAME})
@@ -57,7 +58,9 @@ export(
   FILE ${VLOG_PARSER_CMAKE_PROJECT_TARGETS_FILE}
 )
 
-export(PACKAGE ${PROJECT_NAME})
+if(${VLOG_PARSER_EXPORT_PACKAGE})
+  export(PACKAGE ${PROJECT_NAME})
+endif()
 
 
 # ------------------------------------------------------------------------
