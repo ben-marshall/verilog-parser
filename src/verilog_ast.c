@@ -2840,7 +2840,7 @@ ast_number * ast_new_number(
 
     tr -> base = base;
     tr -> representation = representation;
-    tr -> as_bits = digits;
+    tr -> as_bits = ast_strdup(digits);
 
     return tr;
 }
