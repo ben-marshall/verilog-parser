@@ -1092,7 +1092,6 @@ typedef enum ast_event_expression_type_e{
 
 //! Describes a single event expression
 typedef struct ast_event_expression_t ast_event_expression;
-    ast_metadata    meta;   //!< Node metadata.
 struct ast_event_expression_t {
     ast_event_expression_type type;
     union{
