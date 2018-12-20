@@ -10,7 +10,7 @@
 #include "string.h"
 #include "stdio.h"
 
-#include "verilog_ast_common.h"
+#include <verilogparser/verilog_ast_common.h>
 
 /*!
 @brief Creates and returns a pointer to a new linked list.

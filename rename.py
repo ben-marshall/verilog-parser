@@ -15,9 +15,10 @@ def AddPrefix(fileName, prefix):
                 for term in terms:
                     newLine = newLine + '/' + term
                 newLine = newLine + '>\n'
+                print newLine
                 return newLine
             else:
-                print terms[0]
+                print terms[0], 'not changed'
             
         return line
 
@@ -30,8 +31,7 @@ def AddPrefix(fileName, prefix):
 
     with open(fileName, 'w') as wFile:
         for line in fileBuff:
-            print line
-            #print >> wFile, line,
+            print >> wFile, line,
 
 def AddPrefixRecursive(path, prefix):
     rootDir = path

@@ -7,8 +7,8 @@ Syntax Tree (AST)
 #include <assert.h>
 #include <stdio.h>
 
-#include "verilog_ast.h"
-#include "verilog_preprocessor.h"
+#include <verilogparser/verilog_ast.h>
+#include <verilogparser/verilog_preprocessor.h>
 
 /*!
 @brief Responsible for setting the line number and file of each node's

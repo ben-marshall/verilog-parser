@@ -1,8 +1,8 @@
 %{
-    #include "verilog_ast.h"
+#include <verilogparser/verilog_ast.h>
     #include "verilog_parser.tab.h"
     
-    #include "verilog_preprocessor.h"
+#include <verilogparser/verilog_preprocessor.h>
 
     //! Stores all information needed for the preprocessor.
     verilog_preprocessor_context * yy_preproc;

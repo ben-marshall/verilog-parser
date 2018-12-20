@@ -8,8 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "verilog_ast.h"
-#include "verilog_ast_common.h"
+#include <verilogparser/verilog_ast.h>
+#include <verilogparser/verilog_ast_common.h>
 
 #ifndef VERILOG_PREPROCESSOR_H
 #define VERILOG_PREPROCESSOR_H

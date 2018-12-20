@@ -4,7 +4,7 @@
 manage dynamic memory allocation within the library.
 */
 
-#include "verilog_ast_mem.h"
+#include <verilogparser/verilog_ast_mem.h>
 
 /*!
 @defgroup ast-utility-mem-manage Memory Management

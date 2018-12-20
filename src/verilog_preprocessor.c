@@ -3,7 +3,7 @@
 @brief Contains function implementations to support source code preprocessing.
 */
 
-#include "verilog_preprocessor.h"
+#include <verilogparser/verilog_preprocessor.h>
 
 verilog_preprocessor_context * verilog_new_preprocessor_context()
 {
