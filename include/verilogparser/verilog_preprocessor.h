@@ -109,6 +109,7 @@ typedef struct verilog_macro_directive_t{
     unsigned int line;      //!< Line number of the directive.
     char * macro_id;        //!< The name of the macro.
     char * macro_value;     //!< The value it expands to.
+    char * file_name;       //!< The name of the file contains the include.
 } verilog_macro_directive;
 
 /*!
