@@ -434,7 +434,8 @@ TERNARY             "?"
 
         YY_BUFFER_STATE n   = yy_create_buffer(file, YY_BUF_SIZE);
         
-        cur -> yy_bs_lineno = yylineno;
+        cur -> yy_bs_lineno = yylineno; 
+        yylineno = 0; // I think we should start from 0 as we are starting from a new file
         yy_switch_to_buffer(cur);
         yypush_buffer_state(n);
         BEGIN(INITIAL);
@@ -524,19 +525,26 @@ TERNARY             "?"
     
     if(r == HASH_SUCCESS)
     {
+        // Because later when (EOF) encountered in the macro_value,
+        // you will pop, si you should push it now
+        ast_stack_push(yy_preproc -> current_file, macro -> file_name);
+
         // Switch buffers to expand the macro.
 
         YY_BUFFER_STATE cur = YY_CURRENT_BUFFER;
+        cur -> yy_bs_lineno = yylineno;
+
         YY_BUFFER_STATE n   = yy_scan_string(macro -> macro_value);
         
         yy_switch_to_buffer(cur);
         yypush_buffer_state(n);
+
     }
     else
     {
         // Undefined macro - PANIC!
-        //printf("ERROR: Undefined macro '%s' on line %d\n", yytext, yylineno);
-        //printf("\tIt's probably all going to fall apart now...\n\n");
+        printf("ERROR: Undefined macro '%s' on line %d\n", yytext, yylineno);
+        printf("\tIt's probably all going to fall apart now...\n\n");
     }
 }
 
