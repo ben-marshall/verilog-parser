@@ -10,7 +10,7 @@ as well as an easy way to change the input stream.
 #include "stdio.h"
 
 // Essential to make sure we have access to all of the yy functions.
-#include "verilog_preprocessor.h"
+#include <verilogparser/verilog_preprocessor.h>
 
 #ifndef H_VERILOG_PARSER
 #define H_VERILOG_PARSER

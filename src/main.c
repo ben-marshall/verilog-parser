@@ -5,10 +5,10 @@
 
 #include "stdio.h"
 
-#include "verilog_parser.h"
-#include "verilog_ast_common.h"
-#include "verilog_preprocessor.h"
-#include "verilog_ast_util.h"
+#include <verilogparser/verilog_parser.h>
+#include <verilogparser/verilog_ast_common.h>
+#include <verilogparser/verilog_preprocessor.h>
+#include <verilogparser/verilog_ast_util.h>
 
 int main(int argc, char ** argv)
 {

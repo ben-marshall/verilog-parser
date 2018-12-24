@@ -7,7 +7,7 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include "verilog_ast_util.h"
+#include <verilogparser/verilog_ast_util.h>
 
 
 /*!

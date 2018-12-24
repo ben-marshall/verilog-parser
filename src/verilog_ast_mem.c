@@ -4,7 +4,7 @@
 manage dynamic memory allocation within the library.
 */
 
-#include "verilog_ast_mem.h"
+#include <verilogparser/verilog_ast_mem.h>
 
 /*!
 @defgroup ast-utility-mem-manage Memory Management
@@ -55,7 +55,7 @@ void * ast_calloc(size_t num, size_t size)
     {
         walker -> next = calloc(1,sizeof(ast_memory));
         walker -> next -> size = num * size;
-        total_allocated += walker -> size;
+        total_allocated += walker -> next-> size;
         walker -> next -> data = data;
         walker -> next -> next = NULL;
         walker         = walker -> next;
@@ -91,6 +91,7 @@ void ast_free_all()
     printf("\tFree'd %lu bytes of %lu bytes allocated.\n", 
         total_freed, total_allocated);
     printf("\tBytes remaining: %lu\n", total_allocated - total_freed);
+    total_allocated -= total_freed;
 }
 
 

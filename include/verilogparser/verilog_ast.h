@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "verilog_ast_common.h"
+#include <verilogparser/verilog_ast_common.h>
 
 #ifndef VERILOG_AST_H
 #define VERILOG_AST_H

@@ -7,8 +7,8 @@ Syntax Tree (AST)
 #include <assert.h>
 #include <stdio.h>
 
-#include "verilog_ast.h"
-#include "verilog_preprocessor.h"
+#include <verilogparser/verilog_ast.h>
+#include <verilogparser/verilog_preprocessor.h>
 
 /*!
 @brief Responsible for setting the line number and file of each node's
@@ -19,6 +19,7 @@ void ast_set_meta_info(ast_metadata * meta)
 {
     meta -> line = yylineno;
     meta -> file = verilog_preprocessor_current_file(yy_preproc);
+
 }
 
 /*!
@@ -2500,6 +2501,8 @@ ast_module_declaration * ast_new_module_declaration(
 ){
     ast_module_declaration * tr = ast_calloc(1,sizeof(ast_module_declaration));
     ast_set_meta_info(&(tr->meta));
+        if(tr->meta.file == NULL)
+          printf("Error: module meta is NULL\n");
 
     tr -> attributes = attributes;
     tr -> identifier = identifier;

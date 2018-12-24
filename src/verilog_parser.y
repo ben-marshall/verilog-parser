@@ -11,7 +11,7 @@
     #include <string.h>
     #include <assert.h>
 
-    #include "verilog_ast.h"
+#include <verilogparser/verilog_ast.h>
 
     extern int yylex();
     extern int yylineno;
@@ -24,7 +24,7 @@
 %}
 
 %code requires{
-    #include "verilog_ast.h"
+#include <verilogparser/verilog_ast.h>
 }
 
 

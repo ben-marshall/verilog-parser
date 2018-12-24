@@ -4,8 +4,8 @@
 @brief Contains implementations of functions declared in verilog_parser.h
 */
 
-#include "verilog_ast.h"
-#include "verilog_parser.h"
+#include <verilogparser/verilog_ast.h>
+#include <verilogparser/verilog_parser.h>
 
 //! This is defined in the generated bison parser code.
 extern int yyparse();

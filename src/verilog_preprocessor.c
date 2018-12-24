@@ -3,7 +3,7 @@
 @brief Contains function implementations to support source code preprocessing.
 */
 
-#include "verilog_preprocessor.h"
+#include <verilogparser/verilog_preprocessor.h>
 
 verilog_preprocessor_context * verilog_new_preprocessor_context()
 {
@@ -173,7 +173,7 @@ verilog_include_directive * verilog_preprocessor_include(
             
             // Since we are diving into an include file, update the stack of
             // files currently being parsed.
-            ast_stack_push(yy_preproc -> current_file, filename);
+            ast_stack_push(yy_preproc -> current_file, toadd -> filename);
 
             break;
         }
@@ -199,6 +199,7 @@ void verilog_preprocessor_macro_define(
         ast_calloc(1, sizeof(verilog_macro_directive));
     
     toadd -> line = line;
+    toadd -> file_name = verilog_preprocessor_current_file(yy_preproc);
 
     //printf("\nEncountered macro '%s' on line %d ",toadd->macro_id,line);
     //printf("with value '%s'\n", toadd -> macro_value);
