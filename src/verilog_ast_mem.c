@@ -88,9 +88,9 @@ void ast_free_all()
         memory_head = walker;
     }
 
-    printf("\tFree'd %lu bytes of %lu bytes allocated.\n", 
-        total_freed, total_allocated);
-    printf("\tBytes remaining: %lu\n", total_allocated - total_freed);
+    //printf("\tFree'd %lu bytes of %lu bytes allocated.\n", 
+    //    total_freed, total_allocated);
+    //printf("\tBytes remaining: %lu\n", total_allocated - total_freed);
     total_allocated -= total_freed;
 }
 
