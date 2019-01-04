@@ -74,7 +74,7 @@ has been freed.
 */
 void ast_free_all()
 {
-    printf("Freeing data for %u memory allocations.\n", memory_allocations);
+    //printf("Freeing data for %u memory allocations.\n", memory_allocations);
     size_t total_freed = 0;
 
     while(memory_head != NULL)
