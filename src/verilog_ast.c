@@ -2030,7 +2030,8 @@ ast_port_declaration * ast_new_port_declaration(
     ast_boolean         is_reg,         //!< [in] Is explicitly a "reg"
     ast_boolean         is_variable,    //!< [in] Variable or net?
     ast_range         * range,          //!< [in] Bus width.
-    ast_list          * port_names      //!< [in] The names of the ports.
+    ast_list          * port_names,     //!< [in] The names of the ports.
+    ast_boolean         is_list_id      //!< [in] Is it list of id
 ){
     ast_port_declaration * tr = ast_calloc(1,sizeof(ast_port_declaration));
     ast_set_meta_info(&(tr->meta));
@@ -2042,6 +2043,7 @@ ast_port_declaration * ast_new_port_declaration(
     tr -> is_variable =  is_variable;
     tr -> range       =  range      ;
     tr -> port_names  = port_names  ;
+    tr -> is_list_id  = is_list_id  ;
     
     return tr;
 }

@@ -2392,6 +2392,7 @@ typedef struct ast_port_declaration_t{
     ast_boolean         is_variable;    //!< Variable or net?
     ast_range         * range;          //!< Bus width.
     ast_list          * port_names;     //!< The names of the ports.
+    ast_boolean         is_list_id;     //!< Is it a list of
 } ast_port_declaration;
 
 /*!
@@ -2404,7 +2405,8 @@ ast_port_declaration * ast_new_port_declaration(
     ast_boolean         is_reg,         //!< [in] Is explicitly a "reg"
     ast_boolean         is_variable,    //!< [in] Variable or net?
     ast_range         * range,          //!< [in] Bus width.
-    ast_list          * port_names      //!< [in] The names of the ports.
+    ast_list          * port_names,     //!< [in] The names of the ports.
+    ast_boolean         is_list_id      //!< [in] Is it list of id
 );
 
 /*! @} */

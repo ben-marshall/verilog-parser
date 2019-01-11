@@ -1137,31 +1137,31 @@ port_declaration_l:
     ast_list * names = ast_list_new();
     ast_list_append(names, $4);
     $$ = ast_new_port_declaration(PORT_NONE, $1, $2,
-    AST_FALSE,AST_FALSE,$3,names);
+    AST_FALSE,AST_FALSE,$3,names, AST_TRUE);
 }
 |            signed_o range_o port_identifier{
     ast_list * names = ast_list_new();
     ast_list_append(names, $3);
     $$ = ast_new_port_declaration(PORT_NONE, NET_TYPE_NONE, $1,
-    AST_FALSE,AST_FALSE,$2,names);
+    AST_FALSE,AST_FALSE,$2,names, AST_TRUE);
 }
 | KW_REG     signed_o range_o port_identifier eq_const_exp_o{
     ast_list * names = ast_list_new();
     ast_list_append(names, $4);
     $$ = ast_new_port_declaration(PORT_NONE, NET_TYPE_NONE, AST_FALSE,
-    AST_TRUE,AST_FALSE,$3,names);
+    AST_TRUE,AST_FALSE,$3,names, AST_TRUE);
 }
 | output_variable_type_o      port_identifier{
     ast_list * names = ast_list_new();
     ast_list_append(names, $2);
     $$ = ast_new_port_declaration(PORT_NONE, NET_TYPE_NONE, AST_FALSE,
-    AST_FALSE,AST_TRUE,NULL,names);
+    AST_FALSE,AST_TRUE,NULL,names, AST_TRUE);
 }
 | output_variable_type        port_identifier eq_const_exp_o{
     ast_list * names = ast_list_new();
     ast_list_append(names, $2);
     $$ = ast_new_port_declaration(PORT_NONE, NET_TYPE_NONE, AST_FALSE,
-    AST_FALSE,AST_TRUE,NULL,names);
+    AST_FALSE,AST_TRUE,NULL,names, AST_TRUE);
 }
 ;
 
@@ -1455,23 +1455,23 @@ reg_o       : KW_REG   {$$=1;}| {$$=0;};
 
 inout_declaration : 
   KW_INOUT net_type_o signed_o range_o list_of_port_identifiers{
-$$ = ast_new_port_declaration(PORT_INOUT, $2,$3,AST_FALSE,AST_FALSE,$4,$5);
+$$ = ast_new_port_declaration(PORT_INOUT, $2,$3,AST_FALSE,AST_FALSE,$4,$5, AST_TRUE);
   }
 ;
 
 input_declaration : 
   KW_INPUT net_type_o signed_o range_o list_of_port_identifiers{
-$$ = ast_new_port_declaration(PORT_INPUT, $2,$3,AST_FALSE,AST_FALSE,$4,$5);
+$$ = ast_new_port_declaration(PORT_INPUT, $2,$3,AST_FALSE,AST_FALSE,$4,$5, AST_TRUE);
   }
 ;
 
 output_declaration: 
   KW_OUTPUT net_type_o signed_o range_o list_of_port_identifiers{
-$$ = ast_new_port_declaration(PORT_OUTPUT, $2,$3,AST_FALSE,AST_FALSE,$4,$5);
+$$ = ast_new_port_declaration(PORT_OUTPUT, $2,$3,AST_FALSE,AST_FALSE,$4,$5, AST_TRUE);
   }
 | KW_OUTPUT reg_o signed_o range_o list_of_port_identifiers{
 $$ = ast_new_port_declaration(PORT_OUTPUT,
-NET_TYPE_NONE,$3,$2,AST_FALSE,$4,$5);
+NET_TYPE_NONE,$3,$2,AST_FALSE,$4,$5, AST_TRUE);
   }
 | KW_OUTPUT output_variable_type_o list_of_port_identifiers{
     $$ = ast_new_port_declaration(PORT_OUTPUT, NET_TYPE_NONE,
@@ -1479,7 +1479,7 @@ NET_TYPE_NONE,$3,$2,AST_FALSE,$4,$5);
         AST_FALSE,
         AST_TRUE,
         NULL,
-        $3);
+        $3,AST_TRUE);
   }
 | KW_OUTPUT output_variable_type list_of_variable_port_identifiers{
     $$ = ast_new_port_declaration(PORT_OUTPUT, NET_TYPE_NONE,
@@ -1487,14 +1487,14 @@ NET_TYPE_NONE,$3,$2,AST_FALSE,$4,$5);
         AST_FALSE,
         AST_TRUE,
         NULL,
-        $3);
+        $3, AST_FALSE);
   }
 | KW_OUTPUT KW_REG signed_o range_o list_of_variable_port_identifiers{
     $$ = ast_new_port_declaration(PORT_OUTPUT,
                                   NET_TYPE_NONE,
                                   $3, AST_TRUE,
                                   AST_FALSE,
-                                  $4, $5);
+                                  $4, $5, AST_FALSE);
   }
 ;
 
