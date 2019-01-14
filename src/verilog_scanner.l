@@ -529,6 +529,9 @@ TERNARY             "?"
         YY_BUFFER_STATE cur = YY_CURRENT_BUFFER;
         YY_BUFFER_STATE n   = yy_scan_string(macro -> macro_value);
         
+        // Set the "current file" to the one the macro was defined in.
+        ast_stack_push(yy_preproc -> current_file, macro -> src_file);
+
         yy_switch_to_buffer(cur);
         yypush_buffer_state(n);
     }

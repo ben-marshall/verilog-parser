@@ -228,6 +228,10 @@ void verilog_preprocessor_macro_define(
 
     //printf("MACRO: '%s' - '%s'\n", toadd -> macro_id, toadd -> macro_value);
 
+    // Set source file of the macro
+    char * current_file = verilog_preprocessor_current_file(yy_preproc);
+    toadd -> src_file   = ast_strdup(current_file);
+
     ast_hashtable_insert(
         yy_preproc -> macrodefines,
         toadd -> macro_id,
@@ -243,6 +247,7 @@ void verilog_preprocessor_macro_define(
 void verilog_preprocessor_macro_undefine(
     char * macro_name //!< The name of the macro to remove.
 ){
+
     ast_hashtable_delete(
         yy_preproc -> macrodefines,
         macro_name
