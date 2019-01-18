@@ -19,17 +19,17 @@ int main(int argc, char ** argv)
     }
     else
     {
+
         int F = 0;
-            
-        // Initialise the parser.
-        verilog_parser_init();
-
-        // Setup the preprocessor to look in ./tests/ for include files.
-        ast_list_append(yy_preproc -> search_dirs, "./tests/");
-        ast_list_append(yy_preproc -> search_dirs, "./");
-
         for(F = 1; F < argc; F++)
         {
+            
+            // Initialise the parser.
+            verilog_parser_init();
+
+            // Setup the preprocessor to look in ./tests/ for include files.
+            ast_list_append(yy_preproc -> search_dirs, "./tests/");
+            ast_list_append(yy_preproc -> search_dirs, "./");
             printf("%s ", argv[F]);fflush(stdout);
 
             // Load the file.
@@ -52,9 +52,9 @@ int main(int argc, char ** argv)
                 printf(" - Parse failed\n");
                 if(argc<=2) return 1;
             }
+
+            verilog_resolve_modules(yy_verilog_source_tree);
         }
     }
-    verilog_resolve_modules(yy_verilog_source_tree);
-    ast_free_all();
     return 0;
 }
