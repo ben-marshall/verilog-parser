@@ -597,12 +597,12 @@ TERNARY             "?"
 {BASE_OCTAL}           {BEGIN(in_oct_val); EMIT_TOKEN(OCT_BASE);}
 {BASE_BINARY}          {BEGIN(in_bin_val); EMIT_TOKEN(BIN_BASE);}
 
-<in_bin_val>{BIN_VALUE} {BEGIN(INITIAL); yylval.string = yytext; EMIT_TOKEN(BIN_VALUE);}
-<in_oct_val>{OCT_VALUE} {BEGIN(INITIAL); yylval.string = yytext; EMIT_TOKEN(OCT_VALUE);}
-<in_hex_val>{HEX_VALUE} {BEGIN(INITIAL); yylval.string = yytext; EMIT_TOKEN(HEX_VALUE);}
+<in_bin_val>{BIN_VALUE} {BEGIN(INITIAL); yylval.string = ast_strdup(yytext); EMIT_TOKEN(BIN_VALUE);}
+<in_oct_val>{OCT_VALUE} {BEGIN(INITIAL); yylval.string = ast_strdup(yytext); EMIT_TOKEN(OCT_VALUE);}
+<in_hex_val>{HEX_VALUE} {BEGIN(INITIAL); yylval.string = ast_strdup(yytext); EMIT_TOKEN(HEX_VALUE);}
 
-{NUM_REAL}             {yylval.string=yytext;EMIT_TOKEN(NUM_REAL);}
-{NUM_UNSIGNED}         {yylval.string=yytext;EMIT_TOKEN(UNSIGNED_NUMBER);}
+{NUM_REAL}             {yylval.string=ast_strdup(yytext);EMIT_TOKEN(NUM_REAL);}
+{NUM_UNSIGNED}         {yylval.string=ast_strdup(yytext);EMIT_TOKEN(UNSIGNED_NUMBER);}
 
 {ALWAYS}               {EMIT_TOKEN(KW_ALWAYS);} 
 {AND}                  {EMIT_TOKEN(KW_AND);} 
@@ -741,7 +741,7 @@ TERNARY             "?"
     EMIT_TOKEN(SIMPLE_ID);
 }
 
-{STRING}               {yylval.string= yytext;EMIT_TOKEN(STRING);}
+{STRING}               {yylval.string= ast_strdup(yytext);EMIT_TOKEN(STRING);}
 
 <*>{NEWLINE}              {/*EMIT_TOKEN(NEWLINE); IGNORE */   }
 <*>{SPACE}                {/*EMIT_TOKEN(SPACE);   IGNORE */   }
