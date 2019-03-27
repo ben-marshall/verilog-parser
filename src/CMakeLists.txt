@@ -1,7 +1,7 @@
 message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 
 #set(LIBRARY_NAME    verilogparser)
-set(EXECUTABLE_NAME parser)
+set(EXECUTABLE_NAME verilogparserexec)
 
 FIND_PACKAGE(BISON 3.0.4 REQUIRED)
 FIND_PACKAGE(FLEX 2.5.35 REQUIRED)
