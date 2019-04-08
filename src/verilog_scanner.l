@@ -175,6 +175,7 @@ TRI0                "tri0"
 TRI1                "tri1"
 TRI                 "tri"
 TRIAND              "triand"
+NONE                "none"
 TRIOR               "trior"
 TRIREG              "trireg"
 UNSIGNED            "unsigned"
@@ -328,7 +329,7 @@ TERNARY             "?"
 <in_default_nettype>{TRIOR}   {
     BEGIN(INITIAL); 
     verilog_preproc_default_net(yy_preproc -> token_count, 
-        yylineno, NET_TYPE_TRIOR  );
+        yylineno, NET_TYPE_NONE  );
     }
 <in_default_nettype>{TRIREG}     {
     BEGIN(INITIAL); 
@@ -359,6 +360,11 @@ TERNARY             "?"
     BEGIN(INITIAL); 
     verilog_preproc_default_net(yy_preproc -> token_count, 
         yylineno, NET_TYPE_WOR    );
+    }
+<in_default_nettype>{NONE}    {
+    BEGIN(INITIAL); 
+    verilog_preproc_default_net(yy_preproc -> token_count, 
+        yylineno, NET_TYPE_NONE    );
     }
 
 {CD_TIMESCALE}           {
