@@ -22,10 +22,10 @@ Standard.
 
 This will get you going workspace wise.
 
-    ```sh
-    $> make all
-    $> make test-all
-    ```
+```sh
+$> make all
+$> make test-all
+```
 
 This will download the test suite files, setup the build directory, and
 compile the parser, library and test app.
