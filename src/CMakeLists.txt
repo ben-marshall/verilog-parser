@@ -79,6 +79,10 @@ add_library(${LIBRARY_NAME}::${LIBRARY_NAME} ALIAS ${LIBRARY_NAME})
 
 target_compile_options(${LIBRARY_NAME} PRIVATE -Wall)
 target_compile_options(${LIBRARY_NAME} PRIVATE -W)
+set_property(
+  TARGET ${LIBRARY_NAME}
+  PROPERTY POSITION_INDEPENDENT_CODE ON
+)
 
 set_target_properties(${LIBRARY_NAME} PROPERTIES C_EXTENSIONS OFF)
 
