@@ -77,8 +77,11 @@ set(PARSER_LIB_SRC ${BINARY_DIR}/${FLEX_OUTPUT}
 add_library(${LIBRARY_NAME} ${PARSER_LIB_SRC})
 add_library(${LIBRARY_NAME}::${LIBRARY_NAME} ALIAS ${LIBRARY_NAME})
 
-target_compile_options(${LIBRARY_NAME} PRIVATE -Wall)
-target_compile_options(${LIBRARY_NAME} PRIVATE -W)
+if(${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
+  target_compile_options(${LIBRARY_NAME} PRIVATE -Wall)
+  target_compile_options(${LIBRARY_NAME} PRIVATE -W)
+endif()
+
 set_property(
   TARGET ${LIBRARY_NAME}
   PROPERTY POSITION_INDEPENDENT_CODE ON
@@ -96,8 +99,10 @@ target_include_directories(${LIBRARY_NAME}
 
 add_executable(${EXECUTABLE_NAME} main.c)
 
-target_compile_options(${EXECUTABLE_NAME} PRIVATE -Wall)
-target_compile_options(${EXECUTABLE_NAME} PRIVATE -W)
+if(${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
+  target_compile_options(${EXECUTABLE_NAME} PRIVATE -Wall)
+  target_compile_options(${EXECUTABLE_NAME} PRIVATE -W)
+endif()
 
 target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME})
 
