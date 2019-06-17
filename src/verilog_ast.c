@@ -1619,7 +1619,7 @@ parameters.
 */
 ast_module_instantiation * ast_new_module_instantiation(
     ast_identifier          module_identifer,
-    ast_list              * module_parameters,
+    ast_parameter_override* module_parameters,
     ast_list              * module_instances
 ){
     ast_module_instantiation * tr = 
@@ -1632,6 +1632,21 @@ ast_module_instantiation * ast_new_module_instantiation(
     tr -> module_instances  = module_instances;
 
     return tr;
+}
+
+
+/*!
+@brief Creates and returns a new set of module instances with shared
+parameters.
+*/
+ast_parameter_override * ast_new_module_parameter_override(
+    ast_list                    * parameters,
+    ast_parameter_override_type   type
+) {
+    ast_parameter_override * tr = 
+        ast_calloc(1,sizeof(ast_parameter_override));
+    tr->module_parameter = parameters;
+    tr->type = type;
 }
 
 /*!

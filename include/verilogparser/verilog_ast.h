@@ -1792,6 +1792,33 @@ ast_statement * ast_new_generate_item(
 */
 
 /*! 
+@brief Decribes the parameter instantiation type
+*/
+typedef enum ast_parameter_override_type_e {
+    ORDERED_PARAMETER,
+    NAMED_PARAMETER
+} ast_parameter_override_type;
+
+/*! 
+@brief Decribes the parameter assignment in a module instantiation
+@note This is used to distinguish named assignment/ordered assignment
+*/
+typedef struct ast_parameter_override_t{
+    ast_list                  * module_parameter;
+    ast_parameter_override_type type;
+} ast_parameter_override;
+
+
+/*!
+@brief Creates and returns a new set of module instances with shared
+parameters.
+*/
+ast_parameter_override * ast_new_module_parameter_override(
+    ast_list                    * parameters,
+    ast_parameter_override_type   type
+);
+
+/*! 
 @brief Describes the instantiation of one or more modules of the same type with
 the same parameters.
 @details If the resolved member is true, then you can access the declaration
@@ -1806,7 +1833,7 @@ typedef struct ast_module_instantiation_t {
         ast_identifier  module_identifer; //!< The module being instanced.
         ast_module_declaration * declaration; //!< The module instanced.
     };
-    ast_list              * module_parameters;
+    ast_parameter_override* module_parameters;
     ast_list              * module_instances;
 } ast_module_instantiation;
 
@@ -1816,7 +1843,7 @@ parameters.
 */
 ast_module_instantiation * ast_new_module_instantiation(
     ast_identifier          module_identifer,
-    ast_list              * module_parameters,
+    ast_parameter_override* module_parameters,
     ast_list              * module_instances
 );
 
@@ -1850,6 +1877,7 @@ typedef struct ast_port_connection_t{
     ast_identifier   port_name;
     ast_expression * expression;
 } ast_port_connection;
+
 
 /*!
 @brief Creates and returns a new port connection representation.

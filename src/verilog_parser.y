@@ -2657,8 +2657,8 @@ HASH OPEN_BRACKET list_of_parameter_assignments CLOSE_BRACKET {$$=$3;}
 ;
 
 list_of_parameter_assignments : 
-   ordered_parameter_assignments {$$=$1;}
- | named_parameter_assignments {$$=$1;}
+   ordered_parameter_assignments {$$=ast_new_module_parameter_override($1, ORDERED_PARAMETER);}
+ | named_parameter_assignments {$$=ast_new_module_parameter_override($1, NAMED_PARAMETER);}
  ;
 
 ordered_parameter_assignments : 
