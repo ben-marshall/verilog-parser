@@ -3335,6 +3335,13 @@ struct ast_node_t
 ast_node * ast_node_new();
 
 
+/*!
+@brief Convert an UNSIGNED_NUMBER to integer
+@param [in] the string to convert
+*/
+unsigned ast_string_to_unsigned_number(const char * str);
+
+
 /*! @} */
 
 

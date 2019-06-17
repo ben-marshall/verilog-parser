@@ -4639,15 +4639,19 @@ number :
 }
 | UNSIGNED_NUMBER BIN_BASE BIN_VALUE {
     $$ = ast_new_number(BASE_BINARY, REP_BITS, $3);
+    $$->width = ast_string_to_unsigned_number($1);
 }
 | UNSIGNED_NUMBER HEX_BASE HEX_VALUE {
     $$ = ast_new_number(BASE_HEX, REP_BITS, $3);
+    $$->width = ast_string_to_unsigned_number($1);
 }
 | UNSIGNED_NUMBER OCT_BASE OCT_VALUE {
     $$ = ast_new_number(BASE_OCTAL, REP_BITS, $3);
+    $$->width = ast_string_to_unsigned_number($1);
 }
 | UNSIGNED_NUMBER DEC_BASE UNSIGNED_NUMBER{
     $$ = ast_new_number(BASE_DECIMAL, REP_BITS, $3);
+    $$->width = ast_string_to_unsigned_number($1);
 }
 | unsigned_number {$$ = $1;}
 ;

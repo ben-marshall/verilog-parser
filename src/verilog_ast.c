@@ -2830,6 +2830,26 @@ ast_library_descriptions * ast_new_library_description(
     return tr;
 }
 
+/*!
+@brief Convert an UNSIGNED_NUMBER to integer
+@param [in] the string to convert
+*/
+unsigned ast_string_to_unsigned_number(
+    const char * str //!< the string
+) {
+    size_t len = strlen(str);
+    size_t idx, target_idx;
+    unsigned return_val;
+    char * temp_str = calloc(len, sizeof(char)+1);
+    for (idx = 0, target_idx = 0; idx < len; ++idx) {
+        if (str[idx] != '_')
+            temp_str[target_idx++] = str[idx];
+    } // filter of underscore
+    return_val = atoi(temp_str);
+    free(temp_str);
+    return return_val;
+}
+
 
 /*!
 @brief Creates a new number representation object.
@@ -2846,6 +2866,7 @@ ast_number * ast_new_number(
     tr -> base = base;
     tr -> representation = representation;
     tr -> as_bits = ast_strdup(digits);
+    tr -> width = 0; // this is the default value if its width is not specified
 
     return tr;
 }
