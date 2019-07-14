@@ -1810,6 +1810,27 @@ typedef struct ast_module_instantiation_t {
     ast_list              * module_instances;
 } ast_module_instantiation;
 
+
+/*! 
+@brief Describes the parameter override in module instantiation.
+@details If the resolved member is true, then you can access the declaration
+member, and find out everything about the module being instanced. Otherwise,
+you must access the module_identifier member, and can only know what the
+module is called.
+*/
+typedef struct ast_parameter_override_t {
+    ast_expression * ordered_parameter;
+    ast_port_connection * named_parameter;
+} ast_parameter_override;
+
+/*!
+@brief Creates and returns a new parameter override, either the first/second is NULL
+*/
+ast_parameter_override * ast_new_parameter_override(
+   ast_expression * ordered_parameter,
+   ast_port_connection * named_parameter
+);
+
 /*!
 @brief Creates and returns a new set of module instances with shared
 parameters.

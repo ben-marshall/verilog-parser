@@ -1614,6 +1614,20 @@ ast_generate_block * ast_new_generate_block(
 
 
 /*!
+@brief Creates and returns a new parameter override, either the first/second is NULL
+*/
+ast_parameter_override * ast_new_parameter_override(
+   ast_expression * ordered_parameter,
+   ast_port_connection * named_parameter
+) {
+    ast_parameter_override * tr = ast_calloc(1,sizeof(ast_parameter_override));
+    tr->ordered_parameter = ordered_parameter;
+    tr->named_parameter = named_parameter;
+    return tr;
+}
+
+
+/*!
 @brief Creates and returns a new set of module instances with shared
 parameters.
 */
