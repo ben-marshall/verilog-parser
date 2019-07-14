@@ -2693,12 +2693,12 @@ module_instances : module_instance{
 ;
 
 ordered_parameter_assignment : expression{
-    $$ = ast_new_parameter_override($1, NULL);
+    $$ = $1;
 };
 
 named_parameter_assignment : 
 DOT parameter_identifier OPEN_BRACKET expression_o CLOSE_BRACKET {
-    $$ = ast_new_parameter_override(NULL, ast_new_named_port_connection($2,$4));
+    $$ = ast_new_named_port_connection($2,$4);
 }
 ;
 
