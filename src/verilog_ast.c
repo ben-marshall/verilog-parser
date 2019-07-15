@@ -1613,6 +1613,7 @@ ast_generate_block * ast_new_generate_block(
 }
 
 
+
 /*!
 @brief Creates and returns a new set of module instances with shared
 parameters.
@@ -2904,12 +2905,12 @@ char * ast_number_tostring(
             tr = n -> as_bits;
             break;
         case REP_INTEGER:
-            tr = calloc(11,sizeof(char));
-            sprintf(tr, "%d", n-> as_int);
+            tr = ast_calloc(11,sizeof(char));
+            snprintf(tr, 10, "%d", n-> as_int);
             break;
         case REP_FLOAT:
-            tr = calloc(21,sizeof(char));
-            sprintf(tr, "%20f", n -> as_float);
+            tr = ast_calloc(25,sizeof(char));
+            snprintf(tr, 24, "%20f", n -> as_float);
             break;
         default:
             tr = "NULL";

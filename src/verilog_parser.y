@@ -2693,7 +2693,7 @@ module_instances : module_instance{
 ;
 
 ordered_parameter_assignment : expression{
-    $$=$1;
+    $$ = $1;
 };
 
 named_parameter_assignment : 
