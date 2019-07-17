@@ -777,4 +777,3 @@ TERNARY             "?"
 .                      {
     EMIT_TOKEN(ANY);
 }
-
