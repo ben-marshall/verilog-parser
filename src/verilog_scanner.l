@@ -16,6 +16,7 @@
 %option yylineno
 %option nodefault 
 %option noyywrap 
+%option nounistd
 
 /* Pre-processor definitions */
 CD_DEFAULT_NETTYPE     "`default_nettype"
