@@ -1,0 +1,51 @@
+trigger:
+- master
+
+pr:
+- master
+
+# File: azure-pipelines.yml
+
+jobs:
+- job: macOS
+  pool:
+    vmImage: 'macOS-10.13'
+  steps:
+  - script: |
+      brew update
+      brew install bison
+    displayName: 'package'
+  - script: |
+      export PATH="/usr/local/opt/bison/bin:$PATH"
+      export LDFLAGS="-L/usr/local/opt/bison/lib"
+      mkdir -p build && cd build
+      cmake ..
+      make
+    displayName: 'build'
+- job: Linux
+  pool:
+    vmImage: 'ubuntu-16.04'
+  steps:
+  - script: |
+      sudo apt-get update
+      sudo apt-get install bison
+      sudo apt-get install flex
+    displayName: 'package'
+  - script: |
+      mkdir -p build && cd build
+      cmake .. 
+      make 
+    displayName: 'build'
+- job: Windows
+  pool:
+    vmImage: 'vs2017-win2016'
+  steps:
+  - script: |
+      choco install winflexbison3
+    displayName: 'package'
+  - script: |
+      mkdir -p build && cd build
+      call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
+      cmake .. 
+      cmake --build .
+    displayName: 'build'
